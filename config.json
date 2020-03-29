@@ -4,14 +4,18 @@
     "address": ":9090"
   },
   "context":{
-    "timeout":2
+    "timeout":30
   },
   "database": {
-      "host": "localhost",
+      "host": "api-blog-cgo-mysqldbserver.mysql.database.azure.com",
       "port": "3306",
-      "user": "root",
-      "pass": "",
-      "name": "article"
+      "user": "AdminCgo@api-blog-cgo-mysqldbserver",
+      "pass": "Standar123.",
+      "name": "cgo_indonesia"
+  },
+  "identityServer": {
+    "baseUrl": "https://identity-server-cgo-indonesia.azurewebsites.net",
+    "basicAuth": "cm9jbGllbnQ6c2VjcmV0"
   }
 
 }

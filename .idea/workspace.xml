@@ -1,38 +1,299 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.vscode/settings.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/identityserver/delivery/http/is_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/identityserver/delivery/http/is_handler_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/identityserver/mocks/Usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/identityserver/usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/mocks/Repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/mocks/Usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/repository/repo_merchant.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/repository/repo_merchant_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/usecase/merchant_usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/merchant/usecase/merchant_usecase_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/merchant.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/user_is.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/delivery/http/user_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/delivery/http/user_handler_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/mocks/Repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/mocks/Usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/repository/repo_user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/repository/repo_user_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/usecase/user_usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user/usecase/user_usecase_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/errors.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="GOROOT" path="C:\Go" />
-  <component name="GoLibraries">
-    <option name="indexEntireGoPath" value="false" />
-  </component>
-  <component name="ProjectId" id="1YUMfrHO10gLe6Xky81rpwYciiV" />
-  <component name="PropertiesComponent">
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="go.import.settings.migrated" value="true" />
-    <property name="go.sdk.automatically.set" value="true" />
-    <property name="go.tried.to.enable.integration.dep.integrator" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$" />
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
       <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
+        <option value="Go File" />
       </list>
     </option>
   </component>
+  <component name="GOROOT" path="C:\Go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+    <option name="useGoPathFromSystemEnvironment" value="false" />
+  </component>
+  <component name="ProjectId" id="1YUMfrHO10gLe6Xky81rpwYciiV" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="configurable.Global.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Module.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Project.GOPATH.is.expanded" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="go.tried.to.enable.integration.dep.integrator" value="true" />
+    <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.postfix.templates" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\radya\project\CGO-go-echo\merchant\user" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Build.go build main.go">
+    <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="go-clean-arch-2.0.1" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/migrations/main.go" />
+      <package value="github.com" />
+      <directory value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="go-clean-arch-2.0.1" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <directory value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build main.go (1)" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="" />
+      <created>1585384850863</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1585384850863</updated>
+    </task>
+    <servers />
+  </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="275" y="22" key="#GOPATH" timestamp="1585385637563">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="275" y="22" key="#GOPATH/0.0.1366.728@0.0.1366.728" timestamp="1585385637563" />
+    <state x="275" y="22" key="#Go_Modules_(vgo)" timestamp="1585386883724">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="275" y="22" key="#Go_Modules_(vgo)/0.0.1366.728@0.0.1366.728" timestamp="1585386883724" />
+    <state x="275" y="22" key="#Vim_Emulation" timestamp="1585412288891">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="275" y="22" key="#Vim_Emulation/0.0.1366.728@0.0.1366.728" timestamp="1585412288891" />
+    <state width="898" height="466" key="DebuggerActiveHint" timestamp="1585508180538">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="898" height="466" key="DebuggerActiveHint/0.0.1366.728@0.0.1366.728" timestamp="1585508180538" />
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585509489234">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585509489234" />
+    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585509489233">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585509489233" />
+    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585509489232">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585509489232" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585509489233">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585509489233" />
+    <state width="1323" height="201" key="GridCell.Tab.1.bottom" timestamp="1585509489205">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="201" key="GridCell.Tab.1.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585509489205" />
+    <state width="1323" height="201" key="GridCell.Tab.1.center" timestamp="1585509489204">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="201" key="GridCell.Tab.1.center/0.0.1366.728@0.0.1366.728" timestamp="1585509489204" />
+    <state width="1323" height="201" key="GridCell.Tab.1.left" timestamp="1585509489204">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="201" key="GridCell.Tab.1.left/0.0.1366.728@0.0.1366.728" timestamp="1585509489204" />
+    <state width="1323" height="201" key="GridCell.Tab.1.right" timestamp="1585509489205">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1323" height="201" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1585509489205" />
+    <state x="184" y="6" key="SettingsEditor" timestamp="1585412485451">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="184" y="6" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1585412485451" />
+    <state x="346" y="49" width="672" height="678" key="search.everywhere.popup" timestamp="1585474398391">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="346" y="49" width="672" height="678" key="search.everywhere.popup/0.0.1366.728@0.0.1366.728" timestamp="1585474398391" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/merchant/repository/repo_merchant.go</url>
+          <line>124</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/article/delivery/http/article_handler.go</url>
+          <line>85</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go</url>
+          <line>126</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go</url>
+          <line>95</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/merchant/usecase/merchant_usecase.go</url>
+          <line>112</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/merchant/repository/repo_merchant.go</url>
+          <line>109</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/merchant/repository/repo_merchant.go</url>
+          <line>30</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/merchant/repository/repo_merchant.go</url>
+          <line>165</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go</url>
+          <line>57</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/delivery/http/user_handler.go</url>
+          <line>48</line>
+          <option name="timeStamp" value="27" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/usecase/user_usecase.go</url>
+          <line>129</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/repository/repo_user.go</url>
+          <line>133</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/identityserver/delivery/http/is_handler.go</url>
+          <line>36</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/repository/repo_user.go</url>
+          <line>118</line>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/repository/repo_user.go</url>
+          <line>30</line>
+          <option name="timeStamp" value="32" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/delivery/http/user_handler.go</url>
+          <line>70</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/repository/repo_user.go</url>
+          <line>174</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/usecase/user_usecase.go</url>
+          <line>80</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/merchant/usecase/merchant_usecase.go</url>
+          <line>81</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
