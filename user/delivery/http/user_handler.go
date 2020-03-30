@@ -2,13 +2,11 @@ package http
 
 import (
 	"context"
-	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	validator "gopkg.in/go-playground/validator.v9"
+	"net/http"
+	"strconv"
 
 	"github.com/models"
 	"github.com/user"
@@ -44,14 +42,36 @@ func isRequestValid(m *models.NewCommandUser) (bool, error) {
 
 // Store will store the user by given request body
 func (a *userHandler) CreateUser(c echo.Context) error {
-	test:= time.Now()
-	fmt.Println(test)
-	var userCommand models.NewCommandUser
-	err := c.Bind(&userCommand)
-	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err.Error())
-	}
 
+	//name := c.FormValue("name")
+	//var userCommand models.NewCommandUser
+	//err := c.Bind(&userCommand)
+	//if err != nil {
+	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	//}
+	phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
+	verificationCode, _ := strconv.Atoi(c.FormValue("verification_code"))
+	gender, _ := strconv.Atoi(c.FormValue("gender"))
+	idType, _ := strconv.Atoi(c.FormValue("id_type"))
+	referralCode, _ := strconv.Atoi(c.FormValue("referral_code"))
+	points, _ := strconv.Atoi(c.FormValue("points"))
+	userCommand:= models.NewCommandUser{
+		Id:                   c.FormValue("id"),
+		UserEmail:            c.FormValue("user_email"),
+		Password:             c.FormValue("password"),
+		FullName:             c.FormValue("full_name"),
+		PhoneNumber:          phoneNumber,
+		VerificationSendDate: c.FormValue("verification_send_date"),
+		VerificationCode:     verificationCode,
+		ProfilePictUrl:       "#",
+		Address:              c.FormValue("address"),
+		Dob:                  c.FormValue("dob"),
+		Gender:               gender,
+		IdType:               idType,
+		IdNumber:             c.FormValue("id_number"),
+		ReferralCode:         referralCode,
+		Points:               points,
+	}
 	if ok, err := isRequestValid(&userCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -59,21 +79,43 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	err = a.userUsecase.Create(ctx, &userCommand, "admin")
+	error := a.userUsecase.Create(ctx, &userCommand, "admin")
 
-	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
 	return c.JSON(http.StatusCreated, userCommand)
 }
 
 func (a *userHandler) UpdateUser(c echo.Context) error {
-	var userCommand models.NewCommandUser
-	err := c.Bind(&userCommand)
-	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	//var userCommand models.NewCommandUser
+	//err := c.Bind(&userCommand)
+	//if err != nil {
+	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	//}
+	phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
+	verificationCode, _ := strconv.Atoi(c.FormValue("verification_code"))
+	gender, _ := strconv.Atoi(c.FormValue("gender"))
+	idType, _ := strconv.Atoi(c.FormValue("id_type"))
+	referralCode, _ := strconv.Atoi(c.FormValue("referral_code"))
+	points, _ := strconv.Atoi(c.FormValue("points"))
+	userCommand:= models.NewCommandUser{
+		Id:                   c.FormValue("id"),
+		UserEmail:            c.FormValue("user_email"),
+		Password:             c.FormValue("password"),
+		FullName:             c.FormValue("full_name"),
+		PhoneNumber:          phoneNumber,
+		VerificationSendDate: c.FormValue("verification_send_date"),
+		VerificationCode:     verificationCode,
+		ProfilePictUrl:       "#",
+		Address:              c.FormValue("address"),
+		Dob:                  c.FormValue("dob"),
+		Gender:               gender,
+		IdType:               idType,
+		IdNumber:             c.FormValue("id_number"),
+		ReferralCode:         referralCode,
+		Points:               points,
 	}
-
 	if ok, err := isRequestValid(&userCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -82,10 +124,10 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	err = a.userUsecase.Update(ctx, &userCommand, "admin")
+	error := a.userUsecase.Update(ctx, &userCommand, "admin")
 
-	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
 	return c.JSON(http.StatusCreated, userCommand)
 }

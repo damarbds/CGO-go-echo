@@ -2,47 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.vscode/settings.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identityserver/delivery/http/is_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identityserver/delivery/http/is_handler_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identityserver/mocks/Usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identityserver/usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/mocks/Repository.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/mocks/Usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/repository.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/repository/repo_merchant.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/repository/repo_merchant_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/usecase/merchant_usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merchant/usecase/merchant_usecase_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/merchant.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/user.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/user_is.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/delivery/http/user_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/delivery/http/user_handler_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/mocks/Repository.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/mocks/Usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/repository.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/repository/repo_user.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/repository/repo_user_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/usecase/user_usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/usecase/user_usecase_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/errors.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user/delivery/http/user_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/delivery/http/user_handler.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,38 +116,38 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="898" height="466" key="DebuggerActiveHint/0.0.1366.728@0.0.1366.728" timestamp="1585508180538" />
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585509489234">
+    <state width="1323" height="201" key="GridCell.Tab.0.bottom" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585509489234" />
-    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585509489233">
+    <state width="1323" height="201" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
+    <state width="1323" height="201" key="GridCell.Tab.0.center" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585509489233" />
-    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585509489232">
+    <state width="1323" height="201" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
+    <state width="1323" height="201" key="GridCell.Tab.0.left" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585509489232" />
-    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585509489233">
+    <state width="1323" height="201" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
+    <state width="1323" height="201" key="GridCell.Tab.0.right" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585509489233" />
-    <state width="1323" height="201" key="GridCell.Tab.1.bottom" timestamp="1585509489205">
+    <state width="1323" height="201" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
+    <state width="1323" height="201" key="GridCell.Tab.1.bottom" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.1.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585509489205" />
-    <state width="1323" height="201" key="GridCell.Tab.1.center" timestamp="1585509489204">
+    <state width="1323" height="201" key="GridCell.Tab.1.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
+    <state width="1323" height="201" key="GridCell.Tab.1.center" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.1.center/0.0.1366.728@0.0.1366.728" timestamp="1585509489204" />
-    <state width="1323" height="201" key="GridCell.Tab.1.left" timestamp="1585509489204">
+    <state width="1323" height="201" key="GridCell.Tab.1.center/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
+    <state width="1323" height="201" key="GridCell.Tab.1.left" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.1.left/0.0.1366.728@0.0.1366.728" timestamp="1585509489204" />
-    <state width="1323" height="201" key="GridCell.Tab.1.right" timestamp="1585509489205">
+    <state width="1323" height="201" key="GridCell.Tab.1.left/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
+    <state width="1323" height="201" key="GridCell.Tab.1.right" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1585509489205" />
+    <state width="1323" height="201" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1585541771321" />
     <state x="184" y="6" key="SettingsEditor" timestamp="1585412485451">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -244,11 +206,6 @@
           <option name="timeStamp" value="23" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/user/delivery/http/user_handler.go</url>
-          <line>48</line>
-          <option name="timeStamp" value="27" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/user/usecase/user_usecase.go</url>
           <line>129</line>
           <option name="timeStamp" value="28" />
@@ -274,11 +231,6 @@
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/user/delivery/http/user_handler.go</url>
-          <line>70</line>
-          <option name="timeStamp" value="33" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/user/repository/repo_user.go</url>
           <line>174</line>
           <option name="timeStamp" value="34" />
@@ -292,6 +244,11 @@
           <url>file://$PROJECT_DIR$/merchant/usecase/merchant_usecase.go</url>
           <line>81</line>
           <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/user/delivery/http/user_handler.go</url>
+          <line>95</line>
+          <option name="timeStamp" value="38" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
