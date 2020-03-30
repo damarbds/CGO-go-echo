@@ -46,7 +46,7 @@ func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, e
 		os.Exit(1)
 	}
 	if resp.StatusCode != 200 {
-		return nil, models.ErrUnAuthorize
+		return nil, models.ErrUsernamePassword
 	}
 	user := models.GetUserInfo{}
 	json.NewDecoder(resp.Body).Decode(&user)
@@ -83,7 +83,7 @@ func (m identityserverUsecase) GetToken(username string, password string) (*mode
 		os.Exit(1)
 	}
 	if resp.StatusCode != 200 {
-		return nil, models.ErrUnAuthorize
+		return nil, models.ErrUsernamePassword
 	}
 	user := models.GetToken{}
 	json.NewDecoder(resp.Body).Decode(&user)

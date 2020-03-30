@@ -37,7 +37,7 @@ func (a *isHandler) Login(c echo.Context) error {
 	var isLogin models.Login
 	err := c.Bind(&isLogin)
 	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	ctx := c.Request().Context()
@@ -69,7 +69,7 @@ func (a *isHandler) Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest,"Bad Request")
 	}
 
-	return c.JSON(http.StatusCreated, responseToken)
+	return c.JSON(http.StatusOK, responseToken)
 }
 
 func (a *isHandler) GetInfo(c echo.Context) error {
@@ -87,14 +87,14 @@ func (a *isHandler) GetInfo(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 
-		return c.JSON(http.StatusCreated, response)
+		return c.JSON(http.StatusOK, response)
 	} else if typeUser == "merchant"{
 		response, err := a.merchantUsecase.GetMerchantInfo(ctx, token)
 
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
-		return c.JSON(http.StatusCreated, response)
+		return c.JSON(http.StatusOK, response)
 	}else {
 		return c.JSON(http.StatusBadRequest,"Bad Request")
 	}
@@ -117,6 +117,8 @@ func getStatusCode(err error) int {
 	case models.ErrUnAuthorize:
 		return http.StatusUnauthorized
 	case models.ErrBadParamInput:
+		return http.StatusBadRequest
+	case models.ErrUsernamePassword:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError

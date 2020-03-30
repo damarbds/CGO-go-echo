@@ -2,23 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/models/exclusion_service.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/exp_photos.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/expavailability.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/experience.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/experience_add_on.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/experience_paymenr.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/experience_payment_type.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/experience_rules.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/experience_type.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/facilities.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/id_type.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/migration_history.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/minumbooking.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/point_rules.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/review.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identityserver/delivery/http/is_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/identityserver/delivery/http/is_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/errors.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user/delivery/http/user_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/delivery/http/user_handler.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +58,7 @@
       <recent name="E:\radya\project\CGO-go-echo\merchant\user" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Build.go build main.go (1)">
+  <component name="RunManager" selected="Go Build.go build main.go">
     <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="go-clean-arch-2.0.1" />
       <working_directory value="$PROJECT_DIR$" />
@@ -89,8 +78,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Build.go build main.go (1)" />
         <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build main.go (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -130,22 +119,22 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="898" height="466" key="DebuggerActiveHint/0.0.1366.728@0.0.1366.728" timestamp="1585508180538" />
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585556900248">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585558662246">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585556900248" />
-    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585556900248">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
+    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585558662246">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585556900248" />
-    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585556900247">
+    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
+    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585558662246">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585556900247" />
-    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585556900248">
+    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585558662246">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585556900248" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
     <state width="1323" height="201" key="GridCell.Tab.1.bottom" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -185,16 +174,6 @@
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go</url>
-          <line>126</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go</url>
-          <line>95</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/merchant/usecase/merchant_usecase.go</url>
           <line>112</line>
           <option name="timeStamp" value="13" />
@@ -213,11 +192,6 @@
           <url>file://$PROJECT_DIR$/merchant/repository/repo_merchant.go</url>
           <line>165</line>
           <option name="timeStamp" value="20" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go</url>
-          <line>57</line>
-          <option name="timeStamp" value="23" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/user/usecase/user_usecase.go</url>

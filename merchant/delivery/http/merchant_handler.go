@@ -71,7 +71,7 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
-	return c.JSON(http.StatusCreated, merchantCommand)
+	return c.JSON(http.StatusOK, merchantCommand)
 }
 
 func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
@@ -102,7 +102,7 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-	return c.JSON(http.StatusCreated, merchantCommand)
+	return c.JSON(http.StatusOK, merchantCommand)
 }
 func getStatusCode(err error) int {
 	if err == nil {
@@ -117,7 +117,7 @@ func getStatusCode(err error) int {
 	case models.ErrUnAuthorize:
 		return http.StatusUnauthorized
 	case models.ErrConflict:
-		return http.StatusConflict
+		return http.StatusBadRequest
 	case models.ErrBadParamInput:
 		return http.StatusBadRequest
 	default:

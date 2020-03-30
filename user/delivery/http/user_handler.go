@@ -84,7 +84,7 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
-	return c.JSON(http.StatusCreated, userCommand)
+	return c.JSON(http.StatusOK, userCommand)
 }
 
 func (a *userHandler) UpdateUser(c echo.Context) error {
@@ -129,7 +129,7 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
-	return c.JSON(http.StatusCreated, userCommand)
+	return c.JSON(http.StatusOK, userCommand)
 }
 func getStatusCode(err error) int {
 	if err == nil {
@@ -144,7 +144,7 @@ func getStatusCode(err error) int {
 	case models.ErrUnAuthorize:
 		return http.StatusUnauthorized
 	case models.ErrConflict:
-		return http.StatusConflict
+		return http.StatusBadRequest
 	case models.ErrBadParamInput:
 		return http.StatusBadRequest
 	default:
