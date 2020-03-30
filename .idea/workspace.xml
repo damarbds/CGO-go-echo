@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identityserver/delivery/http/is_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/identityserver/delivery/http/is_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/identityserver/usecase/identityserver_usecase.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/merchant/delivery/http/merchant_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/errors.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/delivery/http/user_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/delivery/http/user_handler.go" afterDir="false" />
-    </list>
+    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -119,22 +112,22 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="898" height="466" key="DebuggerActiveHint/0.0.1366.728@0.0.1366.728" timestamp="1585508180538" />
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585558662246">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585559176216">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
-    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585558662246">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585559176216" />
+    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585559176216">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
-    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585558662246">
+    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585559176216" />
+    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585559176216">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
-    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585558662246">
+    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585559176216" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585559176216">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585558662246" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585559176216" />
     <state width="1323" height="201" key="GridCell.Tab.1.bottom" timestamp="1585541771321">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
