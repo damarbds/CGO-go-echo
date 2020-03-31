@@ -28,6 +28,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	//e.POST("/experiences", handler.Createexperience)
 	//e.PUT("/experiences/:id", handler.Updateexperience)
 	e.GET("service/experience/:id", handler.GetByID)
+	e.GET("service/experience/search", handler.SearchExp)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
 
@@ -58,6 +59,23 @@ func (a *experienceHandler) GetByID(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, art)
 }
+
+func (a *experienceHandler) SearchExp(c echo.Context) error {
+	harborID := c.QueryParam("harbor_id")
+	cityID := c.QueryParam("city_id")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	searchResult, err := a.experienceUsecase.SearchExp(ctx, harborID, cityID)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, searchResult)
+}
+
 func getStatusCode(err error) int {
 	if err == nil {
 		return http.StatusOK
