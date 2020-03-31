@@ -10,12 +10,13 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
+	_echoMiddleware "github.com/labstack/echo/middleware"
 
 	_articleHttpDeliver "github.com/bxcodec/go-clean-arch/article/delivery/http"
 	_articleRepo "github.com/bxcodec/go-clean-arch/article/repository"
 	_articleUcase "github.com/bxcodec/go-clean-arch/article/usecase"
 	_authorRepo "github.com/bxcodec/go-clean-arch/author/repository"
-	"github.com/bxcodec/go-clean-arch/middleware"
+	//"github.com/bxcodec/go-clean-arch/middleware"
 	_isHttpDeliver "github.com/identityserver/delivery/http"
 	_isUcase "github.com/identityserver/usecase"
 	_merchantHttpDeliver "github.com/merchant/delivery/http"
@@ -53,6 +54,8 @@ func main() {
 	dbName := "cgo_indonesia"
 	baseUrlis := "https://identity-server-cgo-indonesia.azurewebsites.net"
 	basicAuth := "cm9jbGllbnQ6c2VjcmV0"
+	accountStorage := "cgostorage"
+	accessKeyStorage := "OwvEOlzf6e7QwVoV0H75GuSZHpqHxwhYnYL9QbpVPgBRJn+26K26aRJxtZn7Ip5AhaiIkw9kH11xrZSscavXfQ=="
 	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
 	val := url.Values{}
 	val.Add("parseTime", "1")
@@ -76,8 +79,15 @@ func main() {
 	}()
 
 	e := echo.New()
-	middL := middleware.InitMiddleware()
-	e.Use(middL.CORS)
+	//middL := middleware.InitMiddleware()
+
+	//e.Use(middL.CORS)
+	e.Use(_echoMiddleware.CORSWithConfig(_echoMiddleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowMethods: []string{"GET", "POST","PUT","DELETE","OPTIONS"},
+	}))
+	//e.Use(_echoMiddleware.CORS())
 
 	merchantRepo := _merchantRepo.NewmerchantRepository(dbConn)
 	userRepo 	:= _userRepo.NewuserRepository(dbConn)
@@ -86,7 +96,7 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
-	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth)
+	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth,accountStorage,accessKeyStorage)
 	userUsecase := _userUcase.NewuserUsecase(userRepo,isUsecase,timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)

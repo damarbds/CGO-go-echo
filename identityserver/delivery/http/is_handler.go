@@ -20,14 +20,14 @@ type ResponseError struct {
 // isHandler  represent the httphandler for is
 type isHandler struct {
 	merchantUsecase merchant.Usecase
-	userUsecase 	user.Usecase
+	userUsecase     user.Usecase
 }
 
 // NewisHandler will initialize the iss/ resources endpoint
-func NewisHandler(e *echo.Echo, m merchant.Usecase,u user.Usecase) {
+func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase) {
 	handler := &isHandler{
-		merchantUsecase:m,
-		userUsecase:u,
+		merchantUsecase: m,
+		userUsecase:     u,
 	}
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
@@ -57,7 +57,7 @@ func (a *isHandler) Login(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		responseToken = token
-	}else if isLogin.Type == "merchant" {
+	} else if isLogin.Type == "merchant" {
 
 		token, err := a.merchantUsecase.Login(ctx, &isLogin)
 
@@ -65,22 +65,24 @@ func (a *isHandler) Login(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		responseToken = token
-	}else {
-		return c.JSON(http.StatusBadRequest,"Bad Request")
+	} else {
+		return c.JSON(http.StatusBadRequest, "Bad Request")
 	}
 
 	return c.JSON(http.StatusOK, responseToken)
 }
 
-func (a *isHandler) GetInfo(c echo.Context) error {
 
+func (a *isHandler) GetInfo(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	token := c.Request().Header.Get("Authorization")
 	typeUser := c.QueryParam("type")
-	if typeUser == "user"{
+	if typeUser == "user" {
 		response, err := a.userUsecase.GetUserInfo(ctx, token)
 
 		if err != nil {
@@ -88,18 +90,18 @@ func (a *isHandler) GetInfo(c echo.Context) error {
 		}
 
 		return c.JSON(http.StatusOK, response)
-	} else if typeUser == "merchant"{
+	} else if typeUser == "merchant" {
 		response, err := a.merchantUsecase.GetMerchantInfo(ctx, token)
 
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, response)
-	}else {
-		return c.JSON(http.StatusBadRequest,"Bad Request")
+	} else {
+		return c.JSON(http.StatusBadRequest, "Bad Request")
 	}
 
-	return c.JSON(http.StatusBadRequest,"Bad Request")
+	return c.JSON(http.StatusBadRequest, "Bad Request")
 }
 
 func getStatusCode(err error) int {
@@ -119,7 +121,7 @@ func getStatusCode(err error) int {
 	case models.ErrBadParamInput:
 		return http.StatusBadRequest
 	case models.ErrUsernamePassword:
-		return http.StatusBadRequest
+		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError
 	}
