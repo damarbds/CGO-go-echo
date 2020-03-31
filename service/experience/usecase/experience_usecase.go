@@ -5,28 +5,97 @@ import (
 	"encoding/json"
 	"github.com/service/cpc"
 	"github.com/service/harbors"
+	"github.com/service/reviews"
 	"time"
 
 	"github.com/models"
+	payment "github.com/service/exp_payment"
 	"github.com/service/experience"
 )
 
 type experienceUsecase struct {
-	experienceRepo   experience.Repository
-	harborsRepo 	harbors.Repository
-	cpcRepo 		cpc.Repository
-	contextTimeout   time.Duration
+	experienceRepo experience.Repository
+	harborsRepo    harbors.Repository
+	cpcRepo        cpc.Repository
+	paymentRepo    payment.Repository
+	reviewsRepo reviews.Repository
+	contextTimeout time.Duration
 }
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
-func NewexperienceUsecase(a experience.Repository, h harbors.Repository,c cpc.Repository,timeout time.Duration) experience.Usecase {
+func NewexperienceUsecase(
+	a experience.Repository,
+	h harbors.Repository,
+	c cpc.Repository,
+	p payment.Repository,
+	r reviews.Repository,
+	timeout time.Duration,
+) experience.Usecase {
 	return &experienceUsecase{
 		experienceRepo:   a,
 		harborsRepo:	h,
 		cpcRepo:	c,
+		paymentRepo: p,
+		reviewsRepo: r,
 		contextTimeout:   timeout,
 	}
 }
+
+func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	expList, err := m.experienceRepo.SearchExp(ctx, harborID, cityID)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*models.ExpSearchObject, len(expList))
+	for i, exp := range expList {
+		var	expType []string
+		if errUnmarshal := json.Unmarshal([]byte(exp.ExpType), &expType); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+
+		expPayment, err := m.paymentRepo.GetByExpID(ctx, exp.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		var currency string
+		if expPayment.Currency == 1 {
+			currency = "USD"
+		} else {
+			currency = "IDR"
+		}
+
+		var priceItemType string
+		if expPayment.PriceItemType == 1 {
+			priceItemType = "Per Pax"
+		} else {
+			priceItemType = "Per Trip"
+		}
+
+		countRating, err := m.reviewsRepo.CountRating(ctx, exp.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		results[i] = &models.ExpSearchObject{
+			Id:          exp.Id,
+			ExpTitle:    exp.ExpTitle,
+			ExpType:     expType,
+			Rating:      exp.Rating,
+			CountRating: countRating,
+			Currency:    currency,
+			Price:       expPayment.Price,
+			PaymentType: priceItemType,
+		}
+	}
+
+	return results, nil
+}
+
 func (m experienceUsecase)GetByID(c context.Context, id string) (*models.ExperienceDto, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
