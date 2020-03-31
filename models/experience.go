@@ -12,13 +12,14 @@ type Experience struct {
 	DeletedDate          *time.Time `json:"deleted_date"`
 	IsDeleted            int       `json:"is_deleted" validate:"required"`
 	IsActive             int       `json:"is_active" validate:"required"`
-	ExpTile				 string 	`json:"exp_tile"`
+	ExpTitle				 string 	`json:"exp_title"`
 	ExpType				 string		`json:"exp_type"`
 	ExpTripType			 string		`json:"exp_trip_type"`
 	ExpBookingType		 string		`json:"exp_booking_type"`
 	ExpDesc				 string		`json:"exp_desc"`
 	ExpMaxGuest			 int		 `json:"exp_max_guest"`
 	ExpPickupPlace		string		`json:"exp_pickup_place"`
+	ExpPickupTime		time.Time `json:"exp_pickup_time"`
 	ExpPickupPlaceLongitude	float64		`json:"exp_pickup_place_longitude"`
 	ExpPickupPlaceLatitude	float64		`json:"exp_pickup_place_latitude"`
 	ExpPickupPlaceMapsName string	`json:"exp_pickup_place_maps_name"`
@@ -34,7 +35,7 @@ type Experience struct {
 	ExpDuration			int `json:"exp_duration"`
 	MinimumBookingId 	string 	`json:"minimum_booking_id"`
 	MerchantId			string	`json:"merchant_id"`
-
+	HarborsId			string	`json:"harbors_id"`
 }
 
 

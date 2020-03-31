@@ -15,66 +15,46 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.ExperienceRules{}
-	error := db.AutoMigrate(&user)
-	if error != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_ExpRules",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	pointRules := model.PointRules{}
-	errorpointRules := db.AutoMigrate(&pointRules)
+	//user := model.Country{}
+	//error := db.AutoMigrate(&user)
+	//if error != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_table_Country",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	pointRules := model.Experience{}
+	errorpointRules := db.Model(&pointRules).AddForeignKey("harbors_id","harbors(id)","RESTRICT", "RESTRICT")
 	if errorpointRules != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table_pontRules",
+			DescMigration:"Add_ForegnKey_Harbors_Id_in_experience",
 			Date:  time.Now(),
 		}
 
 		db.Create(&migration)
 	}
-	facilities := model.Facilities{}
-	errorfacilities := db.AutoMigrate(&facilities)
-	if errorfacilities != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_facilities",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	exlusionService := model.ExclusionService{}
-	errorexlusionService := db.AutoMigrate(&exlusionService)
-	if errorexlusionService != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_exlusionService",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	experienceType := model.ExperienceType{}
-	errorexperienceType := db.AutoMigrate(&experienceType)
-	if errorexperienceType != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_experienceType",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	id_type := model.IdType{}
-	errorid_type := db.AutoMigrate(&id_type)
-	if errorid_type != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_id_type",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
+	//facilities := model.City{}
+	//errorfacilities := db.AutoMigrate(&facilities).AddForeignKey("province_id","provinces(id)","RESTRICT", "RESTRICT")
+	//if errorfacilities != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_table_City",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//exlusionService := model.Harbors{}
+	//errorexlusionService := db.Model(&exlusionService).AddForeignKey("city_id","cities(id)","RESTRICT", "RESTRICT")
+	//if errorexlusionService != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_table_Harbors",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
 	db.Close()
 
 }
