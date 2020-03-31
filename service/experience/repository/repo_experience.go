@@ -26,6 +26,67 @@ func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
 
+func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearch, error) {
+	query := `
+	SELECT
+		exp.id,
+		exp_title,
+		exp_type,
+		rating
+	FROM
+		experiences exp
+		JOIN harbors ON harbors.id = harbors_id
+		JOIN cities ON cities.id = harbors.city_id
+	WHERE
+		(harbors_id = ? OR harbors.city_id = ?)
+		AND exp.is_deleted = 0
+		AND exp.is_active = 1`
+
+	res, err := m.fetchSearchExp(ctx, query, harborID, cityID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string, args ...interface{}) ([]*models.ExpSearch, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ExpSearch, 0)
+	for rows.Next() {
+		t := new(models.ExpSearch)
+		err = rows.Scan(
+			&t.Id,
+			&t.ExpTitle,
+			&t.ExpType,
+			&t.Rating,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
 func (m *experienceRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Experience, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
