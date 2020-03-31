@@ -21,6 +21,7 @@ type harborsRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewharborsRepository will create an object that represent the article.Repository interface
 func NewharborsRepository(Conn *sql.DB) harbors.Repository {
 	return &harborsRepository{Conn}
@@ -70,6 +71,45 @@ func (m *harborsRepository) fetch(ctx context.Context, query string, args ...int
 	return result, nil
 }
 
+func (m *harborsRepository) fetchWithJoinCPC(ctx context.Context, query string, args ...interface{}) ([]*models.HarborsWCPC, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.HarborsWCPC, 0)
+	for rows.Next() {
+		t := new(models.HarborsWCPC)
+		err = rows.Scan(
+			&t.Id,
+			&t.HarborsName,
+			&t.HarborsLongitude,
+			&t.HarborsLatitude,
+			&t.HarborsImage,
+			&t.CityId,
+			&t.CityName,
+			&t.ProvinceName,
+			&t.CountryName,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
 func (m *harborsRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Harbors, string, error) {
 	query := `SELECT * FROM harbors WHERE created_at > ? ORDER BY created_at LIMIT ? `
 
@@ -90,8 +130,42 @@ func (m *harborsRepository) Fetch(ctx context.Context, cursor string, num int64)
 
 	return res, nextCursor, err
 }
+
+func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , size *int) ([]*models.HarborsWCPC, error) {
+
+	if page != nil && size != nil{
+		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.province_name,co.country_name from cgo_indonesia.harbors h
+			join cities c on h.city_id = c.id
+			join provinces p on c.province_id = p.id
+			join countries co on p.country_id = co.id
+			where h.is_active = 1 and h.is_deleted = 0
+            ORDER BY h.created_date desc LIMIT ? OFFSET ? `
+
+		res, err := m.fetchWithJoinCPC(ctx, query, page, size)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+
+	}else {
+		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.province_name,co.country_name from cgo_indonesia.harbors h
+			join cities c on h.city_id = c.id
+			join provinces p on c.province_id = p.id
+			join countries co on p.country_id = co.id
+			where h.is_active = 1 and h.is_deleted = 0`
+
+		res, err := m.fetchWithJoinCPC(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	}
+
+
+	return nil, nil
+}
 func (m *harborsRepository) GetByID(ctx context.Context, id string) (res *models.Harbors, err error) {
-	query := `SELECT * FROM harbors WHERE id = ?`
+	query := `SELECT * FROM harbors WHERE id = ? AND is_deleted = 0  AND is_active = 1`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {

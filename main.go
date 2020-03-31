@@ -16,20 +16,27 @@ import (
 	_articleRepo "github.com/bxcodec/go-clean-arch/article/repository"
 	_articleUcase "github.com/bxcodec/go-clean-arch/article/usecase"
 	_authorRepo "github.com/bxcodec/go-clean-arch/author/repository"
+
 	_cpcRepo "github.com/service/cpc/repository"
 	_expPhotosHttpDeliver "github.com/service/exp_photos/delivery/http"
 	_expPhotosRepo "github.com/service/exp_photos/repository"
 	_expPhotosUcase "github.com/service/exp_photos/usecase"
+
 	_experienceHttpDeliver "github.com/service/experience/delivery/http"
 	_experienceRepo "github.com/service/experience/repository"
 	_experienceUcase "github.com/service/experience/usecase"
+
 	_harborsRepo "github.com/service/harbors/Repository"
+	_harborsHttpDeliver "github.com/service/harbors/delivery/http"
+	_harborsUcase "github.com/service/harbors/usecase"
 	//"github.com/bxcodec/go-clean-arch/middleware"
 	_isHttpDeliver "github.com/auth/identityserver/delivery/http"
 	_isUcase "github.com/auth/identityserver/usecase"
+
 	_merchantHttpDeliver "github.com/auth/merchant/delivery/http"
 	_merchantRepo "github.com/auth/merchant/repository"
 	_merchantUcase "github.com/auth/merchant/usecase"
+
 	_userHttpDeliver "github.com/auth/user/delivery/http"
 	_userRepo "github.com/auth/user/repository"
 	_userUcase "github.com/auth/user/usecase"
@@ -107,6 +114,7 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo,timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(experienceRepo,harborsRepo,cpcRepo,timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth,accountStorage,accessKeyStorage)
@@ -114,6 +122,7 @@ func main() {
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 
+	_harborsHttpDeliver.NewharborsHandler(e,harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e,exp_photosUsecase)
 	_experienceHttpDeliver.NewexperienceHandler(e,experienceUsecase)
 	_isHttpDeliver.NewisHandler(e,merchantUsecase,userUsecase)
