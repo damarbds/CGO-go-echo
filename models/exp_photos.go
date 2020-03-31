@@ -16,3 +16,14 @@ type ExpPhotos struct {
 	ExpPhotoImage 		string		`json:"exp_photo_image"`
 	ExpId				string 		`json:"exp_id"`
 }
+
+type ExpPhotosDto struct {
+	Id                   string    `json:"id" validate:"required"`
+	ExpPhotoFolder		string		`json:"exp_photo_folder"`
+	ExpPhotoImage 		[]ExpPhotoImageObject		`json:"exp_photo_image"`
+	ExpId				string 		`json:"exp_id"`
+}
+type ExpPhotoImageObject struct {
+	Original		string 			`json:"original"`
+	Thumbnail		string			`json:"thumbnail"`
+}

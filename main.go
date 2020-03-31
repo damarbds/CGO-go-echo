@@ -16,6 +16,14 @@ import (
 	_articleRepo "github.com/bxcodec/go-clean-arch/article/repository"
 	_articleUcase "github.com/bxcodec/go-clean-arch/article/usecase"
 	_authorRepo "github.com/bxcodec/go-clean-arch/author/repository"
+	_cpcRepo "github.com/cpc/repository"
+	_experienceHttpDeliver "github.com/experience/delivery/http"
+	_experienceRepo "github.com/experience/repository"
+	_experienceUcase "github.com/experience/usecase"
+	_harborsRepo "github.com/harbors/Repository"
+	_expPhotosHttpDeliver "github.com/exp_photos/delivery/http"
+	_expPhotosRepo "github.com/exp_photos/repository"
+	_expPhotosUcase "github.com/exp_photos/usecase"
 	//"github.com/bxcodec/go-clean-arch/middleware"
 	_isHttpDeliver "github.com/identityserver/delivery/http"
 	_isUcase "github.com/identityserver/usecase"
@@ -88,7 +96,10 @@ func main() {
 		AllowMethods: []string{"GET", "POST","PUT","DELETE","OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
-
+	exp_photos := _expPhotosRepo.Newexp_photosRepository(dbConn)
+	harborsRepo := _harborsRepo.NewharborsRepository(dbConn)
+	cpcRepo := _cpcRepo.NewcpcRepository(dbConn)
+	experienceRepo := _experienceRepo.NewexperienceRepository(dbConn)
 	merchantRepo := _merchantRepo.NewmerchantRepository(dbConn)
 	userRepo 	:= _userRepo.NewuserRepository(dbConn)
 	authorRepo := _authorRepo.NewMysqlAuthorRepository(dbConn)
@@ -96,11 +107,15 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos,timeoutContext)
+	experienceUsecase := _experienceUcase.NewexperienceUsecase(experienceRepo,harborsRepo,cpcRepo,timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth,accountStorage,accessKeyStorage)
 	userUsecase := _userUcase.NewuserUsecase(userRepo,isUsecase,timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 
+	_expPhotosHttpDeliver.Newexp_photosHandler(e,exp_photosUsecase)
+	_experienceHttpDeliver.NewexperienceHandler(e,experienceUsecase)
 	_isHttpDeliver.NewisHandler(e,merchantUsecase,userUsecase)
 	_userHttpDeliver.NewuserHandler(e,userUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
