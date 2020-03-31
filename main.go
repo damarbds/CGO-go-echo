@@ -26,7 +26,7 @@ import (
 	_experienceRepo "github.com/service/experience/repository"
 	_experienceUcase "github.com/service/experience/usecase"
 
-	_harborsRepo "github.com/service/harbors/Repository"
+	_harborsRepo "github.com/service/harbors/repository"
 	_harborsHttpDeliver "github.com/service/harbors/delivery/http"
 	_harborsUcase "github.com/service/harbors/usecase"
 	//"github.com/bxcodec/go-clean-arch/middleware"

@@ -6,7 +6,7 @@ require (
 	github.com/Azure/azure-pipeline-go v0.2.2 // indirect
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/bxcodec/faker v1.4.2
+	github.com/bxcodec/faker v2.0.1+incompatible
 	github.com/bxcodec/go-clean-arch v2.0.1+incompatible
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
