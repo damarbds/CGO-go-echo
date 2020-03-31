@@ -19,7 +19,7 @@ type Experience struct {
 	ExpDesc				 string		`json:"exp_desc"`
 	ExpMaxGuest			 int		 `json:"exp_max_guest"`
 	ExpPickupPlace		string		`json:"exp_pickup_place"`
-	ExpPickupTime		time.Time `json:"exp_pickup_time"`
+	ExpPickupTime		time.Duration `json:"exp_pickup_time"`
 	ExpPickupPlaceLongitude	float64		`json:"exp_pickup_place_longitude"`
 	ExpPickupPlaceLatitude	float64		`json:"exp_pickup_place_latitude"`
 	ExpPickupPlaceMapsName string	`json:"exp_pickup_place_maps_name"`
@@ -32,6 +32,7 @@ type Experience struct {
 	ExpLocationLatitude		float64		`json:"exp_location_latitude"`
 	ExpLocationLongitude	float64		`json:"exp_location_longitude"`
 	ExpLocationName		string		`json:"exp_location_name"`
+	ExpCoverPhoto		string		`json:"exp_cover_photo"`
 	ExpDuration			int `json:"exp_duration"`
 	MinimumBookingId 	string 	`json:"minimum_booking_id"`
 	MerchantId			string	`json:"merchant_id"`

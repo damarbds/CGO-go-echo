@@ -14,5 +14,6 @@ type ExpAvailability struct {
 	IsActive             int       `json:"is_active" validate:"required"`
 	ExpAvailabilityMonth	string		`json:"exp_availability_month"`
 	ExpAvailabilityDate		string	`json:"exp_availability_date"`
+	ExpAvailabilityYear	 int		`json:"exp_availability_year"`
 	ExpId				string		`json:"exp_id"`
 }

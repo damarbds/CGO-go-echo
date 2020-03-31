@@ -25,21 +25,21 @@ func main() {
 	//
 	//	db.Create(&migration)
 	//}
-	pointRules := model.Experience{}
-	errorpointRules := db.Model(&pointRules).AddForeignKey("harbors_id","harbors(id)","RESTRICT", "RESTRICT")
+	pointRules := model.UserPreferenceExp{}
+	errorpointRules := db.AutoMigrate(&pointRules).AddForeignKey("harbors_id","harbors(id)","RESTRICT", "RESTRICT")
 	if errorpointRules != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_ForegnKey_Harbors_Id_in_experience",
+			DescMigration:"Add_table_User_PreferenceExp",
 			Date:  time.Now(),
 		}
 
 		db.Create(&migration)
 	}
-	//facilities := model.City{}
-	//errorfacilities := db.AutoMigrate(&facilities).AddForeignKey("province_id","provinces(id)","RESTRICT", "RESTRICT")
+	//facilities := model.UserPreferenceTrans{}
+	//errorfacilities := db.AutoMigrate(&facilities).AddForeignKey("harbors_id","harbors(id)","RESTRICT", "RESTRICT")
 	//if errorfacilities != nil{
 	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_table_City",
+	//		DescMigration:"Add_table_User_PreferenceTrans",
 	//		Date:  time.Now(),
 	//	}
 	//
