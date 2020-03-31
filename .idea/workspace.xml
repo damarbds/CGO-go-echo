@@ -174,15 +174,9 @@
     <state width="1323" height="201" key="GridCell.Tab.1.right" timestamp="1585668600690">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-<<<<<<< Updated upstream
-    <state width="1323" height="201" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1585668600690" />
-    <state x="184" y="6" key="SettingsEditor" timestamp="1585412485451">
-      <screen x="0" y="0" width="1366" height="728" />
-=======
     <state width="1323" height="201" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1585652314825" />
     <state x="194" y="7" key="SettingsEditor" timestamp="1585663400909">
       <screen x="0" y="0" width="1440" height="900" />
->>>>>>> Stashed changes
     </state>
     <state x="184" y="6" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1585412485451" />
     <state x="194" y="7" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1585663400909" />
