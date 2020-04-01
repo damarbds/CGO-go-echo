@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="" />
+
+    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/experience_type.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/experience_type.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/exp_types/repository/repo_exp_types.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/exp_types/repository/repo_exp_types.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -167,12 +172,17 @@
     <state width="691" height="372" key="XDebugger.FullValuePopup" timestamp="1585765615409">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
+<<<<<<< HEAD
     <state width="691" height="372" key="XDebugger.FullValuePopup/0.0.1366.728@0.0.1366.728" timestamp="1585765615409" />
     <state x="365" y="61" width="709" height="839" key="search.everywhere.popup" timestamp="1585674383721">
+=======
+    <state width="691" height="372" key="XDebugger.FullValuePopup/0.0.1366.728@0.0.1366.728" timestamp="1585595574427" />
+    <state x="365" y="61" width="709" height="839" key="search.everywhere.popup" timestamp="1585732343261">
+>>>>>>> ac93eeeb4739d8b4d5ffed9eb15f771ef280749b
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="346" y="49" width="672" height="678" key="search.everywhere.popup/0.0.1366.728@0.0.1366.728" timestamp="1585474398391" />
-    <state x="365" y="61" width="709" height="839" key="search.everywhere.popup/0.0.1440.900@0.0.1440.900" timestamp="1585674383721" />
+    <state x="365" y="61" width="709" height="839" key="search.everywhere.popup/0.0.1440.900@0.0.1440.900" timestamp="1585732343261" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

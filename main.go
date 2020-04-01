@@ -53,6 +53,10 @@ import (
 	_userRepo "github.com/auth/user/repository"
 	_userUcase "github.com/auth/user/usecase"
 	_paymentRepo "github.com/service/exp_payment/repository"
+
+	_typesRepo "github.com/service/exp_types/repository"
+	_inspirationRepo "github.com/service/exp_inspiration/repository"
+
 )
 
 // func init() {
@@ -127,7 +131,12 @@ func main() {
 	ar := _articleRepo.NewMysqlArticleRepository(dbConn)
 	paymentRepo := _paymentRepo.NewExpPaymentRepository(dbConn)
 	reviewsRepo := _reviewsRepo.NewReviewRepository(dbConn)
+<<<<<<< HEAD
 	promoRepo := _promoRepo.NewpromoRepository(dbConn)
+=======
+	typesRepo := _typesRepo.NewExpTypeRepository(dbConn)
+	inspirationRepo := _inspirationRepo.NewExpInspirationRepository(dbConn)
+>>>>>>> ac93eeeb4739d8b4d5ffed9eb15f771ef280749b
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -136,7 +145,16 @@ func main() {
 	promoUsecase := _promoUcase.NewArticleUsecase(promoRepo,timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo,timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos,timeoutContext)
-	experienceUsecase := _experienceUcase.NewexperienceUsecase(experienceRepo,harborsRepo,cpcRepo,paymentRepo,reviewsRepo,timeoutContext)
+	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		experienceRepo,
+		harborsRepo,
+		cpcRepo,
+		paymentRepo,
+		reviewsRepo,
+		typesRepo,
+		inspirationRepo,
+		timeoutContext,
+	)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth,accountStorage,accessKeyStorage)
 	userUsecase := _userUcase.NewuserUsecase(userRepo,isUsecase,timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)

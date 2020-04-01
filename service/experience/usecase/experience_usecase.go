@@ -12,6 +12,8 @@ import (
 
 	"github.com/models"
 	payment "github.com/service/exp_payment"
+	types "github.com/service/exp_types"
+	inspiration "github.com/service/exp_inspiration"
 	"github.com/service/experience"
 )
 
@@ -20,7 +22,9 @@ type experienceUsecase struct {
 	harborsRepo    harbors.Repository
 	cpcRepo        cpc.Repository
 	paymentRepo    payment.Repository
-	reviewsRepo    reviews.Repository
+	reviewsRepo reviews.Repository
+	typesRepo types.Repository
+	inspirationRepo inspiration.Repository
 	contextTimeout time.Duration
 }
 
@@ -32,6 +36,8 @@ func NewexperienceUsecase(
 	c cpc.Repository,
 	p payment.Repository,
 	r reviews.Repository,
+	t types.Repository,
+	i inspiration.Repository,
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
@@ -40,10 +46,13 @@ func NewexperienceUsecase(
 		cpcRepo:	c,
 		paymentRepo: p,
 		reviewsRepo: r,
+		typesRepo: t,
+		inspirationRepo: i,
 		contextTimeout:   timeout,
 	}
 }
 
+<<<<<<< HEAD
 func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *int,size *int) ([]*models.ExpUserDiscoverPreferenceDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -250,6 +259,32 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 	return results, nil
 
 }
+=======
+func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	results, err := m.inspirationRepo.GetExpInspirations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (m experienceUsecase) GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	results, err := m.typesRepo.GetExpTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+>>>>>>> ac93eeeb4739d8b4d5ffed9eb15f771ef280749b
 func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
