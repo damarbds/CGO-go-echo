@@ -26,8 +26,8 @@ import (
 	_experienceRepo "github.com/service/experience/repository"
 	_experienceUcase "github.com/service/experience/usecase"
 
-	_harborsRepo "github.com/service/harbors/repository"
 	_harborsHttpDeliver "github.com/service/harbors/delivery/http"
+	_harborsRepo "github.com/service/harbors/repository"
 	_harborsUcase "github.com/service/harbors/usecase"
 	//"github.com/bxcodec/go-clean-arch/middleware"
 	_isHttpDeliver "github.com/auth/identityserver/delivery/http"
@@ -36,6 +36,10 @@ import (
 	_merchantHttpDeliver "github.com/auth/merchant/delivery/http"
 	_merchantRepo "github.com/auth/merchant/repository"
 	_merchantUcase "github.com/auth/merchant/usecase"
+
+	_promoHttpDeliver "github.com/service/promo/delivery/http"
+	_promoRepo "github.com/service/promo/repository"
+	_promoUcase "github.com/service/promo/usecase"
 
 	_userHttpDeliver "github.com/auth/user/delivery/http"
 	_userRepo "github.com/auth/user/repository"
@@ -115,9 +119,11 @@ func main() {
 	ar := _articleRepo.NewMysqlArticleRepository(dbConn)
 	paymentRepo := _paymentRepo.NewExpPaymentRepository(dbConn)
 	reviewsRepo := _reviewsRepo.NewReviewRepository(dbConn)
+	promoRepo := _promoRepo.NewpromoRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	promoUsecase := _promoUcase.NewArticleUsecase(promoRepo,timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo,timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(experienceRepo,harborsRepo,cpcRepo,paymentRepo,reviewsRepo,timeoutContext)
@@ -133,6 +139,7 @@ func main() {
 	_userHttpDeliver.NewuserHandler(e,userUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
+	_promoHttpDeliver.NewpromoHandler(e,promoUsecase)
 
 	log.Fatal(e.Start(":9090"))
 }

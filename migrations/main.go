@@ -25,11 +25,11 @@ func main() {
 	//
 	//	db.Create(&migration)
 	//}
-	pointRules := model.Promo{}
-	errorpointRules := db.AutoMigrate(&pointRules)
+	pointRules := model.FilterActivityType{}
+	errorpointRules := db.Model(&pointRules).AddForeignKey("exp_type_id","experience_types(id)","RESTRICT", "RESTRICT")
 	if errorpointRules != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table_Promo",
+			DescMigration:"Add_table_activity_type",
 			Date:  time.Now(),
 		}
 

@@ -21,6 +21,7 @@ type experienceRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewexperienceRepository will create an object that represent the article.Repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
@@ -51,6 +52,75 @@ func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID s
 	}
 
 	return res, nil
+}
+
+
+
+func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, query string, args ...interface{}) ([]*models.ExpUserDiscoverPreference, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ExpUserDiscoverPreference, 0)
+	for rows.Next() {
+		t := new(models.ExpUserDiscoverPreference)
+		err = rows.Scan(
+			&t.CityId,
+			&t.CityName,
+			&t.CityDesc,
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.ExpTitle,
+			&t.ExpType,
+			&t.ExpTripType,
+			&t.ExpBookingType,
+			&t.ExpDesc,
+			&t.ExpMaxGuest,
+			&t.ExpPickupPlace,
+			&t.ExpPickupTime,
+			&t.ExpPickupPlaceLongitude,
+			&t.ExpPickupPlaceLatitude,
+			&t.ExpPickupPlaceMapsName,
+			&t.ExpInternary,
+			&t.ExpFacilities,
+			&t.ExpInclusion,
+			&t.ExpRules,
+			&t.Status,
+			&t.Rating,
+			&t.ExpLocationLatitude,
+			&t.ExpLocationLongitude,
+			&t.ExpLocationName,
+			&t.ExpCoverPhoto,
+			&t.ExpDuration,
+			&t.MinimumBookingId,
+			&t.MerchantId,
+			&t.HarborsId,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
 }
 
 func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string, args ...interface{}) ([]*models.ExpSearch, error) {
@@ -151,6 +221,47 @@ func (m *experienceRepository) fetch(ctx context.Context, query string, args ...
 	return result, nil
 }
 
+func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context,page *int,size *int) ([]*models.ExpUserDiscoverPreference, error) {
+
+	if page != nil && size != nil{
+		query := `select c.city_id, c.city_name, city.city_desc,a.* from cgo_indonesia.experiences a
+			join cgo_indonesia.harbors b on b.id = a.harbors_id
+			join 
+			(
+				select c.id as city_id, c.city_name as city_name from cgo_indonesia.user_preference_exps upe
+				join cgo_indonesia.harbors h on h.id = upe.harbors_id
+				join cgo_indonesia.cities c on c.id = h.city_id
+				where upe.is_active = 1 and upe.is_deleted = 0
+				order by upe.amount desc LIMIT ? OFFSET ? 
+			) c on c.city_id = b.city_id
+            join cgo_indonesia.cities city on city.id = c.city_id;`
+
+		res, err := m.fetchUserDiscoverPreference(ctx, query,page,size)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	}else {
+		query := `select c.city_id, c.city_name, city.city_desc,a.* from cgo_indonesia.experiences a
+			join cgo_indonesia.harbors b on b.id = a.harbors_id
+			join 
+			(
+				select c.id as city_id, c.city_name as city_name from cgo_indonesia.user_preference_exps upe
+				join cgo_indonesia.harbors h on h.id = upe.harbors_id
+				join cgo_indonesia.cities c on c.id = h.city_id
+				where upe.is_active = 1 and upe.is_deleted = 0
+				order by upe.amount desc  
+			) c on c.city_id = b.city_id
+            join cgo_indonesia.cities city on city.id = c.city_id;`
+
+		res, err := m.fetchUserDiscoverPreference(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	}
+
+}
 func (m *experienceRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Experience, string, error) {
 	query := `SELECT * FROM experiences WHERE created_at > ? ORDER BY created_at LIMIT ? `
 

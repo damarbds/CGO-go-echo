@@ -19,3 +19,12 @@ type Promo struct {
 	PromoType			int			`json:"promo_type"`
 	PromoImage 			string		`json:"promo_image"`
 }
+type PromoDto struct {
+	Id                   string    `json:"id" validate:"required"`
+	PromoCode			string		`json:"promo_code"`
+	PromoName 			string		`json:"promo_name"`
+	PromoDesc 			string		`json:"promo_desc"`
+	PromoValue 			float64		`json:"promo_value"`
+	PromoType			int			`json:"promo_type"`
+	PromoImage 			string		`json:"promo_image"`
+}
