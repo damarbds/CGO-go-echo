@@ -8,4 +8,6 @@ import (
 type Usecase interface {
 	GetByID(ctx context.Context, id string) (*models.ExperienceDto, error)
 	SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error)
+	GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error)
+	GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error)
 }

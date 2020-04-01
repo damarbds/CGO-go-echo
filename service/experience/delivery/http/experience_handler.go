@@ -29,6 +29,8 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	//e.PUT("/experiences/:id", handler.Updateexperience)
 	e.GET("service/experience/:id", handler.GetByID)
 	e.GET("service/experience/search", handler.SearchExp)
+	e.GET("service/experience/categories", handler.GetExpTypes)
+	e.GET("service/experience/inspirations", handler.GetExpInspirations)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
 
@@ -74,6 +76,32 @@ func (a *experienceHandler) SearchExp(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, searchResult)
+}
+
+func (a *experienceHandler) GetExpTypes(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	expTypeResults, err := a.experienceUsecase.GetExpTypes(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, expTypeResults)
+}
+
+func (a *experienceHandler) GetExpInspirations(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	expInspirationResults, err := a.experienceUsecase.GetExpInspirations(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, expInspirationResults)
 }
 
 func getStatusCode(err error) int {

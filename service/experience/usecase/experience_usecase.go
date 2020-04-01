@@ -10,6 +10,8 @@ import (
 
 	"github.com/models"
 	payment "github.com/service/exp_payment"
+	types "github.com/service/exp_types"
+	inspiration "github.com/service/exp_inspiration"
 	"github.com/service/experience"
 )
 
@@ -19,6 +21,8 @@ type experienceUsecase struct {
 	cpcRepo        cpc.Repository
 	paymentRepo    payment.Repository
 	reviewsRepo reviews.Repository
+	typesRepo types.Repository
+	inspirationRepo inspiration.Repository
 	contextTimeout time.Duration
 }
 
@@ -29,6 +33,8 @@ func NewexperienceUsecase(
 	c cpc.Repository,
 	p payment.Repository,
 	r reviews.Repository,
+	t types.Repository,
+	i inspiration.Repository,
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
@@ -37,8 +43,34 @@ func NewexperienceUsecase(
 		cpcRepo:	c,
 		paymentRepo: p,
 		reviewsRepo: r,
+		typesRepo: t,
+		inspirationRepo: i,
 		contextTimeout:   timeout,
 	}
+}
+
+func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	results, err := m.inspirationRepo.GetExpInspirations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (m experienceUsecase) GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	results, err := m.typesRepo.GetExpTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
 func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error) {
