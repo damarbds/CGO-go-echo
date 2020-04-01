@@ -30,6 +30,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	//e.PUT("/experiences/:id", handler.Updateexperience)
 	e.GET("service/experience/:id", handler.GetByID)
 	e.GET("service/experience/search", handler.SearchExp)
+	e.GET("service/experience/filter-search", handler.FilterSearchExp)
 	e.GET("service/experience/get-user-discover-preference", handler.GetUserDiscoverPreference)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
@@ -77,6 +78,30 @@ func (a *experienceHandler) SearchExp(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, searchResult)
 }
+func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
+	harborID := c.QueryParam("harbor_id")
+	cityID := c.QueryParam("city_id")
+	qtype := c.QueryParam("type")
+	guest := c.QueryParam("guest")
+	trip := c.QueryParam("trip")
+	bottomprice := c.QueryParam("bottomprice")
+	upprice := c.QueryParam("upprice")
+	startDate := c.QueryParam("startDate")
+	endDate := c.QueryParam("endDate")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+
+	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx,cityID ,harborID,qtype,startDate,endDate,guest,trip,bottomprice,upprice)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, searchResult)
+}
+
 func (a *experienceHandler) GetUserDiscoverPreference(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")

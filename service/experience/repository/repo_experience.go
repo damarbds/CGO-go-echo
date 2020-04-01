@@ -1,16 +1,16 @@
 package repository
 
 import (
-	"context"
-	"database/sql"
-	"encoding/base64"
+"context"
+"database/sql"
+"encoding/base64"
 
-	"time"
+"time"
 
-	"github.com/sirupsen/logrus"
+"github.com/sirupsen/logrus"
 
-	"github.com/models"
-	"github.com/service/experience"
+"github.com/models"
+"github.com/service/experience"
 )
 
 const (
@@ -22,11 +22,21 @@ type experienceRepository struct {
 }
 
 
+
 // NewexperienceRepository will create an object that represent the article.Repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
-
+func (m *experienceRepository) QueryFilterSearch(ctx context.Context, query string) ([]*models.ExpSearch, error) {
+	res, err := m.fetchSearchExp(ctx, query)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return res, nil
+}
 func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearch, error) {
 	query := `
 	SELECT
@@ -221,6 +231,57 @@ func (m *experienceRepository) fetch(ctx context.Context, query string, args ...
 	return result, nil
 }
 
+func (m *experienceRepository) GetIdByHarborsId(ctx context.Context, harborsId string) ([]*string, error) {
+	query := `select id FROM experiences where is_deleted = 0 AND is_active = 1 AND status = 2 AND harbors_id = ?`
+
+	rows, err := m.Conn.QueryContext(ctx, query, harborsId)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+	result := make([]*string, 0)
+	for rows.Next() {
+		t := new(string)
+		err = rows.Scan(
+			&t,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, err
+}
+
+func (m *experienceRepository) GetIdByCityId(ctx context.Context, cityId string) ([]*string, error) {
+	query := `select e.id from experiences e 
+			  join harbors h on h.id = e.harbors_id where e.is_active = 1 and e.is_deleted = 0 and
+              e.status = 2 and h.city_id = ?`
+
+	rows, err := m.Conn.QueryContext(ctx, query, cityId)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+	result := make([]*string, 0)
+	for rows.Next() {
+		t := new(string)
+		err = rows.Scan(
+			&t,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, err
+}
 func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context,page *int,size *int) ([]*models.ExpUserDiscoverPreference, error) {
 
 	if page != nil && size != nil{

@@ -11,6 +11,9 @@ type Repository interface {
 	GetByID(ctx context.Context, id string) (*models.Experience, error)
 	GetByExperienceEmail(ctx context.Context, userEmail string) (*models.Experience, error)
 	GetUserDiscoverPreference(ctx context.Context,page *int,size *int)([]*models.ExpUserDiscoverPreference,error)
+	GetIdByHarborsId(ctx context.Context, harborsId string) ([]*string, error)
+	GetIdByCityId(ctx context.Context, cityId string) ([]*string, error)
+	QueryFilterSearch(ctx context.Context,query string)([]*models.ExpSearch, error)
 	//Update(ctx context.Context, ar *models.Experience) error
 	//Insert(ctx context.Context, a *models.Experience) error
 	Delete(ctx context.Context, id string,deleted_by string) error
