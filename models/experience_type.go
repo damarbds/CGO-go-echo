@@ -13,4 +13,5 @@ type ExperienceType struct {
 	IsDeleted            int       `json:"is_deleted" validate:"required"`
 	IsActive             int       `json:"is_active" validate:"required"`
 	ExpTypeName			 string		`json:"exp_type_name"`
+	ExpTypeIcon 		string		`json:"exp_type_icon"`
 }

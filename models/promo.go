@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type ExperiencePayment struct {
+type Promo struct {
 	Id                   string    `json:"id" validate:"required"`
 	CreatedBy            string    `json:"created_by":"required"`
 	CreatedDate          time.Time `json:"created_date" validate:"required"`
@@ -12,10 +12,10 @@ type ExperiencePayment struct {
 	DeletedDate          *time.Time `json:"deleted_date"`
 	IsDeleted            int       `json:"is_deleted" validate:"required"`
 	IsActive             int       `json:"is_active" validate:"required"`
-	ExpPaymentTypeId		string		`json:"exp_payment_type_id"`
-	ExpId				string		`json:"exp_id"`
-	PriceItemType		int			`json:"price_item_type"`
-	Currency 			int			`json:"currency"`
-	Price 				float64		`json:"price"`
-	CustomPrice 		*float64		`json:"custom_price"`
+	PromoCode			string		`json:"promo_code"`
+	PromoName 			string		`json:"promo_name"`
+	PromoDesc 			string		`json:"promo_desc"`
+	PromoValue 			float64		`json:"promo_value"`
+	PromoType			int			`json:"promo_type"`
+	PromoImage 			string		`json:"promo_image"`
 }
