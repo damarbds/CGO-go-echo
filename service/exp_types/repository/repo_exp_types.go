@@ -13,7 +13,7 @@ type expTypeRepository struct {
 }
 
 // NewExpTypeRepository will create an object that represent the exp_payment.Repository interface
-func NewExpPaymentRepository(Conn *sql.DB) types.Repository {
+func NewExpTypeRepository(Conn *sql.DB) types.Repository {
 	return &expTypeRepository{Conn}
 }
 

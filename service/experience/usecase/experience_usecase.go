@@ -11,6 +11,7 @@ import (
 	"github.com/models"
 	payment "github.com/service/exp_payment"
 	types "github.com/service/exp_types"
+	inspiration "github.com/service/exp_inspiration"
 	"github.com/service/experience"
 )
 
@@ -21,6 +22,7 @@ type experienceUsecase struct {
 	paymentRepo    payment.Repository
 	reviewsRepo reviews.Repository
 	typesRepo types.Repository
+	inspirationRepo inspiration.Repository
 	contextTimeout time.Duration
 }
 
@@ -32,6 +34,7 @@ func NewexperienceUsecase(
 	p payment.Repository,
 	r reviews.Repository,
 	t types.Repository,
+	i inspiration.Repository,
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
@@ -41,8 +44,21 @@ func NewexperienceUsecase(
 		paymentRepo: p,
 		reviewsRepo: r,
 		typesRepo: t,
+		inspirationRepo: i,
 		contextTimeout:   timeout,
 	}
+}
+
+func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	results, err := m.inspirationRepo.GetExpInspirations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
 func (m experienceUsecase) GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error) {

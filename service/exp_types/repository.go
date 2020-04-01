@@ -2,9 +2,9 @@ package exp_types
 
 import (
 	"context"
-	model "github.com/models"
+	"github.com/models"
 )
 
 type Repository interface {
-	GetExpTypes(ctx context.Context) ([]*model.ExpTypeObject, error)
+	GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error)
 }

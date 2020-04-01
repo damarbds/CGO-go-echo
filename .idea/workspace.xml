@@ -2,15 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/service/exp_types/repository.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/exp_types/repository/repo_exp_types.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/exp_types/repository/repo_exp_types_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/exp_inspiration/repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/exp_inspiration/repository/repo_exp_inspiration.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/exp_inspiration/repository/repo_exp_inspiration_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/experience_type.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/experience_type.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/experience/delivery/http/experience_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/delivery/http/experience_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/experience/usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/usecase.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/exp_inspiration.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/exp_inspiration.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/exp_types/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/exp_types/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/exp_types/repository/repo_exp_types.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/exp_types/repository/repo_exp_types.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
