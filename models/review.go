@@ -16,3 +16,13 @@ type Review struct {
 	Desc         string     `json:"desc"`
 	ExpId        string     `json:"exp_id"`
 }
+type ReviewDto struct {
+	Name 		 string		`json:"name"`
+	Desc         string     `json:"desc"`
+	Values       int        `json:"values"`
+}
+type ReviewDtoObject struct {
+	Name 	string 		`json:"name"`
+	UserId 	string		`json:"user_id"`
+	Desc 	string		`json:"desc"`
+}

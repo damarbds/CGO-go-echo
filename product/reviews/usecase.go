@@ -6,5 +6,5 @@ import (
 )
 
 type Usecase interface {
-	GetReviewsByExpId(ctx context.Context,exp_id string) ([]*models.PromoDto, error)
+	GetReviewsByExpId(ctx context.Context,exp_id string) ([]*models.ReviewDto, error)
 }

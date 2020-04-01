@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"github.com/product/reviews"
 	"github.com/service/cpc"
 	"github.com/service/harbors"
-	"github.com/service/reviews"
 	"time"
 
 	"github.com/models"
@@ -18,7 +18,7 @@ type experienceUsecase struct {
 	harborsRepo    harbors.Repository
 	cpcRepo        cpc.Repository
 	paymentRepo    payment.Repository
-	reviewsRepo reviews.Repository
+	reviewsRepo    reviews.Repository
 	contextTimeout time.Duration
 }
 

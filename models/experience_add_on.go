@@ -18,3 +18,13 @@ type ExperienceAddOn struct {
 	Amount 				float64		`json:"amount"`
 	ExpId				string		`json:"exp_id"`
 }
+
+
+type ExperienceAddOnDto struct {
+	Id                   string    `json:"id" validate:"required"`
+	Name				string		`json:"name"`
+	Desc 				string		`json:"desc"`
+	Currency 			string			`json:"currency"`
+	Amount 				float64		`json:"amount"`
+	ExpId				string		`json:"exp_id"`
+}

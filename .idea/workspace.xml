@@ -2,29 +2,30 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/models/filter_activity_type.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/experience_add_ons/repository.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/experience_add_ons/repository/repo_experience_add_ons.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/experience_add_ons/usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/delivery/http/promo_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/delivery/http/promo_handler_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/repository/repo_promo.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/repository/repo_promo_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/repostiory.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/usecase/promo_usecase.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/promo/usecase/promo_usecase_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/reviews/usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/experience_add_ons/delivery/http/expExperienceAddOn_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/experience_add_ons/repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/experience_add_ons/repository/repo_experience_add_ons.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/experience_add_ons/usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/experience_add_ons/usecase/experience_add_ons_usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/experience_add_ons/usecase/experience_add_ons_usecase_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/reviews/delivery/http/reviews_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/reviews/delivery/http/reviews_handler_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/reviews/repository/repo_reviews_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/reviews/usecase/reviews_usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product/reviews/usecase/reviews_usecase_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/experience.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/experience.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/promo.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/promo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/experience/delivery/http/experience_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/delivery/http/experience_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/experience/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/repository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/experience/repository/repo_experience.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/repository/repo_experience.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/experience/usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/usecase.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/experience_add_on.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/experience_add_on.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/review.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/review.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/experience_add_ons/repository.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/experience_add_ons/repository/repo_experience_add_ons.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/experience_add_ons/usecase.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/reviews/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/product/reviews/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/reviews/repository/repo_reviews.go" beforeDir="false" afterPath="$PROJECT_DIR$/product/reviews/repository/repo_reviews.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/reviews/repository/repo_reviews_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/product/experience_add_ons/repository/repo_experience_add_ons_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/reviews/usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/product/reviews/usecase.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,14 +73,15 @@
     <property name="settings.editor.selected.configurable" value="configurable.group.build" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/service" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\radya\project\CGO-go-echo\merchant\user" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\radya\project\CGO-go-echo\product" />
+      <recent name="$PROJECT_DIR$/service" />
+    </key>
   </component>
-  <component name="RunManager" selected="Go Build.go build main.go (1)">
+  <component name="RunManager" selected="Go Build.go build main.go">
     <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="go-clean-arch-2.0.1" />
       <working_directory value="$PROJECT_DIR$" />
@@ -99,8 +101,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Build.go build main.go (1)" />
         <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build main.go (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -149,22 +151,22 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="898" height="466" key="DebuggerActiveHint/0.0.1366.728@0.0.1366.728" timestamp="1585667710713" />
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585735729910">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585749792433">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585735729910" />
-    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585735729910">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585749792433" />
+    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585749792433">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585735729910" />
-    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585735729909">
+    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585749792433" />
+    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585749792433">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585735729909" />
-    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585735729910">
+    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585749792433" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585749792433">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585735729910" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585749792433" />
     <state width="1323" height="201" key="GridCell.Tab.1.bottom" timestamp="1585731324694">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -328,6 +330,11 @@
           <url>file://$PROJECT_DIR$/service/experience/repository/repo_experience.go</url>
           <line>59</line>
           <option name="timeStamp" value="64" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/main.go</url>
+          <line>2</line>
+          <option name="timeStamp" value="65" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

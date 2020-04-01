@@ -41,11 +41,18 @@ import (
 	_promoRepo "github.com/service/promo/repository"
 	_promoUcase "github.com/service/promo/usecase"
 
+	_experienceAddOnHttpDeliver "github.com/product/experience_add_ons/delivery/http"
+	_experienceAddOnRepo "github.com/product/experience_add_ons/repository"
+	_experienceAddOnUcase "github.com/product/experience_add_ons/usecase"
+
+	_reviewsHttpDeliver "github.com/product/reviews/delivery/http"
+	_reviewsRepo "github.com/product/reviews/repository"
+	_reviewsUcase "github.com/product/reviews/usecase"
+
 	_userHttpDeliver "github.com/auth/user/delivery/http"
 	_userRepo "github.com/auth/user/repository"
 	_userUcase "github.com/auth/user/usecase"
 	_paymentRepo "github.com/service/exp_payment/repository"
-	_reviewsRepo "github.com/service/reviews/repository"
 )
 
 // func init() {
@@ -109,6 +116,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST","PUT","DELETE","OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	experienceAddOnRepo := _experienceAddOnRepo.NewexperienceRepository(dbConn)
 	exp_photos := _expPhotosRepo.Newexp_photosRepository(dbConn)
 	harborsRepo := _harborsRepo.NewharborsRepository(dbConn)
 	cpcRepo := _cpcRepo.NewcpcRepository(dbConn)
@@ -123,6 +131,8 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo,timeoutContext)
+	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo,timeoutContext)
 	promoUsecase := _promoUcase.NewArticleUsecase(promoRepo,timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo,timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos,timeoutContext)
@@ -132,6 +142,8 @@ func main() {
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 
+	_reviewsHttpDeliver.NewreviewsHandler(e,reivewsUsecase)
+	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e,experienceAddOnUsecase)
 	_harborsHttpDeliver.NewharborsHandler(e,harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e,exp_photosUsecase)
 	_experienceHttpDeliver.NewexperienceHandler(e,experienceUsecase)
