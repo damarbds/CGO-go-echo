@@ -25,11 +25,11 @@ func main() {
 	//
 	//	db.Create(&migration)
 	//}
-	pointRules := model.UserPreferenceExp{}
-	errorpointRules := db.AutoMigrate(&pointRules).AddForeignKey("harbors_id","harbors(id)","RESTRICT", "RESTRICT")
+	pointRules := model.Promo{}
+	errorpointRules := db.AutoMigrate(&pointRules)
 	if errorpointRules != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table_User_PreferenceExp",
+			DescMigration:"Add_table_Promo",
 			Date:  time.Now(),
 		}
 
