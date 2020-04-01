@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type ExperienceType struct {
 	Id           int        `json:"id" validate:"required"`

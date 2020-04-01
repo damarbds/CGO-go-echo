@@ -51,7 +51,16 @@ func (m *expTypeRepository) fetch(ctx context.Context, query string, args ...int
 }
 
 func (e expTypeRepository) GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error) {
-	query := `SELECT id as exp_type_id, exp_type_name, exp_type_icon FROM experience_types WHERE is_active = 1 and is_deleted = 0`
+	query := `
+	SELECT
+		id AS exp_type_id,
+		exp_type_name,
+		COALESCE(exp_type_icon,"") AS exp_type_icon
+	FROM
+		experience_types
+	WHERE
+		is_active = 1
+		AND is_deleted = 0`
 
 	list, err := e.fetch(ctx, query)
 	if err != nil {
