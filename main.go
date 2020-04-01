@@ -42,6 +42,7 @@ import (
 	_userUcase "github.com/auth/user/usecase"
 	_paymentRepo "github.com/service/exp_payment/repository"
 	_reviewsRepo "github.com/service/reviews/repository"
+	_typesRepo "github.com/service/exp_types/repository"
 )
 
 // func init() {
@@ -115,12 +116,21 @@ func main() {
 	ar := _articleRepo.NewMysqlArticleRepository(dbConn)
 	paymentRepo := _paymentRepo.NewExpPaymentRepository(dbConn)
 	reviewsRepo := _reviewsRepo.NewReviewRepository(dbConn)
+	typesRepo := _typesRepo.NewExpPaymentRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo,timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos,timeoutContext)
-	experienceUsecase := _experienceUcase.NewexperienceUsecase(experienceRepo,harborsRepo,cpcRepo,paymentRepo,reviewsRepo,timeoutContext)
+	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		experienceRepo,
+		harborsRepo,
+		cpcRepo,
+		paymentRepo,
+		reviewsRepo,
+		typesRepo,
+		timeoutContext,
+	)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth,accountStorage,accessKeyStorage)
 	userUsecase := _userUcase.NewuserUsecase(userRepo,isUsecase,timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
