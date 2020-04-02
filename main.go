@@ -170,7 +170,7 @@ func main() {
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 
-	_bookingExpHttpDeliver.Newbooking_expHandler(e,bookingExpUcase)
+	_bookingExpHttpDeliver.Newbooking_expHandler(e,bookingExpUcase,isUsecase)
 	_fAQHttpDeliver.NewfaqHandler(e,fAQUsecase)
 	_reviewsHttpDeliver.NewreviewsHandler(e, reivewsUsecase)
 	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e, experienceAddOnUsecase)

@@ -2,7 +2,6 @@ package identityserver
 
 import (
 	"github.com/models"
-	"os"
 )
 
 type Usecase interface {
@@ -10,5 +9,5 @@ type Usecase interface {
 	CreateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser,error)
 	GetUserInfo(token string) (*models.GetUserInfo, error)
 	GetToken(username string, password string) (*models.GetToken, error)
-	UploadFileToBlob(image string,file *os.File)(string,error)
+	UploadFileToBlob(image string,folder string)(string,error)
 }

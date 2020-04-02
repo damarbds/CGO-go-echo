@@ -1,16 +1,16 @@
 package repository
 
 import (
-"context"
-"database/sql"
-"encoding/base64"
+	"context"
+	"database/sql"
+	"encoding/base64"
 
-"time"
+	"time"
 
-"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
-"github.com/models"
-"github.com/service/experience"
+	"github.com/models"
+	"github.com/service/experience"
 )
 
 const (
@@ -20,7 +20,6 @@ const (
 type experienceRepository struct {
 	Conn *sql.DB
 }
-
 
 // NewexperienceRepository will create an object that represent the article.Repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
@@ -91,8 +90,6 @@ func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID s
 	return res, nil
 }
 
-
-
 func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, query string, args ...interface{}) ([]*models.ExpUserDiscoverPreference, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -114,6 +111,7 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 			&t.CityId,
 			&t.CityName,
 			&t.CityDesc,
+			&t.CityPhotos,
 			&t.Id,
 			&t.CreatedBy,
 			&t.CreatedDate,
@@ -309,9 +307,9 @@ func (m *experienceRepository) GetIdByCityId(ctx context.Context, cityId string)
 
 	return result, err
 }
-func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context,page *int,size *int) ([]*models.ExpUserDiscoverPreference, error) {
+func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreference, error) {
 
-	if page != nil && size != nil{
+	if page != nil && size != nil {
 		query := `select c.city_id, c.city_name, city.city_desc,city_photos,a.* from cgo_indonesia.experiences a
 			join cgo_indonesia.harbors b on b.id = a.harbors_id
 			join 
@@ -324,12 +322,12 @@ func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context,pag
 			) c on c.city_id = b.city_id
             join cgo_indonesia.cities city on city.id = c.city_id;`
 
-		res, err := m.fetchUserDiscoverPreference(ctx, query,page,size)
+		res, err := m.fetchUserDiscoverPreference(ctx, query, page, size)
 		if err != nil {
 			return nil, err
 		}
 		return res, err
-	}else {
+	} else {
 		query := `select c.city_id, c.city_name, city.city_desc,city.city_photos,a.* from cgo_indonesia.experiences a
 			join cgo_indonesia.harbors b on b.id = a.harbors_id
 			join 
@@ -401,6 +399,7 @@ func (m *experienceRepository) GetByExperienceEmail(ctx context.Context, experie
 	}
 	return
 }
+
 //func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience) error {
 //	query := `INSERT experiences SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , experience_name=? , experience_desc=? , experience_email=? ,balance=?`
 //	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -442,6 +441,7 @@ func (m *experienceRepository) Delete(ctx context.Context, id string, deleted_by
 	//a.Id = lastID
 	return nil
 }
+
 //func (m *experienceRepository) Update(ctx context.Context, ar *models.Experience) error {
 //	query := `UPDATE experiences set modified_by=?, modified_date=? , experience_name=? ,
 //				experience_desc=? , experience_email=? , balance=? WHERE id = ?`

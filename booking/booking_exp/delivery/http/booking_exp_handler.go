@@ -2,10 +2,14 @@ package http
 
 import (
 	"context"
+	"github.com/auth/identityserver"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	validator "gopkg.in/go-playground/validator.v9"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/booking/booking_exp"
 	"github.com/models"
@@ -19,12 +23,14 @@ type ResponseError struct {
 // booking_expHandler  represent the httphandler for booking_exp
 type booking_expHandler struct {
 	booking_expUsecase booking_exp.Usecase
+	isUsecase		identityserver.Usecase
 }
 
 // Newbooking_expHandler will initialize the booking_exps/ resources endpoint
-func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
+func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase,is identityserver.Usecase) {
 	handler := &booking_expHandler{
 		booking_expUsecase: us,
+		isUsecase:is,
 	}
 	e.POST("/booking-exp", handler.Createbooking_exp)
 	//e.PUT("/booking_exps/:id", handler.Updatebooking_exp)
@@ -41,13 +47,29 @@ func isRequestValid(m *models.NewBookingExpCommand) (bool, error) {
 
 // Store will store the booking_exp by given request body
 func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
+	filupload,image, _ := c.Request().FormFile("ticket_qr_code")
+	dir, err := os.Getwd()
+	if err != nil {
+		return models.ErrInternalServerError
+	}
+	fileLocation := filepath.Join(dir, "files", image.Filename)
+	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return models.ErrInternalServerError
+	}
+	defer targetFile.Close()
 
-	//name := c.FormValue("name")
-	//var booking_expCommand models.NewCommandbooking_exp
-	//err := c.Bind(&booking_expCommand)
-	//if err != nil {
-	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
-	//}
+	if _, err := io.Copy(targetFile, filupload); err != nil {
+		return models.ErrInternalServerError
+	}
+
+	//w.Write([]byte("done"))
+	imagePath, _ := a.isUsecase.UploadFileToBlob(fileLocation,"TicketBookingQRCode")
+	targetFile.Close()
+	errRemove := os.Remove(fileLocation)
+	if errRemove != nil {
+		return models.ErrInternalServerError
+	}
 	var bookingExpcommand models.NewBookingExpCommand
 	user_id := c.FormValue("user_id")
 	if user_id == "" {
@@ -61,7 +83,7 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 			UserId:        nil,
 			Status:        c.FormValue("status"),
 			TicketCode:    c.FormValue("ticket_code"),
-			TicketQRCode:  c.FormValue("ticket_qr_code"),
+			TicketQRCode:  imagePath,
 		}
 	}else {
 		bookingExpcommand = models.NewBookingExpCommand{
@@ -74,7 +96,7 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 			UserId:        &user_id,
 			Status:        c.FormValue("status"),
 			TicketCode:    c.FormValue("ticket_code"),
-			TicketQRCode:  c.FormValue("ticket_qr_code"),
+			TicketQRCode:  imagePath,
 		}
 	}
 

@@ -61,7 +61,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		UserId:        booking.UserId,
 		Status:        0,
 		TicketCode:    booking.TicketCode,
-		TicketQRCode:  "#",
+		TicketQRCode:  booking.TicketQRCode,
 	}
 	res,err := b.bookingExpRepo.Insert(ctx, &bookingExp)
 	if err != nil {

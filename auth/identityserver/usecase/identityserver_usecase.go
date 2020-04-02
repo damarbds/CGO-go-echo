@@ -11,10 +11,12 @@ import (
 	"golang.org/x/net/context"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
+	"strconv"
+	"time"
 )
 
 type identityserverUsecase struct {
@@ -34,8 +36,24 @@ func NewidentityserverUsecase(baseUrl string,basicAuth string,accountStorage str
 		accessKeyStorage:	accessKeyStorage,
 	}
 }
+func randomString() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return strconv.Itoa(r.Int())
+}
 
-func (m identityserverUsecase) UploadFileToBlob(image string,files *os.File) (string, error) {
+func handleErrors(err error) {
+	if err != nil {
+		if serr, ok := err.(azblob.StorageError); ok { // This error is a Service-specific
+			switch serr.ServiceCode() { // Compare serviceCode to ServiceCodeXxx constants
+			case azblob.ServiceCodeContainerAlreadyExists:
+				fmt.Println("Received 409. Container already exists")
+				return
+			}
+		}
+		log.Fatal(err)
+	}
+}
+func (m identityserverUsecase) UploadFileToBlob(image string,folder string) (string, error) {
 	// From the Azure portal, get your storage account name and key and set environment variables.
 	accountName, accountKey := m.accountStorage, m.accessKeyStorage
 	if len(accountName) == 0 || len(accountKey) == 0 {
@@ -59,45 +77,85 @@ func (m identityserverUsecase) UploadFileToBlob(image string,files *os.File) (st
 	// Create a ContainerURL object that wraps the container URL and a request
 	// pipeline to make requests.
 	containerURL := azblob.NewContainerURL(*URL, p)
-	ctx := context.Background()
+
+	// Create the container
+	fmt.Printf("Creating a container named %s\n", containerName)
+	ctx := context.Background() // This example uses a never-expiring context
+	//_, err = containerURL.Create(ctx, azblob.Metadata{}, azblob.PublicAccessNone)
+	//handleErrors(err)
+
 	// Create a file to test the upload and download.
 	fmt.Printf("Creating a dummy file to test the upload and download\n")
-	data := []byte(image)
-	fileName := image
-	err = ioutil.WriteFile(fileName, data, 0700)
-	if err != nil {
-		return "#",models.ErrBadParamInput
+
+	data ,erread:= ioutil.ReadFile(image)
+	if erread != nil {
+		return "",erread
 	}
+	fileName := randomString()
+	fileName = fileName + ".jpg"
+	err = ioutil.WriteFile(fileName, data, 0700)
+	handleErrors(err)
 
 	// Here's how to upload a blob.
-	blobURL := containerURL.NewBlockBlobURL(fileName)
-	//file, err := os.Open(fileName)
-	//if err != nil {
-	//	return "#",models.ErrBadParamInput
-	//}
+	folderPath := folder + "/"
+	blobURL := containerURL.NewBlockBlobURL(folderPath + fileName)
+	file, err := os.Open(fileName)
+	handleErrors(err)
 
-	dir, err := os.Getwd()
-	fileLocation := filepath.Join(dir, "files", fileName)
-	fmt.Println(fileLocation)
-	// You can use the low-level Upload (PutBlob) API to upload files. Low-level APIs are simple wrappers for the Azure Storage REST APIs.
-	// Note that Upload can upload up to 256MB data in one shot. Details: https://docs.microsoft.com/rest/api/storageservices/put-blob
-	// To upload more than 256MB, use StageBlock (PutBlock) and CommitBlockList (PutBlockList) functions.
+	// You can use the low-level PutBlob API to upload files. Low-level APIs are simple wrappers for the Azure Storage REST APIs.
+	// Note that PutBlob can upload up to 256MB data in one shot. Details: https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob
 	// Following is commented out intentionally because we will instead use UploadFileToBlockBlob API to upload the blob
-	// _, err = blobURL.Upload(ctx, file, azblob.BlobHTTPHeaders{ContentType: "text/plain"}, azblob.Metadata{}, azblob.BlobAccessConditions{})
+	// _, err = blobURL.PutBlob(ctx, file, azblob.BlobHTTPHeaders{}, azblob.Metadata{}, azblob.BlobAccessConditions{})
 	// handleErrors(err)
 
 	// The high-level API UploadFileToBlockBlob function uploads blocks in parallel for optimal performance, and can handle large files as well.
-	// This function calls StageBlock/CommitBlockList for files larger 256 MBs, and calls Upload for any file smaller
+	// This function calls PutBlock/PutBlockList for files larger 256 MBs, and calls PutBlob for any file smaller
 	fmt.Printf("Uploading the file with blob name: %s\n", fileName)
-	_, err = azblob.UploadFileToBlockBlob(ctx, files, blobURL, azblob.UploadToBlockBlobOptions{
-		BlobHTTPHeaders: azblob.BlobHTTPHeaders{
-			ContentType: "image/jpg",   //  Add any needed headers here
-		},
-	})
-	if err != nil {
-		return "#",models.ErrBadParamInput
-	}
-	return image,nil
+	_, err = azblob.UploadFileToBlockBlob(ctx, file, blobURL, azblob.UploadToBlockBlobOptions{
+		BlockSize:   4 * 1024 * 1024,
+		Parallelism: 16})
+	handleErrors(err)
+	//
+	//// List the container that we have created above
+	//fmt.Println("Listing the blobs in the container:")
+	//for marker := (azblob.Marker{}); marker.NotDone(); {
+	//	// Get a result segment starting with the blob indicated by the current Marker.
+	//	listBlob, err := containerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{})
+	//	handleErrors(err)
+	//
+	//	// ListBlobs returns the start of the next segment; you MUST use this to get
+	//	// the next segment (after processing the current result segment).
+	//	marker = listBlob.NextMarker
+	//
+	//	// Process the blobs returned in this result segment (if the segment is empty, the loop body won't execute)
+	//	for _, blobInfo := range listBlob.Segment.BlobItems {
+	//		fmt.Print("	Blob name: " + blobInfo.Name + "\n")
+	//	}
+	//}
+	//
+	//// Here's how to download the blob
+	//downloadResponse, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
+	//
+	//// NOTE: automatically retries are performed if the connection fails
+	//bodyStream := downloadResponse.Body(azblob.RetryReaderOptions{MaxRetryRequests: 20})
+	//
+	//// read the body into a buffer
+	//downloadedData := bytes.Buffer{}
+	//_, err = downloadedData.ReadFrom(bodyStream)
+	//handleErrors(err)
+	//
+	//// The downloaded blob data is in downloadData's buffer. :Let's print it
+	//fmt.Printf("Downloaded the blob: " + downloadedData.String())
+	//
+	//// Cleaning up the quick start by deleting the container and the file created locally
+	//fmt.Printf("Press enter key to delete the sample files, example container, and exit the application.\n")
+	//bufio.NewReader(os.Stdin).ReadBytes('\n')
+	//fmt.Printf("Cleaning up.\n")
+	//containerURL.Delete(ctx, azblob.ContainerAccessConditions{})
+	file.Close()
+	os.Remove(fileName)
+	//os.Remove(image)
+	return blobURL.String(),err
 }
 func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, error) {
 
