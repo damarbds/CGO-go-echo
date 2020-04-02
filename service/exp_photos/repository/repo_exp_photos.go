@@ -115,7 +115,7 @@ func (m *exp_photosRepository) GetByExperienceID(ctx context.Context, id string)
 	if len(list) > 0 {
 		res = list
 	} else {
-		return nil, models.ErrNotFound
+		return nil, nil
 	}
 	return
 }

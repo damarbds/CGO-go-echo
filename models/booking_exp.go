@@ -17,8 +17,21 @@ type BookingExp struct {
 	BookedBy			string		`json:"booked_by"`
 	BookedByEmail		string		`json:"booked_by_email"`
 	BookingDate 		time.Time	`json:"booking_date"`
-	UserId				string		`json:"user_id"`
+	UserId				*string		`json:"user_id"`
 	Status 				int			`json:"status"`
+	TicketCode			string		`json:"ticket_code"`
+	TicketQRCode		string		`json:"ticket_qr_code"`
+}
+
+type NewBookingExpCommand struct {
+	Id                  string    `json:"id"`
+	ExpId				string		`json:"exp_id"`
+	GuestDesc			string		`json:"guest_desc"`
+	BookedBy			string		`json:"booked_by"`
+	BookedByEmail		string		`json:"booked_by_email"`
+	BookingDate 		string	`json:"booking_date"`
+	UserId				*string		`json:"user_id"`
+	Status 				string			`json:"status"`
 	TicketCode			string		`json:"ticket_code"`
 	TicketQRCode		string		`json:"ticket_qr_code"`
 }

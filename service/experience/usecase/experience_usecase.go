@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/product/reviews"
 	"github.com/service/cpc"
+	"github.com/service/exp_photos"
 	"github.com/service/harbors"
 	"strconv"
 	"time"
@@ -25,12 +26,14 @@ type experienceUsecase struct {
 	reviewsRepo reviews.Repository
 	typesRepo types.Repository
 	inspirationRepo inspiration.Repository
+	expPhotos 		exp_photos.Repository
 	contextTimeout time.Duration
 }
 
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
+	ps exp_photos.Repository,
 	a experience.Repository,
 	h harbors.Repository,
 	c cpc.Repository,
@@ -49,6 +52,7 @@ func NewexperienceUsecase(
 		typesRepo: t,
 		inspirationRepo: i,
 		contextTimeout:   timeout,
+		expPhotos : ps,
 	}
 }
 
@@ -72,6 +76,24 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 		if err != nil {
 			return nil, err
 		}
+		expPhotos, err := m.expPhotos.GetByExperienceID(ctx,element.Id)
+		if err != nil {
+			return nil, models.ErrInternalServerError
+		}
+
+		var	coverPhotos []models.CoverPhotosObj
+		var	cityPhotos []models.CoverPhotosObj
+	if expPhotos != nil {
+		if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+	}
+	if element.CityPhotos != nil {
+		if errUnmarshal := json.Unmarshal([]byte(*element.CityPhotos), &cityPhotos); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+	}
+
 		expPayment, err := m.paymentRepo.GetByExpID(ctx, element.Id)
 		if err != nil {
 			return nil, err
@@ -97,6 +119,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 				City:     element.CityName,
 				CityDesc: element.CityDesc,
 				Item:     nil,
+				CityPhotos:cityPhotos,
 			}
 			expDto := models.ExperienceUserDiscoverPreferenceDto{
 				Id:           element.Id,
@@ -107,6 +130,8 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 				Currency:     currency,
 				Price:        expPayment.Price,
 				Payment_type: priceItemType,
+				Cover_Photo:  coverPhotos,
+
 			}
 			cityDto.Item = append(cityDto.Item,expDto)
 			expListDto = append(expListDto,&cityDto)
@@ -129,6 +154,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 						CityId: element.CityId,
 						City:     element.CityName,
 						CityDesc: element.CityDesc,
+						CityPhotos:cityPhotos,
 						Item:     nil,
 					}
 					expDto := models.ExperienceUserDiscoverPreferenceDto{

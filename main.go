@@ -29,6 +29,7 @@ import (
 	_harborsHttpDeliver "github.com/service/harbors/delivery/http"
 	_harborsRepo "github.com/service/harbors/repository"
 	_harborsUcase "github.com/service/harbors/usecase"
+
 	//"github.com/bxcodec/go-clean-arch/middleware"
 	_isHttpDeliver "github.com/auth/identityserver/delivery/http"
 	_isUcase "github.com/auth/identityserver/usecase"
@@ -54,9 +55,16 @@ import (
 	_userUcase "github.com/auth/user/usecase"
 	_paymentRepo "github.com/service/exp_payment/repository"
 
-	_typesRepo "github.com/service/exp_types/repository"
-	_inspirationRepo "github.com/service/exp_inspiration/repository"
+	_fAQHttpDeliver "github.com/mics/faq/delivery/handler/http"
+	_fAQRepo "github.com/mics/faq/repository"
+	_fAQUcase "github.com/mics/faq/usecase"
 
+	_bookingExpHttpDeliver "github.com/booking/booking_exp/delivery/http"
+	_bookingExpRepo "github.com/booking/booking_exp/repository"
+	_bookingExpUcase "github.com/booking/booking_exp/usecase"
+
+	_inspirationRepo "github.com/service/exp_inspiration/repository"
+	_typesRepo "github.com/service/exp_types/repository"
 )
 
 // func init() {
@@ -117,16 +125,18 @@ func main() {
 	e.Use(_echoMiddleware.CORSWithConfig(_echoMiddleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
-		AllowMethods: []string{"GET", "POST","PUT","DELETE","OPTIONS"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	bookingExpRepo := _bookingExpRepo.NewbookingExpRepository(dbConn)
+	fAQRepo := _fAQRepo.NewReviewRepository(dbConn)
 	experienceAddOnRepo := _experienceAddOnRepo.NewexperienceRepository(dbConn)
 	exp_photos := _expPhotosRepo.Newexp_photosRepository(dbConn)
 	harborsRepo := _harborsRepo.NewharborsRepository(dbConn)
 	cpcRepo := _cpcRepo.NewcpcRepository(dbConn)
 	experienceRepo := _experienceRepo.NewexperienceRepository(dbConn)
 	merchantRepo := _merchantRepo.NewmerchantRepository(dbConn)
-	userRepo 	:= _userRepo.NewuserRepository(dbConn)
+	userRepo := _userRepo.NewuserRepository(dbConn)
 	authorRepo := _authorRepo.NewMysqlAuthorRepository(dbConn)
 	ar := _articleRepo.NewMysqlArticleRepository(dbConn)
 	paymentRepo := _paymentRepo.NewExpPaymentRepository(dbConn)
@@ -137,12 +147,15 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
-	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo,timeoutContext)
-	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo,timeoutContext)
-	promoUsecase := _promoUcase.NewArticleUsecase(promoRepo,timeoutContext)
-	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo,timeoutContext)
-	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos,timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo,timeoutContext)
+	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo,timeoutContext)
+	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, timeoutContext)
+	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
+	promoUsecase := _promoUcase.NewArticleUsecase(promoRepo, timeoutContext)
+	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
+	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		exp_photos,
 		experienceRepo,
 		harborsRepo,
 		cpcRepo,
@@ -152,23 +165,23 @@ func main() {
 		inspirationRepo,
 		timeoutContext,
 	)
-	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth,accountStorage,accessKeyStorage)
-	userUsecase := _userUcase.NewuserUsecase(userRepo,isUsecase,timeoutContext)
+	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
+	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 
-	_reviewsHttpDeliver.NewreviewsHandler(e,reivewsUsecase)
-	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e,experienceAddOnUsecase)
-	_harborsHttpDeliver.NewharborsHandler(e,harborsUsecase)
-	_expPhotosHttpDeliver.Newexp_photosHandler(e,exp_photosUsecase)
-	_experienceHttpDeliver.NewexperienceHandler(e,experienceUsecase)
-	_isHttpDeliver.NewisHandler(e,merchantUsecase,userUsecase)
-	_userHttpDeliver.NewuserHandler(e,userUsecase)
+	_bookingExpHttpDeliver.Newbooking_expHandler(e,bookingExpUcase)
+	_fAQHttpDeliver.NewfaqHandler(e,fAQUsecase)
+	_reviewsHttpDeliver.NewreviewsHandler(e, reivewsUsecase)
+	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e, experienceAddOnUsecase)
+	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
+	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
+	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase)
+	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase)
+	_userHttpDeliver.NewuserHandler(e, userUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
-	_promoHttpDeliver.NewpromoHandler(e,promoUsecase)
+	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
 
 	log.Fatal(e.Start(":9090"))
 }
-
-

@@ -13,7 +13,13 @@ type FAQ struct {
 	IsDeleted            int       `json:"is_deleted" validate:"required"`
 	IsActive             int       `json:"is_active" validate:"required"`
 	Type 				int			`json:"type"`
-	title 				string		`json:"title"`
+	Title 				string		`json:"title"`
 	Desc 				string			`json:"desc"`
 
+}
+type FAQDto struct {
+	Id                   int    `json:"id" validate:"required"`
+	Type 				int			`json:"type"`
+	Title 				string		`json:"title"`
+	Desc 				string			`json:"desc"`
 }

@@ -45,57 +45,57 @@ func main() {
 
 		db.Create(&migration)
 	}
-	facilities := model.PaymentMethod{}
-	errorfacilities := db.AutoMigrate(&facilities)
-	if errorfacilities != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_Payment_method",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	exlusionService := model.Payment{}
-	errorexlusionService := db.AutoMigrate(&exlusionService).AddForeignKey("booking_exp_id","booking_exps(id)","RESTRICT", "RESTRICT")
-	if errorexlusionService != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_Payment",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	exlusionServices := model.Payment{}
-	errorexlusionServices := db.Model(&exlusionServices).AddForeignKey("promo_id","promos(id)","RESTRICT", "RESTRICT")
-	if errorexlusionServices != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_Foregn_key_promo_id_Payment",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	exlusionServicess := model.Payment{}
-	errorexlusionServicess := db.Model(&exlusionServicess).AddForeignKey("payment_method_id","payment_methods(id)","RESTRICT", "RESTRICT")
-	if errorexlusionServicess != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_Foregn_key_payment_method_id_Payment",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-
-	exlusionServicesss := model.Payment{}
-	errorexlusionServicesss := db.Model(&exlusionServicesss).AddForeignKey("experience_payment_id","experience_payments(id)","RESTRICT", "RESTRICT")
-	if errorexlusionServicesss != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_Foregn_key_experience_payment_id_Payment",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	db.Close()
+	//facilities := model.PaymentMethod{}
+	//errorfacilities := db.AutoMigrate(&facilities)
+	//if errorfacilities != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_table_Payment_method",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//exlusionService := model.Payment{}
+	//errorexlusionService := db.AutoMigrate(&exlusionService).AddForeignKey("booking_exp_id","booking_exps(id)","RESTRICT", "RESTRICT")
+	//if errorexlusionService != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_table_Payment",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//exlusionServices := model.Payment{}
+	//errorexlusionServices := db.Model(&exlusionServices).AddForeignKey("promo_id","promos(id)","RESTRICT", "RESTRICT")
+	//if errorexlusionServices != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_Foregn_key_promo_id_Payment",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//exlusionServicess := model.Payment{}
+	//errorexlusionServicess := db.Model(&exlusionServicess).AddForeignKey("payment_method_id","payment_methods(id)","RESTRICT", "RESTRICT")
+	//if errorexlusionServicess != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_Foregn_key_payment_method_id_Payment",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//
+	//exlusionServicesss := model.Payment{}
+	//errorexlusionServicesss := db.Model(&exlusionServicesss).AddForeignKey("experience_payment_id","experience_payments(id)","RESTRICT", "RESTRICT")
+	//if errorexlusionServicesss != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_Foregn_key_experience_payment_id_Payment",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//db.Close()
 
 }

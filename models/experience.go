@@ -121,11 +121,17 @@ type ExperienceUserDiscoverPreferenceDto struct {
 	Currency 				string					`json:"currency"`
 	Price 					float64 					`json:"price"`
 	Payment_type			string				  `json:"payment_type"`
+	Cover_Photo				[]CoverPhotosObj				`json:"cover_photo"`
+}
+type CoverPhotosObj struct {
+	Original 			string		`json:"original"`
+	Thumbnail			string		`json:"thumbnail"`
 }
 type ExpUserDiscoverPreference struct {
 	CityId  				int		`json:"city_id"`
 	CityName				string	`json:"city_name"`
 	CityDesc				string	`json:"city_desc"`
+	CityPhotos				*string	`json:"city_photos"`
 	Id                      string     `json:"id" validate:"required"`
 	CreatedBy               string     `json:"created_by":"required"`
 	CreatedDate             time.Time  `json:"created_date" validate:"required"`
@@ -167,6 +173,7 @@ type ExpUserDiscoverPreferenceDto struct {
 	CityId	int 	`json:"city_id"`
 	City	string 	`json:"city"`
 	CityDesc	string	`json:"city_desc"`
+	CityPhotos 	[]CoverPhotosObj	`json:"city_photos"`
 	Item 	[]ExperienceUserDiscoverPreferenceDto `json:"item"`
 }
 

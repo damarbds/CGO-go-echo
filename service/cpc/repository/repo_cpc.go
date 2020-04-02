@@ -54,6 +54,8 @@ func (m *cpcRepository) fetchCity(ctx context.Context, query string, args ...int
 			&t.IsDeleted,
 			&t.IsActive,
 			&t.CityName		,
+			&t.CityDesc,
+			&t.CityPhotos,
 			&t.ProvinceId			,
 		)
 

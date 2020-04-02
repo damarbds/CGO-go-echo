@@ -14,5 +14,6 @@ type City struct {
 	IsActive             int       `json:"is_active" validate:"required"`
 	CityName			string		`json:"city_name"`
 	CityDesc			string		`json:"city_desc"`
+	CityPhotos			*string 		`json:"city_photos"`
 	ProvinceId			int		`json:"province_id"`
 }

@@ -285,7 +285,7 @@ func (m *experienceRepository) GetIdByCityId(ctx context.Context, cityId string)
 func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context,page *int,size *int) ([]*models.ExpUserDiscoverPreference, error) {
 
 	if page != nil && size != nil{
-		query := `select c.city_id, c.city_name, city.city_desc,a.* from cgo_indonesia.experiences a
+		query := `select c.city_id, c.city_name, city.city_desc,city_photos,a.* from cgo_indonesia.experiences a
 			join cgo_indonesia.harbors b on b.id = a.harbors_id
 			join 
 			(
@@ -303,7 +303,7 @@ func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context,pag
 		}
 		return res, err
 	}else {
-		query := `select c.city_id, c.city_name, city.city_desc,a.* from cgo_indonesia.experiences a
+		query := `select c.city_id, c.city_name, city.city_desc,city.city_photos,a.* from cgo_indonesia.experiences a
 			join cgo_indonesia.harbors b on b.id = a.harbors_id
 			join 
 			(
