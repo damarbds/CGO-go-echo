@@ -28,7 +28,6 @@ type experienceUsecase struct {
 	contextTimeout time.Duration
 }
 
-
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
 	a experience.Repository,
@@ -50,6 +49,61 @@ func NewexperienceUsecase(
 		inspirationRepo: i,
 		contextTimeout:   timeout,
 	}
+}
+
+func (m experienceUsecase) GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	expList, err := m.experienceRepo.GetByCategoryID(ctx, categoryId)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*models.ExpSearchObject, len(expList))
+	for i, exp := range expList {
+		var	expType []string
+		if errUnmarshal := json.Unmarshal([]byte(exp.ExpType), &expType); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+
+		expPayment, err := m.paymentRepo.GetByExpID(ctx, exp.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		var currency string
+		if expPayment.Currency == 1 {
+			currency = "USD"
+		} else {
+			currency = "IDR"
+		}
+
+		var priceItemType string
+		if expPayment.PriceItemType == 1 {
+			priceItemType = "Per Pax"
+		} else {
+			priceItemType = "Per Trip"
+		}
+
+		countRating, err := m.reviewsRepo.CountRating(ctx, exp.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		results[i] = &models.ExpSearchObject{
+			Id:          exp.Id,
+			ExpTitle:    exp.ExpTitle,
+			ExpType:     expType,
+			Rating:      exp.Rating,
+			CountRating: countRating,
+			Currency:    currency,
+			Price:       expPayment.Price,
+			PaymentType: priceItemType,
+		}
+	}
+
+	return results, nil
 }
 
 func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *int,size *int) ([]*models.ExpUserDiscoverPreferenceDto, error) {

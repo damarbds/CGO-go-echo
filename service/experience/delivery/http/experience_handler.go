@@ -34,6 +34,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	e.GET("service/experience/get-user-discover-preference", handler.GetUserDiscoverPreference)
 	e.GET("service/experience/categories", handler.GetExpTypes)
 	e.GET("service/experience/inspirations", handler.GetExpInspirations)
+	e.GET("service/experience/categories/:id", handler.GetByCategoryID)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
 
@@ -80,6 +81,23 @@ func (a *experienceHandler) SearchExp(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, searchResult)
 }
+
+func (a *experienceHandler) GetByCategoryID(c echo.Context) error {
+	cid := c.Param("id")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	categoryID, _ := strconv.Atoi(cid)
+	results, err := a.experienceUsecase.GetByCategoryID(ctx, categoryID)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, results)
+}
+
 func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	harborID := c.QueryParam("harbor_id")
 	cityID := c.QueryParam("city_id")
