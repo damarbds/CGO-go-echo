@@ -30,7 +30,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	}
 	var promoDto []*models.PromoDto
 	for _, element := range promoList {
-		promo:=models.PromoDto{
+		resPromo :=models.PromoDto{
 			Id:         element.Id,
 			PromoCode:  element.PromoCode,
 			PromoName:  element.PromoName,
@@ -39,7 +39,32 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 			PromoType:  element.PromoType,
 			PromoImage: element.PromoImage,
 		}
-		promoDto = append(promoDto,&promo)
+		promoDto = append(promoDto, &resPromo)
 	}
+
+	return promoDto,nil
+}
+
+func (p promoUsecase) GetByCode(ctx context.Context, code string) ([]*models.PromoDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
+	defer cancel()
+
+	promos, err := p.promoRepo.GetByCode(ctx, code)
+	if err != nil {
+		return nil, err
+	}
+	promoDto := make([]*models.PromoDto, len(promos))
+	for i, p := range promos {
+		promoDto[i] = &models.PromoDto{
+			Id:         p.Id,
+			PromoCode:  p.PromoCode,
+			PromoName:  p.PromoName,
+			PromoDesc:  p.PromoDesc,
+			PromoValue: p.PromoValue,
+			PromoType:  p.PromoType,
+			PromoImage: p.PromoImage,
+		}
+	}
+
 	return promoDto,nil
 }

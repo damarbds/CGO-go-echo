@@ -22,11 +22,37 @@ type experienceRepository struct {
 }
 
 
-
 // NewexperienceRepository will create an object that represent the article.Repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
+
+func (m *experienceRepository) GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearch, error) {
+	query := `
+	SELECT
+		e.id,
+		exp_title,
+		exp_type,
+		rating
+	FROM
+		filter_activity_types f
+		JOIN experiences e ON f.exp_id = e.id
+	WHERE
+		f.is_deleted = 0
+		AND f.is_active = 1
+		AND exp_type_id = ?`
+
+	res, err := m.fetchSearchExp(ctx, query, categoryId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (m *experienceRepository) QueryFilterSearch(ctx context.Context, query string) ([]*models.ExpSearch, error) {
 	res, err := m.fetchSearchExp(ctx, query)
 	if err != nil {
@@ -37,6 +63,7 @@ func (m *experienceRepository) QueryFilterSearch(ctx context.Context, query stri
 	}
 	return res, nil
 }
+
 func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearch, error) {
 	query := `
 	SELECT

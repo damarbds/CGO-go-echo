@@ -3,11 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"github.com/service/filter_activity_type"
-
 	"time"
-
-
+	"github.com/service/filter_activity_type"
 	"github.com/models"
 )
 
