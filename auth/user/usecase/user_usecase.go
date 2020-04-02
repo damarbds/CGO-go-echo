@@ -22,6 +22,7 @@ func NewuserUsecase(a user.Repository, is identityserver.Usecase,timeout time.Du
 		contextTimeout: timeout,
 	}
 }
+
 func (m userUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -75,7 +76,6 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 
 	return &userInfo,nil
 }
-
 
 func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser ,user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
@@ -181,10 +181,20 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 		return err
 	}
 
-
 	return nil
 }
 
+func (m userUsecase) GetCreditByID(ctx context.Context, id string) (*models.UserPoint, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	point, err := m.userRepo.GetCreditByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UserPoint{Points:point}, nil
+}
 
 /*
 * In this function below, I'm using errgroup with the pipeline pattern

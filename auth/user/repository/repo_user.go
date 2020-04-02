@@ -115,6 +115,22 @@ func (m *userRepository) GetByID(ctx context.Context, id string) (res *models.Us
 
 	return
 }
+
+func (m *userRepository) GetCreditByID(ctx context.Context, id string) (int, error) {
+	var points int
+	query := `SELECT points FROM users WHERE id = ?`
+
+	err := m.Conn.QueryRowContext(ctx, query, id).Scan(&points)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, models.ErrNotFound
+		}
+		return 0, err
+	}
+
+	return points, err
+}
+
 func (m *userRepository) GetByUserEmail(ctx context.Context, userEmail string) (res *models.User, err error) {
 	query := `SELECT * FROM users WHERE user_email = ?`
 
