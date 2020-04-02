@@ -127,8 +127,6 @@ func (a *experienceHandler) GetUserDiscoverPreference(c echo.Context) error {
 		}
 		return c.JSON(http.StatusOK, art)
 	}
-
-	return nil
 }
 
 func (a *experienceHandler) GetExpTypes(c echo.Context) error {

@@ -3,6 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/promo.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/promo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/experience/delivery/http/experience_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/delivery/http/experience_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/promo/delivery/http/promo_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/promo/delivery/http/promo_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/promo/repository/repo_promo.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/promo/repository/repo_promo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/promo/repostiory.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/promo/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/promo/usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/promo/usecase.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/promo/usecase/promo_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/promo/usecase/promo_usecase.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -290,16 +297,6 @@
           <option name="timeStamp" value="59" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/service/promo/repository/repo_promo.go</url>
-          <line>30</line>
-          <option name="timeStamp" value="60" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/service/promo/repository/repo_promo.go</url>
-          <line>76</line>
-          <option name="timeStamp" value="61" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/service/experience/repository/repo_experience.go</url>
           <line>69</line>
           <option name="timeStamp" value="64" />
@@ -313,11 +310,6 @@
           <url>file://$PROJECT_DIR$/service/experience/usecase/experience_usecase.go</url>
           <line>147</line>
           <option name="timeStamp" value="66" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/service/experience/delivery/http/experience_handler.go</url>
-          <line>81</line>
-          <option name="timeStamp" value="67" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/service/experience/repository/repo_experience.go</url>

@@ -30,6 +30,7 @@ func NewpromoHandler(e *echo.Echo, us promo.Usecase) {
 	//e.POST("/promos", handler.Createpromo)
 	//e.PUT("/promos/:id", handler.Updatepromo)
 	e.GET("service/special-promo", handler.GetAllPromo)
+	e.GET("service/special-promo/:code", handler.GetPromoByCode)
 	//e.DELETE("/promos/:id", handler.Delete)
 }
 
@@ -66,9 +67,24 @@ func (a *promoHandler) GetAllPromo(c echo.Context) error {
 		}
 		return c.JSON(http.StatusOK, art)
 	}
-
-	return nil
 }
+
+func (a *promoHandler) GetPromoByCode(c echo.Context) error {
+	code := c.Param("code")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	results, err := a.promoUsecase.GetByCode(ctx, code)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, results)
+}
+
 func getStatusCode(err error) int {
 	if err == nil {
 		return http.StatusOK
