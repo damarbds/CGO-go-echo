@@ -2,15 +2,16 @@ package http
 
 import (
 	"context"
-	"github.com/auth/identityserver"
-	"github.com/labstack/echo"
-	"github.com/sirupsen/logrus"
-	validator "gopkg.in/go-playground/validator.v9"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/auth/identityserver"
+	"github.com/labstack/echo"
+	"github.com/sirupsen/logrus"
+	validator "gopkg.in/go-playground/validator.v9"
 
 	"github.com/auth/user"
 	"github.com/models"
@@ -24,14 +25,14 @@ type ResponseError struct {
 // userHandler  represent the httphandler for user
 type userHandler struct {
 	userUsecase user.Usecase
-	isUsecase	identityserver.Usecase
+	isUsecase   identityserver.Usecase
 }
 
 // NewuserHandler will initialize the users/ resources endpoint
-func NewuserHandler(e *echo.Echo, us user.Usecase,is identityserver.Usecase) {
+func NewuserHandler(e *echo.Echo, us user.Usecase, is identityserver.Usecase) {
 	handler := &userHandler{
 		userUsecase: us,
-		isUsecase:is,
+		isUsecase:   is,
 	}
 	e.POST("/users", handler.CreateUser)
 	e.PUT("/users/:id", handler.UpdateUser)
@@ -65,7 +66,7 @@ func (a *userHandler) GetCreditByID(c echo.Context) error {
 // Store will store the user by given request body
 func (a *userHandler) CreateUser(c echo.Context) error {
 
-	filupload,image, _ := c.Request().FormFile("profile_pict_url")
+	filupload, image, _ := c.Request().FormFile("profile_pict_url")
 	dir, err := os.Getwd()
 	if err != nil {
 		return models.ErrInternalServerError
@@ -73,6 +74,7 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 	fileLocation := filepath.Join(dir, "files", image.Filename)
 	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
+		os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
 		return models.ErrInternalServerError
 	}
 	defer targetFile.Close()
@@ -82,7 +84,7 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 	}
 
 	//w.Write([]byte("done"))
-	imagePath, _ := a.isUsecase.UploadFileToBlob(fileLocation,"UserProfile")
+	imagePath, _ := a.isUsecase.UploadFileToBlob(fileLocation, "UserProfile")
 	targetFile.Close()
 	errRemove := os.Remove(fileLocation)
 	if errRemove != nil {
@@ -94,7 +96,7 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 	idType, _ := strconv.Atoi(c.FormValue("id_type"))
 	referralCode, _ := strconv.Atoi(c.FormValue("referral_code"))
 	points, _ := strconv.Atoi(c.FormValue("points"))
-	userCommand:= models.NewCommandUser{
+	userCommand := models.NewCommandUser{
 		Id:                   c.FormValue("id"),
 		UserEmail:            c.FormValue("user_email"),
 		Password:             c.FormValue("password"),
@@ -127,18 +129,38 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 }
 
 func (a *userHandler) UpdateUser(c echo.Context) error {
-	//var userCommand models.NewCommandUser
-	//err := c.Bind(&userCommand)
-	//if err != nil {
-	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
-	//}
+
+	filupload, image, _ := c.Request().FormFile("profile_pict_url")
+	dir, err := os.Getwd()
+	if err != nil {
+		return models.ErrInternalServerError
+	}
+	fileLocation := filepath.Join(dir, "files", image.Filename)
+	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
+		return models.ErrInternalServerError
+	}
+	defer targetFile.Close()
+
+	if _, err := io.Copy(targetFile, filupload); err != nil {
+		return models.ErrInternalServerError
+	}
+
+	//w.Write([]byte("done"))
+	imagePath, _ := a.isUsecase.UploadFileToBlob(fileLocation, "UserProfile")
+	targetFile.Close()
+	errRemove := os.Remove(fileLocation)
+	if errRemove != nil {
+		return models.ErrInternalServerError
+	}
 	phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
 	verificationCode, _ := strconv.Atoi(c.FormValue("verification_code"))
 	gender, _ := strconv.Atoi(c.FormValue("gender"))
 	idType, _ := strconv.Atoi(c.FormValue("id_type"))
 	referralCode, _ := strconv.Atoi(c.FormValue("referral_code"))
 	points, _ := strconv.Atoi(c.FormValue("points"))
-	userCommand:= models.NewCommandUser{
+	userCommand := models.NewCommandUser{
 		Id:                   c.FormValue("id"),
 		UserEmail:            c.FormValue("user_email"),
 		Password:             c.FormValue("password"),
@@ -146,7 +168,7 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 		PhoneNumber:          phoneNumber,
 		VerificationSendDate: c.FormValue("verification_send_date"),
 		VerificationCode:     verificationCode,
-		ProfilePictUrl:       "#",
+		ProfilePictUrl:       imagePath,
 		Address:              c.FormValue("address"),
 		Dob:                  c.FormValue("dob"),
 		Gender:               gender,

@@ -147,8 +147,8 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo,timeoutContext)
-	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo,timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, timeoutContext)
+	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
 	promoUsecase := _promoUcase.NewArticleUsecase(promoRepo, timeoutContext)
@@ -170,15 +170,15 @@ func main() {
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 
-	_bookingExpHttpDeliver.Newbooking_expHandler(e,bookingExpUcase,isUsecase)
-	_fAQHttpDeliver.NewfaqHandler(e,fAQUsecase)
+	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase, isUsecase)
+	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
 	_reviewsHttpDeliver.NewreviewsHandler(e, reivewsUsecase)
 	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e, experienceAddOnUsecase)
 	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
 	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase)
 	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase)
-	_userHttpDeliver.NewuserHandler(e, userUsecase)
+	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
