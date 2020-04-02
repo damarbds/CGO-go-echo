@@ -12,4 +12,5 @@ type Usecase interface {
 	GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreferenceDto, error)
 	GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error)
 	GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error)
+	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error)
 }

@@ -29,6 +29,7 @@ func NewuserHandler(e *echo.Echo, us user.Usecase) {
 	}
 	e.POST("/users", handler.CreateUser)
 	e.PUT("/users/:id", handler.UpdateUser)
+	e.GET("/users/:id/credit", handler.GetCreditByID)
 }
 
 func isRequestValid(m *models.NewCommandUser) (bool, error) {
@@ -38,6 +39,21 @@ func isRequestValid(m *models.NewCommandUser) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (a *userHandler) GetCreditByID(c echo.Context) error {
+	id := c.Param("id")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.userUsecase.GetCreditByID(ctx, id)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 // Store will store the user by given request body

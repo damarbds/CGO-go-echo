@@ -12,4 +12,5 @@ type Repository interface {
 	Update(ctx context.Context, ar *models.User) error
 	Insert(ctx context.Context, a *models.User) error
 	Delete(ctx context.Context, id string,deleted_by string) error
+	GetCreditByID(ctx context.Context, id string) (int, error)
 }

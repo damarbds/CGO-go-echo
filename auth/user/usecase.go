@@ -11,4 +11,5 @@ type Usecase interface {
 	ValidateTokenUser(ctx context.Context, token string) (*string,error)
 	Login(ctx context.Context, ar *models.Login) (*models.GetToken,error)
 	GetUserInfo(ctx context.Context, token string) (*models.UserInfoDto,error)
+	GetCreditByID(ctx context.Context, id string) (*models.UserPoint, error)
 }

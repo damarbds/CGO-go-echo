@@ -13,7 +13,8 @@ type Repository interface {
 	GetUserDiscoverPreference(ctx context.Context,page *int,size *int)([]*models.ExpUserDiscoverPreference,error)
 	GetIdByHarborsId(ctx context.Context, harborsId string) ([]*string, error)
 	GetIdByCityId(ctx context.Context, cityId string) ([]*string, error)
-	QueryFilterSearch(ctx context.Context,query string)([]*models.ExpSearch, error)
+	QueryFilterSearch(ctx context.Context,query string) ([]*models.ExpSearch, error)
+	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearch, error)
 	//Update(ctx context.Context, ar *models.Experience) error
 	//Insert(ctx context.Context, a *models.Experience) error
 	Delete(ctx context.Context, id string,deleted_by string) error
