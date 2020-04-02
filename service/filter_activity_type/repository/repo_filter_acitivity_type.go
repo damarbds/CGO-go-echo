@@ -3,15 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
+
 	"github.com/service/filter_activity_type"
-
-	"time"
-
-	"github.com/sirupsen/logrus"
-
 	"github.com/models"
-	"github.com/service/experience"
 )
 
 const (
