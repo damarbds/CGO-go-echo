@@ -52,7 +52,6 @@ func NewexperienceUsecase(
 	}
 }
 
-<<<<<<< HEAD
 func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *int,size *int) ([]*models.ExpUserDiscoverPreferenceDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -259,7 +258,6 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 	return results, nil
 
 }
-=======
 func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -284,7 +282,6 @@ func (m experienceUsecase) GetExpTypes(ctx context.Context) ([]*models.ExpTypeOb
 	return results, nil
 }
 
->>>>>>> ac93eeeb4739d8b4d5ffed9eb15f771ef280749b
 func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()

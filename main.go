@@ -131,12 +131,9 @@ func main() {
 	ar := _articleRepo.NewMysqlArticleRepository(dbConn)
 	paymentRepo := _paymentRepo.NewExpPaymentRepository(dbConn)
 	reviewsRepo := _reviewsRepo.NewReviewRepository(dbConn)
-<<<<<<< HEAD
 	promoRepo := _promoRepo.NewpromoRepository(dbConn)
-=======
 	typesRepo := _typesRepo.NewExpTypeRepository(dbConn)
 	inspirationRepo := _inspirationRepo.NewExpInspirationRepository(dbConn)
->>>>>>> ac93eeeb4739d8b4d5ffed9eb15f771ef280749b
 
 	timeoutContext := time.Duration(30) * time.Second
 
