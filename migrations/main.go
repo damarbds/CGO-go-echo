@@ -15,71 +15,111 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.FAQ{}
-	error := db.AutoMigrate(&user)
+	user := model.BookingExp{}
+	error := db.Model(&user).AddForeignKey("experience_add_on_id","experience_add_ons(id)","RESTRICT", "RESTRICT")
 	if error != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table_FAQ",
+			DescMigration:"Add_table_Transportation",
 			Date:  time.Now(),
 		}
 
 		db.Create(&migration)
 	}
-	pointRules := model.BookingExp{}
-	errorpointRules := db.AutoMigrate(&pointRules).AddForeignKey("exp_id","experiences(id)","RESTRICT", "RESTRICT")
-	if errorpointRules != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_table_booking_exp",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	pointRule := model.BookingExp{}
-	errorpointRule := db.Model(&pointRule).AddForeignKey("user_id","users(id)","RESTRICT", "RESTRICT")
-	if errorpointRule != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Add_Foregn_key_userId_booking_exp",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	//facilities := model.PaymentMethod{}
-	//errorfacilities := db.AutoMigrate(&facilities)
+	//transportationdestid := model.Transportation{}
+	//errortransportationdestid := db.Model(&transportationdestid).AddForeignKey("harbors_dest_id","harbors(id)","RESTRICT", "RESTRICT")
+	//if errortransportationdestid != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_foregn_key_harbors_dest_Transportation",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//merchantId := model.Transportation{}
+	//errormerchantId := db.Model(&merchantId).AddForeignKey("merchant_id","merchants(id)","RESTRICT", "RESTRICT")
+	//if errormerchantId != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_foregn_key_merchant_id_Transportation",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//returnId := model.Transportation{}
+	//errorreturnId := db.Model(&returnId).AddForeignKey("return_trans_id","transportations(id)","RESTRICT", "RESTRICT")
+	//if errorreturnId != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_foregn_key_return_id_Transportation",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//pointRules := model.Wishlist{}
+	//errorpointRules := db.AutoMigrate(&pointRules).AddForeignKey("trans_id","transportations(id)","RESTRICT", "RESTRICT")
+	//if errorpointRules != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_table_wishlist",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//pointRuless := model.Wishlist{}
+	//errorpointRuless := db.Model(&pointRuless).AddForeignKey("exp_id","experiences(id)","RESTRICT", "RESTRICT")
+	//if errorpointRuless != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_foregn_key_exp_id_wishlist",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//pointRulesss := model.Wishlist{}
+	//errorpointRulesss := db.Model(&pointRulesss).AddForeignKey("user_id","users(id)","RESTRICT", "RESTRICT")
+	//if errorpointRulesss != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Add_foregn_key_user_id_wishlist",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//facilities := model.Transaction{}
+	//errorfacilities := db.AutoMigrate(&facilities).AddForeignKey("booking_exp_id","booking_exps(id)","RESTRICT", "RESTRICT")
 	//if errorfacilities != nil{
 	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_table_Payment_method",
+	//		DescMigration:"Add_table_Transaction",
 	//		Date:  time.Now(),
 	//	}
 	//
 	//	db.Create(&migration)
 	//}
-	//exlusionService := model.Payment{}
-	//errorexlusionService := db.AutoMigrate(&exlusionService).AddForeignKey("booking_exp_id","booking_exps(id)","RESTRICT", "RESTRICT")
+	//exlusionService := model.Transaction{}
+	//errorexlusionService := db.Model(&exlusionService).AddForeignKey("promo_id","promos(id)","RESTRICT", "RESTRICT")
 	//if errorexlusionService != nil{
 	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_table_Payment",
+	//		DescMigration:"Add_forefn_key_promo_id_Transaction",
 	//		Date:  time.Now(),
 	//	}
 	//
 	//	db.Create(&migration)
 	//}
-	//exlusionServices := model.Payment{}
-	//errorexlusionServices := db.Model(&exlusionServices).AddForeignKey("promo_id","promos(id)","RESTRICT", "RESTRICT")
+	//exlusionServices := model.Transaction{}
+	//errorexlusionServices := db.Model(&exlusionServices).AddForeignKey("payment_method_id","payment_methods(id)","RESTRICT", "RESTRICT")
 	//if errorexlusionServices != nil{
 	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_Foregn_key_promo_id_Payment",
+	//		DescMigration:"Add_Foregn_key_payment_methodId_Transaction",
 	//		Date:  time.Now(),
 	//	}
 	//
 	//	db.Create(&migration)
 	//}
-	//exlusionServicess := model.Payment{}
-	//errorexlusionServicess := db.Model(&exlusionServicess).AddForeignKey("payment_method_id","payment_methods(id)","RESTRICT", "RESTRICT")
+	//exlusionServicess := model.Transaction{}
+	//errorexlusionServicess := db.Model(&exlusionServicess).AddForeignKey("experience_payment_id","experience_payments(id)","RESTRICT", "RESTRICT")
 	//if errorexlusionServicess != nil{
 	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_Foregn_key_payment_method_id_Payment",
+	//		DescMigration:"Add_Foregn_key_experience_payment_id_Transaction",
 	//		Date:  time.Now(),
 	//	}
 	//

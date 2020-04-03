@@ -2,11 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/files/img_lights.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/transaction.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/transportation.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/wishlist.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/user/delivery/http/user_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/auth/user/delivery/http/user_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/booking/booking_exp/delivery/http/booking_exp_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/booking/booking_exp/delivery/http/booking_exp_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/booking_exp.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/booking_exp.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +63,7 @@
       <recent name="$PROJECT_DIR$/service" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Build.go build main.go">
+  <component name="RunManager" selected="Go Build.go build main.go (1)">
     <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="go-clean-arch-2.0.1" />
       <working_directory value="$PROJECT_DIR$" />
@@ -82,8 +83,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Build.go build main.go" />
         <item itemvalue="Go Build.go build main.go (1)" />
+        <item itemvalue="Go Build.go build main.go" />
       </list>
     </recent_temporary>
   </component>
@@ -133,22 +134,22 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="898" height="466" key="DebuggerActiveHint/0.0.1366.728@0.0.1366.728" timestamp="1585853673206" />
-    <state width="1323" height="201" key="GridCell.Tab.0.bottom" timestamp="1585853904310">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom" timestamp="1585897244104">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585853904310" />
-    <state width="1323" height="201" key="GridCell.Tab.0.center" timestamp="1585853904309">
+    <state width="1323" height="163" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585897244104" />
+    <state width="1323" height="163" key="GridCell.Tab.0.center" timestamp="1585897244104">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585853904308" />
-    <state width="1323" height="201" key="GridCell.Tab.0.left" timestamp="1585853904308">
+    <state width="1323" height="163" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585897244104" />
+    <state width="1323" height="163" key="GridCell.Tab.0.left" timestamp="1585897244104">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585853904308" />
-    <state width="1323" height="201" key="GridCell.Tab.0.right" timestamp="1585853904309">
+    <state width="1323" height="163" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585897244104" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right" timestamp="1585897244104">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="201" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585853904309" />
+    <state width="1323" height="163" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585897244104" />
     <state width="1323" height="201" key="GridCell.Tab.1.bottom" timestamp="1585853904314">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
