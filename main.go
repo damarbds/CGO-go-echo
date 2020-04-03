@@ -159,7 +159,6 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, timeoutContext)
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
@@ -184,6 +183,8 @@ func main() {
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
+
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase,timeoutContext)
 
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase, isUsecase)
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)

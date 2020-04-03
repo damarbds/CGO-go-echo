@@ -48,6 +48,9 @@ func isRequestValid(m *models.NewBookingExpCommand) (bool, error) {
 
 // Store will store the booking_exp by given request body
 func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
 	filupload, image, _ := c.Request().FormFile("ticket_qr_code")
 	dir, err := os.Getwd()
 	if err != nil {
@@ -75,20 +78,19 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 	var bookingExpcommand models.NewBookingExpCommand
 	user_id := c.FormValue("user_id")
 	exp_add_ons := c.FormValue("experience_add_on_id")
-		bookingExpcommand = models.NewBookingExpCommand{
-			Id:            c.FormValue("id"),
-			ExpId:         c.FormValue("exp_id"),
-			GuestDesc:     c.FormValue("guest_desc"),
-			BookedBy:      c.FormValue("booked_by"),
-			BookedByEmail: c.FormValue("booked_by_email"),
-			BookingDate:   c.FormValue("booked_date"),
-			UserId:        &user_id,
-			Status:        c.FormValue("status"),
-			TicketCode:    c.FormValue("ticket_code"),
-			TicketQRCode:  imagePath,
-			ExperienceAddOnId:&exp_add_ons,
-		}
-
+	bookingExpcommand = models.NewBookingExpCommand{
+		Id:                c.FormValue("id"),
+		ExpId:             c.FormValue("exp_id"),
+		GuestDesc:         c.FormValue("guest_desc"),
+		BookedBy:          c.FormValue("booked_by"),
+		BookedByEmail:     c.FormValue("booked_by_email"),
+		BookingDate:       c.FormValue("booked_date"),
+		UserId:            &user_id,
+		Status:            c.FormValue("status"),
+		TicketCode:        c.FormValue("ticket_code"),
+		TicketQRCode:      imagePath,
+		ExperienceAddOnId: &exp_add_ons,
+	}
 
 	if ok, err := isRequestValid(&bookingExpcommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -97,7 +99,7 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	res, error, errorValidation := a.booking_expUsecase.Insert(ctx, &bookingExpcommand)
+	res, error, errorValidation := a.booking_expUsecase.Insert(ctx, &bookingExpcommand, token)
 	if errorValidation != nil {
 		return c.JSON(http.StatusBadRequest, ResponseError{Message: error.Error()})
 	}

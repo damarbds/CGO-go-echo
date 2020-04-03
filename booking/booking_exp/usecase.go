@@ -6,5 +6,5 @@ import (
 )
 
 type Usecase interface {
-	Insert(ctx context.Context, booking *models.NewBookingExpCommand) (*models.NewBookingExpCommand,error,error)
+	Insert(ctx context.Context, booking *models.NewBookingExpCommand,token string) (*models.NewBookingExpCommand,error,error)
 }
