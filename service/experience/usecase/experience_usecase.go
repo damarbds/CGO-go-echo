@@ -205,6 +205,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 						Currency:     currency,
 						Price:        expPayment.Price,
 						Payment_type: priceItemType,
+						Cover_Photo:	coverPhotos,
 					}
 					dto.Item = append(dto.Item,expDto)
 				}else if dto.CityId != element.CityId{
@@ -224,6 +225,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 						Currency:     currency,
 						Price:        expPayment.Price,
 						Payment_type: priceItemType,
+						Cover_Photo:coverPhotos,
 					}
 					cityDto.Item = append(cityDto.Item,expDto)
 					expListDto = append(expListDto,&cityDto)
