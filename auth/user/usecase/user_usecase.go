@@ -48,7 +48,7 @@ func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*stri
 	}
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, getInfoToIs.Email)
 	if existeduser == nil {
-		return nil,models.ErrNotFound
+		return nil,models.ErrUnAuthorize
 	}
 	currentUser := getInfoToIs.Username
 	return &currentUser,nil

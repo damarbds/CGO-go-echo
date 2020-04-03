@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/auth/user"
 	"github.com/booking/booking_exp"
 	"github.com/models"
 	"golang.org/x/net/context"
@@ -10,14 +11,16 @@ import (
 
 type bookingExpUsecase struct {
 	bookingExpRepo    booking_exp.Repository
+	userUsecase 		  user.Usecase
 	contextTimeout time.Duration
 }
 
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(a booking_exp.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(a booking_exp.Repository,is user.Usecase ,timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
 		bookingExpRepo:    a,
+		userUsecase:is,
 		contextTimeout: timeout,
 	}
 }
@@ -43,7 +46,7 @@ func generateRandomBytes(n int) ([]byte, error) {
 	return b, nil
 }
 
-func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand) (*models.NewBookingExpCommand,error,error) {
+func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand,token string) (*models.NewBookingExpCommand,error,error) {
 
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
@@ -68,10 +71,20 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if err != nil{
 		return nil,models.ErrInternalServerError,nil
 	}
+	var createdBy string
+	if token != "" {
+		currentUser , err := b.userUsecase.ValidateTokenUser(ctx,token)
+		if err != nil {
+			return nil, err,nil
+		}
+		createdBy = *currentUser
+	}else {
+		createdBy = booking.BookedByEmail
+	}
 	booking.OrderId = orderId
 	bookingExp := models.BookingExp{
 		Id:            "",
-		CreatedBy:     "admin",
+		CreatedBy:     createdBy,
 		CreatedDate:   time.Now(),
 		ModifiedBy:    nil,
 		ModifiedDate:  nil,
