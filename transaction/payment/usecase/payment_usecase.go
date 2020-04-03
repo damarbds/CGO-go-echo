@@ -30,10 +30,6 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
-	if payment.BookingType == 0 {
-		return "", models.BookingTypeRequired
-	}
-
 	if payment.BookingExpId == "" {
 		return "", models.BookingExpIdRequired
 	}
@@ -50,16 +46,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		return "", models.ExpPaymentIdRequired
 	}
 
-	if payment.Status == 0 {
-		return "", models.StatusRequired
-	}
-
-	if payment.TotalPrice == 0 {
-		return "", models.TotalPriceRequired
-	}
-
 	if payment.Currency == "" {
-		return "", models.CurrencyRequired
+		payment.Currency = "IDR"
 	}
 
 	createdBy, err := p.bookingRepo.GetEmailByID(ctx, payment.BookingExpId)

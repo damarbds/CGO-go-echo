@@ -6,6 +6,7 @@ import (
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"github.com/transaction/payment"
+	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 )
 
@@ -25,14 +26,27 @@ func NewPaymentHandler(e *echo.Echo, pus payment.Usecase) {
 	e.POST("/transaction/payments", handler.CreatePayment)
 }
 
+func isRequestValid(m *models.TransactionIn) (bool, error) {
+	validate := validator.New()
+	err := validate.Struct(m)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
 
-	t := new(models.Transaction)
+	t := new(models.TransactionIn)
 	if err := c.Bind(t); err != nil {
 		return models.ErrBadParamInput
+	}
+
+	if ok, err := isRequestValid(t); !ok {
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	ctx := c.Request().Context()
@@ -40,7 +54,18 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := p.paymentUsecase.Insert(ctx, t, token)
+	tr := &models.Transaction{
+		BookingType:         t.BookingType,
+		BookingExpId:        t.BookingExpId,
+		PromoId:             t.PromoId,
+		PaymentMethodId:     t.PaymentMethodId,
+		ExperiencePaymentId: t.ExperiencePaymentId,
+		Status:              t.Status,
+		TotalPrice:          t.TotalPrice,
+		Currency:            t.Currency,
+	}
+
+	res, err := p.paymentUsecase.Insert(ctx, tr, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
