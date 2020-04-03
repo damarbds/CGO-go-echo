@@ -26,3 +26,14 @@ ValidationBookedBy = errors.New("BookedBy Required")
 // ErrConflict will throw if the current action already exists
 ValidationBookedDate = errors.New("Booking Date Required")
 )
+
+var (
+	BookingTypeRequired = errors.New("BookingType Required")
+	BookingExpIdRequired = errors.New("BookingExpId Required")
+	PromoIdRequired = errors.New("PromoId Required")
+	PaymentMethodIdRequired = errors.New("PaymentMethodId Required")
+	ExpPaymentIdRequired = errors.New("ExpPaymentId Required")
+	StatusRequired = errors.New("Status Required")
+	TotalPriceRequired = errors.New("TotalPrice Required")
+	CurrencyRequired = errors.New("Currency Required")
+)

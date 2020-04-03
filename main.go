@@ -70,6 +70,10 @@ import (
 	_paymentMethodHttpDeliver "github.com/transaction/payment_methods/delivery/http"
 	_paymentMethodRepo "github.com/transaction/payment_methods/repository"
 	_paymentMethodUcase "github.com/transaction/payment_methods/usecase"
+
+	_paymentHttpDeliver "github.com/transaction/payment/delivery/http"
+	_paymentTrRepo "github.com/transaction/payment/repository"
+	_paymentUcase "github.com/transaction/payment/usecase"
 )
 
 // func init() {
@@ -151,6 +155,7 @@ func main() {
 	typesRepo := _typesRepo.NewExpTypeRepository(dbConn)
 	inspirationRepo := _inspirationRepo.NewExpInspirationRepository(dbConn)
 	paymentMethodRepo := _paymentMethodRepo.NewPaymentMethodRepository(dbConn)
+	paymentTrRepo := _paymentTrRepo.NewPaymentRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -176,7 +181,8 @@ func main() {
 	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
-	pmUsecase := _paymentMethodUcase.NewPaymentUsecase(paymentMethodRepo, timeoutContext)
+	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
+	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
 
 	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase,timeoutContext)
 
@@ -193,6 +199,7 @@ func main() {
 	_articleHttpDeliver.NewArticleHandler(e, au)
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
+	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase)
 
 	log.Fatal(e.Start(":9090"))
 }

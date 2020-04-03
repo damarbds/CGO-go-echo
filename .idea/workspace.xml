@@ -8,7 +8,9 @@
       <change beforePath="$PROJECT_DIR$/booking/booking_exp/usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/booking/booking_exp/usecase.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/booking/booking_exp/usecase/booking_exp_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/booking/booking_exp/usecase/booking_exp_usecase.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/experience.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/experience.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/payment.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,7 +24,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" path="C:\Go" />
+  <component name="GOROOT" path="/usr/local/go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -113,11 +115,11 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="275" y="22" key="#GOPATH/0.0.1366.728@0.0.1366.728" timestamp="1585385637563" />
-    <state x="304" y="45" key="#GOROOT" timestamp="1585908121272">
-      <screen x="0" y="0" width="1366" height="728" />
+    <state x="320" y="126" key="#GOROOT" timestamp="1585921403995">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="304" y="45" key="#GOROOT/0.0.1366.728@0.0.1366.728" timestamp="1585908121272" />
-    <state x="320" y="126" key="#GOROOT/0.0.1440.900@0.0.1440.900" timestamp="1585903116137" />
+    <state x="320" y="126" key="#GOROOT/0.0.1440.900@0.0.1440.900" timestamp="1585921403995" />
     <state x="275" y="22" key="#Go_Modules_(vgo)" timestamp="1585386883724">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -176,10 +178,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="691" height="372" key="XDebugger.FullValuePopup/0.0.1366.728@0.0.1366.728" timestamp="1585595574427" />
-    <state x="386" y="207" width="667" height="486" key="find.popup" timestamp="1585823720468">
+    <state x="386" y="207" width="667" height="486" key="find.popup" timestamp="1585920027055">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state x="386" y="207" width="667" height="486" key="find.popup/0.0.1440.900@0.0.1440.900" timestamp="1585823720468" />
+    <state x="386" y="207" width="667" height="486" key="find.popup/0.0.1440.900@0.0.1440.900" timestamp="1585920027055" />
     <state x="365" y="61" width="709" height="839" key="search.everywhere.popup" timestamp="1585732343261">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
