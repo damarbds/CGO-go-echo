@@ -33,7 +33,7 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase, is identityserv
 		booking_expUsecase: us,
 		isUsecase:          is,
 	}
-	e.POST("/booking-exp", handler.Createbooking_exp)
+	e.POST("booking/checkout", handler.Createbooking_exp)
 	//e.PUT("/booking_exps/:id", handler.Updatebooking_exp)
 }
 
@@ -74,20 +74,7 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 	}
 	var bookingExpcommand models.NewBookingExpCommand
 	user_id := c.FormValue("user_id")
-	if user_id == "" {
-		bookingExpcommand = models.NewBookingExpCommand{
-			Id:            c.FormValue("id"),
-			ExpId:         c.FormValue("exp_id"),
-			GuestDesc:     c.FormValue("guest_desc"),
-			BookedBy:      c.FormValue("booked_by"),
-			BookedByEmail: c.FormValue("booked_by_email"),
-			BookingDate:   c.FormValue("booked_date"),
-			UserId:        nil,
-			Status:        c.FormValue("status"),
-			TicketCode:    c.FormValue("ticket_code"),
-			TicketQRCode:  imagePath,
-		}
-	} else {
+	exp_add_ons := c.FormValue("experience_add_on_id")
 		bookingExpcommand = models.NewBookingExpCommand{
 			Id:            c.FormValue("id"),
 			ExpId:         c.FormValue("exp_id"),
@@ -99,8 +86,9 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 			Status:        c.FormValue("status"),
 			TicketCode:    c.FormValue("ticket_code"),
 			TicketQRCode:  imagePath,
+			ExperienceAddOnId:&exp_add_ons,
 		}
-	}
+
 
 	if ok, err := isRequestValid(&bookingExpcommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -119,6 +107,7 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, res)
 }
+
 func getStatusCode(err error) int {
 	if err == nil {
 		return http.StatusOK

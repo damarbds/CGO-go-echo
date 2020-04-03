@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"github.com/product/reviews"
 	"github.com/service/cpc"
+	"github.com/service/exp_availability"
 	"github.com/service/exp_photos"
 	"github.com/service/harbors"
 	"strconv"
 	"time"
 
 	"github.com/models"
+	inspiration "github.com/service/exp_inspiration"
 	payment "github.com/service/exp_payment"
 	types "github.com/service/exp_types"
-	inspiration "github.com/service/exp_inspiration"
 	"github.com/service/experience"
 )
 
@@ -28,10 +29,12 @@ type experienceUsecase struct {
 	inspirationRepo inspiration.Repository
 	expPhotos 		exp_photos.Repository
 	contextTimeout time.Duration
+	exp_availablitiy exp_availability.Repository
 }
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
+	ea exp_availability.Repository,
 	ps exp_photos.Repository,
 	a experience.Repository,
 	h harbors.Repository,
@@ -43,6 +46,7 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
+		exp_availablitiy:ea,
 		experienceRepo:   a,
 		harborsRepo:	h,
 		cpcRepo:	c,
@@ -425,6 +429,60 @@ func (m experienceUsecase)GetByID(c context.Context, id string) (*models.Experie
 	if err != nil {
 		return nil, err
 	}
+	var expPhotos []models.ExpPhotosObj
+	expPhotoQuery, errorQuery := m.expPhotos.GetByExperienceID(ctx,res.Id)
+	if expPhotoQuery != nil {
+		for _, element := range expPhotoQuery {
+			expPhoto := models.ExpPhotosObj{
+				Folder:        element.ExpPhotoFolder,
+				ExpPhotoImage: nil,
+			}
+			var expPhotoImage []models.CoverPhotosObj
+			errObject := json.Unmarshal([]byte(element.ExpPhotoImage), &expPhotoImage)
+			if errObject != nil {
+				//fmt.Println("Error : ",err.Error())
+				return nil,models.ErrInternalServerError
+			}
+			expPhoto.ExpPhotoImage = expPhotoImage
+			expPhotos = append(expPhotos,expPhoto)
+		}
+	}
+	var expPayment []models.ExpPaymentObj
+	expPaymentQuery, errorQuery := m.paymentRepo.GetByExpID(ctx,res.Id)
+	var currency string
+	if expPaymentQuery.Currency == 1 {
+		currency = "USD"
+	} else {
+		currency = "IDR"
+	}
+	expPayobj := models.ExpPaymentObj{
+		Currency: currency,
+		Price:    expPaymentQuery.Price,
+	}
+	expPayment = append(expPayment,expPayobj)
+	var expAvailability []models.ExpAvailablitityObj
+	 expAvailabilityQuery, errorQuery := m.exp_availablitiy.GetByExpId(ctx, res.Id)
+	if errorQuery != nil {
+		return nil,errorQuery
+	}
+	if expAvailabilityQuery != nil {
+		for _, element := range expAvailabilityQuery {
+			expA := models.ExpAvailablitityObj{
+				Year: element.ExpAvailabilityYear,
+				Month: element.ExpAvailabilityMonth,
+				Date:  nil,
+			}
+			var date []string
+			errObject := json.Unmarshal([]byte(element.ExpAvailabilityDate), &date)
+			if errObject != nil {
+				//fmt.Println("Error : ",err.Error())
+				return nil,models.ErrInternalServerError
+			}
+			expA.Date = date
+			expAvailability = append(expAvailability,expA)
+		}
+	}
+
 	var	expType []string
 	errObject := json.Unmarshal([]byte(res.ExpType), &expType)
 	if errObject != nil {
@@ -475,6 +533,9 @@ func (m experienceUsecase)GetByID(c context.Context, id string) (*models.Experie
 		ExpFacilities:           expFacilities,
 		ExpInclusion:            expInclusion,
 		ExpRules:                expRules,
+		ExpAvailability:	expAvailability,
+		ExpPayment:			expPayment,
+		ExpPhotos:expPhotos,
 		Status:                  res.Status,
 		Rating:                  res.Rating,
 		ExpLocationLatitude:     res.ExpLocationLatitude,

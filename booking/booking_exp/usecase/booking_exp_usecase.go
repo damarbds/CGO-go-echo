@@ -4,6 +4,7 @@ import (
 	"github.com/booking/booking_exp"
 	"github.com/models"
 	"golang.org/x/net/context"
+	"math/rand"
 	"time"
 )
 
@@ -20,7 +21,27 @@ func NewbookingExpUsecase(a booking_exp.Repository, timeout time.Duration) booki
 		contextTimeout: timeout,
 	}
 }
+func generateRandomString(n int) (string, error) {
+	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+	bytes, err := generateRandomBytes(n)
+	if err != nil {
+		return "", err
+	}
+	for i, b := range bytes {
+		bytes[i] = letters[b%byte(len(letters))]
+	}
+	return string(bytes), nil
+}
+func generateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		return nil, err
+	}
 
+	return b, nil
+}
 
 func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand) (*models.NewBookingExpCommand,error,error) {
 
@@ -43,6 +64,11 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if errDate != nil{
 		return nil,errDate,nil
 	}
+	orderId, err := generateRandomString(12)
+	if err != nil{
+		return nil,models.ErrInternalServerError,nil
+	}
+	booking.OrderId = orderId
 	bookingExp := models.BookingExp{
 		Id:            "",
 		CreatedBy:     "admin",
@@ -54,6 +80,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		IsDeleted:     0,
 		IsActive:      1,
 		ExpId:         booking.ExpId,
+		OrderId:orderId,
 		GuestDesc:     booking.GuestDesc,
 		BookedBy:      booking.BookedBy,
 		BookedByEmail: booking.BookedByEmail,
@@ -62,6 +89,13 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		Status:        0,
 		TicketCode:    booking.TicketCode,
 		TicketQRCode:  booking.TicketQRCode,
+		ExperienceAddOnId:booking.ExperienceAddOnId,
+	}
+	if *bookingExp.ExperienceAddOnId == ""{
+		bookingExp.ExperienceAddOnId = nil
+	}
+	if *bookingExp.UserId == ""{
+		bookingExp.UserId = nil
 	}
 	res,err := b.bookingExpRepo.Insert(ctx, &bookingExp)
 	if err != nil {

@@ -22,7 +22,7 @@ type BookingExp struct {
 	Status 				int			`json:"status"`
 	TicketCode			string		`json:"ticket_code"`
 	TicketQRCode		string		`json:"ticket_qr_code"`
-	ExperienceAddOnId 	string		`json:"experience_add_on_id"`
+	ExperienceAddOnId 	*string		`json:"experience_add_on_id"`
 }
 
 type NewBookingExpCommand struct {
@@ -34,6 +34,8 @@ type NewBookingExpCommand struct {
 	BookingDate 		string	`json:"booking_date"`
 	UserId				*string		`json:"user_id"`
 	Status 				string			`json:"status"`
+	OrderId				string		`json:"order_id"`
 	TicketCode			string		`json:"ticket_code"`
 	TicketQRCode		string		`json:"ticket_qr_code"`
+	ExperienceAddOnId 	*string		`json:"experience_add_on_id"`
 }

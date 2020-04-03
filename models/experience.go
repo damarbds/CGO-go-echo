@@ -56,6 +56,9 @@ type ExperienceDto struct {
 	ExpFacilities           []ExpFacilitiesObject `json:"exp_facilities"`
 	ExpInclusion            []ExpInclusionObject  `json:"exp_inclusion"`
 	ExpRules                []ExpRulesObject      `json:"exp_rules"`
+	ExpAvailability			[]ExpAvailablitityObj		`json:"exp_availability"`
+	ExpPayment				[]ExpPaymentObj			`json:"exp_payment"`
+	ExpPhotos				[]ExpPhotosObj			`json:"exp_photos"`
 	Status                  int                   `json:"status"`
 	Rating                  float64               `json:"rating"`
 	ExpLocationLatitude     float64               `json:"exp_location_latitude"`
@@ -68,6 +71,19 @@ type ExperienceDto struct {
 	HarborsName             string                `json:"harbors_name"`
 	City                    string                `json:"city"`
 	Province                string                `json:"province"`
+}
+type ExpAvailablitityObj struct {
+	Year 			int		`json:"year"`
+	Month 			string		`json:"month"`
+	Date 			[]string	`json:"date"`
+}
+type ExpPaymentObj struct {
+	Currency 			string		`json:"year"`
+	Price 			float64		`json:"month"`
+}
+type ExpPhotosObj struct {
+	Folder			string		`json:"folder"`
+	ExpPhotoImage 	[]CoverPhotosObj `json:"exp_photo_image"`
 }
 type ExpItineraryObject struct {
 	Item []ItemObject `json:"item"`

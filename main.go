@@ -22,6 +22,7 @@ import (
 	_expPhotosRepo "github.com/service/exp_photos/repository"
 	_expPhotosUcase "github.com/service/exp_photos/usecase"
 
+	_expAvailabilityRepo "github.com/service/exp_availability/repository"
 	_experienceHttpDeliver "github.com/service/experience/delivery/http"
 	_experienceRepo "github.com/service/experience/repository"
 	_experienceUcase "github.com/service/experience/usecase"
@@ -128,6 +129,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	expAvailabilityRepo := _expAvailabilityRepo.NewExpavailabilityRepository(dbConn)
 	bookingExpRepo := _bookingExpRepo.NewbookingExpRepository(dbConn)
 	fAQRepo := _fAQRepo.NewReviewRepository(dbConn)
 	experienceAddOnRepo := _experienceAddOnRepo.NewexperienceRepository(dbConn)
@@ -155,6 +157,7 @@ func main() {
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		expAvailabilityRepo,
 		exp_photos,
 		experienceRepo,
 		harborsRepo,
