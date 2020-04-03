@@ -44,7 +44,6 @@ func generateRandomBytes(n int) ([]byte, error) {
 }
 
 func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand) (*models.NewBookingExpCommand,error,error) {
-
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 	if booking.ExpId == ""{

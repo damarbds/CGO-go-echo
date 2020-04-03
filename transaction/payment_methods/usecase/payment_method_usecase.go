@@ -12,8 +12,8 @@ type paymentMethodUsecase struct {
 	contextTimeout time.Duration
 }
 
-// NewPaymentUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPaymentUsecase(p pm.Repository,timeout time.Duration) pm.Usecase {
+// NewPaymentMethodUsecase will create new an articleUsecase object representation of article.Usecase interface
+func NewPaymentMethodUsecase(p pm.Repository,timeout time.Duration) pm.Usecase {
 	return &paymentMethodUsecase{
 		paymentMethodRepo:p,
 		contextTimeout: timeout,

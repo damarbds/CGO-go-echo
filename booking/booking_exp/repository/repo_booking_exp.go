@@ -17,7 +17,6 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewMysqlArticleRepository will create an object that represent the article.Repository interface
 func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository{
 	return &bookingExpRepository{Conn}
@@ -41,11 +40,21 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 		return nil,err
 	}
 
-	//lastID, err := res.LastInsertId()
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//a.Id = lastID
-	return a,nil
+	return a, nil
 }
+
+func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string) (string, error) {
+	var email string
+	query := `SELECT booked_by_email as email FROM booking_exps WHERE id = ?`
+
+	err := b.Conn.QueryRowContext(ctx, query, bookingId).Scan(&email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", models.ErrNotFound
+		}
+		return "", err
+	}
+
+	return email, err
+}
+

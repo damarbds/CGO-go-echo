@@ -6,5 +6,6 @@ import (
 )
 
 type Repository interface {
-	Insert(ctx context.Context, booking *models.BookingExp) (*models.BookingExp,error)
+	Insert(ctx context.Context, booking *models.BookingExp) (*models.BookingExp, error)
+	GetEmailByID(ctx context.Context, bookingId string) (string, error)
 }
