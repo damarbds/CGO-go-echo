@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/files/img_lights.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth/user/delivery/http/user_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/auth/user/delivery/http/user_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/booking/booking_exp/delivery/http/booking_exp_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/booking/booking_exp/delivery/http/booking_exp_handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-    </list>
+    <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -20,7 +14,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" path="C:\Go" />
+  <component name="GOROOT" path="/usr/local/go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -111,11 +105,11 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="275" y="22" key="#GOPATH/0.0.1366.728@0.0.1366.728" timestamp="1585385637563" />
-    <state x="304" y="45" key="#GOROOT" timestamp="1585841713641">
-      <screen x="0" y="0" width="1366" height="728" />
+    <state x="320" y="126" key="#GOROOT" timestamp="1585903116137">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="304" y="45" key="#GOROOT/0.0.1366.728@0.0.1366.728" timestamp="1585841713641" />
-    <state x="320" y="126" key="#GOROOT/0.0.1440.900@0.0.1440.900" timestamp="1585821296014" />
+    <state x="320" y="126" key="#GOROOT/0.0.1440.900@0.0.1440.900" timestamp="1585903116137" />
     <state x="275" y="22" key="#Go_Modules_(vgo)" timestamp="1585386883724">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -296,11 +290,6 @@
           <url>file://$PROJECT_DIR$/service/harbors/delivery/http/harbors_handler.go</url>
           <line>46</line>
           <option name="timeStamp" value="59" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/main.go</url>
-          <line>2</line>
-          <option name="timeStamp" value="65" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/auth/identityserver/usecase/identityserver_usecase.go</url>

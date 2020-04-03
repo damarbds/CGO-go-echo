@@ -17,12 +17,12 @@ import (
 	"github.com/models"
 )
 
-// ResponseError represent the reseponse error struct
+// ResponseError represent the response error struct
 type ResponseError struct {
 	Message string `json:"message"`
 }
 
-// userHandler  represent the httphandler for user
+// userHandler  represent the http handler for user
 type userHandler struct {
 	userUsecase user.Usecase
 	isUsecase   identityserver.Usecase

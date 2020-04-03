@@ -12,8 +12,8 @@ type promoUsecase struct {
 	contextTimeout time.Duration
 }
 
-// NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewArticleUsecase(p promo.Repository,timeout time.Duration) promo.Usecase {
+// NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
+func NewPromoUsecase(p promo.Repository,timeout time.Duration) promo.Usecase {
 	return &promoUsecase{
 		promoRepo:p,
 		contextTimeout: timeout,
