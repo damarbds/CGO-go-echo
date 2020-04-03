@@ -14,7 +14,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" path="C:\Go" />
+  <component name="GOROOT" path="/usr/local/go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -105,11 +105,11 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="275" y="22" key="#GOPATH/0.0.1366.728@0.0.1366.728" timestamp="1585385637563" />
-    <state x="304" y="45" key="#GOROOT" timestamp="1585841713641">
-      <screen x="0" y="0" width="1366" height="728" />
+    <state x="320" y="126" key="#GOROOT" timestamp="1585903116137">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="304" y="45" key="#GOROOT/0.0.1366.728@0.0.1366.728" timestamp="1585841713641" />
-    <state x="320" y="126" key="#GOROOT/0.0.1440.900@0.0.1440.900" timestamp="1585821296014" />
+    <state x="320" y="126" key="#GOROOT/0.0.1440.900@0.0.1440.900" timestamp="1585903116137" />
     <state x="275" y="22" key="#Go_Modules_(vgo)" timestamp="1585386883724">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -290,11 +290,6 @@
           <url>file://$PROJECT_DIR$/service/harbors/delivery/http/harbors_handler.go</url>
           <line>46</line>
           <option name="timeStamp" value="59" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/main.go</url>
-          <line>2</line>
-          <option name="timeStamp" value="65" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/auth/identityserver/usecase/identityserver_usecase.go</url>

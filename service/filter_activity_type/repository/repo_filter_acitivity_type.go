@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"time"
-	"github.com/service/filter_activity_type"
+
 	"github.com/models"
+	"github.com/service/filter_activity_type"
 )
 
 const (

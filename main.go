@@ -66,6 +66,10 @@ import (
 
 	_inspirationRepo "github.com/service/exp_inspiration/repository"
 	_typesRepo "github.com/service/exp_types/repository"
+
+	_paymentMethodHttpDeliver "github.com/transaction/payment_methods/delivery/http"
+	_paymentMethodRepo "github.com/transaction/payment_methods/repository"
+	_paymentMethodUcase "github.com/transaction/payment_methods/usecase"
 )
 
 // func init() {
@@ -146,6 +150,7 @@ func main() {
 	promoRepo := _promoRepo.NewpromoRepository(dbConn)
 	typesRepo := _typesRepo.NewExpTypeRepository(dbConn)
 	inspirationRepo := _inspirationRepo.NewExpInspirationRepository(dbConn)
+	paymentMethodRepo := _paymentMethodRepo.NewPaymentMethodRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -153,7 +158,7 @@ func main() {
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
-	promoUsecase := _promoUcase.NewArticleUsecase(promoRepo, timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
@@ -172,6 +177,7 @@ func main() {
 	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
+	pmUsecase := _paymentMethodUcase.NewPaymentUsecase(paymentMethodRepo, timeoutContext)
 
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase, isUsecase)
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
@@ -185,6 +191,7 @@ func main() {
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
+	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
 
 	log.Fatal(e.Start(":9090"))
 }
