@@ -89,3 +89,16 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 
 	return res.Id, nil
 }
+
+func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.ConfirmPaymentIn) error {
+	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
+	defer cancel()
+
+	err := p.paymentRepo.ConfirmPayment(ctx, confirmIn)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+

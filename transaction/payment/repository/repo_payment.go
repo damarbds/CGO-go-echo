@@ -55,3 +55,32 @@ func (p paymentRepository) Insert(ctx context.Context, pay *models.Transaction) 
 
 	return pay, nil
 }
+
+func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models.ConfirmPaymentIn) error {
+	query := `
+	UPDATE
+		transactions,
+		booking_exps
+	SET
+		transactions.status = ?,
+		booking_exps.status = ?
+	WHERE
+		booking_exp_id = booking_exps.id
+		AND transactions.id = ?`
+
+	stmt, err := p.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx,
+		confirmIn.TransactionStatus,
+		confirmIn.BookingStatus,
+		confirmIn.TransactionID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
