@@ -8,6 +8,9 @@
       <change beforePath="$PROJECT_DIR$/service/experience/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/repository.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/experience/repository/repo_experience.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/repository/repo_experience.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/experience/usecase/experience_usecase.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/transaction.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/transaction.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction/payment/delivery/http/payment_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/transaction/payment/delivery/http/payment_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction/payment/usecase/payment_usecase.go" beforeDir="false" afterPath="$PROJECT_DIR$/transaction/payment/usecase/payment_usecase.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -175,10 +178,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="691" height="372" key="XDebugger.FullValuePopup/0.0.1366.728@0.0.1366.728" timestamp="1585595574427" />
-    <state x="386" y="207" width="667" height="486" key="find.popup" timestamp="1585920027055">
+    <state x="386" y="207" width="667" height="486" key="find.popup" timestamp="1585922946954">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state x="386" y="207" width="667" height="486" key="find.popup/0.0.1440.900@0.0.1440.900" timestamp="1585920027055" />
+    <state x="386" y="207" width="667" height="486" key="find.popup/0.0.1440.900@0.0.1440.900" timestamp="1585922946954" />
     <state x="365" y="61" width="709" height="839" key="search.everywhere.popup" timestamp="1585732343261">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
@@ -302,11 +305,6 @@
           <url>file://$PROJECT_DIR$/auth/identityserver/usecase/identityserver_usecase.go</url>
           <line>57</line>
           <option name="timeStamp" value="66" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/booking/booking_exp/repository/repo_booking_exp.go</url>
-          <line>26</line>
-          <option name="timeStamp" value="70" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/service/experience/usecase/experience_usecase.go</url>
