@@ -2,15 +2,10 @@ package http
 
 import (
 	"context"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-
-	"github.com/auth/identityserver"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	validator "gopkg.in/go-playground/validator.v9"
+	"net/http"
 
 	"github.com/booking/booking_exp"
 	"github.com/models"
@@ -24,17 +19,15 @@ type ResponseError struct {
 // booking_expHandler  represent the httphandler for booking_exp
 type booking_expHandler struct {
 	booking_expUsecase booking_exp.Usecase
-	isUsecase          identityserver.Usecase
 }
 
 // Newbooking_expHandler will initialize the booking_exps/ resources endpoint
-func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase, is identityserver.Usecase) {
+func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	handler := &booking_expHandler{
 		booking_expUsecase: us,
-		isUsecase:          is,
 	}
 	e.POST("booking/checkout", handler.Createbooking_exp)
-	//e.PUT("/booking_exps/:id", handler.Updatebooking_exp)
+	e.GET("booking/detail/:id", handler.GetDetail)
 }
 
 func isRequestValid(m *models.NewBookingExpCommand) (bool, error) {
@@ -45,36 +38,27 @@ func isRequestValid(m *models.NewBookingExpCommand) (bool, error) {
 	}
 	return true, nil
 }
+func (a *booking_expHandler) GetDetail(c echo.Context) error {
+	id := c.Param("id")
 
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.booking_expUsecase.GetDetailBookingID(ctx,id)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
 // Store will store the booking_exp by given request body
 func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
-	filupload, image, _ := c.Request().FormFile("ticket_qr_code")
-	dir, err := os.Getwd()
-	if err != nil {
-		return models.ErrInternalServerError
-	}
-	fileLocation := filepath.Join(dir, "files", image.Filename)
-	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
-		return models.ErrInternalServerError
-	}
-	defer targetFile.Close()
+	//filupload, image, _ := c.Request().FormFile("ticket_qr_code")
 
-	if _, err := io.Copy(targetFile, filupload); err != nil {
-		return models.ErrInternalServerError
-	}
-
-	//w.Write([]byte("done"))
-	imagePath, _ := a.isUsecase.UploadFileToBlob(fileLocation, "TicketBookingQRCode")
-	targetFile.Close()
-	errRemove := os.Remove(fileLocation)
-	if errRemove != nil {
-		return models.ErrInternalServerError
-	}
 	var bookingExpcommand models.NewBookingExpCommand
 	user_id := c.FormValue("user_id")
 	exp_add_ons := c.FormValue("experience_add_on_id")
@@ -88,7 +72,7 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 		UserId:            &user_id,
 		Status:            c.FormValue("status"),
 		TicketCode:        c.FormValue("ticket_code"),
-		TicketQRCode:      imagePath,
+		TicketQRCode:      "#",
 		ExperienceAddOnId: &exp_add_ons,
 	}
 

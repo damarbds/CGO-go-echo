@@ -134,17 +134,22 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 		if err != nil {
 			return nil, err
 		}
-		expPhotos, err := m.expPhotos.GetByExperienceID(ctx,element.Id)
-		if err != nil {
-			return nil, models.ErrInternalServerError
-		}
+		//expPhotos, err := m.expPhotos.GetByExperienceID(ctx,element.Id)
+		//if err != nil {
+		//	return nil, models.ErrInternalServerError
+		//}
 
 		var	coverPhotos []models.CoverPhotosObj
 		var	cityPhotos []models.CoverPhotosObj
-	if expPhotos != nil {
-		if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
-			return nil,models.ErrInternalServerError
+	if element.ExpCoverPhoto != nil {
+		covertPhoto := models.CoverPhotosObj{
+			Original:  *element.ExpCoverPhoto,
+			Thumbnail: "",
 		}
+		coverPhotos = append(coverPhotos,covertPhoto)
+		//if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
+		//	return nil,models.ErrInternalServerError
+		//}
 	}
 	if element.CityPhotos != nil {
 		if errUnmarshal := json.Unmarshal([]byte(*element.CityPhotos), &cityPhotos); errUnmarshal != nil {
@@ -157,18 +162,25 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 			return nil, err
 		}
 
-		var currency string
-		if expPayment.Currency == 1 {
-			currency = "USD"
-		} else {
-			currency = "IDR"
-		}
 		var priceItemType string
-		if expPayment.PriceItemType == 1 {
-			priceItemType = "Per Pax"
-		} else {
-			priceItemType = "Per Trip"
+		var currency string
+		if expPayment != nil {
+			if expPayment.Currency == 1 {
+				currency = "USD"
+			} else {
+				currency = "IDR"
+			}
+
+			if expPayment.PriceItemType == 1 {
+				priceItemType = "Per Pax"
+			} else {
+				priceItemType = "Per Trip"
+			}
+		}else {
+			priceItemType = ""
+			currency = ""
 		}
+
 		//expDto := models.ExperienceUserDiscoverPreferenceDto{}
 
 		if len(expListDto) == 0 {
@@ -518,6 +530,10 @@ func (m experienceUsecase)GetByID(c context.Context, id string) (*models.Experie
 	harbors , err := m.harborsRepo.GetByID(ctx,res.HarborsId)
 	city, err := m.cpcRepo.GetCityByID(ctx,harbors.CityId)
 	province, err := m.cpcRepo.GetProvinceByID(ctx,city.ProvinceId)
+	minimumBooking := models.MinimumBookingObj{
+		MinimumBookingDesc:   res.MinimumBookingDesc,
+		MinimumBookingAmount: res.MinimumBookingAmount,
+	}
 	experiences := models.ExperienceDto{
 		Id:                      res.Id,
 		ExpTitle:                res.ExpTitle,
@@ -545,7 +561,7 @@ func (m experienceUsecase)GetByID(c context.Context, id string) (*models.Experie
 		ExpLocationName:         res.ExpLocationName,
 		ExpCoverPhoto:           res.ExpCoverPhoto,
 		ExpDuration:             res.ExpDuration,
-		MinimumBookingId:        res.MinimumBookingId,
+		MinimumBooking:        minimumBooking,
 		MerchantId:              res.MerchantId,
 		HarborsName:              harbors.HarborsName,
 		City:					city.CityName,

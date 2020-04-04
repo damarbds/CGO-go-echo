@@ -191,6 +191,71 @@ func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string,
 
 	return result, nil
 }
+func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query string, args ...interface{}) ([]*models.ExperienceJoinForegnKey, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ExperienceJoinForegnKey, 0)
+	for rows.Next() {
+		t := new(models.ExperienceJoinForegnKey)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.ExpTitle,
+			&t.ExpType,
+			&t.ExpTripType,
+			&t.ExpBookingType,
+			&t.ExpDesc,
+			&t.ExpMaxGuest,
+			&t.ExpPickupPlace,
+			&t.ExpPickupTime,
+			&t.ExpPickupPlaceLongitude,
+			&t.ExpPickupPlaceLatitude,
+			&t.ExpPickupPlaceMapsName,
+			&t.ExpInternary,
+			&t.ExpFacilities,
+			&t.ExpInclusion,
+			&t.ExpRules,
+			&t.Status,
+			&t.Rating,
+			&t.ExpLocationLatitude,
+			&t.ExpLocationLongitude,
+			&t.ExpLocationName,
+			&t.ExpCoverPhoto,
+			&t.ExpDuration,
+			&t.MinimumBookingId,
+			&t.MerchantId,
+			&t.HarborsId,
+			&t.MinimumBookingAmount,
+			&t.MinimumBookingDesc,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
 
 func (m *experienceRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Experience, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
@@ -368,10 +433,12 @@ func (m *experienceRepository) Fetch(ctx context.Context, cursor string, num int
 
 	return res, nextCursor, err
 }
-func (m *experienceRepository) GetByID(ctx context.Context, id string) (res *models.Experience, err error) {
-	query := `SELECT * FROM experiences WHERE id = ? AND is_deleted = 0 AND is_active = 1`
+func (m *experienceRepository) GetByID(ctx context.Context, id string) (res *models.ExperienceJoinForegnKey, err error) {
+	query := `SELECT e.*,m.minimum_booking_amount,m.minimum_booking_desc FROM cgo_indonesia.experiences e 
+				join cgo_indonesia.minimum_bookings m on m.id = e.minimum_booking_id
+ 				WHERE  e.is_deleted = 0 AND e.is_active = 1 AND e.id=?`
 
-	list, err := m.fetch(ctx, query, id)
+	list, err := m.fetchJoinForegnKey(ctx, query, id)
 	if err != nil {
 		return nil, err
 	}

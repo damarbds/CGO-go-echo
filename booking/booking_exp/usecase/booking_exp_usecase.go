@@ -1,31 +1,61 @@
 package usecase
 
 import (
-	"math/rand"
-	"time"
-
+	"encoding/json"
+	"github.com/auth/identityserver"
 	"github.com/auth/user"
 	"github.com/booking/booking_exp"
 	"github.com/models"
+	"github.com/skip2/go-qrcode"
 	"golang.org/x/net/context"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"time"
 )
 
 type bookingExpUsecase struct {
 	bookingExpRepo booking_exp.Repository
 	userUsecase    user.Usecase
+	isUsecase		identityserver.Usecase
 	contextTimeout time.Duration
 }
 
+
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(a booking_exp.Repository, is user.Usecase, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, is identityserver.Usecase,timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
 		bookingExpRepo: a,
-		userUsecase:    is,
+		userUsecase:    u,
+		isUsecase:is,
 		contextTimeout: timeout,
 	}
 }
+func generateQRCode(content string) (*string,error){
+	var png []byte
+	png, err := qrcode.Encode(content, qrcode.Medium, 256)
+	if err != nil {
+		return nil,err
+	}
+	name, err := generateRandomString(5)
+	if err != nil {
+		return nil,err
+	}
+
+	fileName := name + ".png"
+	err = ioutil.WriteFile(fileName, png, 0700)
+	copy , err:= os.Open(fileName)
+	if err != nil {
+		return nil,err
+	}
+	copy.Close()
+	return &fileName,nil
+
+	//err := qrcode.WriteFile("https://example.org", qrcode.Medium, 256, "qr.png")
+
+}
 func generateRandomString(n int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	bytes, err := generateRandomBytes(n)
 	if err != nil {
 		return "", err
@@ -45,11 +75,60 @@ func generateRandomBytes(n int) ([]byte, error) {
 
 	return b, nil
 }
+func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId string) (*models.BookingExpDetailDto, error) {
+	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
+	defer cancel()
+	getDetailBooking ,err := b.bookingExpRepo.GetDetailBookingID(ctx,bookingId)
+	if err != nil {
+		return nil,err
+	}
+	var bookedBy []models.BookedByObj
+	var guestDesc []models.GuestDescObj
+	var expType   []string
+	if getDetailBooking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+	}
+	if getDetailBooking.GuestDesc != "" {
+		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.GuestDesc), &guestDesc); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+	}
+	if getDetailBooking.ExpType != "" {
+		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.ExpType), &expType); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+	}
+	bookingExp := models.BookingExpDetailDto{
+		Id:                getDetailBooking.Id,
+		ExpId:             getDetailBooking.ExpId,
+		OrderId:           getDetailBooking.OrderId,
+		GuestDesc:         guestDesc,
+		BookedBy:          bookedBy,
+		BookedByEmail:     getDetailBooking.BookedByEmail,
+		BookingDate:       getDetailBooking.BookingDate,
+		UserId:            getDetailBooking.UserId,
+		Status:            getDetailBooking.Status,
+		//TicketCode:        getDetailBooking.TicketCode,
+		TicketQRCode:      getDetailBooking.TicketQRCode,
+		ExperienceAddOnId: getDetailBooking.ExperienceAddOnId,
+		ExpTitle:          getDetailBooking.ExpTitle,
+		ExpType:expType,
+		ExpPickupPlace:    getDetailBooking.ExpPickupPlace,
+		ExpPickupTime:     getDetailBooking.ExpPickupTime,
+		TotalPrice:        getDetailBooking.TotalPrice,
+		PaymentType:       getDetailBooking.PaymentType,
+	}
+	return &bookingExp,nil
+
+}
 
 func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand, token string) (*models.NewBookingExpCommand, error, error) {
 
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
+
 	if booking.ExpId == "" {
 		return nil, models.ValidationExpId, nil
 	}
@@ -71,6 +150,10 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if err != nil {
 		return nil, models.ErrInternalServerError, nil
 	}
+	ticketCode, err := generateRandomString(12)
+	if err != nil {
+		return nil, models.ErrInternalServerError, nil
+	}
 	var createdBy string
 	if token != "" {
 		currentUser, err := b.userUsecase.ValidateTokenUser(ctx, token)
@@ -82,6 +165,18 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		createdBy = booking.BookedByEmail
 	}
 	booking.OrderId = orderId
+	booking.TicketCode = ticketCode
+	fileNameQrCode,err := generateQRCode(orderId)
+	if err != nil {
+		return nil,models.ErrInternalServerError,nil
+	}
+	imagePath, _ := b.isUsecase.UploadFileToBlob(*fileNameQrCode, "TicketBookingQRCode")
+
+	errRemove := os.Remove(*fileNameQrCode)
+	if errRemove != nil {
+		return nil,models.ErrInternalServerError,nil
+	}
+	booking.TicketQRCode = imagePath
 	bookingExp := models.BookingExp{
 		Id:                "",
 		CreatedBy:         createdBy,
@@ -100,8 +195,8 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		BookingDate:       bookngDate,
 		UserId:            booking.UserId,
 		Status:            0,
-		TicketCode:        booking.TicketCode,
-		TicketQRCode:      booking.TicketQRCode,
+		TicketCode:        ticketCode,
+		TicketQRCode:      imagePath,
 		ExperienceAddOnId: booking.ExperienceAddOnId,
 	}
 	if *bookingExp.ExperienceAddOnId == "" {

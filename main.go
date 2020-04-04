@@ -188,10 +188,10 @@ func main() {
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase,timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, isUsecase, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, timeoutContext)
 
-	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase, isUsecase)
+	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
 	_reviewsHttpDeliver.NewreviewsHandler(e, reivewsUsecase)
 	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e, experienceAddOnUsecase)

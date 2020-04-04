@@ -71,6 +71,8 @@ func (e expPaymentRepository) GetByExpID(ctx context.Context, expID string) (*mo
 			return nil, models.ErrNotFound
 		}
 		return nil, err
+	}else if len(list) == 0 {
+		return nil,nil
 	}
 
 	return list[0], nil

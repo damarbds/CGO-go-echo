@@ -21,9 +21,10 @@ require (
 	github.com/mattn/go-isatty v0.0.3 // indirect
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
-	github.com/pkg/errors v0.9.1
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.0.5
+	github.com/skip2/go-qrcode v0.0.0-20191027152451-9434209cb086
 	github.com/stretchr/objx v0.1.0 // indirect
 	github.com/stretchr/testify v1.2.1
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
