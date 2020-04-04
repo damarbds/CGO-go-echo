@@ -59,7 +59,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		if err != nil {
 			return "", err
 		}
-		createdBy = *currentUser
+		createdBy = currentUser.UserEmail
 	}
 
 	newData := &models.Transaction{
