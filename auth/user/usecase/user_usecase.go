@@ -38,7 +38,7 @@ func (m userUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetTo
 	return  requestToken,err
 }
 
-func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*string, error) {
+func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*models.UserInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -50,8 +50,16 @@ func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*stri
 	if existeduser == nil {
 		return nil,models.ErrUnAuthorize
 	}
-	currentUser := getInfoToIs.Username
-	return &currentUser,nil
+
+	userInfo := &models.UserInfoDto{
+		Id:             existeduser.Id,
+		UserEmail:      existeduser.UserEmail,
+		FullName:       existeduser.FullName,
+		PhoneNumber:    existeduser.PhoneNumber,
+		ProfilePictUrl: existeduser.ProfilePictUrl,
+	}
+
+	return userInfo ,nil
 }
 
 func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.UserInfoDto, error) {

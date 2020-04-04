@@ -2,6 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cba97727-76c5-4b6d-a98b-f677a7508060" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/delivery/http/wishlists_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/delivery/http/wishlists_handler_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/repository/repo_wishlist.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/repository/repo_wishlist_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/usecase/wishlist_usecase.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profile/wishlists/usecase/wishlist_usecase_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/booking/booking_exp/delivery/http/booking_exp_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/booking/booking_exp/delivery/http/booking_exp_handler.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/booking/booking_exp/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/booking/booking_exp/repository.go" afterDir="false" />
@@ -178,6 +186,17 @@
     <state width="691" height="372" key="XDebugger.FullValuePopup" timestamp="1585997156752">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
+    <state width="691" height="372" key="XDebugger.FullValuePopup/0.0.1366.728@0.0.1366.728" timestamp="1585595574427" />
+    <state x="375" y="72" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1585993853420">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="375" y="72" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1440.900@0.0.1440.900" timestamp="1585993853420" />
+    <state x="386" y="207" width="667" height="486" key="find.popup" timestamp="1585999697793">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="386" y="207" width="667" height="486" key="find.popup/0.0.1440.900@0.0.1440.900" timestamp="1585999697793" />
+    <state x="365" y="61" width="709" height="839" key="search.everywhere.popup" timestamp="1585732343261">
+      <screen x="0" y="0" width="1440" height="900" />
     <state width="691" height="372" key="XDebugger.FullValuePopup/0.0.1366.728@0.0.1366.728" timestamp="1585997156752" />
     <state x="386" y="207" width="667" height="486" key="find.popup" timestamp="1585922946954">
       <screen x="0" y="0" width="1440" height="900" />

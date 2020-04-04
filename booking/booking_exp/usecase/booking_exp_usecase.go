@@ -160,7 +160,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		if err != nil {
 			return nil, err, nil
 		}
-		createdBy = *currentUser
+		createdBy = currentUser.UserEmail
 	} else {
 		createdBy = booking.BookedByEmail
 	}

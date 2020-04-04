@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-// ResponseError represent the reseponse error struct
+// ResponseError represent the response error struct
 type ResponseError struct {
 	Message string `json:"message"`
 }
@@ -24,6 +24,7 @@ func NewPaymentHandler(e *echo.Echo, pus payment.Usecase) {
 		paymentUsecase: pus,
 	}
 	e.POST("/transaction/payments", handler.CreatePayment)
+	e.PUT("/transaction/payments/confirm", handler.ConfirmPayment)
 }
 
 func isRequestValid(m *models.TransactionIn) (bool, error) {
@@ -35,6 +36,39 @@ func isRequestValid(m *models.TransactionIn) (bool, error) {
 	return true, nil
 }
 
+func (p *paymentHandler) ConfirmPayment(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	cp := new(models.ConfirmPaymentIn)
+	if err := c.Bind(cp); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err := p.paymentUsecase.ConfirmPayment(ctx, cp)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	response := &models.PaymentTransaction{
+		Status:        http.StatusOK,
+		Message:       "Confirm Payment Succeeds",
+		TransactionID: cp.TransactionID,
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -42,7 +76,7 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 
 	t := new(models.TransactionIn)
 	if err := c.Bind(t); err != nil {
-		return models.ErrBadParamInput
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
 	}
 
 	if ok, err := isRequestValid(t); !ok {

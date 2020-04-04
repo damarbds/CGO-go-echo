@@ -38,3 +38,9 @@ type TransactionIn struct {
 	TotalPrice          float64    `json:"total_price,omitempty"`
 	Currency            string     `json:"currency"`
 }
+
+type ConfirmPaymentIn struct {
+	TransactionID string `json:"transaction_id"`
+	TransactionStatus int `json:"transaction_status,omitempty"`
+	BookingStatus int `json:"booking_status,omitempty"`
+}

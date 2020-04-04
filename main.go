@@ -74,6 +74,10 @@ import (
 	_paymentHttpDeliver "github.com/transaction/payment/delivery/http"
 	_paymentTrRepo "github.com/transaction/payment/repository"
 	_paymentUcase "github.com/transaction/payment/usecase"
+
+	_wishlistHttpHandler "github.com/profile/wishlists/delivery/http"
+	_wishlistRepo "github.com/profile/wishlists/repository"
+	_wishlistUcase "github.com/profile/wishlists/usecase"
 )
 
 // func init() {
@@ -156,6 +160,7 @@ func main() {
 	inspirationRepo := _inspirationRepo.NewExpInspirationRepository(dbConn)
 	paymentMethodRepo := _paymentMethodRepo.NewPaymentMethodRepository(dbConn)
 	paymentTrRepo := _paymentTrRepo.NewPaymentRepository(dbConn)
+	wlRepo := _wishlistRepo.NewWishListRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -183,8 +188,8 @@ func main() {
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
-
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase,isUsecase,timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, isUsecase, timeoutContext)
+	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, timeoutContext)
 
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
@@ -200,6 +205,7 @@ func main() {
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
 	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase)
+	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
 
 	log.Fatal(e.Start(":9090"))
 }
