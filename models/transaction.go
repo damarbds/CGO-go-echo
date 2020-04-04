@@ -27,3 +27,14 @@ type PaymentTransaction struct {
 	Message       string `json:"message"`
 	TransactionID string `json:"transaction_id"`
 }
+
+type TransactionIn struct {
+	BookingType         int        `json:"booking_type,omitempty"`
+	BookingExpId        string     `json:"booking_exp_id"`
+	PromoId             string     `json:"promo_id"`
+	PaymentMethodId     string     `json:"payment_method_id"`
+	ExperiencePaymentId string     `json:"experience_payment_id"`
+	Status              int        `json:"status,omitempty"`
+	TotalPrice          float64    `json:"total_price,omitempty"`
+	Currency            string     `json:"currency"`
+}
