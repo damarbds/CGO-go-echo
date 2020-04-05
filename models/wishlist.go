@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -15,8 +14,8 @@ type Wishlist struct {
 	DeletedDate  *time.Time     `json:"deleted_date"`
 	IsDeleted    int            `json:"is_deleted" validate:"required"`
 	IsActive     int            `json:"is_active" validate:"required"`
-	TransId      sql.NullString `json:"trans_id"`
-	ExpId        sql.NullString `json:"exp_id"`
+	TransId      string `json:"trans_id"`
+	ExpId        string `json:"exp_id"`
 	UserId       string         `json:"user_id"`
 }
 
