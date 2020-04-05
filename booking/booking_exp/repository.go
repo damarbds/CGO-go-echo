@@ -11,4 +11,6 @@ type Repository interface {
 	GetDetailBookingID(ctx context.Context, bookingId string) (*models.BookingExpJoin, error)
 	UpdateStatus(ctx context.Context, bookingId string) error
 	GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error)
+	QueryHistoryPer30DaysByUserId(ctx context.Context,userId string)([]*models.BookingExpHistory,error)
+	QueryHistoryPerMonthByUserId(ctx context.Context,userId string,yearMonth string)([]*models.BookingExpHistory,error)
 }

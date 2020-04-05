@@ -21,6 +21,7 @@ type bookingExpUsecase struct {
 	contextTimeout time.Duration
 }
 
+
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, is identityserver.Usecase,timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -250,4 +251,102 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	}
 	booking.Id = res.Id
 	return booking, nil, nil
+}
+
+func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string,monthType string) ([]*models.BookingHistoryDto,error) {
+	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
+	defer cancel()
+	var currentUserId string
+	if token != "" {
+		validateUser, err := b.userUsecase.ValidateTokenUser(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+		currentUserId = validateUser.Id
+	}
+	var guestDesc []models.GuestDescObj
+	var result []*models.BookingHistoryDto
+	if monthType == "past-30-days"{
+		query , err := b.bookingExpRepo.QueryHistoryPer30DaysByUserId(ctx,currentUserId)
+		if err != nil {
+			return nil,err
+		}
+		historyDto := models.BookingHistoryDto{
+			Category: "past-30-days",
+			Items:    nil,
+		}
+		for _,element := range query {
+			var expType  []string
+			if element.ExpType != nil {
+				if errUnmarshal := json.Unmarshal([]byte(*element.ExpType), &expType); errUnmarshal != nil {
+					return nil,models.ErrInternalServerError
+				}
+			}
+			if element.GuestDesc != "" {
+				if errUnmarshal := json.Unmarshal([]byte(element.GuestDesc), &guestDesc); errUnmarshal != nil {
+					return nil,models.ErrInternalServerError
+				}
+			}
+			totalGuest := len(guestDesc)
+			itemDto := models.ItemsHistoryDto{
+				ExpId:          element.ExpId,
+				ExpTitle:       element.ExpTitle,
+				ExpType:        expType,
+				ExpBookingDate: element.BookingDate,
+				ExpDuration:    element.ExpDuration,
+				TotalGuest:     totalGuest,
+				City:           element.CityName,
+				Province:       element.ProvinceName,
+				Country:        element.CountryName,
+				Status:         element.StatusTransaction,
+			}
+			historyDto.Items = append(historyDto.Items,itemDto)
+		}
+		result = append(result,&historyDto)
+	}else {
+		//test := "2006-05"
+		//year := string(monthType[0] + monthType[1] + monthType[2] + monthType[3])
+		//month := string (monthType[5] + monthType[6])
+		query , err := b.bookingExpRepo.QueryHistoryPerMonthByUserId(ctx,currentUserId,monthType)
+		if err != nil {
+			return nil,err
+		}
+		monthType = monthType + "-" + "01" + " 00:00:00"
+		layoutFormat := "2006-01-02 15:04:05"
+		dt , _ := time.Parse(layoutFormat,monthType)
+		dtstr2 := dt.Format("Jan '06")
+		historyDto := models.BookingHistoryDto{
+			Category: dtstr2,
+			Items:    nil,
+		}
+		for _,element := range query {
+			var expType  []string
+			if element.ExpType != nil {
+				if errUnmarshal := json.Unmarshal([]byte(*element.ExpType), &expType); errUnmarshal != nil {
+					return nil,models.ErrInternalServerError
+				}
+			}
+			if element.GuestDesc != "" {
+				if errUnmarshal := json.Unmarshal([]byte(element.GuestDesc), &guestDesc); errUnmarshal != nil {
+					return nil,models.ErrInternalServerError
+				}
+			}
+			totalGuest := len(guestDesc)
+			itemDto := models.ItemsHistoryDto{
+				ExpId:          element.ExpId,
+				ExpTitle:       element.ExpTitle,
+				ExpType:        expType,
+				ExpBookingDate: element.BookingDate,
+				ExpDuration:    element.ExpDuration,
+				TotalGuest:     totalGuest,
+				City:           element.CityName,
+				Province:       element.ProvinceName,
+				Country:        element.CountryName,
+				Status:         element.StatusTransaction,
+			}
+			historyDto.Items = append(historyDto.Items,itemDto)
+		}
+		result = append(result,&historyDto)
+	}
+	return result,nil
 }

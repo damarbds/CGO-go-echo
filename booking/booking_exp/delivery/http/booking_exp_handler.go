@@ -29,6 +29,7 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	e.POST("booking/checkout", handler.Createbooking_exp)
 	e.GET("booking/detail/:id", handler.GetDetail)
 	e.GET("booking/my", handler.GetMyBooking)
+	e.GET("booking/history-user", handler.GetHistoryBookingByUser)
 }
 
 func isRequestValid(m *models.NewBookingExpCommand) (bool, error) {
@@ -76,6 +77,26 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func (a *booking_expHandler) GetHistoryBookingByUser(c echo.Context) error {
+
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	monthType := c.QueryParam("month_type")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.booking_expUsecase.GetHistoryBookingByUserId(ctx,token,monthType)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
 func (a *booking_expHandler) GetDetail(c echo.Context) error {
 	id := c.Param("id")
 

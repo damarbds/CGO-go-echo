@@ -23,6 +23,8 @@ type BookingExpHistory struct {
 	TicketCode			string		`json:"ticket_code"`
 	TicketQRCode		string		`json:"ticket_qr_code"`
 	ExperienceAddOnId 	*string		`json:"experience_add_on_id"`
+	ExpTitle			string		`json:"exp_title"`
+	ExpType 			*string		`json:"exp_type"`
 	ExpDuration			int			`json:"exp_duration"`
 	CityName 			string		`json:"city_name"`
 	ProvinceName		string 		`json:"province_name"`
@@ -37,9 +39,9 @@ type BookingHistoryDto struct {
 type ItemsHistoryDto struct {
 	ExpId	string `json:"exp_id"`
 	ExpTitle string	`json:"exp_title"`
-	ExpType string	`json:"exp_type"`
+	ExpType []string	`json:"exp_type"`
 	ExpBookingDate time.Time	`json:"exp_booking_date"`
-	ExpDuration string	`json:"exp_duration"`
+	ExpDuration int	`json:"exp_duration"`
 	TotalGuest	int	`json:"total_guest"`
 	City		string	`json:"city"`
 	Province	string	`json:"province"`
