@@ -463,15 +463,24 @@ func (m experienceUsecase)GetByID(c context.Context, id string) (*models.Experie
 	}
 	var expPayment []models.ExpPaymentObj
 	expPaymentQuery, errorQuery := m.paymentRepo.GetByExpID(ctx,res.Id)
+
 	var currency string
 	if expPaymentQuery.Currency == 1 {
 		currency = "USD"
 	} else {
 		currency = "IDR"
 	}
+
+	var priceItemType string
+	if expPaymentQuery.PriceItemType == 1 {
+		priceItemType = "Per Pax"
+	} else {
+		priceItemType = "Per Trip"
+	}
 	expPayobj := models.ExpPaymentObj{
 		Currency: currency,
 		Price:    expPaymentQuery.Price,
+		PriceItemType:priceItemType,
 	}
 	expPayment = append(expPayment,expPayobj)
 	var expAvailability []models.ExpAvailablitityObj
