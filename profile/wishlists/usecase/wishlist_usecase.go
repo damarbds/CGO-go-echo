@@ -2,24 +2,115 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/auth/user"
 	"github.com/models"
+	"github.com/product/reviews"
 	"github.com/profile/wishlists"
+	"github.com/service/exp_payment"
+	"github.com/service/experience"
 	"time"
 )
 
 type wishListUsecase struct {
 	wlRepo wishlists.Repository
 	userUsercase user.Usecase
+	expRepo experience.Repository
+	paymentRepo exp_payment.Repository
+	reviewRepo reviews.Repository
 	ctxTimeout time.Duration
 }
 
-func NewWishlistUsecase(w wishlists.Repository, u user.Usecase, timeout time.Duration) wishlists.Usecase {
+func NewWishlistUsecase(
+	w wishlists.Repository,
+	u user.Usecase,
+	e experience.Repository,
+	p exp_payment.Repository,
+	r reviews.Repository,
+	timeout time.Duration,
+) wishlists.Usecase {
 	return &wishListUsecase{
 		wlRepo:     w,
 		userUsercase: u,
+		expRepo: e,
+		paymentRepo: p,
+		reviewRepo: r,
 		ctxTimeout: timeout,
 	}
+}
+
+func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.WishlistOut, error) {
+	ctx, cancel := context.WithTimeout(ctx, w.ctxTimeout)
+	defer cancel()
+
+	currentUser, err := w.userUsercase.ValidateTokenUser(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	wLists, err := w.wlRepo.List(ctx, currentUser.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*models.WishlistOut, len(wLists))
+	for i, wl := range wLists {
+		exp, err := w.expRepo.GetByID(ctx, wl.ExpId.String)
+		if err != nil {
+			return nil, err
+		}
+
+		var	expType []string
+		if errUnmarshal := json.Unmarshal([]byte(exp.ExpType), &expType); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+
+		expPayment, err := w.paymentRepo.GetByExpID(ctx, exp.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		var currency string
+		if expPayment.Currency == 1 {
+			currency = "USD"
+		} else {
+			currency = "IDR"
+		}
+
+		var priceItemType string
+		if expPayment.PriceItemType == 1 {
+			priceItemType = "Per Pax"
+		} else {
+			priceItemType = "Per Trip"
+		}
+
+		countRating, err := w.reviewRepo.CountRating(ctx, exp.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		wtype := "EXPERIENCE"
+		if wl.TransId.String != "" {
+			wtype = "TRANSPORTATION"
+		}
+
+		results[i] = &models.WishlistOut{
+			WishlistID:  wl.Id,
+			Type:        wtype,
+			ExpID:       exp.Id,
+			ExpTitle:    exp.ExpTitle,
+			ExpType:     expType,
+			Rating:      exp.Rating,
+			CountRating: countRating,
+			Currency:    currency,
+			Price:       expPayment.Price,
+			PaymentType: priceItemType,
+			CoverPhoto:  *exp.ExpCoverPhoto,
+		}
+	}
+
+	return results, nil
 }
 
 func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, token string) (string, error) {

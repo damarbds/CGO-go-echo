@@ -32,7 +32,8 @@ func (m *experienceRepository) GetByCategoryID(ctx context.Context, categoryId i
 		e.id,
 		exp_title,
 		exp_type,
-		rating
+		rating,
+		exp_cover_photo as cover_photo
 	FROM
 		filter_activity_types f
 		JOIN experiences e ON f.exp_id = e.id
@@ -69,7 +70,8 @@ func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID s
 		exp.id,
 		exp_title,
 		exp_type,
-		rating
+		rating,
+		exp_cover_photo as cover_photo
 	FROM
 		experiences exp
 		JOIN harbors ON harbors.id = harbors_id
@@ -180,6 +182,7 @@ func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string,
 			&t.ExpTitle,
 			&t.ExpType,
 			&t.Rating,
+			&t.CoverPhoto,
 		)
 
 		if err != nil {

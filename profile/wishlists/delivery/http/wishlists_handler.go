@@ -23,7 +23,8 @@ func NewWishlistHandler(e *echo.Echo, wus wishlists.Usecase) {
 	handler := &wishlistHandler{
 		wlUsecase: wus,
 	}
-	e.POST("/profile/wishlists", handler.CreatePayment)
+	e.POST("/profile/wishlists", handler.Create)
+	e.GET("/profile/wishlists", handler.List)
 }
 
 func isRequestValid(m *models.WishlistIn) (bool, error) {
@@ -35,10 +36,36 @@ func isRequestValid(m *models.WishlistIn) (bool, error) {
 	return true, nil
 }
 
-func (w *wishlistHandler) CreatePayment(c echo.Context) error {
+func (w *wishlistHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	res, err := w.wlUsecase.List(ctx, token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (w *wishlistHandler) Create(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
 
 	wi := new(models.WishlistIn)
 	if err := c.Bind(wi); err != nil {
