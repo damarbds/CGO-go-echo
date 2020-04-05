@@ -36,6 +36,7 @@ func NewidentityserverUsecase(baseUrl string,basicAuth string,accountStorage str
 		accessKeyStorage:	accessKeyStorage,
 	}
 }
+
 func randomString() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return strconv.Itoa(r.Int())
@@ -282,6 +283,65 @@ func (m identityserverUsecase) CreateUser(ar *models.RegisterAndUpdateUser) (*mo
 		return nil, models.ErrBadParamInput
 	}
 	user := models.RegisterAndUpdateUser{}
+	json.NewDecoder(resp.Body).Decode(&user)
+	return &user, nil
+}
+func (m identityserverUsecase) SendingEmail(r *models.SendingEmail) (*models.SendingEmail, error) {
+	data, _:= json.Marshal(r)
+	req, err := http.NewRequest("POST", m.baseUrl + "/connect/push-email", bytes.NewReader(data))
+	//os.Exit(1)
+	//req.Header.Set("Authorization", "Basic YWRtaW5AZ21haWwuY29tOmFkbWlu")
+	req.Header.Set("Content-Type","application/json")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrBadParamInput
+	}
+	user := models.SendingEmail{}
+	json.NewDecoder(resp.Body).Decode(&user)
+	return &user, nil
+}
+
+func (m identityserverUsecase) VerifiedEmail(r *models.VerifiedEmail) (*models.VerifiedEmail, error) {
+	data, _:= json.Marshal(r)
+	req, err := http.NewRequest("POST", m.baseUrl + "/connect/verified-email", bytes.NewReader(data))
+	//os.Exit(1)
+	//req.Header.Set("Authorization", "Basic YWRtaW5AZ21haWwuY29tOmFkbWlu")
+	req.Header.Set("Content-Type","application/json")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrInvalidOTP
+	}
+	user := models.VerifiedEmail{}
 	json.NewDecoder(resp.Body).Decode(&user)
 	return &user, nil
 }

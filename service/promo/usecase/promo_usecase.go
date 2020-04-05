@@ -45,7 +45,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	return promoDto,nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string) ([]*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
@@ -66,5 +66,5 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string) ([]*models.Pro
 		}
 	}
 
-	return promoDto,nil
+	return promoDto[0],nil
 }

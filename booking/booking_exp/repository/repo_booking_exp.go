@@ -37,7 +37,8 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 		pm.name AS payment_type,
 		city_name AS city,
 		province_name AS province,
-		country_name AS country
+		country_name AS country,
+		c.id as experience_payment_id
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id
@@ -147,6 +148,7 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.City,
 			&t.Province,
 			&t.Country,
+			&t.ExperiencePaymentId,
 		)
 
 		if err != nil {
@@ -177,7 +179,7 @@ func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string
 func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId string) (*models.BookingExpJoin, error) {
 	var booking *models.BookingExpJoin
 	query := `select  a.*, b.exp_title,b.exp_type,b.exp_duration,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type,
-			city_name as city, province_name as province, country_name as country from booking_exps a
+			city_name as city, province_name as province, country_name as country, c.id as experience_payment_id from booking_exps a
 			join experiences b on a.exp_id = b.id
 			join experience_payments c on b.id = c.exp_id
             join transactions t on t.booking_exp_id = a.id            

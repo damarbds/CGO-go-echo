@@ -121,6 +121,7 @@ type ExpAvailablitityObj struct {
 type ExpPaymentObj struct {
 	Currency string  `json:"currency"`
 	Price    float64 `json:"price"`
+	PriceItemType	string 	`json:"price_item_type"`
 }
 type ExpPhotosObj struct {
 	Folder        string           `json:"folder"`

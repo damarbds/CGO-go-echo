@@ -36,6 +36,7 @@ type HarborsWCPCDto struct {
 	HarborsLongitude	float64		`json:"harbors_longitude"`
 	HarborsLatitude		float64		`json:"harbors_latitude"`
 	HarborsImage		string		`json:"harbors_image"`
+	CityId				int 		`json:"city_id"`
 	City			string		`json:"city"`
 	Province		string		`json:"province"`
 	Country		string		`json:"country"`
