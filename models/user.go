@@ -18,14 +18,14 @@ type User struct {
 	FullName             string     `json:"full_name"`
 	PhoneNumber          int        `json:"phone_number" validate:"required"`
 	VerificationSendDate time.Time  `json:"verification_send_date"`
-	VerificationCode     int        `json:"verification_code"`
+	VerificationCode     string        `json:"verification_code"`
 	ProfilePictUrl       string     `json:"profile_pict_url"`
 	Address              string     `json:"address" validate:"required"`
 	Dob                  time.Time  `json:"dob" validate:"required"`
 	Gender               int        `json:"gender" validate:"required"`
 	IdType               int        `json:"id_type"`
 	IdNumber             string     `json:"id_number"`
-	ReferralCode         int        `json:"referral_code"`
+	ReferralCode         string        `json:"referral_code"`
 	Points               int        `json:"points"`
 }
 type NewCommandUser struct {
@@ -51,6 +51,7 @@ type UserInfoDto struct {
 	FullName       string `json:"full_name"`
 	PhoneNumber    int    `json:"phone_number" validate:"required"`
 	ProfilePictUrl string `json:"profile_pict_url"`
+	ReferralCode string		`json:"referral_code"`
 }
 
 type UserPoint struct {

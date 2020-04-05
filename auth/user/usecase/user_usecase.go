@@ -5,6 +5,7 @@ import (
 	"github.com/auth/user"
 	"github.com/models"
 	"golang.org/x/net/context"
+	"math/rand"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type userUsecase struct {
 	identityServerUc identityserver.Usecase
 	contextTimeout time.Duration
 }
+
 
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase,timeout time.Duration) user.Usecase {
@@ -62,6 +64,37 @@ func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*mode
 	return userInfo ,nil
 }
 
+func (m userUsecase) VerifiedEmail(ctx context.Context, token string, codeOTP string) (*models.UserInfoDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	getInfoToIs ,err := m.identityServerUc.GetUserInfo(token)
+	if err != nil{
+		return nil,err
+	}
+	existeduser, _ := m.userRepo.GetByUserEmail(ctx, getInfoToIs.Email)
+	if existeduser == nil {
+		return nil,models.ErrUnAuthorize
+	}
+	verifiedEmail := models.VerifiedEmail{
+		Email:   existeduser.UserEmail,
+		CodeOTP: codeOTP,
+	}
+	_ , error := m.identityServerUc.VerifiedEmail(&verifiedEmail)
+		if error!= nil {
+			return nil,error
+		}
+	userInfo := &models.UserInfoDto{
+		Id:             existeduser.Id,
+		UserEmail:      existeduser.UserEmail,
+		FullName:       existeduser.FullName,
+		PhoneNumber:    existeduser.PhoneNumber,
+		ProfilePictUrl: existeduser.ProfilePictUrl,
+		ReferralCode:existeduser.ReferralCode,
+	}
+
+	return userInfo ,nil
+}
 func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.UserInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -80,6 +113,7 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 		FullName:       existeduser.FullName,
 		PhoneNumber:    existeduser.PhoneNumber,
 		ProfilePictUrl: existeduser.ProfilePictUrl,
+		ReferralCode:existeduser.ReferralCode,
 	}
 
 	return &userInfo,nil
@@ -106,34 +140,54 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser ,user s
 		return err
 	}
 	layoutFormat := "2006-01-02 15:04:05"
-	verificationSendDate, errDate := time.Parse(layoutFormat,ar.VerificationSendDate)
-	if errDate != nil{
-		return errDate
-	}
+	//verificationSendDate, errDate := time.Parse(layoutFormat,ar.VerificationSendDate)
+	//if errDate != nil{
+	//	return errDate
+	//}
 	dob , errDateDob := time.Parse(layoutFormat,ar.Dob)
 	if errDateDob != nil{
 		return errDateDob
 	}
-
+	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
 	userModel := models.User{}
-	userModel.Id = ar.Id
+	userModel.Id = existeduser.Id
 	userModel.ModifiedBy = &ar.UserEmail
 	userModel.UserEmail = ar.UserEmail
 	userModel.FullName = ar.FullName
 	userModel.PhoneNumber = ar.PhoneNumber
-	userModel.VerificationSendDate = verificationSendDate
-	userModel.VerificationCode =ar.VerificationCode
+	userModel.VerificationSendDate = existeduser.VerificationSendDate
+	userModel.VerificationCode =existeduser.VerificationCode
 	userModel.ProfilePictUrl = ar.ProfilePictUrl
 	userModel.Address = ar.Address
 	userModel.Dob = dob
 	userModel.Gender = ar.Gender
 	userModel.IdType = ar.IdType
 	userModel.IdNumber = ar.IdNumber
-	userModel.ReferralCode = ar.ReferralCode
+	userModel.ReferralCode = existeduser.ReferralCode
 	userModel.Points = ar.Points
 	return m.userRepo.Update(ctx, &userModel)
 }
+func generateRandomString(n int) (string, error) {
+	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	bytes, err := generateRandomBytes(n)
+	if err != nil {
+		return "", err
+	}
+	for i, b := range bytes {
+		bytes[i] = letters[b%byte(len(letters))]
+	}
+	return string(bytes), nil
+}
+func generateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		return nil, err
+	}
 
+	return b, nil
+}
 func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
@@ -154,12 +208,23 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 		Address:       "",
 	}
 	isUser ,errorIs:= m.identityServerUc.CreateUser(&registerUser)
+	message := "Please keep it a secret, and use this OTP: " + isUser.OTP + " code to verify your email"
+	email := models.SendingEmail{
+		Subject: "Verified Email",
+		Message: message,
+		From:    "helmy@cgo.co.id",
+		To:      isUser.Email,
+	}
+	_ ,errorSending:= m.identityServerUc.SendingEmail(&email)
+	if errorSending != nil {
+		return models.ErrInternalServerError
+	}
 	ar.Id = isUser.Id
 	layoutFormat := "2006-01-02 15:04:05"
-	verificationSendDate, errDate := time.Parse(layoutFormat,ar.VerificationSendDate)
-	if errDate != nil{
-		return errDate
-	}
+	//verificationSendDate, errDate := time.Parse(layoutFormat,ar.VerificationSendDate)
+	//if errDate != nil{
+	//	return errDate
+	//}
 	dob , errDateDob := time.Parse(layoutFormat,ar.Dob)
 	if errDateDob != nil{
 		return errDateDob
@@ -168,21 +233,25 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 	if errorIs != nil{
 		return errorIs
 	}
+	referralCode,er := generateRandomString(9)
+	if er != nil{
+		return er
+	}
 	userModel := models.User{}
 	userModel.Id = isUser.Id
 	userModel.CreatedBy = ar.UserEmail
 	userModel.UserEmail = ar.UserEmail
 	userModel.FullName = ar.FullName
 	userModel.PhoneNumber = ar.PhoneNumber
-	userModel.VerificationSendDate = verificationSendDate
-	userModel.VerificationCode =ar.VerificationCode
+	userModel.VerificationSendDate = time.Now()
+	userModel.VerificationCode =isUser.OTP
 	userModel.ProfilePictUrl = ar.ProfilePictUrl
 	userModel.Address = ar.Address
 	userModel.Dob = dob
 	userModel.Gender = ar.Gender
 	userModel.IdType = ar.IdType
 	userModel.IdNumber = ar.IdNumber
-	userModel.ReferralCode = ar.ReferralCode
+	userModel.ReferralCode = referralCode
 	userModel.Points = ar.Points
 	err := m.userRepo.Insert(ctx, &userModel)
 	if err != nil {

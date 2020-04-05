@@ -31,6 +31,7 @@ func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase) {
 	}
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
+	e.GET("/account/verified-email", handler.VerifiedEmail)
 }
 
 func (a *isHandler) Login(c echo.Context) error {
@@ -72,6 +73,32 @@ func (a *isHandler) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseToken)
 }
 
+func (a *isHandler) VerifiedEmail(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	token := c.Request().Header.Get("Authorization")
+	typeUser := c.QueryParam("type")
+	otpCode := c.QueryParam("otp")
+	if typeUser == "user" {
+		response, err := a.userUsecase.VerifiedEmail(ctx, token,otpCode)
+
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+
+		return c.JSON(http.StatusOK, response)
+	} else if typeUser == "merchant" {
+		return c.JSON(http.StatusNotFound,"Not Implemented")
+	} else {
+		return c.JSON(http.StatusBadRequest, "Bad Request")
+	}
+
+	return c.JSON(http.StatusBadRequest, "Bad Request")
+}
 
 func (a *isHandler) GetInfo(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -121,6 +148,8 @@ func getStatusCode(err error) int {
 	case models.ErrBadParamInput:
 		return http.StatusBadRequest
 	case models.ErrUsernamePassword:
+		return http.StatusUnauthorized
+	case models.ErrInvalidOTP:
 		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError

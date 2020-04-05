@@ -17,6 +17,7 @@ type RegisterAndUpdateUser struct {
 	EmailVerified	bool	`json:"emailverified"`
 	Website		string	`json:"website"`
 	Address 	string	`json:"address"`
+	OTP 		string	`json:"oTP"`
 }
 
 type Response struct {
