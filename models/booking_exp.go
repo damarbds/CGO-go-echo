@@ -2,6 +2,50 @@ package models
 
 import "time"
 
+type BookingExpHistory struct {
+	Id                   string    `json:"id" validate:"required"`
+	CreatedBy            string    `json:"created_by":"required"`
+	CreatedDate          time.Time `json:"created_date" validate:"required"`
+	ModifiedBy           *string    `json:"modified_by"`
+	ModifiedDate         *time.Time `json:"modified_date"`
+	DeletedBy            *string    `json:"deleted_by"`
+	DeletedDate          *time.Time `json:"deleted_date"`
+	IsDeleted            int       `json:"is_deleted" validate:"required"`
+	IsActive             int       `json:"is_active" validate:"required"`
+	ExpId				string		`json:"exp_id"`
+	OrderId				string		`json:"order_id"`
+	GuestDesc			string		`json:"guest_desc"`
+	BookedBy			string		`json:"booked_by"`
+	BookedByEmail		string		`json:"booked_by_email"`
+	BookingDate 		time.Time	`json:"booking_date"`
+	UserId				*string		`json:"user_id"`
+	Status 				int			`json:"status"`
+	TicketCode			string		`json:"ticket_code"`
+	TicketQRCode		string		`json:"ticket_qr_code"`
+	ExperienceAddOnId 	*string		`json:"experience_add_on_id"`
+	ExpDuration			int			`json:"exp_duration"`
+	CityName 			string		`json:"city_name"`
+	ProvinceName		string 		`json:"province_name"`
+	CountryName			string		`json:"country_name"`
+	StatusTransaction	int 		`json:"status_transaction"`
+}
+type BookingHistoryDto struct {
+	Category string	`json:"category"`
+	Items	[]ItemsHistoryDto `json:"items"`
+
+}
+type ItemsHistoryDto struct {
+	ExpId	string `json:"exp_id"`
+	ExpTitle string	`json:"exp_title"`
+	ExpType string	`json:"exp_type"`
+	ExpBookingDate time.Time	`json:"exp_booking_date"`
+	ExpDuration string	`json:"exp_duration"`
+	TotalGuest	int	`json:"total_guest"`
+	City		string	`json:"city"`
+	Province	string	`json:"province"`
+	Country	string	`json:"country"`
+	Status 	int 	`json:"status"`
+}
 type BookingExp struct {
 	Id                   string    `json:"id" validate:"required"`
 	CreatedBy            string    `json:"created_by":"required"`

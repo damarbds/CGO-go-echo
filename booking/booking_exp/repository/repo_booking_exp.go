@@ -102,6 +102,8 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 	return result, nil
 }
 
+
+
 func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string) (string, error) {
 	var email string
 	query := `SELECT booked_by_email as email FROM booking_exps WHERE id = ?`
@@ -142,3 +144,68 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId 
 	return booking, err
 }
 
+//func (b bookingExpRepository) GetByUserID(ctx context.Context, userId string) ([]*models.BookingExpHistory, error) {
+//	//var booking *models.BookingExpHistory
+//	query := `select a.*, b.exp_duration,d.city_name,e.province_name,f.country_name,g.status as status_transaction from booking_exps a
+//					join experiences b on a.exp_id = b.id
+//					join harbors c on b.harbors_id = c.id
+//					join cities d on c.city_id = d.id
+//					join provinces e on d.province_id = e.id
+//					join countries f on e.country_id = f.id
+//					join transactions g on g.booking_exp_id = a.id
+//					where a.user_id = ?
+//					and (g.created_date >= (NOW() - INTERVAL 1 MONTH) or g.modified_date >= (NOW() - INTERVAL 1 MONTH))`
+//
+//	rows, err := b.Conn.QueryContext(ctx, query, args...)
+//	if err != nil {
+//		logrus.Error(err)
+//		return nil, err
+//	}
+//
+//	defer func() {
+//		err := rows.Close()
+//		if err != nil {
+//			logrus.Error(err)
+//		}
+//	}()
+//
+//	result := make([]*models.BookingExpHistory, 0)
+//	for rows.Next() {
+//		t := new(models.BookingExpHistory)
+//		err = rows.Scan(
+//			&t.Id,
+//			&t.CreatedBy,
+//			&t.CreatedDate,
+//			&t.ModifiedBy,
+//			&t.ModifiedDate,
+//			&t.DeletedBy,
+//			&t.DeletedDate,
+//			&t.IsDeleted,
+//			&t.IsActive,
+//			&t.ExpId				,
+//			&t.OrderId		,
+//			&t.GuestDesc	,
+//			&t.BookedBy	,
+//			&t.BookedByEmail	,
+//			&t.BookingDate 	,
+//			&t.UserId			,
+//			&t.Status 			,
+//			&t.TicketCode		,
+//			&t.TicketQRCode	,
+//			&t.ExperienceAddOnId ,
+//			&t.ExpDuration	,
+//			&t.CityName 		,
+//			&t.ProvinceName		,
+//			&t.CountryName		,
+//			&t.StatusTransaction	,
+//		)
+//
+//		if err != nil {
+//			logrus.Error(err)
+//			return nil, err
+//		}
+//		result = append(result, t)
+//	}
+//
+//	return result, nil
+//}
