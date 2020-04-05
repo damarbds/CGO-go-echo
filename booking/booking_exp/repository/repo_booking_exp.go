@@ -2,12 +2,13 @@ package repository
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/booking/booking_exp"
 	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 const (
@@ -18,14 +19,68 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewMysqlArticleRepository will create an object that represent the article.Repository interface
-func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository{
+func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }
 
-func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) (*models.BookingExp,error) {
-	id:= guuid.New()
+func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
+	query := `
+	SELECT
+		a.*,
+		b.exp_title,
+		b.exp_type,
+		b.exp_duration,
+		b.exp_pickup_place,
+		b.exp_pickup_time,
+		t.total_price,
+		pm.name AS payment_type,
+		city_name AS city,
+		province_name AS province,
+		country_name AS country,
+		c.id as experience_payment_id
+	FROM
+		booking_exps a
+		JOIN experiences b ON a.exp_id = b.id
+		JOIN experience_payments c ON b.id = c.exp_id
+		JOIN transactions t ON t.booking_exp_id = a.id
+		JOIN payment_methods pm ON pm.id = t.payment_method_id
+		JOIN harbors h ON b.harbors_id = h.id
+		JOIN cities ci ON h.city_id = ci.id
+		JOIN provinces p ON ci.province_id = p.id
+		JOIN countries co ON p.country_id = co.id
+	WHERE
+		a.status = ?
+		AND a.is_active = 1
+		AND a.is_deleted = 0
+		AND (t.status = ? OR t.status IS NULL)
+		AND a.user_id = ?
+	`
+
+	list, err := b.fetch(ctx, query, bookingStatus, transactionStatus, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string) error {
+	query := `UPDATE booking_exps SET status = 1 WHERE id = ?`
+	stmt, err := b.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, bookingId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) (*models.BookingExp, error) {
+	id := guuid.New()
 	a.Id = id.String()
 	query := `INSERT  booking_exps SET id=?,created_by=?,created_date=?,modified_by=?,modified_date=?,deleted_by=?,
 				deleted_date=?,is_deleted=?,is_active=?,exp_id=?,order_id=?,guest_desc=?,booked_by=?,booked_by_email=?,
@@ -33,13 +88,13 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	_, error := stmt.ExecContext(ctx,a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1,a.ExpId,a.OrderId,a.GuestDesc,a.BookedBy,
-		a.BookedByEmail,a.BookingDate,a.UserId,a.Status,a.TicketCode,a.TicketQRCode,a.ExperienceAddOnId)
+	_, error := stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpId, a.OrderId, a.GuestDesc, a.BookedBy,
+		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId)
 	if error != nil {
-		return nil,err
+		return nil, err
 	}
 
 	return a, nil
@@ -72,23 +127,27 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.DeletedDate,
 			&t.IsDeleted,
 			&t.IsActive,
-			&t.ExpId				,
-			&t.OrderId		,
-			&t.GuestDesc	,
-			&t.BookedBy	,
-			&t.BookedByEmail	,
-			&t.BookingDate 	,
-			&t.UserId			,
-			&t.Status 			,
-			&t.TicketCode		,
-			&t.TicketQRCode	,
-			&t.ExperienceAddOnId ,
-			&t.ExpTitle		,
-			&t.ExpType 		,
-			&t.ExpPickupPlace 	,
-			&t.ExpPickupTime 	,
-			&t.TotalPrice 		,
-			&t.PaymentType 	,
+			&t.ExpId,
+			&t.OrderId,
+			&t.GuestDesc,
+			&t.BookedBy,
+			&t.BookedByEmail,
+			&t.BookingDate,
+			&t.UserId,
+			&t.Status,
+			&t.TicketCode,
+			&t.TicketQRCode,
+			&t.ExperienceAddOnId,
+			&t.ExpTitle,
+			&t.ExpType,
+			&t.ExpDuration,
+			&t.ExpPickupPlace,
+			&t.ExpPickupTime,
+			&t.TotalPrice,
+			&t.PaymentType,
+			&t.City,
+			&t.Province,
+			&t.Country,
 			&t.ExperiencePaymentId,
 		)
 
@@ -101,8 +160,6 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 
 	return result, nil
 }
-
-
 
 func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string) (string, error) {
 	var email string
@@ -121,11 +178,16 @@ func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string
 
 func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId string) (*models.BookingExpJoin, error) {
 	var booking *models.BookingExpJoin
-	query := `select  a.*, b.exp_title,b.exp_type,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type,c.id as experience_payment_id from booking_exps a
+	query := `select  a.*, b.exp_title,b.exp_type,b.exp_duration,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type,
+			city_name as city, province_name as province, country_name as country, c.id as experience_payment_id from booking_exps a
 			join experiences b on a.exp_id = b.id
 			join experience_payments c on b.id = c.exp_id
             join transactions t on t.booking_exp_id = a.id            
             join payment_methods pm on pm.id = t.payment_method_id
+			JOIN harbors h ON b.harbors_id = h.id
+			JOIN cities ci ON h.city_id = ci.id
+			JOIN provinces p ON ci.province_id = p.id
+			JOIN countries co ON p.country_id = co.id
             where a.id = ? AND a.is_active = 1 AND a.is_deleted = 0`
 
 	list, err := b.fetch(ctx, query, bookingId)
@@ -138,8 +200,6 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId 
 	} else {
 		return nil, models.ErrNotFound
 	}
-
-
 
 	return booking, err
 }

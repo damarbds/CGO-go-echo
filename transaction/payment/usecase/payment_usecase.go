@@ -87,6 +87,11 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		return "", models.ErrInternalServerError
 	}
 
+	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId)
+	if err != nil {
+		return "", err
+	}
+
 	return res.Id, nil
 }
 
