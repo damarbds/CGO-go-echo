@@ -89,6 +89,7 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.ExpPickupTime 	,
 			&t.TotalPrice 		,
 			&t.PaymentType 	,
+			&t.ExperiencePaymentId,
 		)
 
 		if err != nil {
@@ -118,7 +119,7 @@ func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string
 
 func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId string) (*models.BookingExpJoin, error) {
 	var booking *models.BookingExpJoin
-	query := `select  a.*, b.exp_title,b.exp_type,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type from booking_exps a
+	query := `select  a.*, b.exp_title,b.exp_type,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type,c.id as experience_payment_id from booking_exps a
 			join experiences b on a.exp_id = b.id
 			join experience_payments c on b.id = c.exp_id
             join transactions t on t.booking_exp_id = a.id            

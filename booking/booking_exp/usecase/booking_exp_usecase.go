@@ -119,6 +119,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId strin
 		ExpPickupTime:     getDetailBooking.ExpPickupTime,
 		TotalPrice:        getDetailBooking.TotalPrice,
 		PaymentType:       getDetailBooking.PaymentType,
+		ExperiencePaymentId:getDetailBooking.ExperiencePaymentId,
 	}
 	return &bookingExp,nil
 

@@ -19,6 +19,20 @@ type RegisterAndUpdateUser struct {
 	Address 	string	`json:"address"`
 }
 
+type Response struct {
+	Email string 	`json:"email"`
+} 
+
+type SendingEmail struct {
+	Subject string 		`json:"subject"`
+	Message string		`json:"message"`
+	From string		`json:"from"`
+	To string		`json:"to"`
+}
+type VerifiedEmail struct {
+	Email string `json:"email"`
+	CodeOTP string	`json:"codeOTP"`
+}
 type GetUserInfo struct {
 	Id 			string	`json:"id"`
 	Username	string	`json:"username"`

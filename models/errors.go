@@ -14,9 +14,13 @@ var (
 	// ErrBadParamInput will throw if the given request-body or params is not valid
 	ErrBadParamInput = errors.New("Bad Request")
 
-	ErrUsernamePassword = errors.New("Please Check again your email and Password")
+	//ErrUsernamePassword = errors.New("Please Check again your email and Password")
 )
-
+//authValidation
+var (
+	ErrUsernamePassword = errors.New("Please Check again your email and Password")
+	ErrInvalidOTP = errors.New("Your OTP invalid Please check again ")
+)
 var	(
 ValidationExpId = errors.New("ExpId Required")
 // ErrNotFound will throw if the requested item is not exists

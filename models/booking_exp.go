@@ -51,6 +51,7 @@ type BookingExpJoin struct {
 	ExpPickupTime 		string		`json:"exp_pickup_time"`
 	TotalPrice 			float64		`json:"total_price"`
 	PaymentType 		string		`json:"payment_type"`
+	ExperiencePaymentId string		`json:"experience_payment_id"`
 }
 type BookingExpDetailDto struct {
 	Id                   string    `json:"id" validate:"required"`
@@ -71,6 +72,7 @@ type BookingExpDetailDto struct {
 	ExpPickupTime 		string		`json:"exp_pickup_time"`
 	TotalPrice 			float64		`json:"total_price"`
 	PaymentType 		string		`json:"payment_type"`
+	ExperiencePaymentId string		`json:"experience_payment_id"`
 }
 type BookedByObj struct {
 	Title 			string		`json:"title"`
