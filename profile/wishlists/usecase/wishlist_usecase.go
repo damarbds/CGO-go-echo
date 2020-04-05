@@ -42,10 +42,9 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 		IsDeleted:    0,
 		IsActive:     1,
 		UserId:       currentUser.Id,
+		ExpId: wl.ExpID,
+		TransId: wl.TransID,
 	}
-
-	newData.ExpId.String = wl.ExpID
-	newData.TransId.String = wl.TransID
 
 	res, err := w.wlRepo.Insert(ctx, newData)
 	if err != nil {
