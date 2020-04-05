@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/auth/user"
 	"github.com/models"
 	"github.com/product/reviews"

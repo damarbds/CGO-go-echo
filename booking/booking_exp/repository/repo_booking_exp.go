@@ -18,10 +18,23 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewMysqlArticleRepository will create an object that represent the article.Repository interface
 func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository{
 	return &bookingExpRepository{Conn}
+}
+
+func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string) error {
+	query := `UPDATE booking_exps SET status = 1 WHERE id = ?`
+	stmt, err := b.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, bookingId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) (*models.BookingExp,error) {
@@ -140,4 +153,3 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId 
 
 	return booking, err
 }
-
