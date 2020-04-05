@@ -21,7 +21,6 @@ type bookingExpUsecase struct {
 	contextTimeout time.Duration
 }
 
-
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, is identityserver.Usecase,timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -31,6 +30,45 @@ func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, is identitys
 		contextTimeout: timeout,
 	}
 }
+
+func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string) ([]*models.MyBooking, error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+
+	currentUser, err := b.userUsecase.ValidateTokenUser(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	bList, err := b.bookingExpRepo.GetByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	myBooking := make([]*models.MyBooking, len(bList))
+	for i, b := range bList {
+		var guestDesc []models.GuestDescObj
+		if b.GuestDesc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(b.GuestDesc), &guestDesc); errUnmarshal != nil {
+				return nil, err
+			}
+		}
+
+		myBooking[i] = &models.MyBooking{
+			ExpId:       b.ExpId,
+			ExpTitle:    b.ExpTitle,
+			BookingDate: b.BookingDate,
+			ExpDuration: b.ExpDuration,
+			TotalGuest:  len(guestDesc),
+			City:        b.City,
+			Province:    b.Province,
+			Country:     b.Country,
+		}
+	}
+
+	return myBooking, nil
+}
+
 func generateQRCode(content string) (*string,error){
 	var png []byte
 	png, err := qrcode.Encode(content, qrcode.Medium, 256)

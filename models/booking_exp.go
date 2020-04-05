@@ -26,7 +26,7 @@ type BookingExp struct {
 }
 type BookingExpJoin struct {
 	Id                   string    `json:"id" validate:"required"`
-	CreatedBy            string    `json:"created_by":"required"`
+	CreatedBy            string    `json:"created_by" validate:"required"`
 	CreatedDate          time.Time `json:"created_date" validate:"required"`
 	ModifiedBy           *string    `json:"modified_by"`
 	ModifiedDate         *time.Time `json:"modified_date"`
@@ -49,8 +49,12 @@ type BookingExpJoin struct {
 	ExpType 			string		`json:"exp_type"`
 	ExpPickupPlace 		string		`json:"exp_pickup_place"`
 	ExpPickupTime 		string		`json:"exp_pickup_time"`
+	ExpDuration int `json:"exp_duration"`
 	TotalPrice 			float64		`json:"total_price"`
 	PaymentType 		string		`json:"payment_type"`
+	City string `json:"city"`
+	Province string `json:"province"`
+	Country string `json:"country"`
 }
 type BookingExpDetailDto struct {
 	Id                   string    `json:"id" validate:"required"`
@@ -99,4 +103,14 @@ type NewBookingExpCommand struct {
 	TicketCode			string		`json:"ticket_code"`
 	TicketQRCode		string		`json:"ticket_qr_code"`
 	ExperienceAddOnId 	*string		`json:"experience_add_on_id"`
+}
+type MyBooking struct {
+	ExpId string `json:"exp_id"`
+	ExpTitle string `json:"exp_title"`
+	BookingDate time.Time `json:"booking_date"`
+	ExpDuration int `json:"exp_duration"`
+	TotalGuest int `json:"total_guest"`
+	City string `json:"city"`
+	Province string `json:"province"`
+	Country string `json:"country"`
 }

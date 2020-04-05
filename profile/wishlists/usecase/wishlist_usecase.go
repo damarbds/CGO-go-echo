@@ -14,7 +14,7 @@ import (
 
 type wishListUsecase struct {
 	wlRepo wishlists.Repository
-	userUsercase user.Usecase
+	userUsecase user.Usecase
 	expRepo experience.Repository
 	paymentRepo exp_payment.Repository
 	reviewRepo reviews.Repository
@@ -31,7 +31,7 @@ func NewWishlistUsecase(
 ) wishlists.Usecase {
 	return &wishListUsecase{
 		wlRepo:     w,
-		userUsercase: u,
+		userUsecase: u,
 		expRepo: e,
 		paymentRepo: p,
 		reviewRepo: r,
@@ -43,7 +43,7 @@ func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.Wish
 	ctx, cancel := context.WithTimeout(ctx, w.ctxTimeout)
 	defer cancel()
 
-	currentUser, err := w.userUsercase.ValidateTokenUser(ctx, token)
+	currentUser, err := w.userUsecase.ValidateTokenUser(ctx, token)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 	ctx, cancel := context.WithTimeout(ctx, w.ctxTimeout)
 	defer cancel()
 
-	currentUser, err := w.userUsercase.ValidateTokenUser(ctx, token)
+	currentUser, err := w.userUsecase.ValidateTokenUser(ctx, token)
 	if err != nil {
 		return "", err
 	}
