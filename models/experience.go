@@ -158,6 +158,7 @@ type ExpSearch struct {
 	ExpTitle string  `json:"exp_title"`
 	ExpType  string  `json:"exp_type"`
 	Rating   float64 `json:"rating"`
+	CoverPhoto string `json:"cover_photo"`
 }
 
 type ExpSearchObject struct {
