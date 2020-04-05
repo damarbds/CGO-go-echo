@@ -254,7 +254,7 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	query := `select e.id,e.exp_title,e.exp_type,e.rating from experiences e`
+	query := `select e.id,e.exp_title,e.exp_type,e.rating,e.exp_cover_photo as cover_photo from experiences e`
 
 	if bottomPrice != "" && upPrice != "" {
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
@@ -340,7 +340,10 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 		if err != nil {
 			return nil, err
 		}
-
+		coverPhoto := models.CoverPhotosObj{
+			Original:  exp.CoverPhoto,
+			Thumbnail: "",
+		}
 		results[i] = &models.ExpSearchObject{
 			Id:          exp.Id,
 			ExpTitle:    exp.ExpTitle,
@@ -350,6 +353,7 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 			Currency:    currency,
 			Price:       expPayment.Price,
 			PaymentType: priceItemType,
+			CoverPhoto:coverPhoto,
 		}
 	}
 

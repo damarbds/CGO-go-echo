@@ -170,6 +170,7 @@ type ExpSearchObject struct {
 	Currency    string   `json:"currency"`
 	Price       float64  `json:"price"`
 	PaymentType string   `json:"payment_type"`
+	CoverPhoto CoverPhotosObj	`json:"cover_photo"`
 }
 type ExperienceUserDiscoverPreferenceDto struct {
 	Id           string           `json:"id" validate:"required"`
