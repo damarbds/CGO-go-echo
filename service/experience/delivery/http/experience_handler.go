@@ -35,6 +35,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	e.GET("service/experience/categories", handler.GetExpTypes)
 	e.GET("service/experience/inspirations", handler.GetExpInspirations)
 	e.GET("service/experience/categories/:id", handler.GetByCategoryID)
+	e.GET("service/experience/get-success-book-count", handler.GetSuccessBookCount)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
 
@@ -45,6 +46,27 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (a *experienceHandler) GetSuccessBookCount(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.experienceUsecase.GetSuccessBookCount(ctx, token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 // GetByID will get article by given id

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/auth/merchant"
 	"github.com/product/reviews"
 	"github.com/service/cpc"
 	"github.com/service/exp_availability"
@@ -28,6 +29,7 @@ type experienceUsecase struct {
 	typesRepo types.Repository
 	inspirationRepo inspiration.Repository
 	expPhotos 		exp_photos.Repository
+	mUsecase merchant.Usecase
 	contextTimeout time.Duration
 	exp_availablitiy exp_availability.Repository
 }
@@ -43,6 +45,7 @@ func NewexperienceUsecase(
 	r reviews.Repository,
 	t types.Repository,
 	i inspiration.Repository,
+	m merchant.Usecase,
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
@@ -54,9 +57,28 @@ func NewexperienceUsecase(
 		reviewsRepo: r,
 		typesRepo: t,
 		inspirationRepo: i,
+		mUsecase: m,
 		contextTimeout:   timeout,
 		expPhotos : ps,
 	}
+}
+
+
+func (m experienceUsecase) GetSuccessBookCount(ctx context.Context, token string) (*models.BookingSuccess, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetSuccessBookCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.BookingSuccess{Count: count}, nil
 }
 
 func (m experienceUsecase) GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error) {

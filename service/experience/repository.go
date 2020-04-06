@@ -18,4 +18,5 @@ type Repository interface {
 	//Update(ctx context.Context, ar *models.Experience) error
 	//Insert(ctx context.Context, a *models.Experience) error
 	Delete(ctx context.Context, id string,deleted_by string) error
+	GetSuccessBookCount(ctx context.Context, merchantId string) (int, error)
 }

@@ -26,6 +26,42 @@ func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
 
+func (m *experienceRepository) GetSuccessBookCount(ctx context.Context, merchantId string) (int, error) {
+	query := `
+	SELECT
+		COUNT(*) AS count
+	FROM
+		experiences e
+		LEFT JOIN booking_exps b ON e.id = b.exp_id
+	WHERE
+		e.merchant_id = ?
+		AND b.status = 1`
+
+	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+
 func (m *experienceRepository) GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearch, error) {
 	query := `
 	SELECT
