@@ -26,6 +26,62 @@ func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
 
+func (m *experienceRepository) GetExpPendingTransactionCount(ctx context.Context, merchantId string) (int, error) {
+	query := `
+	SELECT
+		count(*) AS count
+	FROM
+		experiences e
+		JOIN booking_exps b ON e.id = b.exp_id
+		JOIN transactions t ON b.id = t.booking_exp_id
+	WHERE
+		merchant_id = ?
+		and(t.status = 0
+			OR t.status IS NULL)
+		AND b.status = 0`
+
+	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (m *experienceRepository) GetExpFailedTransactionCount(ctx context.Context, merchantId string) (int, error) {
+	query := `
+	SELECT
+		count(*) AS count
+	FROM
+		experiences e
+		JOIN booking_exps b ON e.id = b.exp_id
+		JOIN transactions t ON b.id = t.booking_exp_id
+	WHERE
+		merchant_id = ?
+		and t.status = 4`
+
+	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId string) (int, error) {
 	query := `
 	SELECT

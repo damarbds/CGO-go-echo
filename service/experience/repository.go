@@ -20,4 +20,6 @@ type Repository interface {
 	Delete(ctx context.Context, id string,deleted_by string) error
 	GetSuccessBookCount(ctx context.Context, merchantId string) (int, error)
 	GetExpCount(ctx context.Context, merchantId string) (int, error)
+	GetExpPendingTransactionCount(ctx context.Context, merchantId string) (int, error)
+	GetExpFailedTransactionCount(ctx context.Context, merchantId string) (int, error)
 }

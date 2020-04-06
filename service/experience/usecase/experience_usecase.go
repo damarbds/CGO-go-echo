@@ -63,6 +63,40 @@ func NewexperienceUsecase(
 	}
 }
 
+func (m experienceUsecase) GetExpPendingTransactionCount(ctx context.Context, token string) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetExpPendingTransactionCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
+func (m experienceUsecase) GetExpFailedTransactionCount(ctx context.Context, token string) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetExpFailedTransactionCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
 func (m experienceUsecase) GetExpCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()

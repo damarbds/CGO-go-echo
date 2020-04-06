@@ -15,4 +15,6 @@ type Usecase interface {
 	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error)
 	GetSuccessBookCount(ctx context.Context, token string) (*models.Count, error)
 	GetExpCount(ctx context.Context, token string) (*models.Count, error)
+	GetExpPendingTransactionCount(ctx context.Context, token string) (*models.Count, error)
+	GetExpFailedTransactionCount(ctx context.Context, token string) (*models.Count, error)
 }

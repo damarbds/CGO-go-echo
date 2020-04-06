@@ -37,6 +37,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	e.GET("service/experience/categories/:id", handler.GetByCategoryID)
 	e.GET("service/experience/success-book-count", handler.GetSuccessBookCount)
 	e.GET("service/experience/published-count", handler.GetExpCount)
+	e.GET("service/experience/transaction-count", handler.GetExpTransactionCount)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
 
@@ -47,6 +48,32 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (a *experienceHandler) GetExpTransactionCount(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	transactionType := c.QueryParam("type")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.experienceUsecase.GetExpPendingTransactionCount(ctx, token)
+	if transactionType == "failed" {
+		result, err = a.experienceUsecase.GetExpFailedTransactionCount(ctx, token)
+	}
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 func (a *experienceHandler) GetExpCount(c echo.Context) error {
