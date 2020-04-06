@@ -133,7 +133,7 @@ func (a *experienceHandler) GetUserDiscoverPreference(c echo.Context) error {
 	if qpage != "" && qsize != ""{
 		page , _:= strconv.Atoi(qpage)
 		size , _:= strconv.Atoi(qsize)
-		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx,&size,&page)
+		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx,&page,&size)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

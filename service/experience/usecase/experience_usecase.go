@@ -206,42 +206,49 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 			cityDto.Item = append(cityDto.Item,expDto)
 			expListDto = append(expListDto,&cityDto)
 		}else if len(expListDto) != 0 {
-
+			var searchDto *models.ExpUserDiscoverPreferenceDto
 			for _, dto := range expListDto {
-				if dto.CityId == element.CityId{
-					expDto := models.ExperienceUserDiscoverPreferenceDto{
-						Id:           element.Id,
-						ExpTitle:     element.ExpTitle,
-						ExpType:      expType,
-						Rating:       element.Rating,
-						CountRating:  countRating,
-						Currency:     currency,
-						Price:        expPayment.Price,
-						Payment_type: priceItemType,
-						Cover_Photo:	coverPhotos,
+				if dto.CityId == element.CityId {
+					searchDto = dto
+				}
+			}
+			if searchDto == nil {
+				cityDto := models.ExpUserDiscoverPreferenceDto{
+					CityId: element.CityId,
+					City:     element.CityName,
+					CityDesc: element.CityDesc,
+					CityPhotos:cityPhotos,
+					Item:     nil,
+				}
+				expDto := models.ExperienceUserDiscoverPreferenceDto{
+					Id:           element.Id,
+					ExpTitle:     element.ExpTitle,
+					ExpType:      expType,
+					Rating:       element.Rating,
+					CountRating:  countRating,
+					Currency:     currency,
+					Price:        expPayment.Price,
+					Payment_type: priceItemType,
+					Cover_Photo:coverPhotos,
+				}
+				cityDto.Item = append(cityDto.Item,expDto)
+				expListDto = append(expListDto,&cityDto)
+			}else {
+				for _, dto := range expListDto {
+					if dto.CityId == element.CityId {
+						expDto := models.ExperienceUserDiscoverPreferenceDto{
+							Id:           element.Id,
+							ExpTitle:     element.ExpTitle,
+							ExpType:      expType,
+							Rating:       element.Rating,
+							CountRating:  countRating,
+							Currency:     currency,
+							Price:        expPayment.Price,
+							Payment_type: priceItemType,
+							Cover_Photo:	coverPhotos,
+						}
+						dto.Item = append(dto.Item,expDto)
 					}
-					dto.Item = append(dto.Item,expDto)
-				}else if dto.CityId != element.CityId{
-					cityDto := models.ExpUserDiscoverPreferenceDto{
-						CityId: element.CityId,
-						City:     element.CityName,
-						CityDesc: element.CityDesc,
-						CityPhotos:cityPhotos,
-						Item:     nil,
-					}
-					expDto := models.ExperienceUserDiscoverPreferenceDto{
-						Id:           element.Id,
-						ExpTitle:     element.ExpTitle,
-						ExpType:      expType,
-						Rating:       element.Rating,
-						CountRating:  countRating,
-						Currency:     currency,
-						Price:        expPayment.Price,
-						Payment_type: priceItemType,
-						Cover_Photo:coverPhotos,
-					}
-					cityDto.Item = append(cityDto.Item,expDto)
-					expListDto = append(expListDto,&cityDto)
 				}
 			}
 		}

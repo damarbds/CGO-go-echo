@@ -386,7 +386,7 @@ func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, pa
 				join cgo_indonesia.harbors h on h.id = upe.harbors_id
 				join cgo_indonesia.cities c on c.id = h.city_id
 				where upe.is_active = 1 and upe.is_deleted = 0
-				order by upe.amount desc LIMIT ? OFFSET ? 
+				order by upe.amount desc LIMIT ?,? 
 			) c on c.city_id = b.city_id
             join cgo_indonesia.cities city on city.id = c.city_id;`
 
@@ -404,7 +404,7 @@ func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, pa
 				join cgo_indonesia.harbors h on h.id = upe.harbors_id
 				join cgo_indonesia.cities c on c.id = h.city_id
 				where upe.is_active = 1 and upe.is_deleted = 0
-				order by upe.amount desc  
+				order by upe.amount desc  LIMIT 0,3
 			) c on c.city_id = b.city_id
             join cgo_indonesia.cities city on city.id = c.city_id;`
 
