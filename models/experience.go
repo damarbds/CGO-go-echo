@@ -237,6 +237,6 @@ type ExpUserDiscoverPreferenceDto struct {
 	Item       []ExperienceUserDiscoverPreferenceDto `json:"item"`
 }
 
-type BookingSuccess struct {
+type Count struct {
 	Count int `json:"count"`
 }

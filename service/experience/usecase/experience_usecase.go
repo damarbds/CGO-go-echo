@@ -58,13 +58,29 @@ func NewexperienceUsecase(
 		typesRepo: t,
 		inspirationRepo: i,
 		mUsecase: m,
-		contextTimeout:   timeout,
+		contextTimeout: timeout,
 		expPhotos : ps,
 	}
 }
 
+func (m experienceUsecase) GetExpCount(ctx context.Context, token string) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
 
-func (m experienceUsecase) GetSuccessBookCount(ctx context.Context, token string) (*models.BookingSuccess, error) {
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetExpCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
+func (m experienceUsecase) GetSuccessBookCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -78,7 +94,7 @@ func (m experienceUsecase) GetSuccessBookCount(ctx context.Context, token string
 		return nil, err
 	}
 
-	return &models.BookingSuccess{Count: count}, nil
+	return &models.Count{Count: count}, nil
 }
 
 func (m experienceUsecase) GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error) {

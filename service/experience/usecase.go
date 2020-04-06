@@ -13,5 +13,6 @@ type Usecase interface {
 	GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error)
 	GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error)
 	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error)
-	GetSuccessBookCount(ctx context.Context, token string) (*models.BookingSuccess, error)
+	GetSuccessBookCount(ctx context.Context, token string) (*models.Count, error)
+	GetExpCount(ctx context.Context, token string) (*models.Count, error)
 }
