@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/models"
 	payment "github.com/service/exp_payment"
 	"github.com/sirupsen/logrus"
@@ -17,7 +18,7 @@ func NewExpPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &expPaymentRepository{Conn}
 }
 
-func (m *expPaymentRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.ExperiencePayment, error) {
+func (m *expPaymentRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.ExperiencePaymentJoinType, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -31,9 +32,9 @@ func (m *expPaymentRepository) fetch(ctx context.Context, query string, args ...
 		}
 	}()
 
-	result := make([]*models.ExperiencePayment, 0)
+	result := make([]*models.ExperiencePaymentJoinType, 0)
 	for rows.Next() {
-		t := new(models.ExperiencePayment)
+		t := new(models.ExperiencePaymentJoinType)
 		err = rows.Scan(
 			&t.Id,
 			&t.CreatedBy,
@@ -50,6 +51,8 @@ func (m *expPaymentRepository) fetch(ctx context.Context, query string, args ...
 			&t.Currency,
 			&t.Price,
 			&t.CustomPrice,
+			&t.ExpPaymentTypeName,
+			&t.ExpPaymentTypeDesc,
 		)
 
 		if err != nil {
@@ -62,8 +65,10 @@ func (m *expPaymentRepository) fetch(ctx context.Context, query string, args ...
 	return result, nil
 }
 
-func (e expPaymentRepository) GetByExpID(ctx context.Context, expID string) (*models.ExperiencePayment, error) {
-	query := `SELECT * FROM experience_payments WHERE exp_id = ?`
+func (e expPaymentRepository) GetByExpID(ctx context.Context, expID string) ([]*models.ExperiencePaymentJoinType, error) {
+	query := `SELECT ep.*,ept.exp_payment_type_name as payment_type_name ,ept.exp_payment_type_desc as payment_type_desc FROM experience_payments ep
+			JOIN experience_payment_types ept on ept.id = ep.exp_payment_type_id
+			WHERE ep.exp_id = ? AND ep.is_deleted = 0 AND ep.is_active = 1`
 
 	list, err := e.fetch(ctx, query, expID)
 	if err != nil {
@@ -71,9 +76,9 @@ func (e expPaymentRepository) GetByExpID(ctx context.Context, expID string) (*mo
 			return nil, models.ErrNotFound
 		}
 		return nil, err
-	}else if len(list) == 0 {
-		return nil,nil
+	} else if len(list) == 0 {
+		return nil, nil
 	}
 
-	return list[0], nil
+	return list, nil
 }

@@ -3,22 +3,23 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/auth/user"
 	"github.com/models"
 	"github.com/product/reviews"
 	"github.com/profile/wishlists"
 	"github.com/service/exp_payment"
 	"github.com/service/experience"
-	"time"
 )
 
 type wishListUsecase struct {
-	wlRepo wishlists.Repository
+	wlRepo      wishlists.Repository
 	userUsecase user.Usecase
-	expRepo experience.Repository
+	expRepo     experience.Repository
 	paymentRepo exp_payment.Repository
-	reviewRepo reviews.Repository
-	ctxTimeout time.Duration
+	reviewRepo  reviews.Repository
+	ctxTimeout  time.Duration
 }
 
 func NewWishlistUsecase(
@@ -30,12 +31,12 @@ func NewWishlistUsecase(
 	timeout time.Duration,
 ) wishlists.Usecase {
 	return &wishListUsecase{
-		wlRepo:     w,
+		wlRepo:      w,
 		userUsecase: u,
-		expRepo: e,
+		expRepo:     e,
 		paymentRepo: p,
-		reviewRepo: r,
-		ctxTimeout: timeout,
+		reviewRepo:  r,
+		ctxTimeout:  timeout,
 	}
 }
 
@@ -60,9 +61,9 @@ func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.Wish
 			return nil, err
 		}
 
-		var	expType []string
+		var expType []string
 		if errUnmarshal := json.Unmarshal([]byte(exp.ExpType), &expType); errUnmarshal != nil {
-			return nil,models.ErrInternalServerError
+			return nil, models.ErrInternalServerError
 		}
 
 		expPayment, err := w.paymentRepo.GetByExpID(ctx, exp.Id)
@@ -71,14 +72,14 @@ func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.Wish
 		}
 
 		var currency string
-		if expPayment.Currency == 1 {
+		if expPayment[0].Currency == 1 {
 			currency = "USD"
 		} else {
 			currency = "IDR"
 		}
 
 		var priceItemType string
-		if expPayment.PriceItemType == 1 {
+		if expPayment[0].PriceItemType == 1 {
 			priceItemType = "Per Pax"
 		} else {
 			priceItemType = "Per Trip"
@@ -103,7 +104,7 @@ func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.Wish
 			Rating:      exp.Rating,
 			CountRating: countRating,
 			Currency:    currency,
-			Price:       expPayment.Price,
+			Price:       expPayment[0].Price,
 			PaymentType: priceItemType,
 			CoverPhoto:  *exp.ExpCoverPhoto,
 		}
@@ -132,8 +133,8 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 		IsDeleted:    0,
 		IsActive:     1,
 		UserId:       currentUser.Id,
-		ExpId: wl.ExpID,
-		TransId: wl.TransID,
+		ExpId:        wl.ExpID,
+		TransId:      wl.TransID,
 	}
 
 	res, err := w.wlRepo.Insert(ctx, newData)

@@ -34,6 +34,7 @@ import (
 	_expPaymentTypeHttpDeliver "github.com/transaction/experience_payment_type/delivery/http"
 	_expPaymentTypeRepo "github.com/transaction/experience_payment_type/repository"
 	_expPaymentTypeUcase "github.com/transaction/experience_payment_type/usecase"
+
 	//"github.com/bxcodec/go-clean-arch/middleware"
 	_isHttpDeliver "github.com/auth/identityserver/delivery/http"
 	_isUcase "github.com/auth/identityserver/usecase"
@@ -108,7 +109,7 @@ func main() {
 	dbUser := "AdminCgo@api-blog-cgo-mysqldbserver"
 	dbPass := "Standar123."
 	dbName := "cgo_indonesia"
-	baseUrlis := "https://identity-server-cgo-indonesia.azurewebsites.net"
+	baseUrlis := "http://identity-server-cgo-indonesia.azurewebsites.net"
 	basicAuth := "cm9jbGllbnQ6c2VjcmV0"
 	accountStorage := "cgostorage"
 	accessKeyStorage := "OwvEOlzf6e7QwVoV0H75GuSZHpqHxwhYnYL9QbpVPgBRJn+26K26aRJxtZn7Ip5AhaiIkw9kH11xrZSscavXfQ=="
@@ -168,7 +169,7 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
-	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo,timeoutContext)
+	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
@@ -196,7 +197,7 @@ func main() {
 	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, isUsecase, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 
-	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e,expPaymentTypeUsecase)
+	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
 	_reviewsHttpDeliver.NewreviewsHandler(e, reivewsUsecase)
