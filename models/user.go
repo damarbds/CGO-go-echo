@@ -33,13 +33,13 @@ type NewCommandUser struct {
 	UserEmail            string `json:"user_email" validate:"required"`
 	Password             string `json:"password"`
 	FullName             string `json:"full_name"`
-	PhoneNumber          int    `json:"phone_number" validate:"required"`
+	PhoneNumber          int    `json:"phone_number"`
 	VerificationSendDate string `json:"verification_send_date"`
 	VerificationCode     int    `json:"verification_code"`
 	ProfilePictUrl       string `json:"profile_pict_url"`
-	Address              string `json:"address" validate:"required"`
-	Dob                  string `json:"dob" validate:"required"`
-	Gender               int    `json:"gender" validate:"required"`
+	Address              string `json:"address"`
+	Dob                  string `json:"dob"`
+	Gender               int    `json:"gender"`
 	IdType               int    `json:"id_type"`
 	IdNumber             string `json:"id_number"`
 	ReferralCode         int    `json:"referral_code"`

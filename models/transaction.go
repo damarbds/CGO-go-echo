@@ -14,7 +14,7 @@ type Transaction struct {
 	IsActive            int        `json:"is_active" validate:"required"`
 	BookingType         int        `json:"booking_type"`
 	BookingExpId        string     `json:"booking_exp_id"`
-	PromoId             string     `json:"promo_id"`
+	PromoId             *string     `json:"promo_id"`
 	PaymentMethodId     string     `json:"payment_method_id"`
 	ExperiencePaymentId string     `json:"experience_payment_id"`
 	Status              int        `json:"status"`

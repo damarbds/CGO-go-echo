@@ -131,7 +131,7 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser ,user s
 		GivenName:     "",
 		FamilyName:    "",
 		Email:         ar.UserEmail,
-		EmailVerified: false,
+		EmailVerified: true,
 		Website:       "",
 		Address:       "",
 	}
@@ -191,10 +191,10 @@ func generateRandomBytes(n int) ([]byte, error) {
 func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
-	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
-	if existeduser != nil {
-		return models.ErrConflict
-	}
+	//existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
+	//if existeduser != nil {
+	//	return models.ErrConflict
+	//}
 	registerUser := models.RegisterAndUpdateUser{
 		Id:            "",
 		Username:      ar.UserEmail,
@@ -220,14 +220,17 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 		return models.ErrInternalServerError
 	}
 	ar.Id = isUser.Id
-	layoutFormat := "2006-01-02 15:04:05"
-	//verificationSendDate, errDate := time.Parse(layoutFormat,ar.VerificationSendDate)
-	//if errDate != nil{
-	//	return errDate
-	//}
-	dob , errDateDob := time.Parse(layoutFormat,ar.Dob)
-	if errDateDob != nil{
-		return errDateDob
+	var dob time.Time
+	if ar.Dob != ""{
+
+		layoutFormat := "2006-01-02 15:04:05"
+
+		dobs , errDateDob := time.Parse(layoutFormat,ar.Dob)
+
+		if errDateDob != nil{
+			return errDateDob
+		}
+		dob = dobs
 	}
 
 	if errorIs != nil{

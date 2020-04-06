@@ -206,6 +206,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context,page *i
 			cityDto.Item = append(cityDto.Item,expDto)
 			expListDto = append(expListDto,&cityDto)
 		}else if len(expListDto) != 0 {
+
 			for _, dto := range expListDto {
 				if dto.CityId == element.CityId{
 					expDto := models.ExperienceUserDiscoverPreferenceDto{
@@ -482,6 +483,7 @@ func (m experienceUsecase)GetByID(c context.Context, id string) (*models.Experie
 		priceItemType = "Per Trip"
 	}
 	expPayobj := models.ExpPaymentObj{
+		Id:expPaymentQuery.Id,
 		Currency: currency,
 		Price:    expPaymentQuery.Price,
 		PriceItemType:priceItemType,

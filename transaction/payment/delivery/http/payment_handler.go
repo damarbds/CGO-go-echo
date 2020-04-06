@@ -37,13 +37,13 @@ func isRequestValid(m *models.TransactionIn) (bool, error) {
 }
 
 func (p *paymentHandler) ConfirmPayment(c echo.Context) error {
-	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	token := c.Request().Header.Get("Authorization")
-
-	if token == "" {
-		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
-	}
+	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//token := c.Request().Header.Get("Authorization")
+	//
+	//if token == "" {
+	//	return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	//}
 
 	cp := new(models.ConfirmPaymentIn)
 	if err := c.Bind(cp); err != nil {
@@ -87,11 +87,16 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	var promoId *string
+	if t.PromoId != ""{
+		promoId = &t.PromoId
+	}else {
+		promoId = nil
+	}
 	tr := &models.Transaction{
 		BookingType:         t.BookingType,
 		BookingExpId:        t.BookingExpId,
-		PromoId:             t.PromoId,
+		PromoId:             promoId,
 		PaymentMethodId:     t.PaymentMethodId,
 		ExperiencePaymentId: t.ExperiencePaymentId,
 		Status:              t.Status,

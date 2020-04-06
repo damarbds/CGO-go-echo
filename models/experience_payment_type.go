@@ -15,3 +15,10 @@ type ExperiencePaymentType struct {
 	ExpPaymentTypeName 	string		`json:"exp_payment_type_id"`
 	ExpPaymentTypeDesc	string		`json:"exp_payment_type_desc"`
 }
+
+type ExperiencePaymentTypeDto struct {
+	Id                   string    `json:"id" validate:"required"`
+	Name 	string		`json:"name"`
+	Desc	string		`json:"desc"`
+}
+

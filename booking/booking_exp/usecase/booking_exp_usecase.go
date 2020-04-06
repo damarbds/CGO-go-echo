@@ -70,50 +70,6 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 	return myBooking, nil
 }
 
-func generateQRCode(content string) (*string,error){
-	var png []byte
-	png, err := qrcode.Encode(content, qrcode.Medium, 256)
-	if err != nil {
-		return nil,err
-	}
-	name, err := generateRandomString(5)
-	if err != nil {
-		return nil,err
-	}
-
-	fileName := name + ".png"
-	err = ioutil.WriteFile(fileName, png, 0700)
-	copy , err:= os.Open(fileName)
-	if err != nil {
-		return nil,err
-	}
-	copy.Close()
-	return &fileName,nil
-
-	//err := qrcode.WriteFile("https://example.org", qrcode.Medium, 256, "qr.png")
-
-}
-func generateRandomString(n int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	bytes, err := generateRandomBytes(n)
-	if err != nil {
-		return "", err
-	}
-	for i, b := range bytes {
-		bytes[i] = letters[b%byte(len(letters))]
-	}
-	return string(bytes), nil
-}
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	// Note that err == nil only if we read len(b) bytes.
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
 func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
@@ -123,6 +79,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId strin
 	}
 	var bookedBy []models.BookedByObj
 	var guestDesc []models.GuestDescObj
+	var accountBank models.AccountDesc
 	var expType   []string
 	if getDetailBooking.BookedBy != "" {
 		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.BookedBy), &bookedBy); errUnmarshal != nil {
@@ -138,6 +95,17 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId strin
 		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.ExpType), &expType); errUnmarshal != nil {
 			return nil,models.ErrInternalServerError
 		}
+	}
+	if getDetailBooking.AccountBank != ""{
+		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.AccountBank), &accountBank); errUnmarshal != nil {
+			return nil,models.ErrInternalServerError
+		}
+	}
+	var currency string
+	if getDetailBooking.Currency == 1 {
+		currency = "USD"
+	} else {
+		currency = "IDR"
 	}
 	bookingExp := models.BookingExpDetailDto{
 		Id:                getDetailBooking.Id,
@@ -157,7 +125,11 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId strin
 		ExpPickupPlace:    getDetailBooking.ExpPickupPlace,
 		ExpPickupTime:     getDetailBooking.ExpPickupTime,
 		TotalPrice:        getDetailBooking.TotalPrice,
-		PaymentType:       getDetailBooking.PaymentType,
+		Currency 			:currency,
+		PaymentType         :getDetailBooking.PaymentType,
+		AccountNumber :accountBank.AccNumber,
+		AccountHolder	:accountBank.AccHolder,
+		BankIcon :getDetailBooking.Icon,
 		ExperiencePaymentId:getDetailBooking.ExperiencePaymentId,
 	}
 	return &bookingExp,nil
@@ -349,4 +321,49 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		result = append(result,&historyDto)
 	}
 	return result,nil
+}
+
+func generateQRCode(content string) (*string,error){
+	var png []byte
+	png, err := qrcode.Encode(content, qrcode.Medium, 256)
+	if err != nil {
+		return nil,err
+	}
+	name, err := generateRandomString(5)
+	if err != nil {
+		return nil,err
+	}
+
+	fileName := name + ".png"
+	err = ioutil.WriteFile(fileName, png, 0700)
+	copy , err:= os.Open(fileName)
+	if err != nil {
+		return nil,err
+	}
+	copy.Close()
+	return &fileName,nil
+
+	//err := qrcode.WriteFile("https://example.org", qrcode.Medium, 256, "qr.png")
+
+}
+func generateRandomString(n int) (string, error) {
+	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	bytes, err := generateRandomBytes(n)
+	if err != nil {
+		return "", err
+	}
+	for i, b := range bytes {
+		bytes[i] = letters[b%byte(len(letters))]
+	}
+	return string(bytes), nil
+}
+func generateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }

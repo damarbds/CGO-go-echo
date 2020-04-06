@@ -119,6 +119,7 @@ type ExpAvailablitityObj struct {
 	Date  []string `json:"date"`
 }
 type ExpPaymentObj struct {
+	Id 		string `json:"id"`
 	Currency string  `json:"currency"`
 	Price    float64 `json:"price"`
 	PriceItemType	string 	`json:"price_item_type"`

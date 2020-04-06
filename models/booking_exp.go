@@ -102,6 +102,9 @@ type BookingExpJoin struct {
 	Province            string     `json:"province"`
 	Country             string     `json:"country"`
 	ExperiencePaymentId string     `json:"experience_payment_id"`
+	Currency 			int			`json:"currency"`
+	AccountBank			string		`json:"account_bank"`
+	Icon 			string	`json:"icon"`
 }
 type BookingExpDetailDto struct {
 	Id            string         `json:"id" validate:"required"`
@@ -121,8 +124,17 @@ type BookingExpDetailDto struct {
 	ExpPickupPlace      string   `json:"exp_pickup_place"`
 	ExpPickupTime       string   `json:"exp_pickup_time"`
 	TotalPrice          float64  `json:"total_price"`
+	Currency 			string	`json:"currency"`
 	PaymentType         string   `json:"payment_type"`
+	AccountNumber string `json:"account_number"`
+	AccountHolder	string	`json:"account_holder"`
+	BankIcon string	`json:"bank_icon"`
 	ExperiencePaymentId string   `json:"experience_payment_id"`
+
+}
+type AccountDesc struct {
+	AccNumber 	string	`json:"acc_number"`
+	AccHolder	string	`json:"acc_holder"`
 }
 type BookedByObj struct {
 	Title       string `json:"title"`
