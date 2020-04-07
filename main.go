@@ -60,9 +60,9 @@ import (
 	_userUcase "github.com/auth/user/usecase"
 	_paymentRepo "github.com/service/exp_payment/repository"
 
-	_fAQHttpDeliver "github.com/mics/faq/delivery/handler/http"
-	_fAQRepo "github.com/mics/faq/repository"
-	_fAQUcase "github.com/mics/faq/usecase"
+	_fAQHttpDeliver "github.com/misc/faq/delivery/handler/http"
+	_fAQRepo "github.com/misc/faq/repository"
+	_fAQUcase "github.com/misc/faq/usecase"
 
 	_bookingExpHttpDeliver "github.com/booking/booking_exp/delivery/http"
 	_bookingExpRepo "github.com/booking/booking_exp/repository"
@@ -82,6 +82,10 @@ import (
 	_wishlistHttpHandler "github.com/profile/wishlists/delivery/http"
 	_wishlistRepo "github.com/profile/wishlists/repository"
 	_wishlistUcase "github.com/profile/wishlists/usecase"
+
+	_notifHttpHandler "github.com/misc/notif/delivery/http"
+	_notifRepo "github.com/misc/notif/repository"
+	_notifUcase "github.com/misc/notif/usecase"
 )
 
 // func init() {
@@ -166,6 +170,7 @@ func main() {
 	paymentTrRepo := _paymentTrRepo.NewPaymentRepository(dbConn)
 	wlRepo := _wishlistRepo.NewWishListRepository(dbConn)
 	expPaymentTypeRepo := _expPaymentTypeRepo.NewExperiencePaymentTypeRepository(dbConn)
+	notifRepo := _notifRepo.NewNotifRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -197,6 +202,7 @@ func main() {
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
 	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, isUsecase, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
+	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
@@ -214,6 +220,7 @@ func main() {
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
 	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase)
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
+	_notifHttpHandler.NewNotifHandler(e, notifUcase)
 
 	log.Fatal(e.Start(":9090"))
 }
