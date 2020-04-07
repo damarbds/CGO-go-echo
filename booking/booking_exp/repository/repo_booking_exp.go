@@ -66,13 +66,13 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 	return list, nil
 }
 
-func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string) error {
-	query := `UPDATE booking_exps SET status = 1 WHERE id = ?`
+func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string,expiredDatePayment time.Time) error {
+	query := `UPDATE booking_exps SET status = 1 AND expired_date_payment = ? WHERE id = ?`
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, bookingId)
+	_, err = stmt.ExecContext(ctx, expiredDatePayment,bookingId)
 	if err != nil {
 		return err
 	}
@@ -134,6 +134,7 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.BookedBy,
 			&t.BookedByEmail,
 			&t.BookingDate,
+			&t.ExpiredDatePayment,
 			&t.UserId,
 			&t.Status,
 			&t.TicketCode,
@@ -153,6 +154,7 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.Currency,
 			&t.AccountBank,
 			&t.Icon,
+			&t.CreatedDateTransaction,
 		)
 
 		if err != nil {
@@ -183,7 +185,7 @@ func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string
 func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId string) (*models.BookingExpJoin, error) {
 	var booking *models.BookingExpJoin
 	query := `select  a.*, b.exp_title,b.exp_type,b.exp_duration,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type,
-			city_name as city, province_name as province, country_name as country, c.id as experience_payment_id,c.currency,pm.desc as account_bank,pm.icon from booking_exps a
+			city_name as city, province_name as province, country_name as country, c.id as experience_payment_id,c.currency,pm.desc as account_bank,pm.icon,t.created_date as created_date_transaction from booking_exps a
 			join experiences b on a.exp_id = b.id
 			join experience_payments c on b.id = c.exp_id
             join transactions t on t.booking_exp_id = a.id            
@@ -240,6 +242,7 @@ func (b bookingExpRepository) fetchQueryHistory(ctx context.Context, query strin
 			&t.BookedBy	,
 			&t.BookedByEmail	,
 			&t.BookingDate 	,
+			&t.ExpiredDatePayment,
 			&t.UserId			,
 			&t.Status 			,
 			&t.TicketCode		,

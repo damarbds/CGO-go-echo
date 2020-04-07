@@ -115,6 +115,8 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId strin
 		BookedBy:          bookedBy,
 		BookedByEmail:     getDetailBooking.BookedByEmail,
 		BookingDate:       getDetailBooking.BookingDate,
+		ExpiredDatePayment:getDetailBooking.ExpiredDatePayment,
+		CreatedDateTransaction:getDetailBooking.CreatedDateTransaction,
 		UserId:            getDetailBooking.UserId,
 		Status:            getDetailBooking.Status,
 		//TicketCode:        getDetailBooking.TicketCode,

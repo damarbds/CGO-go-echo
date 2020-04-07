@@ -18,6 +18,7 @@ type BookingExpHistory struct {
 	BookedBy			string		`json:"booked_by"`
 	BookedByEmail		string		`json:"booked_by_email"`
 	BookingDate 		time.Time	`json:"booking_date"`
+	ExpiredDatePayment 	  *time.Time	`json:"expired_date_payment"`
 	UserId				*string		`json:"user_id"`
 	Status 				int			`json:"status"`
 	TicketCode			string		`json:"ticket_code"`
@@ -64,6 +65,7 @@ type BookingExp struct {
 	BookedBy          string     `json:"booked_by"`
 	BookedByEmail     string     `json:"booked_by_email"`
 	BookingDate       time.Time  `json:"booking_date"`
+	ExpiredDatePayment 	  *time.Time	`json:"expired_date_payment"`
 	UserId            *string    `json:"user_id"`
 	Status            int        `json:"status"`
 	TicketCode        string     `json:"ticket_code"`
@@ -86,6 +88,7 @@ type BookingExpJoin struct {
 	BookedBy            string     `json:"booked_by"`
 	BookedByEmail       string     `json:"booked_by_email"`
 	BookingDate         time.Time  `json:"booking_date"`
+	ExpiredDatePayment 	  *time.Time	`json:"expired_date_payment"`
 	UserId              *string    `json:"user_id"`
 	Status              int        `json:"status"`
 	TicketCode          string     `json:"ticket_code"`
@@ -105,6 +108,7 @@ type BookingExpJoin struct {
 	Currency 			int			`json:"currency"`
 	AccountBank			string		`json:"account_bank"`
 	Icon 			string	`json:"icon"`
+	CreatedDateTransaction time.Time `json:"created_date_transaction"`
 }
 type BookingExpDetailDto struct {
 	Id            string         `json:"id" validate:"required"`
@@ -112,6 +116,8 @@ type BookingExpDetailDto struct {
 	BookedBy      []BookedByObj  `json:"booked_by"`
 	BookedByEmail string         `json:"booked_by_email"`
 	BookingDate   time.Time      `json:"booking_date"`
+	ExpiredDatePayment *time.Time `json:"expired_date_payment"`
+	CreatedDateTransaction time.Time	`json:"created_date_transaction"`
 	UserId        *string        `json:"user_id"`
 	Status        int            `json:"status"`
 	//TicketCode			string		`json:"ticket_code"`
