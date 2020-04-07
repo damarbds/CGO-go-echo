@@ -236,3 +236,7 @@ type ExpUserDiscoverPreferenceDto struct {
 	CityPhotos []CoverPhotosObj                      `json:"city_photos"`
 	Item       []ExperienceUserDiscoverPreferenceDto `json:"item"`
 }
+
+type Count struct {
+	Count int `json:"count"`
+}
