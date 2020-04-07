@@ -407,7 +407,6 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 		if errUnmarshal := json.Unmarshal([]byte(exp.ExpType), &expType); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
 		}
-
 		expPayment, err := m.paymentRepo.GetByExpID(ctx, exp.Id)
 		if err != nil {
 			return nil, err
@@ -432,6 +431,32 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 			return nil, err
 		}
 
+		var listPhotos []models.ExpPhotosObj
+		var coverPhotos models.CoverPhotosObj
+		if exp.CoverPhoto != "" {
+			coverPhotos.Original = exp.CoverPhoto
+			coverPhotos.Thumbnail = ""
+		}
+		expPhotoQuery, errorQuery := m.expPhotos.GetByExperienceID(ctx, exp.Id)
+		if errorQuery != nil {
+			return nil,errorQuery
+		}
+		if expPhotoQuery != nil {
+			for _, element := range expPhotoQuery {
+				expPhoto := models.ExpPhotosObj{
+					Folder:        element.ExpPhotoFolder,
+					ExpPhotoImage: nil,
+				}
+				var expPhotoImage []models.CoverPhotosObj
+				errObject := json.Unmarshal([]byte(element.ExpPhotoImage), &expPhotoImage)
+				if errObject != nil {
+					//fmt.Println("Error : ",err.Error())
+					return nil, models.ErrInternalServerError
+				}
+				expPhoto.ExpPhotoImage = expPhotoImage
+				listPhotos = append(listPhotos, expPhoto)
+			}
+		}
 		results[i] = &models.ExpSearchObject{
 			Id:          exp.Id,
 			ExpTitle:    exp.ExpTitle,
@@ -441,6 +466,8 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 			Currency:    currency,
 			Price:       expPayment[0].Price,
 			PaymentType: priceItemType,
+			CoverPhoto:coverPhotos,
+			ListPhoto:listPhotos,
 		}
 	}
 

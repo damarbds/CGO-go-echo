@@ -13,6 +13,7 @@ type wishListRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewWishListRepository(Conn *sql.DB) wishlists.Repository {
 	return &wishListRepository{Conn:Conn}
 }
@@ -60,7 +61,7 @@ func (m *wishListRepository) fetch(ctx context.Context, query string, args ...in
 }
 
 func (w wishListRepository) List(ctx context.Context, userID string) ([]*models.WishlistObj, error) {
-	query := `SELECT * FROM wishlists WHERE user_id = ?`
+	query := `SELECT * FROM wishlists WHERE user_id = ? AND is_deleted = 0 AND is_active = 1`
 
 	res, err := w.fetch(ctx, query, userID)
 	if err != nil {
@@ -73,6 +74,19 @@ func (w wishListRepository) List(ctx context.Context, userID string) ([]*models.
 	return res, nil
 }
 
+func (m *wishListRepository) GetByUserAndExpId(ctx context.Context, userID string, expId string) ([]*models.WishlistObj, error) {
+	query := `SELECT * FROM wishlists WHERE user_id = ? AND exp_id = ? AND is_deleted = 0 AND is_active = 1`
+
+	res, err := m.fetch(ctx, query, userID,expId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return res, nil
+}
 func (w wishListRepository) Insert(ctx context.Context, wl *models.Wishlist) (*models.Wishlist, error) {
 	id := guuid.New()
 	wl.Id = id.String()

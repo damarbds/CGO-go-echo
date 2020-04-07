@@ -117,11 +117,18 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 	ctx, cancel := context.WithTimeout(ctx, w.ctxTimeout)
 	defer cancel()
 
+
 	currentUser, err := w.userUsecase.ValidateTokenUser(ctx, token)
 	if err != nil {
 		return "", err
 	}
-
+	checkWhislist, err := w.wlRepo.GetByUserAndExpId(ctx,currentUser.Id,wl.ExpID)
+	if err != nil {
+		return "", err
+	}
+	if len(checkWhislist) != 0 || checkWhislist != nil{
+		return "",models.ErrConflict
+	}
 	newData := &models.Wishlist{
 		Id:           "",
 		CreatedBy:    currentUser.UserEmail,
