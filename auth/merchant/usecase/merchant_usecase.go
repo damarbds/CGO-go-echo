@@ -38,7 +38,7 @@ func (m merchantUsecase) Login(ctx context.Context, ar *models.Login) (*models.G
 	return  requestToken,err
 }
 
-func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string) (*string, error) {
+func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string) (*models.MerchantInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -50,8 +50,15 @@ func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string
 	if existedMerchant == nil {
 		return nil,models.ErrNotFound
 	}
-	currentUser := getInfoToIs.Username
-	return &currentUser,nil
+	merchantInfo := models.MerchantInfoDto{
+		Id:            existedMerchant.Id,
+		MerchantName:  existedMerchant.MerchantName,
+		MerchantDesc:  existedMerchant.MerchantDesc,
+		MerchantEmail: existedMerchant.MerchantEmail,
+		Balance:       existedMerchant.Balance,
+	}
+
+	return &merchantInfo,nil
 }
 
 func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*models.MerchantInfoDto, error) {

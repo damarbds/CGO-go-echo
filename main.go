@@ -176,6 +176,8 @@ func main() {
 	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
+	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
+	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		expAvailabilityRepo,
 		exp_photos,
@@ -186,11 +188,10 @@ func main() {
 		reviewsRepo,
 		typesRepo,
 		inspirationRepo,
+		merchantUsecase,
 		timeoutContext,
 	)
-	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, timeoutContext)
-	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)

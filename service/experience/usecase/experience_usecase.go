@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/auth/merchant"
 	"github.com/product/reviews"
 	"github.com/service/cpc"
 	"github.com/service/exp_availability"
@@ -29,6 +30,7 @@ type experienceUsecase struct {
 	typesRepo        types.Repository
 	inspirationRepo  inspiration.Repository
 	expPhotos        exp_photos.Repository
+	mUsecase         merchant.Usecase
 	contextTimeout   time.Duration
 	exp_availablitiy exp_availability.Repository
 }
@@ -44,6 +46,7 @@ func NewexperienceUsecase(
 	r reviews.Repository,
 	t types.Repository,
 	i inspiration.Repository,
+	m merchant.Usecase,
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
@@ -55,9 +58,78 @@ func NewexperienceUsecase(
 		reviewsRepo:      r,
 		typesRepo:        t,
 		inspirationRepo:  i,
+		mUsecase:         m,
 		contextTimeout:   timeout,
 		expPhotos:        ps,
 	}
+}
+
+func (m experienceUsecase) GetExpPendingTransactionCount(ctx context.Context, token string) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetExpPendingTransactionCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
+func (m experienceUsecase) GetExpFailedTransactionCount(ctx context.Context, token string) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetExpFailedTransactionCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
+func (m experienceUsecase) GetExpCount(ctx context.Context, token string) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetExpCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
+func (m experienceUsecase) GetSuccessBookCount(ctx context.Context, token string) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := m.experienceRepo.GetSuccessBookCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
 }
 
 func (m experienceUsecase) GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error) {
@@ -439,7 +511,7 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 		}
 		expPhotoQuery, errorQuery := m.expPhotos.GetByExperienceID(ctx, exp.Id)
 		if errorQuery != nil {
-			return nil,errorQuery
+			return nil, errorQuery
 		}
 		if expPhotoQuery != nil {
 			for _, element := range expPhotoQuery {
@@ -466,8 +538,8 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 			Currency:    currency,
 			Price:       expPayment[0].Price,
 			PaymentType: priceItemType,
-			CoverPhoto:coverPhotos,
-			ListPhoto:listPhotos,
+			CoverPhoto:  coverPhotos,
+			ListPhoto:   listPhotos,
 		}
 	}
 
@@ -517,13 +589,13 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 			priceItemType = "Per Trip"
 		}
 		expPayobj := models.ExpPaymentObj{
-			Id:            elementPayment.Id,
-			Currency:      currency,
-			Price:         elementPayment.Price,
-			PriceItemType: priceItemType,
-			PaymentTypeId:	elementPayment.ExpPaymentTypeId,
-			PaymentTypeName : elementPayment.ExpPaymentTypeName,
-			PaymentTypeDesc : elementPayment.ExpPaymentTypeDesc,
+			Id:              elementPayment.Id,
+			Currency:        currency,
+			Price:           elementPayment.Price,
+			PriceItemType:   priceItemType,
+			PaymentTypeId:   elementPayment.ExpPaymentTypeId,
+			PaymentTypeName: elementPayment.ExpPaymentTypeName,
+			PaymentTypeDesc: elementPayment.ExpPaymentTypeDesc,
 		}
 		expPayment = append(expPayment, expPayobj)
 	}
