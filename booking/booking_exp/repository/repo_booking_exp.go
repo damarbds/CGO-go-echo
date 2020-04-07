@@ -19,10 +19,67 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewMysqlArticleRepository will create an object that represent the article.Repository interface
 func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
+}
+
+func (b bookingExpRepository) fetchGrowth(ctx context.Context, query string, args ...interface{}) ([]*models.BookingGrowth, error) {
+	rows, err := b.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.BookingGrowth, 0)
+	for rows.Next() {
+		t := new(models.BookingGrowth)
+		err = rows.Scan(
+			&t.Date,
+			&t.Count,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (b bookingExpRepository) GetGrowthByMerchantID(ctx context.Context, merchantId string) ([]*models.BookingGrowth, error) {
+	query := `
+	SELECT
+		cast(c.booking_date AS date) as date,
+		count(*) as count
+	FROM
+		merchants a
+		JOIN experiences b ON a.id = b.merchant_id
+		JOIN booking_exps c ON b.id = c.exp_id
+		JOIN transactions d ON c.id = d.booking_exp_id
+	WHERE
+		a.id = ?
+		AND c.status = 1
+		AND d.status = 2
+	GROUP BY
+		cast(c.booking_date AS date)`
+
+	res, err := b.fetchGrowth(ctx, query, merchantId)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
@@ -66,13 +123,13 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 	return list, nil
 }
 
-func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string,expiredDatePayment time.Time) error {
+func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error {
 	query := `UPDATE booking_exps SET status = 1 AND expired_date_payment = ? WHERE id = ?`
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, expiredDatePayment,bookingId)
+	_, err = stmt.ExecContext(ctx, expiredDatePayment, bookingId)
 	if err != nil {
 		return err
 	}
@@ -236,25 +293,25 @@ func (b bookingExpRepository) fetchQueryHistory(ctx context.Context, query strin
 			&t.DeletedDate,
 			&t.IsDeleted,
 			&t.IsActive,
-			&t.ExpId				,
-			&t.OrderId		,
-			&t.GuestDesc	,
-			&t.BookedBy	,
-			&t.BookedByEmail	,
-			&t.BookingDate 	,
+			&t.ExpId,
+			&t.OrderId,
+			&t.GuestDesc,
+			&t.BookedBy,
+			&t.BookedByEmail,
+			&t.BookingDate,
 			&t.ExpiredDatePayment,
-			&t.UserId			,
-			&t.Status 			,
-			&t.TicketCode		,
-			&t.TicketQRCode	,
-			&t.ExperienceAddOnId ,
+			&t.UserId,
+			&t.Status,
+			&t.TicketCode,
+			&t.TicketQRCode,
+			&t.ExperienceAddOnId,
 			&t.ExpTitle,
 			&t.ExpType,
-			&t.ExpDuration	,
-			&t.CityName 		,
-			&t.ProvinceName		,
-			&t.CountryName		,
-			&t.StatusTransaction	,
+			&t.ExpDuration,
+			&t.CityName,
+			&t.ProvinceName,
+			&t.CountryName,
+			&t.StatusTransaction,
 		)
 
 		if err != nil {
@@ -287,7 +344,7 @@ func (b bookingExpRepository) QueryHistoryPer30DaysByUserId(ctx context.Context,
 	return result, err
 }
 
-func (b bookingExpRepository) QueryHistoryPerMonthByUserId(ctx context.Context, userId string,yearMonth string) ([]*models.BookingExpHistory, error) {
+func (b bookingExpRepository) QueryHistoryPerMonthByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error) {
 	//dtstr1 := "2010-01-23 11:44:20"
 	date := yearMonth + "-" + "01" + " 00:00:00"
 	//dt,_ := time.Parse(date, dtstr1)
@@ -302,7 +359,7 @@ func (b bookingExpRepository) QueryHistoryPerMonthByUserId(ctx context.Context, 
 					and (g.created_date >= ? or g.modified_date >= ?)
 `
 
-	list, err := b.fetchQueryHistory(ctx, query, userId,date,date)
+	list, err := b.fetchQueryHistory(ctx, query, userId, date, date)
 	if err != nil {
 		return nil, err
 	}
