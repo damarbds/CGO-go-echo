@@ -206,6 +206,8 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 		EmailVerified: false,
 		Website:       "",
 		Address:       "",
+		OTP:"",
+		UserType:1,
 	}
 	isUser ,errorIs:= m.identityServerUc.CreateUser(&registerUser)
 	message := "Please keep it a secret, and use this OTP: " + isUser.OTP + " code to verify your email"

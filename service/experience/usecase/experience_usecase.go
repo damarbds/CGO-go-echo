@@ -219,7 +219,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				Original:  *element.ExpCoverPhoto,
 				Thumbnail: "",
 			}
-			coverPhotos =  covertPhoto
+			coverPhotos = covertPhoto
 			//if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
 			//	return nil,models.ErrInternalServerError
 			//}
@@ -334,6 +334,12 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
+	var activityTypeArray []int
+	if activityType != "" {
+		if errUnmarshal := json.Unmarshal([]byte(activityType), &activityTypeArray); errUnmarshal != nil {
+			return nil, models.ErrInternalServerError
+		}
+	}
 	query := `select e.id,e.exp_title,e.exp_type,e.rating,e.exp_cover_photo as cover_photo from experiences e`
 
 	if bottomPrice != "" && upPrice != "" {
@@ -354,7 +360,7 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 	} else if harborsId != "" {
 		query = query + ` where e.harbors_id = '` + harborsId + `'`
 	} else {
-		return nil, models.ErrBadParamInput
+		//return nil, models.ErrBadParamInput
 	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
@@ -372,9 +378,21 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 		}
 		query = query + ` AND e.exp_trip_type = '` + tripType + `'`
 	}
-	if activityType != "" {
-		types, _ := strconv.Atoi(activityType)
-		query = query + ` AND fat.id =` + strconv.Itoa(types)
+
+	if len(activityTypeArray) != 0 {
+		//types, _ := strconv.Atoi(activityType)
+		for index, id := range activityTypeArray {
+			if index == 0 && index != (len(activityTypeArray)-1) {
+				query = query + ` AND (fat.id =` + strconv.Itoa(id)
+			} else if index == 0 && index == (len(activityTypeArray)-1) {
+				query = query + ` AND (fat.id =` + strconv.Itoa(id) + ` ) `
+			} else if index == (len(activityTypeArray) - 1) {
+				query = query + ` OR fat.id =` + strconv.Itoa(id) + ` ) `
+			} else {
+				query = query + ` OR fat.id =` + strconv.Itoa(id)
+			}
+		}
+
 	}
 	if bottomPrice != "" && upPrice != "" {
 		bottomprices, _ := strconv.ParseFloat(bottomPrice, 64)
@@ -424,6 +442,27 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 			Original:  exp.CoverPhoto,
 			Thumbnail: "",
 		}
+		var listPhotos []models.ExpPhotosObj
+		expPhotoQuery, errorQuery := m.expPhotos.GetByExperienceID(ctx, exp.Id)
+		if errorQuery != nil {
+			return nil, errorQuery
+		}
+		if expPhotoQuery != nil {
+			for _, element := range expPhotoQuery {
+				expPhoto := models.ExpPhotosObj{
+					Folder:        element.ExpPhotoFolder,
+					ExpPhotoImage: nil,
+				}
+				var expPhotoImage []models.CoverPhotosObj
+				errObject := json.Unmarshal([]byte(element.ExpPhotoImage), &expPhotoImage)
+				if errObject != nil {
+					//fmt.Println("Error : ",err.Error())
+					return nil, models.ErrInternalServerError
+				}
+				expPhoto.ExpPhotoImage = expPhotoImage
+				listPhotos = append(listPhotos, expPhoto)
+			}
+		}
 		results[i] = &models.ExpSearchObject{
 			Id:          exp.Id,
 			ExpTitle:    exp.ExpTitle,
@@ -434,6 +473,7 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 			Price:       expPayment[0].Price,
 			PaymentType: priceItemType,
 			CoverPhoto:  coverPhoto,
+			ListPhoto:   listPhotos,
 		}
 	}
 

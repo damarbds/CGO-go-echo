@@ -15,11 +15,11 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.Notification{}
-	error := db.AutoMigrate(&user).AddForeignKey("merchant_id","merchants(id)","RESTRICT", "RESTRICT")
+	user := model.Admin{}
+	error := db.AutoMigrate(&user)
 	if error != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table_Notification",
+			DescMigration:"Add_table_Admin",
 			Date:  time.Now(),
 		}
 

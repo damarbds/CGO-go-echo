@@ -18,6 +18,7 @@ type RegisterAndUpdateUser struct {
 	Website		string	`json:"website"`
 	Address 	string	`json:"address"`
 	OTP 		string	`json:"oTP"`
+	UserType 	int 	`json:"userType"`
 }
 
 type Response struct {

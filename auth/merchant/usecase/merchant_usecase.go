@@ -134,6 +134,8 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		EmailVerified: false,
 		Website:       "",
 		Address:       "",
+		OTP:		 "",
+		UserType:		2,
 	}
 	isUser ,errorIs:= m.identityServerUc.CreateUser(&registerUser)
 	ar.Id = isUser.Id

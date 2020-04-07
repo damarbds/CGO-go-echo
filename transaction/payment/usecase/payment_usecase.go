@@ -86,8 +86,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 	if err != nil {
 		return "", models.ErrInternalServerError
 	}
-
-	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId)
+	expiredDatePayment := newData.CreatedDate.AddDate(0,0,1)
+	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId,expiredDatePayment)
 	if err != nil {
 		return "", err
 	}
