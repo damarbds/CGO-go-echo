@@ -2,10 +2,11 @@ package http
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	validator "gopkg.in/go-playground/validator.v9"
-	"net/http"
 
 	"github.com/booking/booking_exp"
 	"github.com/models"
@@ -30,6 +31,28 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	e.GET("booking/detail/:id", handler.GetDetail)
 	e.GET("booking/my", handler.GetMyBooking)
 	e.GET("booking/history-user", handler.GetHistoryBookingByUser)
+	e.GET("booking/growth", handler.GetGrowth)
+}
+
+func (a *booking_expHandler) GetGrowth(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	res, err := a.booking_expUsecase.GetGrowthByMerchantID(ctx, token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
 }
 
 func isRequestValid(m *models.NewBookingExpCommand) (bool, error) {
@@ -91,7 +114,7 @@ func (a *booking_expHandler) GetHistoryBookingByUser(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.booking_expUsecase.GetHistoryBookingByUserId(ctx,token,monthType)
+	result, err := a.booking_expUsecase.GetHistoryBookingByUserId(ctx, token, monthType)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -105,12 +128,13 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.booking_expUsecase.GetDetailBookingID(ctx,id)
+	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, result)
 }
+
 // Store will store the booking_exp by given request body
 func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
