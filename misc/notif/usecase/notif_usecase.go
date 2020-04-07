@@ -2,26 +2,26 @@ package usecase
 
 import (
 	"context"
+	"time"
+
 	"github.com/auth/merchant"
 	"github.com/misc/notif"
 	"github.com/models"
-	"time"
 )
 
 type notifUsecase struct {
-	notifRepo notif.Repository
+	notifRepo       notif.Repository
 	merchantUsecase merchant.Usecase
-	contextTimeout time.Duration
+	contextTimeout  time.Duration
 }
 
 func NewNotifUsecase(n notif.Repository, u merchant.Usecase, timeout time.Duration) notif.Usecase {
 	return &notifUsecase{
-		notifRepo:   n,
+		notifRepo:       n,
 		merchantUsecase: u,
-		contextTimeout: timeout,
+		contextTimeout:  timeout,
 	}
 }
-
 
 func (n notifUsecase) GetByMerchantID(ctx context.Context, token string) ([]*models.NotifDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, n.contextTimeout)
@@ -36,7 +36,6 @@ func (n notifUsecase) GetByMerchantID(ctx context.Context, token string) ([]*mod
 	if err != nil {
 		return nil, err
 	}
-
 
 	notifs := make([]*models.NotifDto, len(res))
 	for i, n := range res {
@@ -55,4 +54,3 @@ func (n notifUsecase) GetByMerchantID(ctx context.Context, token string) ([]*mod
 
 	return notifs, nil
 }
-

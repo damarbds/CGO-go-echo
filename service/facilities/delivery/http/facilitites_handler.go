@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-	"github.com/misc/notif"
 	"github.com/models"
+	"github.com/service/facilities"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,18 +14,18 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type notifHandler struct {
-	notifUsecase notif.Usecase
+type facilityHandler struct {
+	facilityUsecase facilities.Usecase
 }
 
-func NewNotifHandler(e *echo.Echo, us notif.Usecase) {
-	handler := &notifHandler{
-		notifUsecase: us,
+func NewFacilityHandler(e *echo.Echo, us facilities.Usecase) {
+	handler := &facilityHandler{
+		facilityUsecase: us,
 	}
-	e.GET("misc/notif", handler.Get)
+	e.GET("service/facilities", handler.List)
 }
 
-func (a *notifHandler) Get(c echo.Context) error {
+func (f *facilityHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -39,11 +39,11 @@ func (a *notifHandler) Get(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := a.notifUsecase.GetByMerchantID(ctx, token)
+	list, err := f.facilityUsecase.List(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, list)
 }
 
 func getStatusCode(err error) int {

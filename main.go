@@ -86,6 +86,10 @@ import (
 	_notifHttpHandler "github.com/misc/notif/delivery/http"
 	_notifRepo "github.com/misc/notif/repository"
 	_notifUcase "github.com/misc/notif/usecase"
+
+	_facilityHttpHandler "github.com/service/facilities/delivery/http"
+	_facilityRepo "github.com/service/facilities/repository"
+	_facilityUcase "github.com/service/facilities/usecase"
 )
 
 // func init() {
@@ -171,6 +175,7 @@ func main() {
 	wlRepo := _wishlistRepo.NewWishListRepository(dbConn)
 	expPaymentTypeRepo := _expPaymentTypeRepo.NewExperiencePaymentTypeRepository(dbConn)
 	notifRepo := _notifRepo.NewNotifRepository(dbConn)
+	facilityRepo := _facilityRepo.NewFacilityRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -203,6 +208,7 @@ func main() {
 	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, isUsecase, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
+	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
 
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
@@ -221,6 +227,7 @@ func main() {
 	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase)
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
 	_notifHttpHandler.NewNotifHandler(e, notifUcase)
+	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
 
 	log.Fatal(e.Start(":9090"))
 }

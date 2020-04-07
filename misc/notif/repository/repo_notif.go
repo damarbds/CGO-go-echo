@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/misc/notif"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
@@ -13,7 +14,7 @@ type notifRepository struct {
 }
 
 func NewNotifRepository(Conn *sql.DB) notif.Repository {
-	return &notifRepository{Conn:Conn}
+	return &notifRepository{Conn: Conn}
 }
 
 func (n notifRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Notification, error) {
@@ -45,8 +46,8 @@ func (n notifRepository) fetch(ctx context.Context, query string, args ...interf
 			&t.IsActive,
 			&t.MerchantId,
 			&t.Type,
-			&t.Title ,
-			&t.Desc ,
+			&t.Title,
+			&t.Desc,
 		)
 
 		if err != nil {
