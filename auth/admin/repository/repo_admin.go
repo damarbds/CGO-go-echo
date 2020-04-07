@@ -105,7 +105,7 @@ func (m *adminRepository) GetByID(ctx context.Context, id string) (res *models.A
 	return
 }
 func (m *adminRepository) GetByAdminEmail(ctx context.Context, adminEmail string) (res *models.Admin, err error) {
-	query := `SELECT * FROM admins WHERE admin_email = ?`
+	query := `SELECT * FROM admins WHERE email = ?`
 
 	list, err := m.fetch(ctx, query, adminEmail)
 	if err != nil {

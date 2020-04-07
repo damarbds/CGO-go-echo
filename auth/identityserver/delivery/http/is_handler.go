@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"github.com/auth/admin"
 	"github.com/auth/merchant"
 	"github.com/auth/user"
 	"net/http"
@@ -21,13 +22,15 @@ type ResponseError struct {
 type isHandler struct {
 	merchantUsecase merchant.Usecase
 	userUsecase     user.Usecase
+	adminUsecase 	admin.Usecase
 }
 
 // NewisHandler will initialize the iss/ resources endpoint
-func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase) {
+func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase,a admin.Usecase) {
 	handler := &isHandler{
 		merchantUsecase: m,
 		userUsecase:     u,
+		adminUsecase:a,
 	}
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
@@ -61,6 +64,14 @@ func (a *isHandler) Login(c echo.Context) error {
 	} else if isLogin.Type == "merchant" {
 
 		token, err := a.merchantUsecase.Login(ctx, &isLogin)
+
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		responseToken = token
+	}else if isLogin.Type == "admin" {
+
+		token, err := a.adminUsecase.Login(ctx, &isLogin)
 
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
@@ -119,6 +130,13 @@ func (a *isHandler) GetInfo(c echo.Context) error {
 		return c.JSON(http.StatusOK, response)
 	} else if typeUser == "merchant" {
 		response, err := a.merchantUsecase.GetMerchantInfo(ctx, token)
+
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, response)
+	}else if typeUser == "admin" {
+		response, err := a.adminUsecase.GetAdminInfo(ctx, token)
 
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

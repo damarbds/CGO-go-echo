@@ -26,8 +26,8 @@ func NewadminHandler(e *echo.Echo, us admin.Usecase) {
 	handler := &adminHandler{
 		adminUsecase: us,
 	}
-	e.POST("/admins", handler.Createadmin)
-	e.PUT("/admins/:id", handler.Updateadmin)
+	e.POST("/admin", handler.Createadmin)
+	e.PUT("/admin/:id", handler.Updateadmin)
 	//e.GET("/admins/:id", handler.GetByID)
 	//e.DELETE("/admins/:id", handler.Delete)
 }

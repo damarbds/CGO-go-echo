@@ -43,6 +43,10 @@ import (
 	_merchantRepo "github.com/auth/merchant/repository"
 	_merchantUcase "github.com/auth/merchant/usecase"
 
+	_adminHttpDeliver "github.com/auth/admin/delivery/http"
+	_adminRepo "github.com/auth/admin/repository"
+	_adminUcase "github.com/auth/admin/usecase"
+
 	_promoHttpDeliver "github.com/service/promo/delivery/http"
 	_promoRepo "github.com/service/promo/repository"
 	_promoUcase "github.com/service/promo/usecase"
@@ -176,6 +180,7 @@ func main() {
 	expPaymentTypeRepo := _expPaymentTypeRepo.NewExperiencePaymentTypeRepository(dbConn)
 	notifRepo := _notifRepo.NewNotifRepository(dbConn)
 	facilityRepo := _facilityRepo.NewFacilityRepository(dbConn)
+	adminRepo := _adminRepo.NewadminRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -188,6 +193,7 @@ func main() {
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
+	adminUsecase := _adminUcase.NewadminUsecase(adminRepo,isUsecase,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		expAvailabilityRepo,
 		exp_photos,
@@ -210,6 +216,7 @@ func main() {
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
 
+	_adminHttpDeliver.NewadminHandler(e,adminUsecase)
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
@@ -218,7 +225,7 @@ func main() {
 	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
 	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase)
-	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase)
+	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase,adminUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
