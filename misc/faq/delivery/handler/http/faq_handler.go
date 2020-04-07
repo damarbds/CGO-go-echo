@@ -8,7 +8,7 @@ import (
 	//"strconv"
 
 	"github.com/labstack/echo"
-	"github.com/mics/faq"
+	"github.com/misc/faq"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	//"golang.org/x/net/context"

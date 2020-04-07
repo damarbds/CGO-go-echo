@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/mics/faq"
+	"github.com/misc/faq"
 	"github.com/models"
 	"golang.org/x/net/context"
 	"time"

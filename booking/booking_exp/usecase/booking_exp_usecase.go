@@ -2,34 +2,62 @@ package usecase
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"time"
+
 	"github.com/auth/identityserver"
+	"github.com/auth/merchant"
 	"github.com/auth/user"
 	"github.com/booking/booking_exp"
 	"github.com/models"
 	"github.com/skip2/go-qrcode"
 	"golang.org/x/net/context"
-	"io/ioutil"
-	"math/rand"
-	"os"
-	"time"
 )
 
 type bookingExpUsecase struct {
-	bookingExpRepo booking_exp.Repository
-	userUsecase    user.Usecase
-	isUsecase		identityserver.Usecase
-	contextTimeout time.Duration
+	bookingExpRepo  booking_exp.Repository
+	userUsecase     user.Usecase
+	merchantUsecase merchant.Usecase
+	isUsecase       identityserver.Usecase
+	contextTimeout  time.Duration
 }
 
-
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, is identityserver.Usecase,timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
-		bookingExpRepo: a,
-		userUsecase:    u,
-		isUsecase:is,
-		contextTimeout: timeout,
+		bookingExpRepo:  a,
+		userUsecase:     u,
+		merchantUsecase: m,
+		isUsecase:       is,
+		contextTimeout:  timeout,
 	}
+}
+
+func (b bookingExpUsecase) GetGrowthByMerchantID(ctx context.Context, token string) ([]*models.BookingGrowthDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := b.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	growth, err := b.bookingExpRepo.GetGrowthByMerchantID(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*models.BookingGrowthDto, len(growth))
+	for i, g := range growth {
+		results[i] = &models.BookingGrowthDto{
+			Date:  g.Date.Format("2006-01-02"),
+			Count: g.Count,
+		}
+	}
+
+	return results, nil
 }
 
 func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string) ([]*models.MyBooking, error) {
@@ -73,32 +101,32 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
-	getDetailBooking ,err := b.bookingExpRepo.GetDetailBookingID(ctx,bookingId)
+	getDetailBooking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	var bookedBy []models.BookedByObj
 	var guestDesc []models.GuestDescObj
 	var accountBank models.AccountDesc
-	var expType   []string
+	var expType []string
 	if getDetailBooking.BookedBy != "" {
 		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.BookedBy), &bookedBy); errUnmarshal != nil {
-			return nil,models.ErrInternalServerError
+			return nil, models.ErrInternalServerError
 		}
 	}
 	if getDetailBooking.GuestDesc != "" {
 		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.GuestDesc), &guestDesc); errUnmarshal != nil {
-			return nil,models.ErrInternalServerError
+			return nil, models.ErrInternalServerError
 		}
 	}
 	if getDetailBooking.ExpType != "" {
 		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.ExpType), &expType); errUnmarshal != nil {
-			return nil,models.ErrInternalServerError
+			return nil, models.ErrInternalServerError
 		}
 	}
-	if getDetailBooking.AccountBank != ""{
+	if getDetailBooking.AccountBank != "" {
 		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.AccountBank), &accountBank); errUnmarshal != nil {
-			return nil,models.ErrInternalServerError
+			return nil, models.ErrInternalServerError
 		}
 	}
 	var currency string
@@ -108,31 +136,31 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId strin
 		currency = "IDR"
 	}
 	bookingExp := models.BookingExpDetailDto{
-		Id:                getDetailBooking.Id,
-		ExpId:             getDetailBooking.ExpId,
-		OrderId:           getDetailBooking.OrderId,
-		GuestDesc:         guestDesc,
-		BookedBy:          bookedBy,
-		BookedByEmail:     getDetailBooking.BookedByEmail,
-		BookingDate:       getDetailBooking.BookingDate,
-		UserId:            getDetailBooking.UserId,
-		Status:            getDetailBooking.Status,
+		Id:            getDetailBooking.Id,
+		ExpId:         getDetailBooking.ExpId,
+		OrderId:       getDetailBooking.OrderId,
+		GuestDesc:     guestDesc,
+		BookedBy:      bookedBy,
+		BookedByEmail: getDetailBooking.BookedByEmail,
+		BookingDate:   getDetailBooking.BookingDate,
+		UserId:        getDetailBooking.UserId,
+		Status:        getDetailBooking.Status,
 		//TicketCode:        getDetailBooking.TicketCode,
-		TicketQRCode:      getDetailBooking.TicketQRCode,
-		ExperienceAddOnId: getDetailBooking.ExperienceAddOnId,
-		ExpTitle:          getDetailBooking.ExpTitle,
-		ExpType:expType,
-		ExpPickupPlace:    getDetailBooking.ExpPickupPlace,
-		ExpPickupTime:     getDetailBooking.ExpPickupTime,
-		TotalPrice:        getDetailBooking.TotalPrice,
-		Currency 			:currency,
-		PaymentType         :getDetailBooking.PaymentType,
-		AccountNumber :accountBank.AccNumber,
-		AccountHolder	:accountBank.AccHolder,
-		BankIcon :getDetailBooking.Icon,
-		ExperiencePaymentId:getDetailBooking.ExperiencePaymentId,
+		TicketQRCode:        getDetailBooking.TicketQRCode,
+		ExperienceAddOnId:   getDetailBooking.ExperienceAddOnId,
+		ExpTitle:            getDetailBooking.ExpTitle,
+		ExpType:             expType,
+		ExpPickupPlace:      getDetailBooking.ExpPickupPlace,
+		ExpPickupTime:       getDetailBooking.ExpPickupTime,
+		TotalPrice:          getDetailBooking.TotalPrice,
+		Currency:            currency,
+		PaymentType:         getDetailBooking.PaymentType,
+		AccountNumber:       accountBank.AccNumber,
+		AccountHolder:       accountBank.AccHolder,
+		BankIcon:            getDetailBooking.Icon,
+		ExperiencePaymentId: getDetailBooking.ExperiencePaymentId,
 	}
-	return &bookingExp,nil
+	return &bookingExp, nil
 
 }
 
@@ -178,15 +206,15 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	}
 	booking.OrderId = orderId
 	booking.TicketCode = ticketCode
-	fileNameQrCode,err := generateQRCode(orderId)
+	fileNameQrCode, err := generateQRCode(orderId)
 	if err != nil {
-		return nil,models.ErrInternalServerError,nil
+		return nil, models.ErrInternalServerError, nil
 	}
 	imagePath, _ := b.isUsecase.UploadFileToBlob(*fileNameQrCode, "TicketBookingQRCode")
 
 	errRemove := os.Remove(*fileNameQrCode)
 	if errRemove != nil {
-		return nil,models.ErrInternalServerError,nil
+		return nil, models.ErrInternalServerError, nil
 	}
 	booking.TicketQRCode = imagePath
 	bookingExp := models.BookingExp{
@@ -225,7 +253,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	return booking, nil, nil
 }
 
-func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string,monthType string) ([]*models.BookingHistoryDto,error) {
+func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string, monthType string) ([]*models.BookingHistoryDto, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 	var currentUserId string
@@ -238,25 +266,25 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 	}
 	var guestDesc []models.GuestDescObj
 	var result []*models.BookingHistoryDto
-	if monthType == "past-30-days"{
-		query , err := b.bookingExpRepo.QueryHistoryPer30DaysByUserId(ctx,currentUserId)
+	if monthType == "past-30-days" {
+		query, err := b.bookingExpRepo.QueryHistoryPer30DaysByUserId(ctx, currentUserId)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		historyDto := models.BookingHistoryDto{
 			Category: "past-30-days",
 			Items:    nil,
 		}
-		for _,element := range query {
-			var expType  []string
+		for _, element := range query {
+			var expType []string
 			if element.ExpType != nil {
 				if errUnmarshal := json.Unmarshal([]byte(*element.ExpType), &expType); errUnmarshal != nil {
-					return nil,models.ErrInternalServerError
+					return nil, models.ErrInternalServerError
 				}
 			}
 			if element.GuestDesc != "" {
 				if errUnmarshal := json.Unmarshal([]byte(element.GuestDesc), &guestDesc); errUnmarshal != nil {
-					return nil,models.ErrInternalServerError
+					return nil, models.ErrInternalServerError
 				}
 			}
 			totalGuest := len(guestDesc)
@@ -272,35 +300,35 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Country:        element.CountryName,
 				Status:         element.StatusTransaction,
 			}
-			historyDto.Items = append(historyDto.Items,itemDto)
+			historyDto.Items = append(historyDto.Items, itemDto)
 		}
-		result = append(result,&historyDto)
-	}else {
+		result = append(result, &historyDto)
+	} else {
 		//test := "2006-05"
 		//year := string(monthType[0] + monthType[1] + monthType[2] + monthType[3])
 		//month := string (monthType[5] + monthType[6])
-		query , err := b.bookingExpRepo.QueryHistoryPerMonthByUserId(ctx,currentUserId,monthType)
+		query, err := b.bookingExpRepo.QueryHistoryPerMonthByUserId(ctx, currentUserId, monthType)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		monthType = monthType + "-" + "01" + " 00:00:00"
 		layoutFormat := "2006-01-02 15:04:05"
-		dt , _ := time.Parse(layoutFormat,monthType)
+		dt, _ := time.Parse(layoutFormat, monthType)
 		dtstr2 := dt.Format("Jan '06")
 		historyDto := models.BookingHistoryDto{
 			Category: dtstr2,
 			Items:    nil,
 		}
-		for _,element := range query {
-			var expType  []string
+		for _, element := range query {
+			var expType []string
 			if element.ExpType != nil {
 				if errUnmarshal := json.Unmarshal([]byte(*element.ExpType), &expType); errUnmarshal != nil {
-					return nil,models.ErrInternalServerError
+					return nil, models.ErrInternalServerError
 				}
 			}
 			if element.GuestDesc != "" {
 				if errUnmarshal := json.Unmarshal([]byte(element.GuestDesc), &guestDesc); errUnmarshal != nil {
-					return nil,models.ErrInternalServerError
+					return nil, models.ErrInternalServerError
 				}
 			}
 			totalGuest := len(guestDesc)
@@ -316,32 +344,32 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Country:        element.CountryName,
 				Status:         element.StatusTransaction,
 			}
-			historyDto.Items = append(historyDto.Items,itemDto)
+			historyDto.Items = append(historyDto.Items, itemDto)
 		}
-		result = append(result,&historyDto)
+		result = append(result, &historyDto)
 	}
-	return result,nil
+	return result, nil
 }
 
-func generateQRCode(content string) (*string,error){
+func generateQRCode(content string) (*string, error) {
 	var png []byte
 	png, err := qrcode.Encode(content, qrcode.Medium, 256)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	name, err := generateRandomString(5)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	fileName := name + ".png"
 	err = ioutil.WriteFile(fileName, png, 0700)
-	copy , err:= os.Open(fileName)
+	copy, err := os.Open(fileName)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	copy.Close()
-	return &fileName,nil
+	return &fileName, nil
 
 	//err := qrcode.WriteFile("https://example.org", qrcode.Medium, 256, "qr.png")
 
