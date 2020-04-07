@@ -18,7 +18,7 @@ type Merchant struct {
 	MerchantDesc		 string		`json:"merchant_desc"`
 	MerchantEmail		 string		`json:"merchant_email" validate:"required"`
 	Balance				 float64	`json:"balance"`
-	PhoneNumber 			string	`json:"phone_number"`
+	PhoneNumber 			*string	`json:"phone_number"`
 }
 
 type NewCommandMerchant struct {

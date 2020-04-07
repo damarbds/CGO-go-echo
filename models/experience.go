@@ -186,7 +186,7 @@ type ExperienceUserDiscoverPreferenceDto struct {
 	Currency     string           `json:"currency"`
 	Price        float64          `json:"price"`
 	Payment_type string           `json:"payment_type"`
-	Cover_Photo  []CoverPhotosObj `json:"cover_photo"`
+	Cover_Photo  CoverPhotosObj `json:"cover_photo"`
 }
 type CoverPhotosObj struct {
 	Original  string `json:"original"`

@@ -212,14 +212,14 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 		//	return nil, models.ErrInternalServerError
 		//}
 
-		var coverPhotos []models.CoverPhotosObj
+		var coverPhotos models.CoverPhotosObj
 		var cityPhotos []models.CoverPhotosObj
 		if element.ExpCoverPhoto != nil {
 			covertPhoto := models.CoverPhotosObj{
 				Original:  *element.ExpCoverPhoto,
 				Thumbnail: "",
 			}
-			coverPhotos = append(coverPhotos, covertPhoto)
+			coverPhotos =  covertPhoto
 			//if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
 			//	return nil,models.ErrInternalServerError
 			//}
