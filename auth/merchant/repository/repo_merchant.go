@@ -58,6 +58,7 @@ func (m *merchantRepository) fetch(ctx context.Context, query string, args ...in
 			&t.MerchantDesc,
 			&t.MerchantEmail,
 			&t.Balance,
+			&t.PhoneNumber,
 		)
 
 		if err != nil {
