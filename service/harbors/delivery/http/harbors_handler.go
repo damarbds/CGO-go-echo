@@ -46,7 +46,7 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 func (a *harborsHandler) GetAllHarbors(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
-
+	search := c.QueryParam("search")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -54,13 +54,13 @@ func (a *harborsHandler) GetAllHarbors(c echo.Context) error {
 	if qpage != "" && qsize != ""{
 		page , _:= strconv.Atoi(qpage)
 		size , _:= strconv.Atoi(qsize)
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx,&size,&page)
+		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx,&size,&page,search)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
 	}else {
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx,nil,nil)
+		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx,nil,nil,search)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

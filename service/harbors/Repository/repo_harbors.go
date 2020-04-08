@@ -131,17 +131,33 @@ func (m *harborsRepository) Fetch(ctx context.Context, cursor string, num int64)
 	return res, nextCursor, err
 }
 
-func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , size *int) ([]*models.HarborsWCPC, error) {
+func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , size *int,search string) ([]*models.HarborsWCPC, error) {
 
-	if page != nil && size != nil{
+	search = "%" + search + "%"
+	if page != nil && size != nil && search != ""{
 		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.province_name,co.country_name from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
-			where h.is_active = 1 and h.is_deleted = 0
+			where h.is_active = 1 and h.is_deleted = 0 
+			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?) 
             ORDER BY h.created_date desc LIMIT ? OFFSET ? `
 
-		res, err := m.fetchWithJoinCPC(ctx, query, page, size)
+		res, err := m.fetchWithJoinCPC(ctx, query, search,search,search,page, size)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+
+	} else if page == nil && size == nil && search != ""{
+		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.province_name,co.country_name from cgo_indonesia.harbors h
+			join cities c on h.city_id = c.id
+			join provinces p on c.province_id = p.id
+			join countries co on p.country_id = co.id
+			where h.is_active = 1 and h.is_deleted = 0 
+			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
+
+		res, err := m.fetchWithJoinCPC(ctx, query, search,search,search)
 		if err != nil {
 			return nil, err
 		}
