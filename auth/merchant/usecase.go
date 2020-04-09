@@ -11,4 +11,5 @@ type Usecase interface {
 	Login(ctx context.Context, ar *models.Login) (*models.GetToken,error)
 	ValidateTokenMerchant(ctx context.Context, token string) (*models.MerchantInfoDto,error)
 	GetMerchantInfo(ctx context.Context, token string) (*models.MerchantInfoDto,error)
+	Count(ctx context.Context) (*models.Count, error)
 }

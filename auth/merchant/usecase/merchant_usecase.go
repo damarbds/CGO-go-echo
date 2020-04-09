@@ -23,6 +23,20 @@ func NewmerchantUsecase(a merchant.Repository, is identityserver.Usecase,timeout
 		contextTimeout: timeout,
 	}
 }
+
+
+func (m merchantUsecase) Count(ctx context.Context) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	count, err := m.merchantRepo.Count(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
 func (m merchantUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
