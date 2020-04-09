@@ -15,4 +15,5 @@ type Repository interface {
 	QueryHistoryPer30DaysByUserId(ctx context.Context, userId string) ([]*models.BookingExpHistory, error)
 	QueryHistoryPerMonthByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error)
 	GetGrowthByMerchantID(ctx context.Context, merchantId string) ([]*models.BookingGrowth, error)
+	CountThisMonth(ctx context.Context) (int, error)
 }

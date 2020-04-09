@@ -35,6 +35,19 @@ func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.U
 	}
 }
 
+func (b bookingExpUsecase) CountThisMonth(ctx context.Context) (*models.Count, error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+
+	count, err := b.bookingExpRepo.CountThisMonth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Count{Count: count}, nil
+}
+
+
 func (b bookingExpUsecase) GetGrowthByMerchantID(ctx context.Context, token string) ([]*models.BookingGrowthDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()

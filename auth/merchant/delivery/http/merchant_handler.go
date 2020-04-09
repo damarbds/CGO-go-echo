@@ -55,6 +55,7 @@ func (a *merchantHandler) Count(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, result)
 }
+
 func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 	validate := validator.New()
 	err := validate.Struct(m)

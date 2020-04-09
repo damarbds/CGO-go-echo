@@ -32,6 +32,28 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	e.GET("booking/my", handler.GetMyBooking)
 	e.GET("booking/history-user", handler.GetHistoryBookingByUser)
 	e.GET("booking/growth", handler.GetGrowth)
+	e.GET("booking/count-month", handler.CountThisMonth)
+}
+
+func (a *booking_expHandler) CountThisMonth(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.booking_expUsecase.CountThisMonth(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 func (a *booking_expHandler) GetGrowth(c echo.Context) error {
