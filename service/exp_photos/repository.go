@@ -10,6 +10,6 @@ type Repository interface {
 	GetByID(ctx context.Context, id string) (*models.ExpPhotos, error)
 	GetByExperienceID(ctx context.Context, id string) ([]*models.ExpPhotos, error)
 	//Update(ctx context.Context, ar *models.Experience) error
-	//Insert(ctx context.Context, a *models.Experience) error
+	Insert(ctx context.Context, a *models.ExpPhotos) (*string,error)
 	Delete(ctx context.Context, id string,deleted_by string) error
 }

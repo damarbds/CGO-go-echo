@@ -16,7 +16,7 @@ type Repository interface {
 	QueryFilterSearch(ctx context.Context,query string) ([]*models.ExpSearch, error)
 	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearch, error)
 	//Update(ctx context.Context, ar *models.Experience) error
-	//Insert(ctx context.Context, a *models.Experience) error
+	Insert(ctx context.Context, a *models.Experience) (*string,error)
 	Delete(ctx context.Context, id string,deleted_by string) error
 	GetSuccessBookCount(ctx context.Context, merchantId string) (int, error)
 	GetExpCount(ctx context.Context, merchantId string) (int, error)

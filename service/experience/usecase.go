@@ -6,6 +6,7 @@ import (
 )
 
 type Usecase interface {
+	CreateExperience(ctx context.Context,commandExperience models.NewCommandExperience,token string)(*models.ResponseCreateExperience,error)
 	GetByID(ctx context.Context, id string) (*models.ExperienceDto, error)
 	SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error)
 	FilterSearchExp(ctx context.Context, cityID string, harborsId string, expTypeId string, startDate string, endDate string, guest string, trip string, bottomPrice string, upPrice string) ([]*models.ExpSearchObject, error)

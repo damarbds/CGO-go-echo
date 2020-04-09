@@ -195,6 +195,7 @@ func main() {
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo,isUsecase,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		experienceAddOnRepo,
 		expAvailabilityRepo,
 		exp_photos,
 		experienceRepo,

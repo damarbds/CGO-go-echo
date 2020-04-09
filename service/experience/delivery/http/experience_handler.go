@@ -28,6 +28,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	}
 	//e.POST("/experiences", handler.Createexperience)
 	//e.PUT("/experiences/:id", handler.Updateexperience)
+	e.POST("service/experience/create", handler.CreateExperiences)
 	e.GET("service/experience/:id", handler.GetByID)
 	e.GET("service/experience/search", handler.SearchExp)
 	e.GET("service/experience/filter-search", handler.FilterSearchExp)
@@ -41,7 +42,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
 
-func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
+func isRequestValid(m *models.NewCommandExperience) (bool, error) {
 	validate := validator.New()
 	err := validate.Struct(m)
 	if err != nil {
@@ -49,7 +50,33 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 	}
 	return true, nil
 }
+func (a *experienceHandler) CreateExperiences(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
 
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	var experienceCommand models.NewCommandExperience
+	err := c.Bind(&experienceCommand)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	if ok, err := isRequestValid(&experienceCommand); !ok {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	response,error := a.experienceUsecase.CreateExperience(ctx, experienceCommand,token)
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, response)
+}
 func (a *experienceHandler) GetExpTransactionCount(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

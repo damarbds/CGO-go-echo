@@ -2,10 +2,12 @@ package repository
 
 import (
 	"database/sql"
+	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/product/experience_add_ons"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"time"
 )
 
 const (
@@ -73,4 +75,28 @@ func (e experienceAddOnsRepository) GetByExpId(ctx context.Context, exp_id strin
 		return nil, err
 	}
 	return res, err
+}
+
+func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.ExperienceAddOn) error {
+	id := guuid.New()
+	a.Id = id.String()
+	query := `INSERT experience_add_ons SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? ,name=?,desc=?,currency=?,amount=?,exp_id=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Name,a.Desc,a.Currency,
+		a.Amount,a.ExpId)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+
+	//a.Id = lastID
+	return nil
 }
