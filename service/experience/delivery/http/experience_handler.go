@@ -70,7 +70,7 @@ func (a *experienceHandler) CreateExperiences(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	response,error := a.experienceUsecase.CreateExperience(ctx, experienceCommand,token)
+	response,error := a.experienceUsecase.PublishExperience(ctx, experienceCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
