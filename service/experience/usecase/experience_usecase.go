@@ -347,6 +347,8 @@ func (m experienceUsecase) FilterSearchExp(
 	bottomPrice string,
 	upPrice string,
 	sortBy string,
+	page string,
+	size string,
 ) ([]*models.ExpSearchObject, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -442,12 +444,16 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 	}
 
-	fmt.Println(query)
 
 	//if startDate != "" && endDate != "" {
 	//
 	//	query = query + ` AND exp_availability_date like %` + s
 	//}
+	if page != "" && size != "" {
+		//pages , _:= strconv.Atoi(page)
+		//sizes , _:= strconv.Atoi(size)
+		query = query + ` LIMIT ` + page + `,` + size
+	}
 	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query)
 	if err != nil {
 		return nil, err

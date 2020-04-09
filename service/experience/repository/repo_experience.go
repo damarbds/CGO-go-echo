@@ -150,6 +150,8 @@ func (m *experienceRepository) GetByCategoryID(ctx context.Context, categoryId i
 		e.id,
 		exp_title,
 		exp_type,
+		e.exp_location_latitude as latitude ,
+		e.exp_location_longitude as longitude, 
 		rating,
 		exp_cover_photo as cover_photo
 	FROM
