@@ -835,7 +835,7 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	if commandExperience.Status == 0 {
 		status = "Draft"
 	}else if commandExperience.Status == 3 {
-		status = "Pulish"
+		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{
 		Id:      *insertToExperience,

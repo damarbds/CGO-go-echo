@@ -82,7 +82,8 @@ func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.Experi
 	id := guuid.New()
 	a.Id = id.String()
 	query := `INSERT experience_add_ons SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
-				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? ,name=?,desc=?,currency=?,amount=?,exp_id=?`
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? ,experience_add_ons.name=? , 
+				experience_add_ons.desc = ? , currency=? , amount=?,exp_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return "",err
@@ -104,7 +105,8 @@ func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.Experi
 
 func (m *experienceAddOnsRepository) Update(ctx context.Context, a models.ExperienceAddOn) error {
 	query := `UPDATE experience_add_ons SET modified_by=?, modified_date=? , 
-				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? ,name=?,desc=?,currency=?,amount=?,exp_id=?
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? ,experience_add_ons.name=? , 
+				experience_add_ons.desc = ?,currency=?,amount=?,exp_id=?
 				WHERE id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {

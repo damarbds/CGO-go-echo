@@ -1,13 +1,17 @@
 package http
 
 import (
+	"github.com/auth/identityserver"
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/service/experience"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	validator "gopkg.in/go-playground/validator.v9"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -19,15 +23,18 @@ type ResponseError struct {
 // experienceHandler  represent the httphandler for experience
 type experienceHandler struct {
 	experienceUsecase experience.Usecase
+	isUsecase identityserver.Usecase
 }
 
 // NewexperienceHandler will initialize the experiences/ resources endpoint
-func NewexperienceHandler(e *echo.Echo, us experience.Usecase) {
+func NewexperienceHandler(e *echo.Echo, us experience.Usecase,is identityserver.Usecase) {
 	handler := &experienceHandler{
+		isUsecase:is,
 		experienceUsecase: us,
 	}
 	//e.POST("/experiences", handler.Createexperience)
 	//e.PUT("/experiences/:id", handler.Updateexperience)
+	e.POST("service/experience/upload", handler.UploadFile)
 	e.POST("service/experience/create", handler.CreateExperiences)
 	e.GET("service/experience/:id", handler.GetByID)
 	e.GET("service/experience/search", handler.SearchExp)
@@ -50,6 +57,46 @@ func isRequestValid(m *models.NewCommandExperience) (bool, error) {
 	}
 	return true, nil
 }
+func (a *experienceHandler) UploadFile(c echo.Context) error {
+
+	filupload, image, _ := c.Request().FormFile("image")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		return models.ErrInternalServerError
+	}
+	var imagePath string
+	fileLocation := filepath.Join(dir, "files", image.Filename)
+	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
+		return models.ErrInternalServerError
+	}
+	defer targetFile.Close()
+
+	if _, err := io.Copy(targetFile, filupload); err != nil {
+		return models.ErrInternalServerError
+	}
+
+	//w.Write([]byte("done"))
+	imagePat, error := a.isUsecase.UploadFileToBlob(fileLocation, "Experience")
+	imagePath = imagePat
+	targetFile.Close()
+	errRemove := os.Remove(fileLocation)
+	if errRemove != nil {
+		return models.ErrInternalServerError
+	}
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, imagePath)
+}
+
 func (a *experienceHandler) CreateExperiences(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
