@@ -87,7 +87,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		return "", models.ErrInternalServerError
 	}
 
-	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId)
+	expiredPayment := res.CreatedDate.Add(24 * time.Hour)
+	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId, expiredPayment)
 	if err != nil {
 		return "", err
 	}
