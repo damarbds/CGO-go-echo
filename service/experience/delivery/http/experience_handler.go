@@ -180,14 +180,14 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	upprice := c.QueryParam("upprice")
 	startDate := c.QueryParam("startDate")
 	endDate := c.QueryParam("endDate")
+	sortby := c.QueryParam("sortby")
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-
-	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx,cityID ,harborID,qtype,startDate,endDate,guest,trip,bottomprice,upprice)
+	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx,cityID ,harborID,qtype,startDate,endDate,guest,trip,bottomprice,upprice,sortby)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
