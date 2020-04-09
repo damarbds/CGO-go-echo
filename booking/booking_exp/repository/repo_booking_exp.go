@@ -96,7 +96,11 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 		city_name AS city,
 		province_name AS province,
 		country_name AS country,
-		c.id as experience_payment_id
+		c.id as experience_payment_id,
+		c.currency,
+		pm.desc as account_bank,
+		pm.icon,
+		t.created_date as created_date_transaction 
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id
