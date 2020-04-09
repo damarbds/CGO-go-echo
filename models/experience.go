@@ -73,8 +73,8 @@ type ExperienceJoinForegnKey struct {
 	MinimumBookingId        string     `json:"minimum_booking_id"`
 	MerchantId              string     `json:"merchant_id"`
 	HarborsId               string     `json:"harbors_id"`
-	MinimumBookingAmount	*int		`json:"minimum_booking_amount"`
-	MinimumBookingDesc		string		`json:"minimum_booking_desc"`
+	MinimumBookingAmount    *int       `json:"minimum_booking_amount"`
+	MinimumBookingDesc      string     `json:"minimum_booking_desc"`
 }
 type ExperienceDto struct {
 	Id                      string                `json:"id" validate:"required"`
@@ -103,7 +103,7 @@ type ExperienceDto struct {
 	ExpLocationName         string                `json:"exp_location_name"`
 	ExpCoverPhoto           *string               `json:"exp_cover_photo"`
 	ExpDuration             int                   `json:"exp_duration"`
-	MinimumBooking        MinimumBookingObj                `json:"minimum_booking"`
+	MinimumBooking          MinimumBookingObj     `json:"minimum_booking"`
 	MerchantId              string                `json:"merchant_id"`
 	HarborsName             string                `json:"harbors_name"`
 	City                    string                `json:"city"`
@@ -146,8 +146,8 @@ type NewCommandExperience struct {
 	HarborsId               string     `json:"harbors_id"`
 }
 type MinimumBookingObj struct {
-	MinimumBookingDesc		string		`json:"minimum_booking_desc"`
-	MinimumBookingAmount	*int		`json:"minimum_booking_amount"`
+	MinimumBookingDesc   string `json:"minimum_booking_desc"`
+	MinimumBookingAmount *int   `json:"minimum_booking_amount"`
 }
 type ExperienceAddOnObj struct {
 	Name 	string	`json:"name"`
@@ -161,13 +161,13 @@ type ExpAvailablitityObj struct {
 	Date  []string `json:"date"`
 }
 type ExpPaymentObj struct {
-	Id 		string `json:"id"`
-	Currency string  `json:"currency"`
-	Price    float64 `json:"price"`
-	PriceItemType	string 	`json:"price_item_type"`
-	PaymentTypeId	string	`json:"payment_type_id"`
-	PaymentTypeName string	`json:"payment_type_name"`
-	PaymentTypeDesc string	`json:"payment_type_desc"`
+	Id              string  `json:"id"`
+	Currency        string  `json:"currency"`
+	Price           float64 `json:"price"`
+	PriceItemType   string  `json:"price_item_type"`
+	PaymentTypeId   string  `json:"payment_type_id"`
+	PaymentTypeName string  `json:"payment_type_name"`
+	PaymentTypeDesc string  `json:"payment_type_desc"`
 }
 type ExpPhotosObj struct {
 	Folder        string           `json:"folder"`
@@ -200,34 +200,38 @@ type ExpRulesObject struct {
 }
 
 type ExpSearch struct {
-	Id       string  `json:"id" validate:"required"`
-	ExpTitle string  `json:"exp_title"`
-	ExpType  string  `json:"exp_type"`
-	Rating   float64 `json:"rating"`
-	CoverPhoto string `json:"cover_photo"`
+	Id         string  `json:"id" validate:"required"`
+	ExpTitle   string  `json:"exp_title"`
+	ExpType    string  `json:"exp_type"`
+	Rating     float64 `json:"rating"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
+	CoverPhoto string  `json:"cover_photo"`
 }
 
 type ExpSearchObject struct {
-	Id          string   `json:"id" validate:"required"`
-	ExpTitle    string   `json:"exp_title"`
-	ExpType     []string `json:"exp_type"`
-	Rating      float64  `json:"rating"`
-	CountRating int      `json:"count_rating"`
-	Currency    string   `json:"currency"`
-	Price       float64  `json:"price"`
-	PaymentType string   `json:"payment_type"`
-	CoverPhoto CoverPhotosObj	`json:"cover_photo"`
-	ListPhoto  []ExpPhotosObj	`json:"list_photo"`
+	Id          string         `json:"id" validate:"required"`
+	ExpTitle    string         `json:"exp_title"`
+	ExpType     []string       `json:"exp_type"`
+	Rating      float64        `json:"rating"`
+	CountRating int            `json:"count_rating"`
+	Currency    string         `json:"currency"`
+	Price       float64        `json:"price"`
+	PaymentType string         `json:"payment_type"`
+	Latitude    float64        `json:"latitude"`
+	Longitude   float64        `json:"longitude"`
+	CoverPhoto  CoverPhotosObj `json:"cover_photo"`
+	ListPhoto   []ExpPhotosObj `json:"list_photo"`
 }
 type ExperienceUserDiscoverPreferenceDto struct {
-	Id           string           `json:"id" validate:"required"`
-	ExpTitle     string           `json:"exp_title"`
-	ExpType      []string         `json:"exp_type"`
-	Rating       float64          `json:"rating"`
-	CountRating  int              `json:"count_rating"`
-	Currency     string           `json:"currency"`
-	Price        float64          `json:"price"`
-	Payment_type string           `json:"payment_type"`
+	Id           string         `json:"id" validate:"required"`
+	ExpTitle     string         `json:"exp_title"`
+	ExpType      []string       `json:"exp_type"`
+	Rating       float64        `json:"rating"`
+	CountRating  int            `json:"count_rating"`
+	Currency     string         `json:"currency"`
+	Price        float64        `json:"price"`
+	Payment_type string         `json:"payment_type"`
 	Cover_Photo  CoverPhotosObj `json:"cover_photo"`
 }
 type CoverPhotosObj struct {

@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/product/experience_add_ons"
 	"strconv"
 	"time"
+
+	"github.com/product/experience_add_ons"
 
 	"github.com/auth/merchant"
 	"github.com/product/reviews"
@@ -23,7 +24,7 @@ import (
 )
 
 type experienceUsecase struct {
-	adOnsRepo experience_add_ons.Repository
+	adOnsRepo        experience_add_ons.Repository
 	experienceRepo   experience.Repository
 	harborsRepo      harbors.Repository
 	cpcRepo          cpc.Repository
@@ -36,7 +37,6 @@ type experienceUsecase struct {
 	contextTimeout   time.Duration
 	exp_availablitiy exp_availability.Repository
 }
-
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
@@ -54,7 +54,7 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
-		adOnsRepo:adOns,
+		adOnsRepo:        adOns,
 		exp_availablitiy: ea,
 		experienceRepo:   a,
 		harborsRepo:      h,
@@ -335,7 +335,19 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 	return expListDto, nil
 }
 
-func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, harborsId string, activityType string, startDate string, endDate string, guest string, trip string, bottomPrice string, upPrice string) ([]*models.ExpSearchObject, error) {
+func (m experienceUsecase) FilterSearchExp(
+	ctx context.Context,
+	cityID string,
+	harborsId string,
+	activityType string,
+	startDate string,
+	endDate string,
+	guest string,
+	trip string,
+	bottomPrice string,
+	upPrice string,
+	sortBy string,
+) ([]*models.ExpSearchObject, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -345,7 +357,17 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 			return nil, models.ErrInternalServerError
 		}
 	}
-	query := `select e.id,e.exp_title,e.exp_type,e.rating,e.exp_cover_photo as cover_photo from experiences e`
+	query := `
+	select
+		e.id,
+		e.exp_title,
+		e.exp_type,
+		e.rating,
+		e.exp_location_latitude as latitude,
+		e.exp_location_longitude as longitude,
+		e.exp_cover_photo as cover_photo 
+	from 
+		experiences e`
 
 	if bottomPrice != "" && upPrice != "" {
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
@@ -404,7 +426,24 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 		upprices, _ := strconv.ParseFloat(upPrice, 64)
 
 		query = query + ` AND (ep.price between ` + fmt.Sprint(bottomprices) + ` AND ` + fmt.Sprint(upprices) + `)`
+		if sortBy != "" {
+			if sortBy == "priceup" {
+				query = query + ` ORDER BY ep.price DESC`
+			} else if sortBy == "pricedown" {
+				query = query + ` ORDER BY ep.price ASC`
+			}
+		}
 	}
+	if sortBy != "" {
+		if sortBy == "ratingup" {
+			query = query + ` ORDER BY e.rating DESC`
+		} else if sortBy == "ratingdown" {
+			query = query + ` ORDER BY e.rating ASC`
+		}
+	}
+
+	fmt.Println(query)
+
 	//if startDate != "" && endDate != "" {
 	//
 	//	query = query + ` AND exp_availability_date like %` + s
@@ -477,6 +516,8 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 			Currency:    currency,
 			Price:       expPayment[0].Price,
 			PaymentType: priceItemType,
+			Longitude:   exp.Longitude,
+			Latitude:    exp.Latitude,
 			CoverPhoto:  coverPhoto,
 			ListPhoto:   listPhotos,
 		}
@@ -591,7 +632,7 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 	return results, nil
 }
 
-func (m experienceUsecase) CreateExperience(c context.Context, commandExperience models.NewCommandExperience,token string) (*models.ResponseCreateExperience, error) {
+func (m experienceUsecase) CreateExperience(c context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	currentUserMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
@@ -600,11 +641,11 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	}
 
 	//if commandExperience.ExpType != ""
-	expItinerary ,_:= json.Marshal(commandExperience.ExpInternary)
-	expFacilities,_:= json.Marshal(commandExperience.ExpFacilities)
-	expInclusion,_:= json.Marshal(commandExperience.ExpInclusion)
-	expRules,_ := json.Marshal(commandExperience.ExpRules)
-	expTypes,_:= json.Marshal(commandExperience.ExpType)
+	expItinerary, _ := json.Marshal(commandExperience.ExpInternary)
+	expFacilities, _ := json.Marshal(commandExperience.ExpFacilities)
+	expInclusion, _ := json.Marshal(commandExperience.ExpInclusion)
+	expRules, _ := json.Marshal(commandExperience.ExpRules)
+	expTypes, _ := json.Marshal(commandExperience.ExpType)
 	experiences := models.Experience{
 		Id:                      "",
 		CreatedBy:               currentUserMerchant.MerchantEmail,
@@ -642,116 +683,112 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		HarborsId:               commandExperience.HarborsId,
 	}
 	insertToExperience, err := m.experienceRepo.Insert(ctx, &experiences)
-		for _, element := range commandExperience.ExpPhotos {
-			images, _ := json.Marshal(element.ExpPhotoImage)
-			expPhoto := models.ExpPhotos{
-				Id:             "",
-				CreatedBy:      currentUserMerchant.MerchantEmail,
-				CreatedDate:    time.Time{},
-				ModifiedBy:     nil,
-				ModifiedDate:   nil,
-				DeletedBy:      nil,
-				DeletedDate:    nil,
-				IsDeleted:      0,
-				IsActive:       0,
-				ExpPhotoFolder: element.Folder,
-				ExpPhotoImage:  string(images),
-				ExpId:          *insertToExperience,
-			}
-
-			_, err = m.expPhotos.Insert(ctx, &expPhoto)
+	for _, element := range commandExperience.ExpPhotos {
+		images, _ := json.Marshal(element.ExpPhotoImage)
+		expPhoto := models.ExpPhotos{
+			Id:             "",
+			CreatedBy:      currentUserMerchant.MerchantEmail,
+			CreatedDate:    time.Time{},
+			ModifiedBy:     nil,
+			ModifiedDate:   nil,
+			DeletedBy:      nil,
+			DeletedDate:    nil,
+			IsDeleted:      0,
+			IsActive:       0,
+			ExpPhotoFolder: element.Folder,
+			ExpPhotoImage:  string(images),
+			ExpId:          *insertToExperience,
 		}
 
+		_, err = m.expPhotos.Insert(ctx, &expPhoto)
+	}
 
-		for _, element := range commandExperience.ExpPayment {
-			var priceItemType int
-			if element.PriceItemType == "Per Pax" {
-				priceItemType = 1
-			} else {
-				priceItemType = 0
-			}
-			var currency int
-			if element.Currency == "USD" {
-				currency = 1
-			} else {
-				currency = 0
-			}
-			payments := models.ExperiencePayment{
-				Id:               "",
-				CreatedBy:        currentUserMerchant.MerchantEmail,
-				CreatedDate:      time.Time{},
-				ModifiedBy:       nil,
-				ModifiedDate:     nil,
-				DeletedBy:        nil,
-				DeletedDate:      nil,
-				IsDeleted:        0,
-				IsActive:         0,
-				ExpPaymentTypeId: element.PaymentTypeId,
-				ExpId:            *insertToExperience,
-				PriceItemType:    priceItemType,
-				Currency:         currency,
-				Price:            element.Price,
-				CustomPrice:      nil,
-			}
-
-			err = m.paymentRepo.Insert(ctx, payments)
+	for _, element := range commandExperience.ExpPayment {
+		var priceItemType int
+		if element.PriceItemType == "Per Pax" {
+			priceItemType = 1
+		} else {
+			priceItemType = 0
+		}
+		var currency int
+		if element.Currency == "USD" {
+			currency = 1
+		} else {
+			currency = 0
+		}
+		payments := models.ExperiencePayment{
+			Id:               "",
+			CreatedBy:        currentUserMerchant.MerchantEmail,
+			CreatedDate:      time.Time{},
+			ModifiedBy:       nil,
+			ModifiedDate:     nil,
+			DeletedBy:        nil,
+			DeletedDate:      nil,
+			IsDeleted:        0,
+			IsActive:         0,
+			ExpPaymentTypeId: element.PaymentTypeId,
+			ExpId:            *insertToExperience,
+			PriceItemType:    priceItemType,
+			Currency:         currency,
+			Price:            element.Price,
+			CustomPrice:      nil,
 		}
 
+		err = m.paymentRepo.Insert(ctx, payments)
+	}
 
-
-		for _, element := range commandExperience.ExpAvailability {
-			date, _ := json.Marshal(element.Date)
-			expAvailability := models.ExpAvailability{
-				Id:                   "",
-				CreatedBy:            currentUserMerchant.MerchantEmail,
-				CreatedDate:          time.Time{},
-				ModifiedBy:           nil,
-				ModifiedDate:         nil,
-				DeletedBy:            nil,
-				DeletedDate:          nil,
-				IsDeleted:            0,
-				IsActive:             0,
-				ExpAvailabilityMonth: element.Month,
-				ExpAvailabilityDate:  string(date),
-				ExpAvailabilityYear:  element.Year,
-				ExpId:                *insertToExperience,
-			}
-
-			err = m.exp_availablitiy.Insert(ctx, expAvailability)
+	for _, element := range commandExperience.ExpAvailability {
+		date, _ := json.Marshal(element.Date)
+		expAvailability := models.ExpAvailability{
+			Id:                   "",
+			CreatedBy:            currentUserMerchant.MerchantEmail,
+			CreatedDate:          time.Time{},
+			ModifiedBy:           nil,
+			ModifiedDate:         nil,
+			DeletedBy:            nil,
+			DeletedDate:          nil,
+			IsDeleted:            0,
+			IsActive:             0,
+			ExpAvailabilityMonth: element.Month,
+			ExpAvailabilityDate:  string(date),
+			ExpAvailabilityYear:  element.Year,
+			ExpId:                *insertToExperience,
 		}
 
+		err = m.exp_availablitiy.Insert(ctx, expAvailability)
+	}
 
-		for _, element := range commandExperience.ExperienceAddOn {
-			var currency int
-			if element.Currency == "USD" {
-				currency = 1
-			} else {
-				currency = 0
-			}
-			addOns := models.ExperienceAddOn{
-				Id:           "",
-				CreatedBy:    currentUserMerchant.MerchantEmail,
-				CreatedDate:  time.Time{},
-				ModifiedBy:   nil,
-				ModifiedDate: nil,
-				DeletedBy:    nil,
-				DeletedDate:  nil,
-				IsDeleted:    0,
-				IsActive:     0,
-				Name:         element.Name,
-				Desc:         element.Desc,
-				Currency:     currency,
-				Amount:       element.Amount,
-				ExpId:        *insertToExperience,
-			}
-			err = m.adOnsRepo.Insert(ctx, addOns)
+	for _, element := range commandExperience.ExperienceAddOn {
+		var currency int
+		if element.Currency == "USD" {
+			currency = 1
+		} else {
+			currency = 0
 		}
+		addOns := models.ExperienceAddOn{
+			Id:           "",
+			CreatedBy:    currentUserMerchant.MerchantEmail,
+			CreatedDate:  time.Time{},
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     0,
+			Name:         element.Name,
+			Desc:         element.Desc,
+			Currency:     currency,
+			Amount:       element.Amount,
+			ExpId:        *insertToExperience,
+		}
+		err = m.adOnsRepo.Insert(ctx, addOns)
+	}
 
 	response := models.ResponseCreateExperience{
 		Id:      *insertToExperience,
 		Message: "Success Publish",
 	}
-	return &response,nil
+	return &response, nil
 
 }
 func (m experienceUsecase) GetByID(c context.Context, id string) (*models.ExperienceDto, error) {

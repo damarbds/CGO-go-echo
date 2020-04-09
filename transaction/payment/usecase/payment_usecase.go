@@ -2,26 +2,27 @@ package usecase
 
 import (
 	"context"
+	"time"
+
 	"github.com/auth/user"
 	"github.com/booking/booking_exp"
 	"github.com/models"
 	"github.com/transaction/payment"
-	"time"
 )
 
 type paymentUsecase struct {
-	paymentRepo payment.Repository
-	userUsercase user.Usecase
-	bookingRepo booking_exp.Repository
+	paymentRepo    payment.Repository
+	userUsercase   user.Usecase
+	bookingRepo    booking_exp.Repository
 	contextTimeout time.Duration
 }
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
 func NewPaymentUsecase(p payment.Repository, u user.Usecase, b booking_exp.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
-		paymentRepo: p,
-		userUsercase: u,
-		bookingRepo: b,
+		paymentRepo:    p,
+		userUsercase:   u,
+		bookingRepo:    b,
 		contextTimeout: timeout,
 	}
 }
@@ -86,8 +87,9 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 	if err != nil {
 		return "", models.ErrInternalServerError
 	}
-	expiredDatePayment := newData.CreatedDate.AddDate(0,0,1)
-	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId,expiredDatePayment)
+
+	expiredPayment := res.CreatedDate.Add(24 * time.Hour)
+	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId, expiredPayment)
 	if err != nil {
 		return "", err
 	}
@@ -106,4 +108,3 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 
 	return nil
 }
-

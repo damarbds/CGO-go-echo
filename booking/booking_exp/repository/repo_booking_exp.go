@@ -124,7 +124,8 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 }
 
 func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error {
-	query := `UPDATE booking_exps SET status = 1 , expired_date_payment = ? WHERE id = ?`
+	query := `UPDATE booking_exps SET status = 1, expired_date_payment = ? WHERE id = ?`
+
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err

@@ -300,6 +300,8 @@ func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string,
 			&t.ExpTitle,
 			&t.ExpType,
 			&t.Rating,
+			&t.Latitude,
+			&t.Longitude,
 			&t.CoverPhoto,
 		)
 
