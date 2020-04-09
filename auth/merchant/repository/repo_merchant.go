@@ -27,6 +27,17 @@ func NewmerchantRepository(Conn *sql.DB) merchant.Repository {
 	return &merchantRepository{Conn}
 }
 
+func (m *merchantRepository) List(ctx context.Context, limit, offset int) ([]*models.Merchant, error) {
+	query := `SELECT * FROM merchants WHERE is_deleted = 0 and is_active = 1 LIMIT ? OFFSET ?`
+
+	list, err := m.fetch(ctx, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
 func (m *merchantRepository) Count(ctx context.Context) (int, error) {
 	query := `SELECT count(*) as count FROM merchants WHERE is_deleted = 0 and is_active = 1`
 

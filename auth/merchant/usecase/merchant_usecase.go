@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/auth/identityserver"
+	"math"
 	"time"
 
 	"github.com/auth/merchant"
@@ -24,6 +25,55 @@ func NewmerchantUsecase(a merchant.Repository, is identityserver.Usecase,timeout
 	}
 }
 
+func (m merchantUsecase) List(ctx context.Context, page, limit, offset int) (*models.MerchantWithPagination, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	list, err := m.merchantRepo.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	merchants := make([]*models.MerchantInfoDto, len(list))
+	for i, item := range list {
+		merchants[i] = &models.MerchantInfoDto{
+			Id:            item.Id,
+			CreatedDate:   item.CreatedDate,
+			UpdatedDate:   item.ModifiedDate,
+			MerchantName:  item.MerchantName,
+			MerchantDesc:  item.MerchantDesc,
+			MerchantEmail: item.MerchantEmail,
+			Balance:       item.Balance,
+			PhoneNumber:   item.PhoneNumber,
+		}
+	}
+	totalRecords, _ := m.merchantRepo.Count(ctx)
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
+
+	if page != totalPage {
+		next = page + 1
+	}
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(list),
+	}
+
+	response := &models.MerchantWithPagination{
+		Data: merchants,
+		Meta: meta,
+	}
+
+	return response, nil
+}
 
 func (m merchantUsecase) Count(ctx context.Context) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)

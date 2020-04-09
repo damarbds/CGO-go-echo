@@ -31,8 +31,41 @@ func NewmerchantHandler(e *echo.Echo, us merchant.Usecase) {
 	e.POST("/merchants", handler.CreateMerchant)
 	e.PUT("/merchants/:id", handler.UpdateMerchant)
 	e.GET("/merchants/count", handler.Count)
+	e.GET("/merchants", handler.List)
 	//e.GET("/merchants/:id", handler.GetByID)
 	//e.DELETE("/merchants/:id", handler.Delete)
+}
+
+func (a *merchantHandler) List(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
+
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.MerchantUsecase.List(ctx, page, limit, offset)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 func (a *merchantHandler) Count(c echo.Context) error {
