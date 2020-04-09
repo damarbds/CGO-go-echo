@@ -15,26 +15,26 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.Admin{}
-	error := db.AutoMigrate(&user)
+	user := model.BalanceHistory{}
+	error := db.AutoMigrate(&user).AddForeignKey("merchant_id","merchants(id)","RESTRICT", "RESTRICT")
 	if error != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table_Admin",
+			DescMigration:"Add_table_BalanceHistory",
 			Date:  time.Now(),
 		}
 
 		db.Create(&migration)
 	}
-	//transportationdestid := model.Transportation{}
-	//errortransportationdestid := db.Model(&transportationdestid).AddForeignKey("harbors_dest_id","harbors(id)","RESTRICT", "RESTRICT")
-	//if errortransportationdestid != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_foregn_key_harbors_dest_Transportation",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
+	transportationdestid := model.Schedule{}
+	errortransportationdestid := db.AutoMigrate(&transportationdestid).AddForeignKey("trans_id","transportations(id)","RESTRICT", "RESTRICT")
+	if errortransportationdestid != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add_table Schedule",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
 	//merchantId := model.Transportation{}
 	//errormerchantId := db.Model(&merchantId).AddForeignKey("merchant_id","merchants(id)","RESTRICT", "RESTRICT")
 	//if errormerchantId != nil{
