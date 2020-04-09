@@ -40,6 +40,8 @@ func (m *expInspirationRepository) fetch(ctx context.Context, query string, args
 			&t.ExpTitle,
 			&t.ExpDesc,
 			&t.ExpCoverPhoto,
+			&t.ExpType ,
+			&t.Rating		,
 		)
 
 		if err != nil {
@@ -55,16 +57,20 @@ func (m *expInspirationRepository) fetch(ctx context.Context, query string, args
 func (e expInspirationRepository) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error) {
 	query := `
 	SELECT
-		id as exp_inspiration_id,
-		exp_id,
-		exp_title,
-		exp_desc,
-		exp_cover_photo
+		ei.id as exp_inspiration_id,
+		ei.exp_id,
+		ei.exp_title,
+		ei.exp_desc,
+		ei.exp_cover_photo,
+		e.exp_type,
+		e.rating
 	FROM
-		exp_inspirations
+		exp_inspirations ei
+	JOIN 
+		experiences e on e.id = ei.exp_id
 	WHERE
-		is_deleted = 0
-		AND is_active = 1`
+		ei.is_deleted = 0
+		AND ei.is_active = 1`
 
 	list, err := e.fetch(ctx, query)
 	if err != nil {

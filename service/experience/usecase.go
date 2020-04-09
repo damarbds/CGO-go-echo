@@ -12,7 +12,7 @@ type Usecase interface {
 	FilterSearchExp(ctx context.Context, cityID string, harborsId string, expTypeId string, startDate string, endDate string, guest string, trip string, bottomPrice string, upPrice string, sortBy string,page string,size string) ([]*models.ExpSearchObject, error)
 	GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreferenceDto, error)
 	GetExpTypes(ctx context.Context) ([]*models.ExpTypeObject, error)
-	GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error)
+	GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationDto, error)
 	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearchObject, error)
 	GetSuccessBookCount(ctx context.Context, token string) (*models.Count, error)
 	GetExpCount(ctx context.Context, token string) (*models.Count, error)

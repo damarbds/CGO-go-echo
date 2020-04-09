@@ -532,11 +532,35 @@ func (m experienceUsecase) FilterSearchExp(
 	return results, nil
 
 }
-func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationObject, error) {
+func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	results, err := m.inspirationRepo.GetExpInspirations(ctx)
+	query, err := m.inspirationRepo.GetExpInspirations(ctx)
+	var results []*models.ExpInspirationDto
+	for _,element := range query{
+		getCountReview ,err:= m.reviewsRepo.CountRating(ctx,element.ExpId)
+		if err != nil {
+			return nil,err
+		}
+		var expType []string
+		if element.ExpType != ""{
+			if errUnmarshal := json.Unmarshal([]byte(element.ExpType), &expType); errUnmarshal != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
+		dto := models.ExpInspirationDto{
+			ExpInspirationID: element.ExpInspirationID,
+			ExpId:            element.ExpId,
+			ExpTitle:         element.ExpTitle,
+			ExpDesc:          element.ExpDesc,
+			ExpCoverPhoto:    element.ExpCoverPhoto,
+			ExpType:          expType,
+			Rating:           element.Rating,
+			CountRating:      getCountReview,
+		}
+		results = append(results,&dto)
+	}
 	if err != nil {
 		return nil, err
 	}
