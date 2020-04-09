@@ -219,7 +219,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				Original:  *element.ExpCoverPhoto,
 				Thumbnail: "",
 			}
-			coverPhotos =  covertPhoto
+			coverPhotos = covertPhoto
 			//if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
 			//	return nil,models.ErrInternalServerError
 			//}
@@ -330,11 +330,33 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 	return expListDto, nil
 }
 
-func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, harborsId string, activityType string, startDate string, endDate string, guest string, trip string, bottomPrice string, upPrice string) ([]*models.ExpSearchObject, error) {
+func (m experienceUsecase) FilterSearchExp(
+	ctx context.Context,
+	cityID string,
+	harborsId string,
+	activityType string,
+	startDate string,
+	endDate string,
+	guest string,
+	trip string,
+	bottomPrice string,
+	upPrice string,
+	sortBy string,
+) ([]*models.ExpSearchObject, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	query := `select e.id,e.exp_title,e.exp_type,e.rating,e.exp_cover_photo as cover_photo from experiences e`
+	query := `
+	select
+		e.id,
+		e.exp_title,
+		e.exp_type,
+		e.rating,
+		e.exp_location_latitude as latitude,
+		e.exp_location_longitude as longitude,
+		e.exp_cover_photo as cover_photo 
+	from 
+		experiences e`
 
 	if bottomPrice != "" && upPrice != "" {
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
@@ -381,7 +403,24 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 		upprices, _ := strconv.ParseFloat(upPrice, 64)
 
 		query = query + ` AND (ep.price between ` + fmt.Sprint(bottomprices) + ` AND ` + fmt.Sprint(upprices) + `)`
+		if sortBy != "" {
+			if sortBy == "priceup" {
+				query = query + ` ORDER BY ep.price DESC`
+			} else if sortBy == "pricedown"{
+				query = query + ` ORDER BY ep.price ASC`
+			}
+		}
 	}
+	if sortBy != "" {
+		if sortBy == "ratingup" {
+			query = query + ` ORDER BY e.rating DESC`
+		} else if sortBy == "ratingdown" {
+			query = query + ` ORDER BY e.rating ASC`
+		}
+	}
+
+	fmt.Println(query)
+
 	//if startDate != "" && endDate != "" {
 	//
 	//	query = query + ` AND exp_availability_date like %` + s
@@ -433,7 +472,10 @@ func (m experienceUsecase) FilterSearchExp(ctx context.Context, cityID string, h
 			Currency:    currency,
 			Price:       expPayment[0].Price,
 			PaymentType: priceItemType,
+			Longitude:   exp.Longitude,
+			Latitude:    exp.Latitude,
 			CoverPhoto:  coverPhoto,
+			ListPhoto:   nil,
 		}
 	}
 
