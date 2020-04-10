@@ -15,21 +15,21 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.BalanceHistory{}
-	error := db.AutoMigrate(&user).AddForeignKey("merchant_id","merchants(id)","RESTRICT", "RESTRICT")
+	user := model.Schedule{}
+	error := db.Model(&user).AddForeignKey("departure_timeoption_id","times_options(id)","RESTRICT", "RESTRICT")
 	if error != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table_BalanceHistory",
+			DescMigration:"Add_foregn_key_departure_time_option_Schedule",
 			Date:  time.Now(),
 		}
 
 		db.Create(&migration)
 	}
 	transportationdestid := model.Schedule{}
-	errortransportationdestid := db.AutoMigrate(&transportationdestid).AddForeignKey("trans_id","transportations(id)","RESTRICT", "RESTRICT")
+	errortransportationdestid := db.AutoMigrate(&transportationdestid).AddForeignKey("arrival_timeoption_id","times_options(id)","RESTRICT", "RESTRICT")
 	if errortransportationdestid != nil{
 		migration := model.MigrationHistory{
-			DescMigration:"Add_table Schedule",
+			DescMigration:"Add_foregn_key_arrival_time_option_Schedule",
 			Date:  time.Now(),
 		}
 

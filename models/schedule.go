@@ -13,9 +13,11 @@ type Schedule struct {
 	IsDeleted          int        `json:"is_deleted" validate:"required"`
 	IsActive           int        `json:"is_active" validate:"required"`
 	TransId				string	`json:"trans_id"`
-	DepartureTime		time.Time	`json:"departure_time"`
-	ArrivalTime			time.Time	`json:"arrival_time"`
 	Day 				string		`json:"day"`
 	Month				string	`json:"month"`
+	Year				int 	`json:"year"`
 	Price 				float64	`json:"price"`
+	Currency 			int 	`json:"currency"`
+	DepartureTimeoptionId	int `json:"departure_timeoption_id"`
+	ArrivalTimeoptionId		int `json:"arrival_timeoption_id"`
 }

@@ -21,4 +21,7 @@ type Transportation struct {
 	TransStatus			int			`json:"trans_status"`
 	TransImages 		string		`json:"trans_images"`
 	ReturnTransId		string		`json:"return_trans_id"`
+	BoatDetails 		string		`json:"boat_details"`
+	Transcoverphoto string			`json:"transcoverphoto"`
+	Class			string			`json:"class"`
 }
