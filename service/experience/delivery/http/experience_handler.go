@@ -208,15 +208,24 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	startDate := c.QueryParam("startDate")
 	endDate := c.QueryParam("endDate")
 	sortby := c.QueryParam("sortby")
-	page := c.QueryParam("page")
-	size := c.QueryParam("size")
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
+
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
+
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
 	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx,cityID ,harborID,qtype,startDate,endDate,guest,trip,
-		bottomprice,upprice,sortby,page,size)
+		bottomprice,upprice,sortby,page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

@@ -40,6 +40,7 @@ func (m merchantUsecase) List(ctx context.Context, page, limit, offset int) (*mo
 			Id:            item.Id,
 			CreatedDate:   item.CreatedDate,
 			UpdatedDate:   item.ModifiedDate,
+			IsActive: item.IsActive,
 			MerchantName:  item.MerchantName,
 			MerchantDesc:  item.MerchantDesc,
 			MerchantEmail: item.MerchantEmail,

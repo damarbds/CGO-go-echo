@@ -46,18 +46,21 @@ type NewCommandUser struct {
 	Points               int    `json:"points"`
 }
 type UserInfoDto struct {
-	Id             string    `json:"id"`
-	UserEmail      string    `json:"user_email" validate:"required"`
-	FullName       string    `json:"full_name"`
-	PhoneNumber    int       `json:"phone_number" validate:"required"`
-	ProfilePictUrl string    `json:"profile_pict_url"`
-	Address        string    `json:"address"`
-	Dob            time.Time `json:"dob"`
-	Gender         int       `json:"gender"`
-	IdType         int       `json:"id_type"`
-	IdNumber       string    `json:"id_number"`
-	ReferralCode   string    `json:"referral_code"`
-	Points         int       `json:"points"`
+	Id             string     `json:"id"`
+	CreatedDate    time.Time  `json:"created_date"`
+	UpdatedDate    *time.Time `json:"updated_date"`
+	IsActive       int        `json:"is_active" validate:"required"`
+	UserEmail      string     `json:"user_email" validate:"required"`
+	FullName       string     `json:"full_name"`
+	PhoneNumber    int        `json:"phone_number" validate:"required"`
+	ProfilePictUrl string     `json:"profile_pict_url"`
+	Address        string     `json:"address"`
+	Dob            time.Time  `json:"dob"`
+	Gender         int        `json:"gender"`
+	IdType         int        `json:"id_type"`
+	IdNumber       string     `json:"id_number"`
+	ReferralCode   string     `json:"referral_code"`
+	Points         int        `json:"points"`
 }
 
 type UserPoint struct {

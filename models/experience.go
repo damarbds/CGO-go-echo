@@ -110,9 +110,9 @@ type ExperienceDto struct {
 	Province                string                `json:"province"`
 }
 type ResponseCreateExperience struct {
-	Id 		string 		`json:"id"`
-	Message string		`json:"message"`
-} 
+	Id      string `json:"id"`
+	Message string `json:"message"`
+}
 type NewCommandExperience struct {
 	Id                      string                `json:"id"`
 	ExpTitle                string                `json:"exp_title"`
@@ -133,27 +133,27 @@ type NewCommandExperience struct {
 	ExpAvailability         []ExpAvailablitityObj `json:"exp_availability"`
 	ExpPayment              []ExpPaymentObj       `json:"exp_payment"`
 	ExpPhotos               []ExpPhotosObj        `json:"exp_photos"`
-	ExperienceAddOn			[]ExperienceAddOnObj	`json:"experience_add_on"`
+	ExperienceAddOn         []ExperienceAddOnObj  `json:"experience_add_on"`
 	Status                  int                   `json:"status"`
 	//Rating                  float64               `json:"rating"`
-	ExpLocationLatitude     float64               `json:"exp_location_latitude"`
-	ExpLocationLongitude    float64               `json:"exp_location_longitude"`
-	ExpLocationName         string                `json:"exp_location_name"`
-	ExpCoverPhoto           *string               `json:"exp_cover_photo"`
-	ExpDuration             int                   `json:"exp_duration"`
-	MinimumBookingId        string                `json:"minimum_booking_id"`
+	ExpLocationLatitude  float64 `json:"exp_location_latitude"`
+	ExpLocationLongitude float64 `json:"exp_location_longitude"`
+	ExpLocationName      string  `json:"exp_location_name"`
+	ExpCoverPhoto        *string `json:"exp_cover_photo"`
+	ExpDuration          int     `json:"exp_duration"`
+	MinimumBookingId     string  `json:"minimum_booking_id"`
 	//MerchantId              string                `json:"merchant_id"`
-	HarborsId               string     `json:"harbors_id"`
+	HarborsId string `json:"harbors_id"`
 }
 type MinimumBookingObj struct {
 	MinimumBookingDesc   string `json:"minimum_booking_desc"`
 	MinimumBookingAmount *int   `json:"minimum_booking_amount"`
 }
 type ExperienceAddOnObj struct {
-	Name 	string	`json:"name"`
-	Desc 	string	`json:"desc"`
-	Currency string	`json:"currency"`
-	Amount float64 		`json:"amount"`
+	Name     string  `json:"name"`
+	Desc     string  `json:"desc"`
+	Currency string  `json:"currency"`
+	Amount   float64 `json:"amount"`
 }
 type ExpAvailablitityObj struct {
 	Year  int      `json:"year"`
@@ -285,4 +285,9 @@ type ExpUserDiscoverPreferenceDto struct {
 	CityDesc   string                                `json:"city_desc"`
 	CityPhotos []CoverPhotosObj                      `json:"city_photos"`
 	Item       []ExperienceUserDiscoverPreferenceDto `json:"item"`
+}
+
+type FilterSearchWithPagination struct {
+	Data []*ExpSearchObject `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
 }

@@ -34,6 +34,7 @@ type MerchantInfoDto struct {
 	Id            string     `json:"id"`
 	CreatedDate   time.Time  `json:"created_date"`
 	UpdatedDate   *time.Time `json:"updated_date"`
+	IsActive      int        `json:"is_active"`
 	MerchantName  string     `json:"merchant_name" validate:"required"`
 	MerchantDesc  string     `json:"merchant_desc"`
 	MerchantEmail string     `json:"merchant_email" validate:"required"`

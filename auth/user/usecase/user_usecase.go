@@ -39,6 +39,9 @@ func (m userUsecase) List(ctx context.Context, page, limit, offset int) (*models
 	for i, item := range list {
 		users[i] = &models.UserInfoDto{
 			Id:             item.Id,
+			CreatedDate:    item.CreatedDate,
+			UpdatedDate:    item.ModifiedDate,
+			IsActive:       item.IsActive,
 			UserEmail:      item.UserEmail,
 			FullName:       item.FullName,
 			PhoneNumber:    item.PhoneNumber,
