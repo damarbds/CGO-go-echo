@@ -175,8 +175,25 @@ func (m *experienceRepository) GetByCategoryID(ctx context.Context, categoryId i
 	return res, nil
 }
 
-func (m *experienceRepository) QueryFilterSearch(ctx context.Context, query string) ([]*models.ExpSearch, error) {
-	res, err := m.fetchSearchExp(ctx, query)
+func (m *experienceRepository) CountFilterSearch(ctx context.Context, query string) (int, error) {
+	rows, err := m.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (m *experienceRepository) QueryFilterSearch(ctx context.Context, query string, limit, offset int) ([]*models.ExpSearch, error) {
+	query = query + ` LIMIT ? OFFSET ?`
+	res, err := m.fetchSearchExp(ctx, query, limit, offset)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrNotFound

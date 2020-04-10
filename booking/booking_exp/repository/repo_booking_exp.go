@@ -24,6 +24,44 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }
 
+func (b bookingExpRepository) CountThisMonth(ctx context.Context) (int, error) {
+	query := `
+	SELECT
+		count(CAST(created_date AS DATE))
+	FROM
+		booking_exps
+	WHERE
+		is_deleted = 0
+		AND is_active = 1
+		AND status = 1
+		AND created_date BETWEEN date_add(CURRENT_DATE, interval - DAY(CURRENT_DATE) + 1 DAY)
+		AND CURRENT_DATE`
+
+	rows, err := b.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+
 func (b bookingExpRepository) fetchGrowth(ctx context.Context, query string, args ...interface{}) ([]*models.BookingGrowth, error) {
 	rows, err := b.Conn.QueryContext(ctx, query, args...)
 	if err != nil {

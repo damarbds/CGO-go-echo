@@ -11,4 +11,5 @@ type Usecase interface {
 	Insert(ctx context.Context, booking *models.NewBookingExpCommand, token string) (*models.NewBookingExpCommand, error, error)
 	GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string) ([]*models.MyBooking, error)
 	GetGrowthByMerchantID(ctx context.Context, token string) ([]*models.BookingGrowthDto, error)
+	CountThisMonth(ctx context.Context) (*models.Count, error)
 }

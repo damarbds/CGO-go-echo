@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -348,9 +349,10 @@ func (m experienceUsecase) FilterSearchExp(
 	bottomPrice string,
 	upPrice string,
 	sortBy string,
-	page string,
-	size string,
-) ([]*models.ExpSearchObject, error) {
+	page int,
+	limit int,
+	offset int,
+) (*models.FilterSearchWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -372,29 +374,36 @@ func (m experienceUsecase) FilterSearchExp(
 	from 
 		experiences e`
 
+	qCount := `select COUNT(*) from experiences e`
 	if bottomPrice != "" && upPrice != "" {
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
+		qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
 	}
 	//if startDate != "" && endDate != "" {
 	//	query = query + ` join exp_availability_date ead on ead.exp_id = e.id`
 	//}
 	if activityType != "" {
 		query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
+		qCount = qCount + ` join filter_activity_types fat on fat.exp_id = e.id`
 	}
 	if cityID != "" {
 		query = query + ` join harbors h on h.id = e.harbors_id`
+		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
 	if cityID != "" {
 		city_id, _ := strconv.Atoi(cityID)
 		query = query + ` where h.city_id = ` + strconv.Itoa(city_id)
+		qCount = qCount + ` where h.city_id = ` + strconv.Itoa(city_id)
 	} else if harborsId != "" {
 		query = query + ` where e.harbors_id = '` + harborsId + `'`
+		qCount = qCount + ` where e.harbors_id = '` + harborsId + `'`
 	} else {
 		//return nil, models.ErrBadParamInput
 	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
 		query = query + ` AND e.exp_max_guest =` + strconv.Itoa(guests)
+		qCount = qCount + ` AND e.exp_max_guest =` + strconv.Itoa(guests)
 	}
 	if trip != "" {
 		trips, _ := strconv.Atoi(trip)
@@ -407,6 +416,7 @@ func (m experienceUsecase) FilterSearchExp(
 			return nil, models.ErrInternalServerError
 		}
 		query = query + ` AND e.exp_trip_type = '` + tripType + `'`
+		qCount = qCount + ` AND e.exp_trip_type = '` + tripType + `'`
 	}
 
 	if len(activityTypeArray) != 0 {
@@ -414,12 +424,16 @@ func (m experienceUsecase) FilterSearchExp(
 		for index, id := range activityTypeArray {
 			if index == 0 && index != (len(activityTypeArray)-1) {
 				query = query + ` AND (fat.id =` + strconv.Itoa(id)
+				qCount = qCount + ` AND (fat.id =` + strconv.Itoa(id)
 			} else if index == 0 && index == (len(activityTypeArray)-1) {
 				query = query + ` AND (fat.id =` + strconv.Itoa(id) + ` ) `
+				qCount = qCount + ` AND (fat.id =` + strconv.Itoa(id) + ` ) `
 			} else if index == (len(activityTypeArray) - 1) {
 				query = query + ` OR fat.id =` + strconv.Itoa(id) + ` ) `
+				qCount = qCount + ` OR fat.id =` + strconv.Itoa(id) + ` ) `
 			} else {
 				query = query + ` OR fat.id =` + strconv.Itoa(id)
+				qCount = qCount + ` OR fat.id =` + strconv.Itoa(id)
 			}
 		}
 
@@ -429,6 +443,7 @@ func (m experienceUsecase) FilterSearchExp(
 		upprices, _ := strconv.ParseFloat(upPrice, 64)
 
 		query = query + ` AND (ep.price between ` + fmt.Sprint(bottomprices) + ` AND ` + fmt.Sprint(upprices) + `)`
+		qCount = qCount + ` AND (ep.price between ` + fmt.Sprint(bottomprices) + ` AND ` + fmt.Sprint(upprices) + `)`
 		if sortBy != "" {
 			if sortBy == "priceup" {
 				query = query + ` ORDER BY ep.price DESC`
@@ -450,12 +465,7 @@ func (m experienceUsecase) FilterSearchExp(
 	//
 	//	query = query + ` AND exp_availability_date like %` + s
 	//}
-	if page != "" && size != "" {
-		//pages , _:= strconv.Atoi(page)
-		//sizes , _:= strconv.Atoi(size)
-		query = query + ` LIMIT ` + page + `,` + size
-	}
-	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query)
+	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -529,8 +539,33 @@ func (m experienceUsecase) FilterSearchExp(
 			ListPhoto:   listPhotos,
 		}
 	}
+	totalRecords, _ := m.experienceRepo.CountFilterSearch(ctx, qCount)
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
 
-	return results, nil
+	if page != totalPage {
+		next = page + 1
+	}
+
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(results),
+	}
+
+	response := &models.FilterSearchWithPagination{
+		Data: results,
+		Meta: meta,
+	}
+
+	return response, nil
 
 }
 func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.ExpInspirationDto, error) {

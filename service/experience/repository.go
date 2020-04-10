@@ -13,7 +13,7 @@ type Repository interface {
 	GetUserDiscoverPreference(ctx context.Context,page *int,size *int)([]*models.ExpUserDiscoverPreference,error)
 	GetIdByHarborsId(ctx context.Context, harborsId string) ([]*string, error)
 	GetIdByCityId(ctx context.Context, cityId string) ([]*string, error)
-	QueryFilterSearch(ctx context.Context,query string) ([]*models.ExpSearch, error)
+	QueryFilterSearch(ctx context.Context,query string, limit, offset int) ([]*models.ExpSearch, error)
 	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearch, error)
 	Update(ctx context.Context, a *models.Experience) (*string,error)
 	Insert(ctx context.Context, a *models.Experience) (*string,error)
@@ -22,4 +22,5 @@ type Repository interface {
 	GetExpCount(ctx context.Context, merchantId string) (int, error)
 	GetExpPendingTransactionCount(ctx context.Context, merchantId string) (int, error)
 	GetExpFailedTransactionCount(ctx context.Context, merchantId string) (int, error)
+	CountFilterSearch(ctx context.Context, query string) (int, error)
 }

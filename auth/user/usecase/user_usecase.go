@@ -5,6 +5,7 @@ import (
 	"github.com/auth/user"
 	"github.com/models"
 	"golang.org/x/net/context"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -15,7 +16,6 @@ type userUsecase struct {
 	contextTimeout time.Duration
 }
 
-
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase,timeout time.Duration) user.Usecase {
 	return &userUsecase{
@@ -23,6 +23,64 @@ func NewuserUsecase(a user.Repository, is identityserver.Usecase,timeout time.Du
 		identityServerUc:is,
 		contextTimeout: timeout,
 	}
+}
+
+
+func (m userUsecase) List(ctx context.Context, page, limit, offset int) (*models.UserWithPagination, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+	
+	list, err := m.userRepo.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	
+	users := make([]*models.UserInfoDto, len(list))
+	for i, item := range list {
+		users[i] = &models.UserInfoDto{
+			Id:             item.Id,
+			CreatedDate:    item.CreatedDate,
+			UpdatedDate:    item.ModifiedDate,
+			IsActive:       item.IsActive,
+			UserEmail:      item.UserEmail,
+			FullName:       item.FullName,
+			PhoneNumber:    item.PhoneNumber,
+			ProfilePictUrl: item.ProfilePictUrl,
+			Address:        item.Address,
+			Dob:            item.Dob,
+			Gender:         item.Gender,
+			IdType:         item.IdType,
+			IdNumber:       item.IdNumber,
+			ReferralCode:   item.ReferralCode,
+			Points:         item.Points,
+		}
+	}
+	totalRecords, _ := m.userRepo.Count(ctx)
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
+
+	if page != totalPage {
+		next = page + 1
+	}
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(list),
+	}
+
+	response := &models.UserWithPagination{
+		Data: users,
+		Meta: meta,
+	}
+
+	return response, nil
 }
 
 func (m userUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetToken, error) {

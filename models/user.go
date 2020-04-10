@@ -18,14 +18,14 @@ type User struct {
 	FullName             string     `json:"full_name"`
 	PhoneNumber          int        `json:"phone_number" validate:"required"`
 	VerificationSendDate time.Time  `json:"verification_send_date"`
-	VerificationCode     string        `json:"verification_code"`
+	VerificationCode     string     `json:"verification_code"`
 	ProfilePictUrl       string     `json:"profile_pict_url"`
 	Address              string     `json:"address" validate:"required"`
 	Dob                  time.Time  `json:"dob" validate:"required"`
 	Gender               int        `json:"gender" validate:"required"`
 	IdType               int        `json:"id_type"`
 	IdNumber             string     `json:"id_number"`
-	ReferralCode         string        `json:"referral_code"`
+	ReferralCode         string     `json:"referral_code"`
 	Points               int        `json:"points"`
 }
 type NewCommandUser struct {
@@ -46,14 +46,28 @@ type NewCommandUser struct {
 	Points               int    `json:"points"`
 }
 type UserInfoDto struct {
-	Id             string `json:"id"`
-	UserEmail      string `json:"user_email" validate:"required"`
-	FullName       string `json:"full_name"`
-	PhoneNumber    int    `json:"phone_number" validate:"required"`
-	ProfilePictUrl string `json:"profile_pict_url"`
-	ReferralCode string		`json:"referral_code"`
+	Id             string     `json:"id"`
+	CreatedDate    time.Time  `json:"created_date"`
+	UpdatedDate    *time.Time `json:"updated_date"`
+	IsActive       int        `json:"is_active" validate:"required"`
+	UserEmail      string     `json:"user_email" validate:"required"`
+	FullName       string     `json:"full_name"`
+	PhoneNumber    int        `json:"phone_number" validate:"required"`
+	ProfilePictUrl string     `json:"profile_pict_url"`
+	Address        string     `json:"address"`
+	Dob            time.Time  `json:"dob"`
+	Gender         int        `json:"gender"`
+	IdType         int        `json:"id_type"`
+	IdNumber       string     `json:"id_number"`
+	ReferralCode   string     `json:"referral_code"`
+	Points         int        `json:"points"`
 }
 
 type UserPoint struct {
 	Points int `json:"points"`
+}
+
+type UserWithPagination struct {
+	Data []*UserInfoDto  `json:"data"`
+	Meta *MetaPagination `json:"meta"`
 }

@@ -13,4 +13,5 @@ type Usecase interface {
 	Login(ctx context.Context, ar *models.Login) (*models.GetToken,error)
 	GetUserInfo(ctx context.Context, token string) (*models.UserInfoDto,error)
 	GetCreditByID(ctx context.Context, id string) (*models.UserPoint, error)
+	List(ctx context.Context, page, limit, offset int) (*models.UserWithPagination, error)
 }
