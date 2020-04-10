@@ -27,6 +27,46 @@ func NewuserRepository(Conn *sql.DB) user.Repository {
 	return &userRepository{Conn}
 }
 
+func (m *userRepository) Count(ctx context.Context) (int, error) {
+	query := `SELECT count(*) AS count FROM users WHERE is_deleted = 0 and is_active = 1`
+
+	rows, err := m.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+
+func (m *userRepository) List(ctx context.Context, limit, offset int) ([]*models.User, error) {
+	query := `SELECT * FROM users WHERE is_deleted = 0 and is_active = 1 LIMIT ? OFFSET ?`
+
+	list, err := m.fetch(ctx, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+
 func (m *userRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.User, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
