@@ -150,12 +150,14 @@ type MinimumBookingObj struct {
 	MinimumBookingAmount *int   `json:"minimum_booking_amount"`
 }
 type ExperienceAddOnObj struct {
+	Id       string  `json:"id"`
 	Name     string  `json:"name"`
 	Desc     string  `json:"desc"`
 	Currency string  `json:"currency"`
 	Amount   float64 `json:"amount"`
 }
 type ExpAvailablitityObj struct {
+	Id    string   `json:"id"`
 	Year  int      `json:"year"`
 	Month string   `json:"month"`
 	Date  []string `json:"date"`
@@ -170,6 +172,7 @@ type ExpPaymentObj struct {
 	PaymentTypeDesc string  `json:"payment_type_desc"`
 }
 type ExpPhotosObj struct {
+	Id            string           `json:"id"`
 	Folder        string           `json:"folder"`
 	ExpPhotoImage []CoverPhotosObj `json:"exp_photo_image"`
 }

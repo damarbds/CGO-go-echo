@@ -15,7 +15,7 @@ type Repository interface {
 	GetIdByCityId(ctx context.Context, cityId string) ([]*string, error)
 	QueryFilterSearch(ctx context.Context,query string, limit, offset int) ([]*models.ExpSearch, error)
 	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearch, error)
-	//Update(ctx context.Context, ar *models.Experience) error
+	Update(ctx context.Context, a *models.Experience) (*string,error)
 	Insert(ctx context.Context, a *models.Experience) (*string,error)
 	Delete(ctx context.Context, id string,deleted_by string) error
 	GetSuccessBookCount(ctx context.Context, merchantId string) (int, error)

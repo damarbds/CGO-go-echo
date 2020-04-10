@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/base64"
 	guuid "github.com/google/uuid"
-
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -124,7 +123,7 @@ func (m *exp_photosRepository) GetByExperienceID(ctx context.Context, id string)
 func (m *exp_photosRepository) Insert(ctx context.Context, a *models.ExpPhotos) (*string,error) {
 	id := guuid.New()
 	a.Id = id.String()
-	query := `INSERT exp_photoss SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
+	query := `INSERT exp_photos SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_photo_folder=?,exp_photo_image=?,
 				exp_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -145,15 +144,47 @@ func (m *exp_photosRepository) Insert(ctx context.Context, a *models.ExpPhotos) 
 	//a.Id = lastID
 	return &a.Id,nil
 }
+func (m *exp_photosRepository) Update(ctx context.Context, a *models.ExpPhotos) (*string,error) {
+	query := `UPDATE exp_photos SET modified_by=?, modified_date=? , 
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_photo_folder=?,exp_photo_image=?,
+				exp_id=? WHERE id=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil,err
+	}
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.ExpPhotoFolder,
+		a.ExpPhotoImage,a.ExpId,a.Id)
+	if err != nil {
+		return nil,err
+	}
 
-func (m *exp_photosRepository) Delete(ctx context.Context, id string, deleted_by string) error {
-	query := `UPDATE  exp_photoss SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
+	//lastID, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+
+	//a.Id = lastID
+	return &a.Id,nil
+}
+func (m *exp_photosRepository) Deletes(ctx context.Context, ids []string,expId string,deletedBy string) error {
+	query := `UPDATE  exp_photos SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
+	for index, id := range ids {
+		if index == 0 && index != (len(ids)-1) {
+			query = query + ` AND (id !=` + id
+		} else if index == 0 && index == (len(ids)-1) {
+			query = query + ` AND (id !=` + id + ` ) `
+		} else if index == (len(ids) - 1) {
+			query = query + ` OR id !=` + id + ` ) `
+		} else {
+			query = query + ` OR id !=` + id
+		}
+	}
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,expId)
 	if err != nil {
 		return err
 	}

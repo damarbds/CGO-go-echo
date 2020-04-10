@@ -225,7 +225,7 @@ func main() {
 	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e, experienceAddOnUsecase)
 	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
-	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase)
+	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase,isUsecase)
 	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase,adminUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
