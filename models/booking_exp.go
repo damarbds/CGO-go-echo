@@ -144,7 +144,7 @@ type BookedByObj struct {
 	Title       string `json:"title"`
 	FullName    string `json:"fullname"`
 	Email       string `json:"email"`
-	PhoneNumber string `json:"phonenumber"`
+	PhoneNumber interface{} `json:"phonenumber"`
 	IdType      string `json:"idtype"`
 	IdNumber    string `json:"idnumber"`
 }

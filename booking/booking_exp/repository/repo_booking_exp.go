@@ -27,7 +27,7 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 func (b bookingExpRepository) CountThisMonth(ctx context.Context) (int, error) {
 	query := `
 	SELECT
-		count(CAST(created_date AS DATE))
+		count(CAST(created_date AS DATE)) as count
 	FROM
 		booking_exps
 	WHERE
