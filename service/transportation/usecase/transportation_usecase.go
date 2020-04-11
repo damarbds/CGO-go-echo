@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/auth/merchant"
 	guuid "github.com/google/uuid"
 	"github.com/models"
@@ -9,25 +11,24 @@ import (
 	"github.com/service/time_options"
 	"github.com/service/transportation"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type transportationUsecase struct {
-	transportationRepo     transportation.Repository
-	merchantUsecase merchant.Usecase
-	scheduleRepo 	schedule.Repository
-	timeOptionsRepo  time_options.Repository
-	contextTimeout time.Duration
+	transportationRepo transportation.Repository
+	merchantUsecase    merchant.Usecase
+	scheduleRepo       schedule.Repository
+	timeOptionsRepo    time_options.Repository
+	contextTimeout     time.Duration
 }
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewTransportationUsecase(tr transportation.Repository,mr merchant.Usecase,s schedule.Repository,tmo time_options.Repository,timeout time.Duration) transportation.Usecase {
+func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
 	return &transportationUsecase{
-		transportationRepo:tr,
-		merchantUsecase:mr,
-		scheduleRepo:s,
-		timeOptionsRepo:tmo,
-		contextTimeout: timeout,
+		transportationRepo: tr,
+		merchantUsecase:    mr,
+		scheduleRepo:       s,
+		timeOptionsRepo:    tmo,
+		contextTimeout:     timeout,
 	}
 }
 
@@ -52,7 +53,7 @@ func (t transportationUsecase) TimeOptions(ctx context.Context) ([]*models.TimeO
 	return timeOptions, nil
 }
 
-func (t transportationUsecase) CreateTransportation(c context.Context, newCommandTransportation models.NewCommandTransportation,token string) (*models.ResponseCreateExperience, error) {
+func (t transportationUsecase) CreateTransportation(c context.Context, newCommandTransportation models.NewCommandTransportation, token string) (*models.ResponseCreateExperience, error) {
 	ctx, cancel := context.WithTimeout(c, t.contextTimeout)
 	defer cancel()
 
@@ -64,10 +65,10 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 	var harborsSourceId string
 	var harborsDestId string
 	if len(newCommandTransportation.TransImages) != 0 {
-		transImagesConvert ,_ := json.Marshal(newCommandTransportation.TransImages)
+		transImagesConvert, _ := json.Marshal(newCommandTransportation.TransImages)
 		transImages = string(transImagesConvert)
 	}
-	boatDetails ,_ := json.Marshal(newCommandTransportation.BoatDetails)
+	boatDetails, _ := json.Marshal(newCommandTransportation.BoatDetails)
 	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdFrom
 	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
 
@@ -96,7 +97,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 	}
 	if newCommandTransportation.ReturnRoute != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
-		harborsSourceReturnId:= newCommandTransportation.ReturnRoute.HarborsIdTo
+		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
 		transportationReturn := models.Transportation{
 			Id:              guuid.New().String(),
 			CreatedBy:       currentUserMerchant.MerchantEmail,
@@ -120,15 +121,15 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 			Transcoverphoto: newCommandTransportation.Transcoverphoto,
 			Class:           newCommandTransportation.Class,
 		}
-		insertTransportationReturn ,err:= t.transportationRepo.Insert(ctx,transportationReturn)
+		insertTransportationReturn, err := t.transportationRepo.Insert(ctx, transportationReturn)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
-		for _,year := range newCommandTransportation.ReturnRoute.Schedule {
-			for _,month := range year.Month {
+		for _, year := range newCommandTransportation.ReturnRoute.Schedule {
+			for _, month := range year.Month {
 				for _, day := range month.DayPrice {
-					for _, times := range newCommandTransportation.DepartureRoute.Time  {
+					for _, times := range newCommandTransportation.DepartureRoute.Time {
 						var currency int
 						if day.Currency == "USD" {
 							currency = 1
@@ -140,15 +141,15 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 							ChildrenPrice: day.ChildrenPrice,
 							Currency:      currency,
 						}
-						departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
+						departureTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.DepartureTime)
 						if err != nil {
-							return nil,err
+							return nil, err
 						}
-						arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
+						arrivalTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.ArrivalTime)
 						if err != nil {
-							return nil,err
+							return nil, err
 						}
-						price ,_:= json.Marshal(priceObj)
+						price, _ := json.Marshal(priceObj)
 						schedule := models.Schedule{
 							Id:                    "",
 							CreatedBy:             currentUserMerchant.MerchantEmail,
@@ -161,7 +162,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 							IsActive:              0,
 							TransId:               *insertTransportationReturn,
 							DepartureTime:         times.DepartureTime,
-							ArrivalTime:		   times.ArrivalTime,
+							ArrivalTime:           times.ArrivalTime,
 							Day:                   day.Day,
 							Month:                 month.Month,
 							Year:                  year.Year,
@@ -171,7 +172,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 						}
 						_, err = t.scheduleRepo.Insert(ctx, schedule)
 						if err != nil {
-							return nil,err
+							return nil, err
 						}
 					}
 				}
@@ -179,15 +180,15 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		}
 		transportation.ReturnTransId = insertTransportationReturn
 	}
-	insertTransportation ,err:= t.transportationRepo.Insert(ctx,transportation)
+	insertTransportation, err := t.transportationRepo.Insert(ctx, transportation)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	for _,year := range newCommandTransportation.DepartureRoute.Schedule {
-		for _,month := range year.Month {
+	for _, year := range newCommandTransportation.DepartureRoute.Schedule {
+		for _, month := range year.Month {
 			for _, day := range month.DayPrice {
-				for _, times := range newCommandTransportation.DepartureRoute.Time  {
+				for _, times := range newCommandTransportation.DepartureRoute.Time {
 					var currency int
 					if day.Currency == "USD" {
 						currency = 1
@@ -199,15 +200,15 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 						ChildrenPrice: day.ChildrenPrice,
 						Currency:      currency,
 					}
-					departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
+					departureTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.DepartureTime)
 					if err != nil {
-						return nil,err
+						return nil, err
 					}
-					arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
+					arrivalTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.ArrivalTime)
 					if err != nil {
-						return nil,err
+						return nil, err
 					}
-					price ,_:= json.Marshal(priceObj)
+					price, _ := json.Marshal(priceObj)
 					schedule := models.Schedule{
 						Id:                    "",
 						CreatedBy:             currentUserMerchant.MerchantEmail,
@@ -220,7 +221,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 						IsActive:              0,
 						TransId:               *insertTransportation,
 						DepartureTime:         times.DepartureTime,
-						ArrivalTime:		   times.ArrivalTime,
+						ArrivalTime:           times.ArrivalTime,
 						Day:                   day.Day,
 						Month:                 month.Month,
 						Year:                  year.Year,
@@ -230,7 +231,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 					}
 					_, err = t.scheduleRepo.Insert(ctx, schedule)
 					if err != nil {
-						return nil,err
+						return nil, err
 					}
 				}
 			}
@@ -239,7 +240,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 	var status string
 	if newCommandTransportation.Status == 0 {
 		status = "Draft"
-	}else if newCommandTransportation.Status == 3 {
+	} else if newCommandTransportation.Status == 3 {
 		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{
@@ -247,7 +248,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		Message: "Success " + status,
 	}
 
-	return &response,nil
+	return &response, nil
 
 }
 func (t transportationUsecase) UpdateTransportation(c context.Context, newCommandTransportation models.NewCommandTransportation, token string) (*models.ResponseCreateExperience, error) {
@@ -262,19 +263,19 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 	var harborsSourceId string
 	var harborsDestId string
 	if len(newCommandTransportation.TransImages) != 0 {
-		transImagesConvert ,_ := json.Marshal(newCommandTransportation.TransImages)
+		transImagesConvert, _ := json.Marshal(newCommandTransportation.TransImages)
 		transImages = string(transImagesConvert)
 	}
-	boatDetails ,_ := json.Marshal(newCommandTransportation.BoatDetails)
+	boatDetails, _ := json.Marshal(newCommandTransportation.BoatDetails)
 	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdFrom
 	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
 
 	transportation := models.Transportation{
-		Id:              guuid.New().String(),
-		CreatedBy:       currentUserMerchant.MerchantEmail,
+		Id:              newCommandTransportation.Id,
+		CreatedBy:       "",
 		CreatedDate:     time.Time{},
-		ModifiedBy:      nil,
-		ModifiedDate:    nil,
+		ModifiedBy:      &currentUserMerchant.MerchantEmail,
+		ModifiedDate:    &time.Time{},
 		DeletedBy:       nil,
 		DeletedDate:     nil,
 		IsDeleted:       0,
@@ -294,13 +295,13 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 	}
 	if newCommandTransportation.ReturnRoute != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
-		harborsSourceReturnId:= newCommandTransportation.ReturnRoute.HarborsIdTo
+		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
 		transportationReturn := models.Transportation{
-			Id:              guuid.New().String(),
-			CreatedBy:       currentUserMerchant.MerchantEmail,
+			Id:              newCommandTransportation.ReturnRoute.Id,
+			CreatedBy:       "",
 			CreatedDate:     time.Time{},
-			ModifiedBy:      nil,
-			ModifiedDate:    nil,
+			ModifiedBy:      &currentUserMerchant.MerchantEmail,
+			ModifiedDate:    &time.Time{},
 			DeletedBy:       nil,
 			DeletedDate:     nil,
 			IsDeleted:       0,
@@ -318,15 +319,18 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 			Transcoverphoto: newCommandTransportation.Transcoverphoto,
 			Class:           newCommandTransportation.Class,
 		}
-		insertTransportationReturn ,err:= t.transportationRepo.Insert(ctx,transportationReturn)
+		insertTransportationReturn, err := t.transportationRepo.Update(ctx, transportationReturn)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
-
-		for _,year := range newCommandTransportation.ReturnRoute.Schedule {
-			for _,month := range year.Month {
+		errorDelete := t.scheduleRepo.DeleteByTransId(ctx, insertTransportationReturn)
+		if errorDelete != nil {
+			return nil, errorDelete
+		}
+		for _, year := range newCommandTransportation.ReturnRoute.Schedule {
+			for _, month := range year.Month {
 				for _, day := range month.DayPrice {
-					for _, times := range newCommandTransportation.DepartureRoute.Time  {
+					for _, times := range newCommandTransportation.DepartureRoute.Time {
 						var currency int
 						if day.Currency == "USD" {
 							currency = 1
@@ -338,15 +342,15 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 							ChildrenPrice: day.ChildrenPrice,
 							Currency:      currency,
 						}
-						departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
+						departureTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.DepartureTime)
 						if err != nil {
-							return nil,err
+							return nil, err
 						}
-						arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
+						arrivalTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.ArrivalTime)
 						if err != nil {
-							return nil,err
+							return nil, err
 						}
-						price ,_:= json.Marshal(priceObj)
+						price, _ := json.Marshal(priceObj)
 						schedule := models.Schedule{
 							Id:                    "",
 							CreatedBy:             currentUserMerchant.MerchantEmail,
@@ -359,7 +363,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 							IsActive:              0,
 							TransId:               *insertTransportationReturn,
 							DepartureTime:         times.DepartureTime,
-							ArrivalTime:		   times.ArrivalTime,
+							ArrivalTime:           times.ArrivalTime,
 							Day:                   day.Day,
 							Month:                 month.Month,
 							Year:                  year.Year,
@@ -369,7 +373,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 						}
 						_, err = t.scheduleRepo.Insert(ctx, schedule)
 						if err != nil {
-							return nil,err
+							return nil, err
 						}
 					}
 				}
@@ -377,15 +381,20 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		}
 		transportation.ReturnTransId = insertTransportationReturn
 	}
-	insertTransportation ,err:= t.transportationRepo.Insert(ctx,transportation)
+	insertTransportation, err := t.transportationRepo.Update(ctx, transportation)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	for _,year := range newCommandTransportation.DepartureRoute.Schedule {
-		for _,month := range year.Month {
+	errorDelete := t.scheduleRepo.DeleteByTransId(ctx, insertTransportation)
+	if errorDelete != nil {
+		return nil, errorDelete
+	}
+
+	for _, year := range newCommandTransportation.DepartureRoute.Schedule {
+		for _, month := range year.Month {
 			for _, day := range month.DayPrice {
-				for _, times := range newCommandTransportation.DepartureRoute.Time  {
+				for _, times := range newCommandTransportation.DepartureRoute.Time {
 					var currency int
 					if day.Currency == "USD" {
 						currency = 1
@@ -397,15 +406,15 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 						ChildrenPrice: day.ChildrenPrice,
 						Currency:      currency,
 					}
-					departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
+					departureTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.DepartureTime)
 					if err != nil {
-						return nil,err
+						return nil, err
 					}
-					arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
+					arrivalTimeOption, err := t.timeOptionsRepo.GetByTime(ctx, times.ArrivalTime)
 					if err != nil {
-						return nil,err
+						return nil, err
 					}
-					price ,_:= json.Marshal(priceObj)
+					price, _ := json.Marshal(priceObj)
 					schedule := models.Schedule{
 						Id:                    "",
 						CreatedBy:             currentUserMerchant.MerchantEmail,
@@ -418,7 +427,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 						IsActive:              0,
 						TransId:               *insertTransportation,
 						DepartureTime:         times.DepartureTime,
-						ArrivalTime:		   times.ArrivalTime,
+						ArrivalTime:           times.ArrivalTime,
 						Day:                   day.Day,
 						Month:                 month.Month,
 						Year:                  year.Year,
@@ -428,7 +437,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 					}
 					_, err = t.scheduleRepo.Insert(ctx, schedule)
 					if err != nil {
-						return nil,err
+						return nil, err
 					}
 				}
 			}
@@ -437,7 +446,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 	var status string
 	if newCommandTransportation.Status == 0 {
 		status = "Draft"
-	}else if newCommandTransportation.Status == 3 {
+	} else if newCommandTransportation.Status == 3 {
 		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{
@@ -445,7 +454,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		Message: "Success " + status,
 	}
 
-	return &response,nil
+	return &response, nil
 
 }
 
@@ -453,18 +462,18 @@ func (t transportationUsecase) PublishTransportation(c context.Context, newComma
 	ctx, cancel := context.WithTimeout(c, t.contextTimeout)
 	defer cancel()
 	var response *models.ResponseCreateExperience
-	if newCommandTransportation.Id == ""{
-		create,err := t.CreateTransportation(ctx,newCommandTransportation,token)
+	if newCommandTransportation.Id == "" {
+		create, err := t.CreateTransportation(ctx, newCommandTransportation, token)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		response = create
-	}else {
-		update,err := t.UpdateTransportation(ctx,newCommandTransportation,token)
+	} else {
+		update, err := t.UpdateTransportation(ctx, newCommandTransportation, token)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		response = update
 	}
-	return response,nil
+	return response, nil
 }

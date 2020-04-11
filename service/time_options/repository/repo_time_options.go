@@ -74,6 +74,16 @@ func (t timeOptionsRepository) fetch(ctx context.Context, query string, args ...
 
 	return result, nil
 }
+func (t timeOptionsRepository) List(ctx context.Context) ([]*models.TimesOption, error) {
+	query := `SELECT * FROM times_options WHERE is_deleted = 0 AND is_active = 1`
+
+	list, err := t.fetch(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
 
 func (t timeOptionsRepository) Insert(ctx context.Context, a models.TimesOption) (*int, error) {
 	query := `INSERT times_options SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 

@@ -2,12 +2,13 @@ package http
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/service/transportation"
 	"github.com/sirupsen/logrus"
 	validator "gopkg.in/go-playground/validator.v9"
-	"net/http"
 )
 
 // ResponseError represent the reseponse error struct
@@ -73,14 +74,25 @@ func (a *transportationHandler) CreateTransportation(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	response,error := a.transportationUsecase.PublishTransportation(ctx,transporationsCommand,token)
+	response, error := a.transportationUsecase.PublishTransportation(ctx, transporationsCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
 	return c.JSON(http.StatusOK, response)
 }
+func (t *transportationHandler) List(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
+	result, err := t.transportationUsecase.TimeOptions(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
 
 func getStatusCode(err error) int {
 	if err == nil {
