@@ -98,6 +98,10 @@ import (
 	_transactionHttpHandler "github.com/transactions/transaction/delivery/http"
 	_transactionRepo "github.com/transactions/transaction/repository"
 	_transactionUcase "github.com/transactions/transaction/usecase"
+
+	_transHttpHandler "github.com/service/transportation/delivery/http"
+	_transRepo "github.com/service/transportation/repository"
+	_transUcase "github.com/service/transportation/usecase"
 )
 
 // func init() {
@@ -186,6 +190,7 @@ func main() {
 	facilityRepo := _facilityRepo.NewFacilityRepository(dbConn)
 	adminRepo := _adminRepo.NewadminRepository(dbConn)
 	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
+	transRepo := _transRepo.NewTransportationRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -222,6 +227,7 @@ func main() {
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(transactionRepo, timeoutContext)
+	transUcase := _transUcase.NewTransportationUsecase(transRepo, timeoutContext)
 
 	_adminHttpDeliver.NewadminHandler(e, adminUsecase)
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
@@ -243,6 +249,7 @@ func main() {
 	_notifHttpHandler.NewNotifHandler(e, notifUcase)
 	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
+	_transHttpHandler.NewTransportationHandler(e, transUcase)
 
 	log.Fatal(e.Start(":9090"))
 }
