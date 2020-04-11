@@ -103,6 +103,7 @@ import (
 	_timeOptionsRepo "github.com/service/time_options/repository"
 
 	_transactionHttpHandler "github.com/transactions/transaction/delivery/http"
+	_transactionRepo "github.com/transactions/transaction/repository"
 	_transactionUcase "github.com/transactions/transaction/usecase"
 )
 
@@ -194,6 +195,8 @@ func main() {
 	transportationRepo := _transportationRepo.NewTransportationRepository(dbConn)
 	timeOptionsRepo := _timeOptionsRepo.NewTimeOptionsRepository(dbConn)
 	schedulerRepo := _schedulerRepo.NewScheduleRepository(dbConn)
+	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
+
 	timeoutContext := time.Duration(30) * time.Second
 
 	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)

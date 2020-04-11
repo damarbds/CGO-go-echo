@@ -16,11 +16,9 @@ type transportationUsecase struct {
 	transportationRepo     transportation.Repository
 	merchantUsecase merchant.Usecase
 	scheduleRepo 	schedule.Repository
-	timeOptiosRepo  time_options.Repository
+	timeOptionsRepo  time_options.Repository
 	contextTimeout time.Duration
 }
-
-
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewTransportationUsecase(tr transportation.Repository,mr merchant.Usecase,s schedule.Repository,tmo time_options.Repository,timeout time.Duration) transportation.Usecase {
@@ -28,10 +26,32 @@ func NewTransportationUsecase(tr transportation.Repository,mr merchant.Usecase,s
 		transportationRepo:tr,
 		merchantUsecase:mr,
 		scheduleRepo:s,
-		timeOptiosRepo:tmo,
+		timeOptionsRepo:tmo,
 		contextTimeout: timeout,
 	}
 }
+
+func (t transportationUsecase) TimeOptions(ctx context.Context) ([]*models.TimeOptionDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+
+	list, err := t.timeOptionsRepo.TimeOptions(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	timeOptions := make([]*models.TimeOptionDto, len(list))
+	for i, item := range list {
+		timeOptions[i] = &models.TimeOptionDto{
+			Id:        item.Id,
+			StartTime: item.StartTime,
+			EndTime:   item.EndTime,
+		}
+	}
+
+	return timeOptions, nil
+}
+
 func (t transportationUsecase) CreateTransportation(c context.Context, newCommandTransportation models.NewCommandTransportation,token string) (*models.ResponseCreateExperience, error) {
 	ctx, cancel := context.WithTimeout(c, t.contextTimeout)
 	defer cancel()
@@ -120,11 +140,11 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 							ChildrenPrice: day.ChildrenPrice,
 							Currency:      currency,
 						}
-						departureTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.DepartureTime)
+						departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
 						if err != nil {
 							return nil,err
 						}
-						arrivalTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.ArrivalTime)
+						arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
 						if err != nil {
 							return nil,err
 						}
@@ -179,11 +199,11 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 						ChildrenPrice: day.ChildrenPrice,
 						Currency:      currency,
 					}
-					departureTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.DepartureTime)
+					departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
 					if err != nil {
 						return nil,err
 					}
-					arrivalTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.ArrivalTime)
+					arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
 					if err != nil {
 						return nil,err
 					}
@@ -318,11 +338,11 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 							ChildrenPrice: day.ChildrenPrice,
 							Currency:      currency,
 						}
-						departureTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.DepartureTime)
+						departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
 						if err != nil {
 							return nil,err
 						}
-						arrivalTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.ArrivalTime)
+						arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
 						if err != nil {
 							return nil,err
 						}
@@ -377,11 +397,11 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 						ChildrenPrice: day.ChildrenPrice,
 						Currency:      currency,
 					}
-					departureTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.DepartureTime)
+					departureTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.DepartureTime)
 					if err != nil {
 						return nil,err
 					}
-					arrivalTimeOption ,err := t.timeOptiosRepo.GetByTime(ctx,times.ArrivalTime)
+					arrivalTimeOption ,err := t.timeOptionsRepo.GetByTime(ctx,times.ArrivalTime)
 					if err != nil {
 						return nil,err
 					}

@@ -17,7 +17,6 @@ type transportationRepository struct {
 }
 
 
-
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
