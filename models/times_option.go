@@ -12,6 +12,6 @@ type TimesOption struct {
 	DeletedDate         *time.Time `json:"deleted_date"`
 	IsDeleted           int        `json:"is_deleted" validate:"required"`
 	IsActive            int        `json:"is_active" validate:"required"`
-	StartTime 			time.Time	`json:"start_time"`
-	EndTime 			time.Time	`json:"end_time"`
+	StartTime 			string	`json:"start_time"`
+	EndTime 			string	`json:"end_time"`
 }

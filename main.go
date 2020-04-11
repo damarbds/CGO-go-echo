@@ -94,6 +94,13 @@ import (
 	_facilityHttpHandler "github.com/service/facilities/delivery/http"
 	_facilityRepo "github.com/service/facilities/repository"
 	_facilityUcase "github.com/service/facilities/usecase"
+
+	_transportationHttpHandler "github.com/service/transportation/delivery/http"
+	_transportationRepo "github.com/service/transportation/repository"
+	_transportationUcase "github.com/service/transportation/usecase"
+
+	_schedulerRepo "github.com/service/schedule/repository"
+	_timeOptionsRepo "github.com/service/time_options/repository"
 )
 
 // func init() {
@@ -181,12 +188,14 @@ func main() {
 	notifRepo := _notifRepo.NewNotifRepository(dbConn)
 	facilityRepo := _facilityRepo.NewFacilityRepository(dbConn)
 	adminRepo := _adminRepo.NewadminRepository(dbConn)
-
+	transportationRepo := _transportationRepo.NewTransportationRepository(dbConn)
+	timeOptionsRepo := _timeOptionsRepo.NewTimeOptionsRepository(dbConn)
+	schedulerRepo := _schedulerRepo.NewScheduleRepository(dbConn)
 	timeoutContext := time.Duration(30) * time.Second
 
 	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
-	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, timeoutContext)
+	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, userRepo,timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
 	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
@@ -216,6 +225,7 @@ func main() {
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
+	transportationUcase := _transportationUcase.NewTransportationUsecase(transportationRepo,merchantUsecase,schedulerRepo,timeOptionsRepo,timeoutContext)
 
 	_adminHttpDeliver.NewadminHandler(e,adminUsecase)
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
@@ -236,6 +246,7 @@ func main() {
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
 	_notifHttpHandler.NewNotifHandler(e, notifUcase)
 	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
+	_transportationHttpHandler.NewtransportationHandler(e,transportationUcase)
 
 	log.Fatal(e.Start(":9090"))
 }

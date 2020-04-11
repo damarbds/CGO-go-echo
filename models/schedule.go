@@ -13,11 +13,19 @@ type Schedule struct {
 	IsDeleted          int        `json:"is_deleted" validate:"required"`
 	IsActive           int        `json:"is_active" validate:"required"`
 	TransId				string	`json:"trans_id"`
+	DepartureTime		string	`json:"departure_time"`
+	ArrivalTime			string	`json:"arrival_time"`
 	Day 				string		`json:"day"`
 	Month				string	`json:"month"`
 	Year				int 	`json:"year"`
-	Price 				float64	`json:"price"`
-	Currency 			int 	`json:"currency"`
-	DepartureTimeoptionId	int `json:"departure_timeoption_id"`
-	ArrivalTimeoptionId		int `json:"arrival_timeoption_id"`
+	Price 				string	`json:"price"`
+	//Currency 			int 	`json:"currency"`
+	DepartureTimeoptionId	*int `json:"departure_timeoption_id"`
+	ArrivalTimeoptionId		*int `json:"arrival_timeoption_id"`
+}
+
+type PriceObj struct {
+	AdultPrice	float64	`json:"adult_price"`
+	ChildrenPrice float64	`json:"children_price"`
+	Currency 	 int		`json:"currency"`
 }

@@ -18,11 +18,12 @@ type Review struct {
 }
 type ReviewDto struct {
 	Name 		 string		`json:"name"`
+	Image 		string		`json:"image"`
 	Desc         string     `json:"desc"`
 	Values       int        `json:"values"`
 }
 type ReviewDtoObject struct {
 	Name 	string 		`json:"name"`
-	UserId 	string		`json:"user_id"`
+	UserId 	string		`json:"userid"`
 	Desc 	string		`json:"desc"`
 }

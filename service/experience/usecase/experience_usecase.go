@@ -379,9 +379,9 @@ func (m experienceUsecase) FilterSearchExp(
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
 		qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
 	}
-	//if startDate != "" && endDate != "" {
-	//	query = query + ` join exp_availability_date ead on ead.exp_id = e.id`
-	//}
+	if startDate != "" && endDate != "" {
+		query = query + ` join exp_availabilities ead on ead.exp_id = e.id`
+	}
 	if activityType != "" {
 		query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
 		qCount = qCount + ` join filter_activity_types fat on fat.exp_id = e.id`
@@ -461,10 +461,47 @@ func (m experienceUsecase) FilterSearchExp(
 	}
 
 
-	//if startDate != "" && endDate != "" {
-	//
-	//	query = query + ` AND exp_availability_date like %` + s
-	//}
+	if startDate != "" && endDate != "" {
+		var startDates []string
+
+		layoutFormat := "2006-01-02"
+		start , errDateDob := time.Parse(layoutFormat,startDate)
+		if errDateDob != nil{
+			return nil,errDateDob
+		}
+		end , errDateDob := time.Parse(layoutFormat,endDate)
+		if errDateDob != nil{
+			return nil,errDateDob
+		}
+		startDates = append(startDates,start.Format("2006-01-02"))
+	datess :
+
+		start = start.AddDate(0,0,1)
+		startDates = append(startDates,start.Format("2006-01-02"))
+		if start == end {
+
+		}else {
+			startDates = append(startDates,start.String())
+			goto datess
+		}
+
+			for index, id := range startDates {
+				if index == 0 && index != (len(startDates)-1) {
+					query = query + ` AND (ead.exp_availability_date like '%` + id + `%' `
+				} else if index == 0 && index == (len(startDates)-1) {
+					query = query + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
+				} else if index == (len(startDates) - 1) {
+					query = query + ` OR ead.exp_availability_date like '%` + id + `%' ) `
+				} else {
+					query = query + ` OR ead.exp_availability_date like '%` + id + `%' `
+				}
+			}
+			//query = query + ` AND exp_availability_date like %` + s
+
+
+	}
+
+
 	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -1322,6 +1359,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		MinimumBookingDesc:   res.MinimumBookingDesc,
 		MinimumBookingAmount: res.MinimumBookingAmount,
 	}
+	countRating,err := m.reviewsRepo.CountRating(ctx,res.Id)
 	experiences := models.ExperienceDto{
 		Id:                      res.Id,
 		ExpTitle:                res.ExpTitle,
@@ -1344,6 +1382,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		ExpPhotos:               expPhotos,
 		Status:                  res.Status,
 		Rating:                  res.Rating,
+		CountRating:countRating,
 		ExpLocationLatitude:     res.ExpLocationLatitude,
 		ExpLocationLongitude:    res.ExpLocationLongitude,
 		ExpLocationName:         res.ExpLocationName,
