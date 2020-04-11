@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	//"fmt"
 	guuid "github.com/google/uuid"
 	"github.com/service/schedule"
 
@@ -47,4 +48,30 @@ func (s scheduleRepository) Insert(ctx context.Context, a models.Schedule) (*str
 
 	//a.Id = lastID
 	return &a.Id,nil
+}
+func (s scheduleRepository) DeleteByTransId(ctx context.Context, transId *string) error {
+	query := "DELETE FROM schedules WHERE trans_id = ?"
+
+	stmt, err := s.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, transId)
+	if err != nil {
+
+		return err
+	}
+
+	//rowsAfected, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if rowsAfected != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", rowsAfected)
+	//	return err
+	//}
+
+	return nil
 }

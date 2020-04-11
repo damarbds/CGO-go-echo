@@ -84,6 +84,16 @@ func (m *timeOptionsRepository) fetch(ctx context.Context, query string, args ..
 
 	return result, nil
 }
+func (t timeOptionsRepository) List(ctx context.Context) ([]*models.TimesOption, error) {
+	query := `SELECT * FROM times_options WHERE is_deleted = 0 AND is_active = 1`
+
+	list, err := t.fetch(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
 
 func (t timeOptionsRepository) GetByTime(ctx context.Context, time string) (*models.TimesOption, error) {
 	query := `SELECT * FROM times_options where ? >= start_time  AND  ? <= end_time `

@@ -15,9 +15,6 @@ const (
 type transportationRepository struct {
 	Conn *sql.DB
 }
-
-
-
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
@@ -52,14 +49,14 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	query := `UPDATE transportations SET modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , trans_name=?,harbors_source_id=?,harbors_dest_id=?,merchant_id=?,
 				trans_capacity=?,trans_title=?,trans_status=?,trans_images=?,return_trans_id=?,boat_details=?,transcoverphoto=?,
-				class=?`
+				class=? WHERE id=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil,err
 	}
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.TransName,a.HarborsSourceId,
 		a.HarborsDestId,a.MerchantId,a.TransCapacity,a.TransTitle,a.TransStatus,a.TransImages,a.ReturnTransId,
-		a.BoatDetails,a.Transcoverphoto,a.Class)
+		a.BoatDetails,a.Transcoverphoto,a.Class,a.Id)
 	if err != nil {
 		return nil,err
 	}

@@ -8,4 +8,6 @@ import (
 type Repository interface {
 	Insert(ctx context.Context,a models.TimesOption)(*int,error)
 	GetByTime(ctx context.Context,time string)(*models.TimesOption,error)
+
+	List(ctx context.Context) ([]*models.TimesOption, error)
 }

@@ -41,6 +41,7 @@ type NewCommandTransportation struct {
 	ReturnRoute		*RouteObj		`json:"return_route"`
 }
 type RouteObj struct {
+	Id 					string		`json:"id"`
 	HarborsIdFrom 		string		`json:"harbors_id_from"`
 	HarborsIdTo			string		`json:"harbors_id_to"`
 	Time 				[]TimeObj	`json:"time"`

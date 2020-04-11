@@ -26,6 +26,7 @@ func NewtransportationHandler(e *echo.Echo, us transportation.Usecase) {
 		transportationUsecase: us,
 	}
 	e.POST("service/transportation/create", handler.CreateTransportation)
+	e.GET("/service/transportation/time-options", handler.List)
 	//e.PUT("/transportations/:id", handler.Updatetransportation)
 	//e.GET("service/special-transportation", handler.GetAlltransportation)
 	//e.GET("service/special-transportation/:code", handler.GettransportationByCode)
@@ -65,6 +66,18 @@ func (a *transportationHandler) CreateTransportation(c echo.Context) error {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
 	return c.JSON(http.StatusOK, response)
+}
+func (t *transportationHandler) List(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := t.transportationUsecase.List(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 

@@ -32,6 +32,27 @@ func NewTransportationUsecase(tr transportation.Repository,mr merchant.Usecase,s
 		contextTimeout: timeout,
 	}
 }
+
+func (t transportationUsecase) List(ctx context.Context) ([]*models.TimeOptionDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+
+	list, err := t.timeOptiosRepo.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	timeOptions := make([]*models.TimeOptionDto, len(list))
+	for i, item := range list {
+		timeOptions[i] = &models.TimeOptionDto{
+			Id:        item.Id,
+			StartTime: item.StartTime,
+			EndTime:   item.EndTime,
+		}
+	}
+
+	return timeOptions, nil
+}
 func (t transportationUsecase) CreateTransportation(c context.Context, newCommandTransportation models.NewCommandTransportation,token string) (*models.ResponseCreateExperience, error) {
 	ctx, cancel := context.WithTimeout(c, t.contextTimeout)
 	defer cancel()
@@ -250,11 +271,11 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
 
 	transportation := models.Transportation{
-		Id:              guuid.New().String(),
-		CreatedBy:       currentUserMerchant.MerchantEmail,
+		Id:              newCommandTransportation.Id,
+		CreatedBy:       "",
 		CreatedDate:     time.Time{},
-		ModifiedBy:      nil,
-		ModifiedDate:    nil,
+		ModifiedBy:      &currentUserMerchant.MerchantEmail,
+		ModifiedDate:    &time.Time{},
 		DeletedBy:       nil,
 		DeletedDate:     nil,
 		IsDeleted:       0,
@@ -276,11 +297,11 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		harborsSourceReturnId:= newCommandTransportation.ReturnRoute.HarborsIdTo
 		transportationReturn := models.Transportation{
-			Id:              guuid.New().String(),
-			CreatedBy:       currentUserMerchant.MerchantEmail,
+			Id:              newCommandTransportation.ReturnRoute.Id,
+			CreatedBy:       "",
 			CreatedDate:     time.Time{},
-			ModifiedBy:      nil,
-			ModifiedDate:    nil,
+			ModifiedBy:      &currentUserMerchant.MerchantEmail,
+			ModifiedDate:    &time.Time{},
 			DeletedBy:       nil,
 			DeletedDate:     nil,
 			IsDeleted:       0,
@@ -298,11 +319,14 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 			Transcoverphoto: newCommandTransportation.Transcoverphoto,
 			Class:           newCommandTransportation.Class,
 		}
-		insertTransportationReturn ,err:= t.transportationRepo.Insert(ctx,transportationReturn)
+		insertTransportationReturn ,err:= t.transportationRepo.Update(ctx,transportationReturn)
 		if err != nil {
 			return nil,err
 		}
-
+		errorDelete := t.scheduleRepo.DeleteByTransId(ctx,insertTransportationReturn)
+		if errorDelete != nil {
+			return nil,errorDelete
+		}
 		for _,year := range newCommandTransportation.ReturnRoute.Schedule {
 			for _,month := range year.Month {
 				for _, day := range month.DayPrice {
@@ -357,9 +381,14 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		}
 		transportation.ReturnTransId = insertTransportationReturn
 	}
-	insertTransportation ,err:= t.transportationRepo.Insert(ctx,transportation)
+	insertTransportation ,err:= t.transportationRepo.Update(ctx,transportation)
 	if err != nil {
 		return nil,err
+	}
+
+	errorDelete := t.scheduleRepo.DeleteByTransId(ctx,insertTransportation)
+	if errorDelete != nil {
+		return nil,errorDelete
 	}
 
 	for _,year := range newCommandTransportation.DepartureRoute.Schedule {
