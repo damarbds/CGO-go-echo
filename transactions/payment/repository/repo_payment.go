@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	guuid "github.com/google/uuid"
 	"github.com/models"
-	"github.com/transaction/payment"
+	"github.com/transactions/payment"
 )
 
 type paymentRepository struct {

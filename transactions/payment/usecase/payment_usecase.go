@@ -7,7 +7,7 @@ import (
 	"github.com/auth/user"
 	"github.com/booking/booking_exp"
 	"github.com/models"
-	"github.com/transaction/payment"
+	"github.com/transactions/payment"
 )
 
 type paymentUsecase struct {

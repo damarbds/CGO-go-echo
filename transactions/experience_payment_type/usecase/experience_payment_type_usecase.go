@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"github.com/models"
-	"github.com/transaction/experience_payment_type"
+	"github.com/transactions/experience_payment_type"
 	"golang.org/x/net/context"
 	"time"
 )

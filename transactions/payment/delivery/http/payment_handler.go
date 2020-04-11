@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
-	"github.com/transaction/payment"
+	"github.com/transactions/payment"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 )

@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
-	pm "github.com/transaction/payment_methods"
+	pm "github.com/transactions/payment_methods"
 	"net/http"
 )
 

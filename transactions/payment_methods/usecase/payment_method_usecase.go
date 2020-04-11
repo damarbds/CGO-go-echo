@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/models"
-	pm "github.com/transaction/payment_methods"
+	pm "github.com/transactions/payment_methods"
 	"time"
 )
 
