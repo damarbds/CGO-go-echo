@@ -22,6 +22,18 @@ func NewTransactionUsecase(t transaction.Repository, timeout time.Duration) tran
 	}
 }
 
+func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTransaction, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+
+	total, err := t.transactionRepo.CountThisMonth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return total, nil
+}
+
 func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset int) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()

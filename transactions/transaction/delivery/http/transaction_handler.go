@@ -25,6 +25,28 @@ func NewTransactionHandler(e *echo.Echo, us transaction.Usecase) {
 	}
 	e.GET("/transaction/count-success", handler.CountSuccess)
 	e.GET("/transaction", handler.List)
+	e.GET("/transaction/count-this-month", handler.CountThisMonth)
+}
+
+func (t *transactionHandler) CountThisMonth(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := t.TransUsecase.CountThisMonth(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 func (t *transactionHandler) List(c echo.Context) error {

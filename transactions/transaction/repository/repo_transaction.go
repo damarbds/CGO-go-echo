@@ -18,6 +18,37 @@ func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
+func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.TotalTransaction, error) {
+	query := `
+	SELECT
+		count(CAST(created_date AS DATE)) as transaction_count,
+		SUM(total_price) as transaction_value_total
+	FROM
+		transactions
+	WHERE
+		is_deleted = 0
+		AND is_active = 1
+		AND status = 2
+		AND created_date BETWEEN date_add(CURRENT_DATE, interval - DAY(CURRENT_DATE) + 1 DAY)
+		AND CURRENT_DATE`
+
+	rows, err := t.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	total := new(models.TotalTransaction)
+	for rows.Next() {
+		err = rows.Scan(&total.TransactionCount, &total.TransactionValueTotal)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return total, nil
+}
+
 func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset int) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int

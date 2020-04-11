@@ -77,3 +77,8 @@ type TransactionWithPagination struct {
 	Data []*TransactionDto `json:"data"`
 	Meta *MetaPagination   `json:"meta"`
 }
+
+type TotalTransaction struct {
+	TransactionCount int `json:"transaction_count"`
+	TransactionValueTotal float64 `json:"transaction_value_total"`
+}
