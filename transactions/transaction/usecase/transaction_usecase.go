@@ -22,11 +22,11 @@ func NewTransactionUsecase(t transaction.Repository, timeout time.Duration) tran
 	}
 }
 
-func (t transactionUsecase) List(ctx context.Context, status string, page, limit, offset int) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset int) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 
-	list, err := t.transactionRepo.List(ctx, status, limit, offset)
+	list, err := t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -57,6 +57,7 @@ func (t transactionUsecase) List(ctx context.Context, status string, page, limit
 		transactions[i] = &models.TransactionDto{
 			TransactionId: item.TransactionId,
 			ExpId:         item.ExpId,
+			ExpTitle:      item.ExpTitle,
 			ExpType:       expType,
 			BookingExpId:  item.BookingExpId,
 			BookingCode:   item.BookingCode,
@@ -67,7 +68,7 @@ func (t transactionUsecase) List(ctx context.Context, status string, page, limit
 			Email:         item.Email,
 		}
 	}
-	totalRecords, _ := t.transactionRepo.Count(ctx, status)
+	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status)
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
 	prev := page
 	next := page

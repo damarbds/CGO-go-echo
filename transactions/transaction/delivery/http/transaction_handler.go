@@ -39,6 +39,9 @@ func (t *transactionHandler) List(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
 	qStatus := c.QueryParam("status")
+	qSearch := c.QueryParam("search")
+	startDate := c.QueryParam("startDate")
+	endDate := c.QueryParam("endDate")
 
 	var limit = 20
 	var page = 1
@@ -53,7 +56,7 @@ func (t *transactionHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := t.TransUsecase.List(ctx, qStatus, page, limit, offset)
+	result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
