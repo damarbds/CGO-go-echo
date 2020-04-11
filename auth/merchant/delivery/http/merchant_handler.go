@@ -105,7 +105,7 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 	//if err != nil {
 	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	//}
-	balance, _ := strconv.ParseFloat(c.FormValue("balance"),64)
+	balance, _ := strconv.ParseFloat(c.FormValue("balance"), 64)
 	merchantCommand := models.NewCommandMerchant{
 		Id:               c.FormValue("id"),
 		MerchantName:     c.FormValue("merchant_name"),
@@ -121,7 +121,7 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	error := a.MerchantUsecase.Create(ctx, &merchantCommand,"admin")
+	error := a.MerchantUsecase.Create(ctx, &merchantCommand, "admin")
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -135,7 +135,7 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 	//if err != nil {
 	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	//}
-	balance, _ := strconv.ParseFloat(c.FormValue("balance"),64)
+	balance, _ := strconv.ParseFloat(c.FormValue("balance"), 64)
 	merchantCommand := models.NewCommandMerchant{
 		Id:               c.FormValue("id"),
 		MerchantName:     c.FormValue("merchant_name"),
@@ -152,7 +152,7 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	err := a.MerchantUsecase.Update(ctx, &merchantCommand,"admin")
+	err := a.MerchantUsecase.Update(ctx, &merchantCommand, "admin")
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

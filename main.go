@@ -31,9 +31,9 @@ import (
 	_harborsRepo "github.com/service/harbors/repository"
 	_harborsUcase "github.com/service/harbors/usecase"
 
-	_expPaymentTypeHttpDeliver "github.com/transaction/experience_payment_type/delivery/http"
-	_expPaymentTypeRepo "github.com/transaction/experience_payment_type/repository"
-	_expPaymentTypeUcase "github.com/transaction/experience_payment_type/usecase"
+	_expPaymentTypeHttpDeliver "github.com/transactions/experience_payment_type/delivery/http"
+	_expPaymentTypeRepo "github.com/transactions/experience_payment_type/repository"
+	_expPaymentTypeUcase "github.com/transactions/experience_payment_type/usecase"
 
 	//"github.com/bxcodec/go-clean-arch/middleware"
 	_isHttpDeliver "github.com/auth/identityserver/delivery/http"
@@ -75,13 +75,13 @@ import (
 	_inspirationRepo "github.com/service/exp_inspiration/repository"
 	_typesRepo "github.com/service/exp_types/repository"
 
-	_paymentMethodHttpDeliver "github.com/transaction/payment_methods/delivery/http"
-	_paymentMethodRepo "github.com/transaction/payment_methods/repository"
-	_paymentMethodUcase "github.com/transaction/payment_methods/usecase"
+	_paymentMethodHttpDeliver "github.com/transactions/payment_methods/delivery/http"
+	_paymentMethodRepo "github.com/transactions/payment_methods/repository"
+	_paymentMethodUcase "github.com/transactions/payment_methods/usecase"
 
-	_paymentHttpDeliver "github.com/transaction/payment/delivery/http"
-	_paymentTrRepo "github.com/transaction/payment/repository"
-	_paymentUcase "github.com/transaction/payment/usecase"
+	_paymentHttpDeliver "github.com/transactions/payment/delivery/http"
+	_paymentTrRepo "github.com/transactions/payment/repository"
+	_paymentUcase "github.com/transactions/payment/usecase"
 
 	_wishlistHttpHandler "github.com/profile/wishlists/delivery/http"
 	_wishlistRepo "github.com/profile/wishlists/repository"
@@ -94,6 +94,14 @@ import (
 	_facilityHttpHandler "github.com/service/facilities/delivery/http"
 	_facilityRepo "github.com/service/facilities/repository"
 	_facilityUcase "github.com/service/facilities/usecase"
+
+	_transactionHttpHandler "github.com/transactions/transaction/delivery/http"
+	_transactionRepo "github.com/transactions/transaction/repository"
+	_transactionUcase "github.com/transactions/transaction/usecase"
+
+	_transHttpHandler "github.com/service/transportation/delivery/http"
+	_transRepo "github.com/service/transportation/repository"
+	_transUcase "github.com/service/transportation/usecase"
 )
 
 // func init() {
@@ -181,6 +189,8 @@ func main() {
 	notifRepo := _notifRepo.NewNotifRepository(dbConn)
 	facilityRepo := _facilityRepo.NewFacilityRepository(dbConn)
 	adminRepo := _adminRepo.NewadminRepository(dbConn)
+	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
+	transRepo := _transRepo.NewTransportationRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -193,7 +203,7 @@ func main() {
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
-	adminUsecase := _adminUcase.NewadminUsecase(adminRepo,isUsecase,timeoutContext)
+	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		experienceAddOnRepo,
 		expAvailabilityRepo,
@@ -216,8 +226,10 @@ func main() {
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
+	transactionUcase := _transactionUcase.NewTransactionUsecase(transactionRepo, timeoutContext)
+	transUcase := _transUcase.NewTransportationUsecase(transRepo, timeoutContext)
 
-	_adminHttpDeliver.NewadminHandler(e,adminUsecase)
+	_adminHttpDeliver.NewadminHandler(e, adminUsecase)
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
@@ -225,8 +237,8 @@ func main() {
 	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e, experienceAddOnUsecase)
 	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
-	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase,isUsecase)
-	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase,adminUsecase)
+	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase, isUsecase)
+	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
@@ -236,6 +248,8 @@ func main() {
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
 	_notifHttpHandler.NewNotifHandler(e, notifUcase)
 	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
+	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
+	_transHttpHandler.NewTransportationHandler(e, transUcase)
 
 	log.Fatal(e.Start(":9090"))
 }
