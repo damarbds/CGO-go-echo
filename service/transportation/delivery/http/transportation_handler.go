@@ -2,12 +2,13 @@ package http
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/service/transportation"
 	"github.com/sirupsen/logrus"
 	validator "gopkg.in/go-playground/validator.v9"
-	"net/http"
 )
 
 // ResponseError represent the reseponse error struct
@@ -26,12 +27,25 @@ func NewtransportationHandler(e *echo.Echo, us transportation.Usecase) {
 		transportationUsecase: us,
 	}
 	e.POST("service/transportation/create", handler.CreateTransportation)
-	e.GET("/service/transportation/time-options", handler.List)
+	e.GET("/service/transportation/time-options", handler.TimeOptions)
 	//e.PUT("/transportations/:id", handler.Updatetransportation)
 	//e.GET("service/special-transportation", handler.GetAlltransportation)
 	//e.GET("service/special-transportation/:code", handler.GettransportationByCode)
 	//e.DELETE("/transportations/:id", handler.Delete)
 }
+func (t *transportationHandler) TimeOptions(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := t.transportationUsecase.TimeOptions(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
+
 func isRequestValid(m *models.NewCommandTransportation) (bool, error) {
 	validate := validator.New()
 	err := validate.Struct(m)
@@ -60,7 +74,7 @@ func (a *transportationHandler) CreateTransportation(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	response,error := a.transportationUsecase.PublishTransportation(ctx,transporationsCommand,token)
+	response, error := a.transportationUsecase.PublishTransportation(ctx, transporationsCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -73,13 +87,12 @@ func (t *transportationHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := t.transportationUsecase.List(ctx)
+	result, err := t.transportationUsecase.TimeOptions(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, result)
 }
-
 
 func getStatusCode(err error) int {
 	if err == nil {

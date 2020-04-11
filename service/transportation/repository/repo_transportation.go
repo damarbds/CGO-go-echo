@@ -2,10 +2,11 @@ package repository
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/models"
 	"github.com/service/transportation"
 	"golang.org/x/net/context"
-	"time"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 type transportationRepository struct {
 	Conn *sql.DB
 }
-// NewpromoRepository will create an object that represent the article.Repository interface
+
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
 }
@@ -27,13 +28,13 @@ func (t transportationRepository) Insert(ctx context.Context, a models.Transport
 				class=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.TransName,a.HarborsSourceId,
-		a.HarborsDestId,a.MerchantId,a.TransCapacity,a.TransTitle,a.TransStatus,a.TransImages,a.ReturnTransId,
-		a.BoatDetails,a.Transcoverphoto,a.Class)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
+		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
+		a.BoatDetails, a.Transcoverphoto, a.Class)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -42,7 +43,7 @@ func (t transportationRepository) Insert(ctx context.Context, a models.Transport
 	//}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }
 
 func (t transportationRepository) Update(ctx context.Context, a models.Transportation) (*string, error) {
@@ -52,13 +53,13 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 				class=? WHERE id=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.TransName,a.HarborsSourceId,
-		a.HarborsDestId,a.MerchantId,a.TransCapacity,a.TransTitle,a.TransStatus,a.TransImages,a.ReturnTransId,
-		a.BoatDetails,a.Transcoverphoto,a.Class,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
+		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
+		a.BoatDetails, a.Transcoverphoto, a.Class, a.Id)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -67,5 +68,5 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	//}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }

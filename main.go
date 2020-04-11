@@ -196,6 +196,7 @@ func main() {
 	timeOptionsRepo := _timeOptionsRepo.NewTimeOptionsRepository(dbConn)
 	schedulerRepo := _schedulerRepo.NewScheduleRepository(dbConn)
 	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
+
 	timeoutContext := time.Duration(30) * time.Second
 
 	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)
