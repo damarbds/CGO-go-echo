@@ -46,17 +46,19 @@ type ConfirmPaymentIn struct {
 }
 
 type TransactionOut struct {
-	TransactionId string    `json:"transaction_id"`
-	ExpId         string    `json:"exp_id"`
-	ExpType       string    `json:"exp_type"`
-	ExpTitle      string    `json:"exp_title"`
-	BookingExpId  string    `json:"booking_exp_id"`
-	BookingCode   string    `json:"booking_code"`
-	BookingDate   time.Time `json:"booking_date"`
-	CheckInDate   time.Time `json:"check_in_date"`
-	BookedBy      string    `json:"booked_by"`
-	GuestDesc     string    `json:"guest_desc"`
-	Email         string    `json:"email"`
+	TransactionId     string    `json:"transaction_id"`
+	ExpId             string    `json:"exp_id"`
+	ExpType           string    `json:"exp_type"`
+	ExpTitle          string    `json:"exp_title"`
+	BookingExpId      string    `json:"booking_exp_id"`
+	BookingCode       string    `json:"booking_code"`
+	BookingDate       time.Time `json:"booking_date"`
+	CheckInDate       time.Time `json:"check_in_date"`
+	BookedBy          string    `json:"booked_by"`
+	GuestDesc         string    `json:"guest_desc"`
+	Email             string    `json:"email"`
+	TransactionStatus int       `json:"transaction_status"`
+	BookingStatus     int       `json:"booking_status"`
 }
 
 type TransactionDto struct {
@@ -71,6 +73,7 @@ type TransactionDto struct {
 	BookedBy      []BookedByObj `json:"booked_by"`
 	Guest         int           `json:"guest"`
 	Email         string        `json:"email"`
+	Status        string        `json:"status"`
 }
 
 type TransactionWithPagination struct {
@@ -79,6 +82,6 @@ type TransactionWithPagination struct {
 }
 
 type TotalTransaction struct {
-	TransactionCount int `json:"transaction_count"`
+	TransactionCount      int     `json:"transaction_count"`
 	TransactionValueTotal float64 `json:"transaction_value_total"`
 }

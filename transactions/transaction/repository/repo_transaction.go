@@ -65,7 +65,9 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		b.booking_date as check_in_date,
 		b.booked_by,
 		guest_desc,
-		b.booked_by_email as email
+		b.booked_by_email as email,
+		t.status as transaction_status,
+		b.status as booking_status
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
@@ -77,7 +79,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 
 	if search != "" {
 		keyword := `'%` + search + `%'`
-		query = query + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+		query = query + ` AND (LOWER(e.exp_title) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
 	}
 	if startDate != "" && endDate != "" {
 		query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
@@ -145,6 +147,8 @@ func (t transactionRepository) fetch(ctx context.Context, query string, args ...
 			&t.BookedBy,
 			&t.GuestDesc,
 			&t.Email,
+			&t.TransactionStatus,
+			&t.BookingStatus,
 		)
 
 		if err != nil {

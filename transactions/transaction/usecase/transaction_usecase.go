@@ -66,6 +66,19 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			}
 		}
 
+		var status string
+		if item.TransactionStatus == 0 {
+			status = "Pending"
+		} else if item.TransactionStatus == 1 {
+			status = "Waiting approval"
+		} else if item.TransactionStatus == 2 {
+			status = "Confirm"
+		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
+			status = "Failed"
+		} else if item.TransactionStatus == 1 && item.BookingStatus == 3 {
+			status = "Boarded"
+		}
+
 		transactions[i] = &models.TransactionDto{
 			TransactionId: item.TransactionId,
 			ExpId:         item.ExpId,
@@ -78,6 +91,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			BookedBy:      bookedBy,
 			Guest:         len(guestDesc),
 			Email:         item.Email,
+			Status:        status,
 		}
 	}
 	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status)
