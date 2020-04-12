@@ -1,6 +1,12 @@
 package http
 
 import (
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+
 	"github.com/auth/identityserver"
 	"github.com/labstack/echo"
 	"github.com/models"
@@ -8,11 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	validator "gopkg.in/go-playground/validator.v9"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strconv"
 )
 
 // ResponseError represent the reseponse error struct
@@ -23,18 +24,18 @@ type ResponseError struct {
 // experienceHandler  represent the httphandler for experience
 type experienceHandler struct {
 	experienceUsecase experience.Usecase
-	isUsecase identityserver.Usecase
+	isUsecase         identityserver.Usecase
 }
 
 // NewexperienceHandler will initialize the experiences/ resources endpoint
-func NewexperienceHandler(e *echo.Echo, us experience.Usecase,is identityserver.Usecase) {
+func NewexperienceHandler(e *echo.Echo, us experience.Usecase, is identityserver.Usecase) {
 	handler := &experienceHandler{
-		isUsecase:is,
+		isUsecase:         is,
 		experienceUsecase: us,
 	}
 	//e.POST("/experiences", handler.Createexperience)
 	//e.PUT("/experiences/:id", handler.Updateexperience)
-	e.POST("service/experience/upload", handler.UploadFile)
+	e.POST("media/upload", handler.UploadFile)
 	e.POST("service/experience/create", handler.CreateExperiences)
 	e.GET("service/experience/:id", handler.GetByID)
 	e.GET("service/experience/search", handler.SearchExp)
@@ -60,7 +61,7 @@ func isRequestValid(m *models.NewCommandExperience) (bool, error) {
 func (a *experienceHandler) UploadFile(c echo.Context) error {
 
 	filupload, image, _ := c.Request().FormFile("image")
-
+	folder := c.QueryParam("folder")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -83,7 +84,7 @@ func (a *experienceHandler) UploadFile(c echo.Context) error {
 	}
 
 	//w.Write([]byte("done"))
-	imagePat, error := a.isUsecase.UploadFileToBlob(fileLocation, "Experience")
+	imagePat, error := a.isUsecase.UploadFileToBlob(fileLocation, folder)
 	imagePath = imagePat
 	targetFile.Close()
 	errRemove := os.Remove(fileLocation)
@@ -117,7 +118,7 @@ func (a *experienceHandler) CreateExperiences(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	response,error := a.experienceUsecase.PublishExperience(ctx, experienceCommand,token)
+	response, error := a.experienceUsecase.PublishExperience(ctx, experienceCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -170,7 +171,6 @@ func (a *experienceHandler) GetExpCount(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, result)
 }
-
 
 func (a *experienceHandler) GetSuccessBookCount(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -271,8 +271,8 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx,cityID ,harborID,qtype,startDate,endDate,guest,trip,
-		bottomprice,upprice,sortby,page,limit,offset)
+	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, cityID, harborID, qtype, startDate, endDate, guest, trip,
+		bottomprice, upprice, sortby, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -287,16 +287,16 @@ func (a *experienceHandler) GetUserDiscoverPreference(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	if qpage != "" && qsize != ""{
-		page , _:= strconv.Atoi(qpage)
-		size , _:= strconv.Atoi(qsize)
-		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx,&page,&size)
+	if qpage != "" && qsize != "" {
+		page, _ := strconv.Atoi(qpage)
+		size, _ := strconv.Atoi(qsize)
+		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx, &page, &size)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
-	}else {
-		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx,nil,nil)
+	} else {
+		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx, nil, nil)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

@@ -357,7 +357,7 @@ func (m experienceUsecase) FilterSearchExp(
 	defer cancel()
 
 	var activityTypeArray []int
-	if activityType != "" {
+	if activityType != "" && activityType != "[]"{
 		if errUnmarshal := json.Unmarshal([]byte(activityType), &activityTypeArray); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
 		}
@@ -386,7 +386,7 @@ func (m experienceUsecase) FilterSearchExp(
 	if startDate != "" && endDate != "" {
 		query = query + ` join exp_availabilities ead on ead.exp_id = e.id`
 	}
-	if activityType != "" {
+	if len(activityTypeArray) != 0 {
 		query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
 		qCount = qCount + ` join filter_activity_types fat on fat.exp_id = e.id`
 	}

@@ -18,6 +18,7 @@ type Schedule struct {
 	Day 				string		`json:"day"`
 	Month				string	`json:"month"`
 	Year				int 	`json:"year"`
+	DepartureDate 		*time.Time `json:"departure_date"`
 	Price 				string	`json:"price"`
 	//Currency 			int 	`json:"currency"`
 	DepartureTimeoptionId	*int `json:"departure_timeoption_id"`
