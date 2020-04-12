@@ -370,9 +370,13 @@ func (m experienceUsecase) FilterSearchExp(
 		e.rating,
 		e.exp_location_latitude as latitude,
 		e.exp_location_longitude as longitude,
-		e.exp_cover_photo as cover_photo 
+		e.exp_cover_photo as cover_photo,
+		province_name AS province
 	from 
-		experiences e`
+		experiences e
+	JOIN harbors ha ON e.harbors_id = ha.id
+	JOIN cities ci ON ha.city_id = ci.id
+	JOIN provinces p ON ci.province_id = p.id`
 
 	qCount := `select COUNT(*) from experiences e`
 	if bottomPrice != "" && upPrice != "" {
@@ -397,9 +401,8 @@ func (m experienceUsecase) FilterSearchExp(
 	} else if harborsId != "" {
 		query = query + ` where e.harbors_id = '` + harborsId + `'`
 		qCount = qCount + ` where e.harbors_id = '` + harborsId + `'`
-	} else {
-		//return nil, models.ErrBadParamInput
 	}
+
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
 		query = query + ` AND e.exp_max_guest =` + strconv.Itoa(guests)
@@ -496,11 +499,7 @@ func (m experienceUsecase) FilterSearchExp(
 					query = query + ` OR ead.exp_availability_date like '%` + id + `%' `
 				}
 			}
-			//query = query + ` AND exp_availability_date like %` + s
-
-
 	}
-
 
 	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query, limit, offset)
 	if err != nil {
@@ -572,6 +571,7 @@ func (m experienceUsecase) FilterSearchExp(
 			PaymentType: priceItemType,
 			Longitude:   exp.Longitude,
 			Latitude:    exp.Latitude,
+			Province: exp.Province,
 			CoverPhoto:  coverPhoto,
 			ListPhoto:   listPhotos,
 		}

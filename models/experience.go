@@ -211,6 +211,7 @@ type ExpSearch struct {
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
 	CoverPhoto string  `json:"cover_photo"`
+	Province string `json:"province"`
 }
 
 type ExpSearchObject struct {
@@ -224,6 +225,7 @@ type ExpSearchObject struct {
 	PaymentType string         `json:"payment_type"`
 	Latitude    float64        `json:"latitude"`
 	Longitude   float64        `json:"longitude"`
+	Province string `json:"province"`
 	CoverPhoto  CoverPhotosObj `json:"cover_photo"`
 	ListPhoto   []ExpPhotosObj `json:"list_photo"`
 }
