@@ -442,6 +442,11 @@ func (m experienceUsecase) FilterSearchExp(
 
 		query = query + ` AND e.status =` + strconv.Itoa(status)
 		qCount = qCount + ` AND e.status =` + strconv.Itoa(status)
+
+		if qStatus == "inService" {
+			query = query + ` AND e.status IN (2,3,4)`
+			qCount = qCount + ` AND e.status IN (2,3,4)`
+		}
 	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)

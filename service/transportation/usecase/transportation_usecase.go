@@ -122,6 +122,11 @@ func (t transportationUsecase) FilterSearchTrans(
 
 		query = query + ` AND t.trans_status =` + strconv.Itoa(status)
 		queryCount = queryCount + ` AND t.trans_status =` + strconv.Itoa(status)
+
+		if qStatus == "inService" {
+			query = query + ` AND t.trans_status IN (2,3,4)`
+			queryCount = queryCount + ` AND t.trans_status IN (2,3,4)`
+		}
 	}
 	if search != "" {
 		keyword := `'%` + search + `%'`
