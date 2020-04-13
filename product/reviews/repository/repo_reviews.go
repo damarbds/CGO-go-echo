@@ -12,7 +12,6 @@ type reviewRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewReviewRepository will create an object that represent the exp_payment.Repository interface
 func NewReviewRepository(Conn *sql.DB) reviews.Repository {
 	return &reviewRepository{Conn}
@@ -46,8 +45,8 @@ func (m *reviewRepository) fetch(ctx context.Context, query string, args ...inte
 			&t.IsDeleted,
 			&t.IsActive,
 			&t.Values,
-			&t.Desc  ,
-			&t.ExpId  ,
+			&t.Desc,
+			&t.ExpId,
 		)
 
 		if err != nil {

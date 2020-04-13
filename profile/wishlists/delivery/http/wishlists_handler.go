@@ -87,8 +87,8 @@ func (w *wishlistHandler) Create(c echo.Context) error {
 	}
 
 	response := map[string]interface{}{
-		"status": http.StatusOK,
-		"message": "Create Wishlist Succeeds",
+		"status":      http.StatusOK,
+		"message":     "Create Wishlist Succeeds",
 		"wishlist_id": res,
 	}
 

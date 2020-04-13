@@ -98,7 +98,7 @@ type ExperienceDto struct {
 	ExpPhotos               []ExpPhotosObj        `json:"exp_photos"`
 	Status                  int                   `json:"status"`
 	Rating                  float64               `json:"rating"`
-	CountRating				int 					`json:"count_rating"`
+	CountRating             int                   `json:"count_rating"`
 	ExpLocationLatitude     float64               `json:"exp_location_latitude"`
 	ExpLocationLongitude    float64               `json:"exp_location_longitude"`
 	ExpLocationName         string                `json:"exp_location_name"`
@@ -211,7 +211,7 @@ type ExpSearch struct {
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
 	CoverPhoto string  `json:"cover_photo"`
-	Province string `json:"province"`
+	Province   string  `json:"province"`
 }
 
 type ExpSearchObject struct {
@@ -225,7 +225,7 @@ type ExpSearchObject struct {
 	PaymentType string         `json:"payment_type"`
 	Latitude    float64        `json:"latitude"`
 	Longitude   float64        `json:"longitude"`
-	Province string `json:"province"`
+	Province    string         `json:"province"`
 	CoverPhoto  CoverPhotosObj `json:"cover_photo"`
 	ListPhoto   []ExpPhotosObj `json:"list_photo"`
 }

@@ -13,9 +13,8 @@ type wishListRepository struct {
 	Conn *sql.DB
 }
 
-
 func NewWishListRepository(Conn *sql.DB) wishlists.Repository {
-	return &wishListRepository{Conn:Conn}
+	return &wishListRepository{Conn: Conn}
 }
 
 func (m *wishListRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.WishlistObj, error) {
@@ -77,7 +76,7 @@ func (w wishListRepository) List(ctx context.Context, userID string) ([]*models.
 func (m *wishListRepository) GetByUserAndExpId(ctx context.Context, userID string, expId string) ([]*models.WishlistObj, error) {
 	query := `SELECT * FROM wishlists WHERE user_id = ? AND exp_id = ? AND is_deleted = 0 AND is_active = 1`
 
-	res, err := m.fetch(ctx, query, userID,expId)
+	res, err := m.fetch(ctx, query, userID, expId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrNotFound
@@ -146,5 +145,3 @@ func (w wishListRepository) Insert(ctx context.Context, wl *models.Wishlist) (*m
 
 	return wl, nil
 }
-
-

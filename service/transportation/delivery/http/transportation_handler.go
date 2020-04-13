@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo"
 	"github.com/models"
@@ -28,11 +29,58 @@ func NewtransportationHandler(e *echo.Echo, us transportation.Usecase) {
 	}
 	e.POST("service/transportation/create", handler.CreateTransportation)
 	e.GET("/service/transportation/time-options", handler.TimeOptions)
+	e.GET("/service/transportation/filter-search", handler.FilterSearchTrans)
 	//e.PUT("/transportations/:id", handler.Updatetransportation)
 	//e.GET("service/special-transportation", handler.GetAlltransportation)
 	//e.GET("service/special-transportation/:code", handler.GettransportationByCode)
 	//e.DELETE("/transportations/:id", handler.Delete)
 }
+func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
+	harborSourceId := c.QueryParam("harbor_source_id")
+	harborDestId := c.QueryParam("harbor_dest_id")
+	guest := c.QueryParam("guest")
+	depDate := c.QueryParam("departure_date")
+	class := c.QueryParam("class")
+	isReturn := c.QueryParam("isReturn")
+	sortBy := c.QueryParam("sortBy")
+	depTimeOptions := c.QueryParam("dep_timeoption_id")
+	arrTimeOptions := c.QueryParam("arr_timeoption_id")
+
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
+
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	var isReturnTrip bool
+	if isReturn == "0" {
+		isReturnTrip = false
+	} else if isReturn == "1" {
+		isReturnTrip = true
+	}
+	guestTrip, _ := strconv.Atoi(guest)
+	depTimeOp, _ := strconv.Atoi(depTimeOptions)
+	arrTimeOp, _ := strconv.Atoi(arrTimeOptions)
+
+
+	results, err := t.transportationUsecase.FilterSearchTrans(ctx, sortBy, harborSourceId, harborDestId, depDate, class, isReturnTrip, depTimeOp, arrTimeOp, guestTrip, page, limit, offset)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, results)
+}
+
 func (t *transportationHandler) TimeOptions(c echo.Context) error {
 	ctx := c.Request().Context()
 	if ctx == nil {

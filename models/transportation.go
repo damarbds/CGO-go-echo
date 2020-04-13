@@ -72,3 +72,43 @@ type BoatDetailsObj struct {
 	Machine string  `json:"machine"`
 	Cabin   int     `json:"cabin"`
 }
+type TransSearch struct {
+	ScheduleId       string `json:"schedule_id"`
+	DepartureDate    string `json:"departure_date"`
+	DepartureTime    string `json:"departure_time"`
+	ArrivalTime      string `json:"arrival_time"`
+	Price            string `json:"price"`
+	TransId          string `json:"trans_id"`
+	TransName        string `json:"trans_name"`
+	TransImages      string `json:"trans_images"`
+	HarborSourceId   string `json:"harbor_source_id"`
+	HarborSourceName string `json:"harbor_source_name"`
+	HarborDestId     string `json:"harbor_dest_id"`
+	HarborDestName   string `json:"harbor_dest_name"`
+}
+type TransPriceObj struct {
+	AdultPrice    float64 `json:"adult_price"`
+	ChildrenPrice float64 `json:"children_price"`
+	Currency      int     `json:"currency"`
+	CurrencyLabel string  `json:"currency_label"`
+	PriceType     string  `json:"price_type"`
+}
+type TransportationSearchObj struct {
+	ScheduleId            string           `json:"schedule_id"`
+	DepartureDate         string           `json:"departure_date"`
+	DepartureTime         string           `json:"departure_time"`
+	ArrivalTime           string           `json:"arrival_time"`
+	TripDuration          string           `json:"trip_duration"`
+	TransportationId      string           `json:"transportation_id"`
+	TransportationName    string           `json:"transportation_name"`
+	TransportationImages  []CoverPhotosObj `json:"transportation_images"`
+	HarborSourceId        string           `json:"harbor_source_id"`
+	HarborSourceName      string           `json:"harbor_source_name"`
+	HarborDestinationId   string           `json:"harbor_destination_id"`
+	HarborDestinationName string           `json:"harbor_destination_name"`
+	Price                 TransPriceObj    `json:"price"`
+}
+type FilterSearchTransWithPagination struct {
+	Data []*TransportationSearchObj `json:"data"`
+	Meta *MetaPagination            `json:"meta"`
+}

@@ -40,8 +40,8 @@ func (m *expInspirationRepository) fetch(ctx context.Context, query string, args
 			&t.ExpTitle,
 			&t.ExpDesc,
 			&t.ExpCoverPhoto,
-			&t.ExpType ,
-			&t.Rating		,
+			&t.ExpType,
+			&t.Rating,
 		)
 
 		if err != nil {
@@ -82,4 +82,3 @@ func (e expInspirationRepository) GetExpInspirations(ctx context.Context) ([]*mo
 
 	return list, nil
 }
-

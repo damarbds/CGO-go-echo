@@ -66,7 +66,6 @@ func (m *userRepository) List(ctx context.Context, limit, offset int) ([]*models
 	return list, nil
 }
 
-
 func (m *userRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.User, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -193,7 +192,7 @@ func (m *userRepository) Insert(ctx context.Context, a *models.User) error {
 		return err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.UserEmail, a.FullName,
-		a.PhoneNumber, a.VerificationSendDate,a.VerificationCode,a.ProfilePictUrl,a.Address,a.Dob,a.Gender,a.IdType,a.IdNumber,a.ReferralCode,a.Points)
+		a.PhoneNumber, a.VerificationSendDate, a.VerificationCode, a.ProfilePictUrl, a.Address, a.Dob, a.Gender, a.IdType, a.IdNumber, a.ReferralCode, a.Points)
 	if err != nil {
 		return err
 	}
@@ -235,8 +234,8 @@ func (m *userRepository) Update(ctx context.Context, a *models.User) error {
 		return nil
 	}
 
-	res, err := stmt.ExecContext(ctx, a.ModifiedBy, time.Now(),  a.UserEmail, a.FullName,
-		a.PhoneNumber, a.VerificationSendDate,a.VerificationCode,a.ProfilePictUrl,a.Address,a.Dob,a.Gender,a.IdType,a.IdNumber,a.ReferralCode,a.Points, a.Id)
+	res, err := stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.UserEmail, a.FullName,
+		a.PhoneNumber, a.VerificationSendDate, a.VerificationCode, a.ProfilePictUrl, a.Address, a.Dob, a.Gender, a.IdType, a.IdNumber, a.ReferralCode, a.Points, a.Id)
 	if err != nil {
 		return err
 	}

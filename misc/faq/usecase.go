@@ -6,5 +6,5 @@ import (
 )
 
 type Usecase interface {
-	GetByType(context context.Context,types int)([]*models.FAQDto,error)
+	GetByType(context context.Context, types int) ([]*models.FAQDto, error)
 }

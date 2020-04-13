@@ -22,8 +22,6 @@ type experienceRepository struct {
 	Conn *sql.DB
 }
 
-
-
 // NewexperienceRepository will create an object that represent the article.Repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
@@ -614,7 +612,7 @@ func (m *experienceRepository) GetByExperienceEmail(ctx context.Context, experie
 	return
 }
 
-func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience) (*string,error) {
+func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience) (*string, error) {
 	a.Id = guuid.New().String()
 	query := `INSERT experiences SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , exp_title=?,exp_type=?,exp_trip_type=?,exp_booking_type=?,
@@ -624,15 +622,15 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpTitle,a.ExpType,a.ExpTripType,
-		a.ExpBookingType,a.ExpDesc,a.ExpMaxGuest,a.ExpPickupPlace,a.ExpPickupTime,a.ExpPickupPlaceLongitude,
-		a.ExpPickupPlaceLatitude,a.ExpPickupPlaceMapsName,a.ExpInternary,a.ExpFacilities,a.ExpInclusion,
-		a.ExpRules,a.Status,a.Rating,a.ExpLocationLatitude,a.ExpLocationLongitude,a.ExpLocationName,
-		a.ExpCoverPhoto,a.ExpDuration,a.MinimumBookingId,a.MerchantId,a.HarborsId)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpTitle, a.ExpType, a.ExpTripType,
+		a.ExpBookingType, a.ExpDesc, a.ExpMaxGuest, a.ExpPickupPlace, a.ExpPickupTime, a.ExpPickupPlaceLongitude,
+		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
+		a.ExpRules, a.Status, a.Rating, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
+		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -641,7 +639,7 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 	//}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }
 func (m *experienceRepository) Update(ctx context.Context, a *models.Experience) (*string, error) {
 	query := `UPDATE experiences SET modified_by=?, modified_date=? , deleted_by=? , 
@@ -653,15 +651,15 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 				WHERE id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.ExpTitle,a.ExpType,a.ExpTripType,
-		a.ExpBookingType,a.ExpDesc,a.ExpMaxGuest,a.ExpPickupPlace,a.ExpPickupTime,a.ExpPickupPlaceLongitude,
-		a.ExpPickupPlaceLatitude,a.ExpPickupPlaceMapsName,a.ExpInternary,a.ExpFacilities,a.ExpInclusion,
-		a.ExpRules,a.Status,a.ExpLocationLatitude,a.ExpLocationLongitude,a.ExpLocationName,
-		a.ExpCoverPhoto,a.ExpDuration,a.MinimumBookingId,a.MerchantId,a.HarborsId,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.ExpTitle, a.ExpType, a.ExpTripType,
+		a.ExpBookingType, a.ExpDesc, a.ExpMaxGuest, a.ExpPickupPlace, a.ExpPickupTime, a.ExpPickupPlaceLongitude,
+		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
+		a.ExpRules, a.Status, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
+		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.Id)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -670,7 +668,7 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 	//}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }
 
 func (m *experienceRepository) Delete(ctx context.Context, id string, deleted_by string) error {

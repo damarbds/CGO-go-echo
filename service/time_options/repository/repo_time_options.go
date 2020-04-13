@@ -17,7 +17,6 @@ type timeOptionsRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewTimeOptionsRepository(Conn *sql.DB) time_options.Repository {
 	return &timeOptionsRepository{Conn}
@@ -90,11 +89,11 @@ func (t timeOptionsRepository) Insert(ctx context.Context, a models.TimesOption)
 				deleted_date=? , is_deleted=? , is_active=? , start_time=?,end_time=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.StartTime,a.EndTime)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.StartTime, a.EndTime)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -103,13 +102,13 @@ func (t timeOptionsRepository) Insert(ctx context.Context, a models.TimesOption)
 	//}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }
 
 func (t timeOptionsRepository) GetByTime(ctx context.Context, time string) (*models.TimesOption, error) {
 	query := `SELECT * FROM times_options where ? >= start_time  AND  ? <= end_time `
 
-	res, err := t.fetch(ctx, query, time,time)
+	res, err := t.fetch(ctx, query, time, time)
 	if err != nil {
 		return nil, err
 	}

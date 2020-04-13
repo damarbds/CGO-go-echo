@@ -167,7 +167,7 @@ func (m *merchantRepository) Insert(ctx context.Context, a *models.Merchant) err
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx,a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.MerchantName, a.MerchantDesc,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.MerchantName, a.MerchantDesc,
 		a.MerchantEmail, a.Balance)
 	if err != nil {
 		return err
@@ -182,14 +182,14 @@ func (m *merchantRepository) Insert(ctx context.Context, a *models.Merchant) err
 	return nil
 }
 
-func (m *merchantRepository) Delete(ctx context.Context, id string,deleted_by string) error {
+func (m *merchantRepository) Delete(ctx context.Context, id string, deleted_by string) error {
 	query := `UPDATE  merchants SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(),1,0)
+	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0)
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func (m *merchantRepository) Update(ctx context.Context, ar *models.Merchant) er
 	}
 
 	res, err := stmt.ExecContext(ctx, ar.ModifiedBy, time.Now(), ar.MerchantName, ar.MerchantDesc, ar.MerchantEmail,
-								ar.Balance,ar.Id)
+		ar.Balance, ar.Id)
 	if err != nil {
 		return err
 	}

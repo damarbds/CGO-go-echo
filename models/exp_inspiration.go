@@ -21,21 +21,21 @@ type ExpInspiration struct {
 }
 
 type ExpInspirationObject struct {
-	ExpInspirationID string `json:"exp_inspiration_id"`
-	ExpId            string `json:"exp_id"`
-	ExpTitle         string `json:"exp_title"`
-	ExpDesc          string `json:"exp_desc"`
-	ExpCoverPhoto    string `json:"exp_cover_photo"`
-	ExpType 		 string	`json:"exp_type"`
-	Rating			float64	`json:"rating"`
+	ExpInspirationID string  `json:"exp_inspiration_id"`
+	ExpId            string  `json:"exp_id"`
+	ExpTitle         string  `json:"exp_title"`
+	ExpDesc          string  `json:"exp_desc"`
+	ExpCoverPhoto    string  `json:"exp_cover_photo"`
+	ExpType          string  `json:"exp_type"`
+	Rating           float64 `json:"rating"`
 }
 type ExpInspirationDto struct {
-	ExpInspirationID string `json:"exp_inspiration_id"`
-	ExpId            string `json:"exp_id"`
-	ExpTitle         string `json:"exp_title"`
-	ExpDesc          string `json:"exp_desc"`
-	ExpCoverPhoto    string `json:"exp_cover_photo"`
-	ExpType 		 []string	`json:"exp_type"`
-	Rating			float64	`json:"rating"`
-	CountRating 	int `json:"count_rating"`
+	ExpInspirationID string   `json:"exp_inspiration_id"`
+	ExpId            string   `json:"exp_id"`
+	ExpTitle         string   `json:"exp_title"`
+	ExpDesc          string   `json:"exp_desc"`
+	ExpCoverPhoto    string   `json:"exp_cover_photo"`
+	ExpType          []string `json:"exp_type"`
+	Rating           float64  `json:"rating"`
+	CountRating      int      `json:"count_rating"`
 }

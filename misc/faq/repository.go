@@ -6,5 +6,5 @@ import (
 )
 
 type Repository interface {
-	GetByType(context context.Context,types int)([]*models.FAQ,error)
+	GetByType(context context.Context, types int) ([]*models.FAQ, error)
 }

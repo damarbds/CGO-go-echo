@@ -15,8 +15,6 @@ type expPaymentRepository struct {
 	Conn *sql.DB
 }
 
-
-
 // NewExpPaymentRepository will create an object that represent the exp_payment.Repository interface
 func NewExpPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &expPaymentRepository{Conn}
@@ -86,7 +84,7 @@ func (e expPaymentRepository) GetByExpID(ctx context.Context, expID string) ([]*
 
 	return list, nil
 }
-func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePayment) (string,error) {
+func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePayment) (string, error) {
 	id := guuid.New()
 	a.Id = id.String()
 	query := `INSERT experience_payments SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
@@ -94,12 +92,12 @@ func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePa
 				price_item_type=?,currency=?,price=?,custom_price=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpPaymentTypeId,a.ExpId,
-		a.PriceItemType,a.Currency,a.Price,a.CustomPrice)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpPaymentTypeId, a.ExpId,
+		a.PriceItemType, a.Currency, a.Price, a.CustomPrice)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -108,7 +106,7 @@ func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePa
 	//}
 
 	//a.Id = lastID
-	return a.Id,nil
+	return a.Id, nil
 }
 func (m *expPaymentRepository) Update(ctx context.Context, a models.ExperiencePayment) error {
 	query := `UPDATE experience_payments SET modified_by=?, modified_date=? , 
@@ -119,8 +117,8 @@ func (m *expPaymentRepository) Update(ctx context.Context, a models.ExperiencePa
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, nil, nil, 0, 1, a.ExpPaymentTypeId,a.ExpId,
-		a.PriceItemType,a.Currency,a.Price,a.CustomPrice,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, nil, nil, 0, 1, a.ExpPaymentTypeId, a.ExpId,
+		a.PriceItemType, a.Currency, a.Price, a.CustomPrice, a.Id)
 	if err != nil {
 		return err
 	}
@@ -151,7 +149,7 @@ func (m *expPaymentRepository) Deletes(ctx context.Context, ids []string, expId 
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,expId)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
 	if err != nil {
 		return err
 	}

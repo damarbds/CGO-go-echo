@@ -38,7 +38,7 @@ func (m exp_photosUsecase) GetByExperienceID(c context.Context, id string) ([]mo
 			return nil, models.ErrInternalServerError
 		}
 		exp_photos := models.ExpPhotosDto{
-			Id:element.Id,
+			Id:             element.Id,
 			ExpPhotoFolder: element.ExpPhotoFolder,
 			ExpPhotoImage:  expPhotoImage,
 			ExpId:          element.ExpId,

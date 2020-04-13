@@ -8,9 +8,9 @@ import (
 type Usecase interface {
 	Update(ctx context.Context, ar *models.NewCommandMerchant, user string) error
 	Create(ctx context.Context, ar *models.NewCommandMerchant, user string) error
-	Login(ctx context.Context, ar *models.Login) (*models.GetToken,error)
-	ValidateTokenMerchant(ctx context.Context, token string) (*models.MerchantInfoDto,error)
-	GetMerchantInfo(ctx context.Context, token string) (*models.MerchantInfoDto,error)
+	Login(ctx context.Context, ar *models.Login) (*models.GetToken, error)
+	ValidateTokenMerchant(ctx context.Context, token string) (*models.MerchantInfoDto, error)
+	GetMerchantInfo(ctx context.Context, token string) (*models.MerchantInfoDto, error)
 	Count(ctx context.Context) (*models.Count, error)
 	List(ctx context.Context, page, limit, offset int) (*models.MerchantWithPagination, error)
 }

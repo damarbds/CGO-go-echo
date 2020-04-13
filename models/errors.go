@@ -16,28 +16,29 @@ var (
 
 	//ErrUsernamePassword = errors.New("Please Check again your email and Password")
 )
+
 //authValidation
 var (
 	ErrUsernamePassword = errors.New("Please Check again your email and Password")
-	ErrInvalidOTP = errors.New("Your OTP invalid Please check again ")
+	ErrInvalidOTP       = errors.New("Your OTP invalid Please check again ")
 )
-var	(
-ValidationExpId = errors.New("ExpId Required")
-// ErrNotFound will throw if the requested item is not exists
-ValidationStatus = errors.New("Status Required")
-// ErrConflict will throw if the current action already exists
-ValidationBookedBy = errors.New("BookedBy Required")
-// ErrConflict will throw if the current action already exists
-ValidationBookedDate = errors.New("Booking Date Required")
+var (
+	ValidationExpId = errors.New("ExpId Required")
+	// ErrNotFound will throw if the requested item is not exists
+	ValidationStatus = errors.New("Status Required")
+	// ErrConflict will throw if the current action already exists
+	ValidationBookedBy = errors.New("BookedBy Required")
+	// ErrConflict will throw if the current action already exists
+	ValidationBookedDate = errors.New("Booking Date Required")
 )
 
 var (
-	BookingTypeRequired = errors.New("BookingType Required")
-	BookingExpIdRequired = errors.New("BookingExpId Required")
-	PromoIdRequired = errors.New("PromoId Required")
+	BookingTypeRequired     = errors.New("BookingType Required")
+	BookingExpIdRequired    = errors.New("BookingExpId Required")
+	PromoIdRequired         = errors.New("PromoId Required")
 	PaymentMethodIdRequired = errors.New("PaymentMethodId Required")
-	ExpPaymentIdRequired = errors.New("ExpPaymentId Required")
-	StatusRequired = errors.New("Status Required")
-	TotalPriceRequired = errors.New("TotalPrice Required")
-	CurrencyRequired = errors.New("Currency Required")
+	ExpPaymentIdRequired    = errors.New("ExpPaymentId Required")
+	StatusRequired          = errors.New("Status Required")
+	TotalPriceRequired      = errors.New("TotalPrice Required")
+	CurrencyRequired        = errors.New("Currency Required")
 )

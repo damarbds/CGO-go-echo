@@ -34,11 +34,11 @@ func (p *paymentMethodHandler) GetPaymentMethods(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-		art, err := p.paymentMethodUsecase.Fetch(ctx)
-		if err != nil {
-			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-		}
-		return c.JSON(http.StatusOK, art)
+	art, err := p.paymentMethodUsecase.Fetch(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, art)
 }
 
 func getStatusCode(err error) int {
@@ -61,4 +61,3 @@ func getStatusCode(err error) int {
 		return http.StatusInternalServerError
 	}
 }
-

@@ -9,14 +9,14 @@ import (
 
 type paymentMethodUsecase struct {
 	paymentMethodRepo pm.Repository
-	contextTimeout time.Duration
+	contextTimeout    time.Duration
 }
 
 // NewPaymentMethodUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPaymentMethodUsecase(p pm.Repository,timeout time.Duration) pm.Usecase {
+func NewPaymentMethodUsecase(p pm.Repository, timeout time.Duration) pm.Usecase {
 	return &paymentMethodUsecase{
-		paymentMethodRepo:p,
-		contextTimeout: timeout,
+		paymentMethodRepo: p,
+		contextTimeout:    timeout,
 	}
 }
 

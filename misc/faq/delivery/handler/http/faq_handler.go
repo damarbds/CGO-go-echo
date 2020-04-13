@@ -44,6 +44,7 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 	}
 	return true, nil
 }
+
 //
 //// GetByID will get article by given id
 func (a *faqHandler) GetByType(c echo.Context) error {
@@ -53,12 +54,12 @@ func (a *faqHandler) GetByType(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-		types , _:= strconv.Atoi(qtypes)
-		art, err := a.faqUsecase.GetByType(ctx,types)
-		if err != nil {
-			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-		}
-		return c.JSON(http.StatusOK, art)
+	types, _ := strconv.Atoi(qtypes)
+	art, err := a.faqUsecase.GetByType(ctx, types)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, art)
 
 }
 func getStatusCode(err error) int {

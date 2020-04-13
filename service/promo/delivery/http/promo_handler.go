@@ -55,7 +55,7 @@ func (a *promoHandler) GetAllPromo(c echo.Context) error {
 	if qpage != "" && qsize != "" {
 		page, _ := strconv.Atoi(qpage)
 		size, _ := strconv.Atoi(qsize)
-		art, err := a.promoUsecase.Fetch(ctx, &page,&size)
+		art, err := a.promoUsecase.Fetch(ctx, &page, &size)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

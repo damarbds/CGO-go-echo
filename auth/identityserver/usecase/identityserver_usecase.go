@@ -20,20 +20,19 @@ import (
 )
 
 type identityserverUsecase struct {
-	baseUrl				string
-	basicAuth 			string
-	accountStorage		string
-	accessKeyStorage 	string
+	baseUrl          string
+	basicAuth        string
+	accountStorage   string
+	accessKeyStorage string
 }
 
-
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
-func NewidentityserverUsecase(baseUrl string,basicAuth string,accountStorage string,accessKeyStorage string) identityserver.Usecase {
+func NewidentityserverUsecase(baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
 	return &identityserverUsecase{
-		baseUrl: 			baseUrl,
-		basicAuth:			basicAuth,
-		accountStorage:		accountStorage,
-		accessKeyStorage:	accessKeyStorage,
+		baseUrl:          baseUrl,
+		basicAuth:        basicAuth,
+		accountStorage:   accountStorage,
+		accessKeyStorage: accessKeyStorage,
 	}
 }
 
@@ -54,7 +53,7 @@ func handleErrors(err error) {
 		log.Fatal(err)
 	}
 }
-func (m identityserverUsecase) UploadFileToBlob(image string,folder string) (string, error) {
+func (m identityserverUsecase) UploadFileToBlob(image string, folder string) (string, error) {
 	// From the Azure portal, get your storage account name and key and set environment variables.
 	accountName, accountKey := m.accountStorage, m.accessKeyStorage
 	if len(accountName) == 0 || len(accountKey) == 0 {
@@ -88,9 +87,9 @@ func (m identityserverUsecase) UploadFileToBlob(image string,folder string) (str
 	// Create a file to test the upload and download.
 	fmt.Printf("Creating a dummy file to test the upload and download\n")
 
-	data ,erread:= ioutil.ReadFile(image)
+	data, erread := ioutil.ReadFile(image)
 	if erread != nil {
-		return "",erread
+		return "", erread
 	}
 	fileName := randomString()
 	fileName = fileName + ".jpg"
@@ -156,20 +155,20 @@ func (m identityserverUsecase) UploadFileToBlob(image string,folder string) (str
 	file.Close()
 	os.Remove(fileName)
 	//os.Remove(image)
-	return blobURL.String(),err
+	return blobURL.String(), err
 }
 func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, error) {
 
-	req, err := http.NewRequest("POST", m.baseUrl + "/connect/userinfo", nil)
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/userinfo", nil)
 	//os.Exit(1)
-	req.Header.Set("Authorization", "Bearer " + token)
+	req.Header.Set("Authorization", "Bearer "+token)
 	if err != nil {
 		fmt.Println("Error : ", err.Error())
 		os.Exit(1)
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	client := &http.Client{Transport: tr}
@@ -196,23 +195,23 @@ func (m identityserverUsecase) GetToken(username string, password string) (*mode
 	param.Set("scope", "openid")
 	var payload = bytes.NewBufferString(param.Encode())
 
-	req, err := http.NewRequest("POST", m.baseUrl + "/connect/token", payload)
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/token", payload)
 	//os.Exit(1)
-	req.Header.Set("Authorization", "Basic " + m.basicAuth)
-	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Basic "+m.basicAuth)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		fmt.Println("Error : ", err.Error())
 		os.Exit(1)
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	client := &http.Client{Transport: tr}
 
 	resp, err := client.Do(req)
-	if err != nil  {
+	if err != nil {
 		fmt.Println("Error : ", err.Error())
 		os.Exit(1)
 	}
@@ -224,22 +223,21 @@ func (m identityserverUsecase) GetToken(username string, password string) (*mode
 	return &user, nil
 }
 
+func (m identityserverUsecase) UpdateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error) {
 
-func (m identityserverUsecase) UpdateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser,error) {
+	data, _ := json.Marshal(ar)
 
-	data, _:= json.Marshal(ar)
-
-	req, err := http.NewRequest("POST", m.baseUrl + "/connect/update-user", bytes.NewReader(data))
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/update-user", bytes.NewReader(data))
 	//os.Exit(1)
 	//req.Header.Set("Authorization", "Basic YWRtaW5AZ21haWwuY29tOmFkbWlu")
-	req.Header.Set("Content-Type","application/json")
+	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		fmt.Println("Error : ", err.Error())
 		os.Exit(1)
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	client := &http.Client{Transport: tr}
@@ -258,18 +256,18 @@ func (m identityserverUsecase) UpdateUser(ar *models.RegisterAndUpdateUser) (*mo
 }
 
 func (m identityserverUsecase) CreateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error) {
-	data, _:= json.Marshal(ar)
-	req, err := http.NewRequest("POST", m.baseUrl + "/connect/register", bytes.NewReader(data))
+	data, _ := json.Marshal(ar)
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/register", bytes.NewReader(data))
 	//os.Exit(1)
 	//req.Header.Set("Authorization", "Basic YWRtaW5AZ21haWwuY29tOmFkbWlu")
-	req.Header.Set("Content-Type","application/json")
+	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		fmt.Println("Error : ", err.Error())
 		os.Exit(1)
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	client := &http.Client{Transport: tr}
@@ -287,18 +285,18 @@ func (m identityserverUsecase) CreateUser(ar *models.RegisterAndUpdateUser) (*mo
 	return &user, nil
 }
 func (m identityserverUsecase) SendingEmail(r *models.SendingEmail) (*models.SendingEmail, error) {
-	data, _:= json.Marshal(r)
-	req, err := http.NewRequest("POST", m.baseUrl + "/connect/push-email", bytes.NewReader(data))
+	data, _ := json.Marshal(r)
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/push-email", bytes.NewReader(data))
 	//os.Exit(1)
 	//req.Header.Set("Authorization", "Basic YWRtaW5AZ21haWwuY29tOmFkbWlu")
-	req.Header.Set("Content-Type","application/json")
+	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		fmt.Println("Error : ", err.Error())
 		os.Exit(1)
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	client := &http.Client{Transport: tr}
@@ -317,18 +315,18 @@ func (m identityserverUsecase) SendingEmail(r *models.SendingEmail) (*models.Sen
 }
 
 func (m identityserverUsecase) VerifiedEmail(r *models.VerifiedEmail) (*models.VerifiedEmail, error) {
-	data, _:= json.Marshal(r)
-	req, err := http.NewRequest("POST", m.baseUrl + "/connect/verified-email", bytes.NewReader(data))
+	data, _ := json.Marshal(r)
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/verified-email", bytes.NewReader(data))
 	//os.Exit(1)
 	//req.Header.Set("Authorization", "Basic YWRtaW5AZ21haWwuY29tOmFkbWlu")
-	req.Header.Set("Content-Type","application/json")
+	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		fmt.Println("Error : ", err.Error())
 		os.Exit(1)
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify:true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	client := &http.Client{Transport: tr}

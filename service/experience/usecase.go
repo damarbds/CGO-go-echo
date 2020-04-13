@@ -6,9 +6,9 @@ import (
 )
 
 type Usecase interface {
-	PublishExperience(ctx context.Context,commandExperience models.NewCommandExperience,token string)(*models.ResponseCreateExperience,error)
-	CreateExperience(ctx context.Context,commandExperience models.NewCommandExperience,token string)(*models.ResponseCreateExperience,error)
-	UpdateExperience(ctx context.Context,commandExperience models.NewCommandExperience,token string)(*models.ResponseCreateExperience,error)
+	PublishExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
+	CreateExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
+	UpdateExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
 	GetByID(ctx context.Context, id string) (*models.ExperienceDto, error)
 	SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error)
 	FilterSearchExp(ctx context.Context, cityID string, harborsId string, expTypeId string, startDate string, endDate string, guest string, trip string, bottomPrice string, upPrice string, sortBy string, page, limit, offset int) (*models.FilterSearchWithPagination, error)

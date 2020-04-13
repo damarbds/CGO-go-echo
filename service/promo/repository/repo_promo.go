@@ -20,6 +20,7 @@ const (
 type promoRepository struct {
 	Conn *sql.DB
 }
+
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewpromoRepository(Conn *sql.DB) promo.Repository {
 	return &promoRepository{Conn}
@@ -82,16 +83,16 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string) ([]*models
 }
 
 func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int) ([]*models.Promo, error) {
-	if page != nil && size != nil{
+	if page != nil && size != nil {
 		query := `Select * FROM promos where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc LIMIT ? OFFSET ? `
 
-		res, err := m.fetch(ctx, query, size,page)
+		res, err := m.fetch(ctx, query, size, page)
 		if err != nil {
 			return nil, err
 		}
 		return res, err
 
-	}else {
+	} else {
 		query := `Select * FROM promos where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc`
 
 		res, err := m.fetch(ctx, query)
@@ -101,6 +102,7 @@ func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int) ([]*m
 		return res, err
 	}
 }
+
 // DecodeCursor will decode cursor from user for mysql
 func DecodeCursor(encodedTime string) (time.Time, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedTime)

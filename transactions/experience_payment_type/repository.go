@@ -6,5 +6,5 @@ import (
 )
 
 type Repostiory interface {
-	GetAll(ctx context.Context,page *int ,size *int)([]*models.ExperiencePaymentType,error)
+	GetAll(ctx context.Context, page *int, size *int) ([]*models.ExperiencePaymentType, error)
 }

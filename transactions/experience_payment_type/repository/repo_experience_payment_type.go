@@ -12,7 +12,6 @@ type experiencePaymentTypeRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewPaymentRepository will create an object that represent the article.Repository interface
 func NewExperiencePaymentTypeRepository(Conn *sql.DB) experience_payment_type.Repostiory {
 	return &experiencePaymentTypeRepository{Conn}
@@ -45,7 +44,7 @@ func (m *experiencePaymentTypeRepository) fetch(ctx context.Context, query strin
 			&t.DeletedDate,
 			&t.IsDeleted,
 			&t.IsActive,
-			&t.ExpPaymentTypeName ,
+			&t.ExpPaymentTypeName,
 			&t.ExpPaymentTypeDesc,
 		)
 
@@ -60,30 +59,30 @@ func (m *experiencePaymentTypeRepository) fetch(ctx context.Context, query strin
 }
 
 func (e experiencePaymentTypeRepository) GetAll(ctx context.Context, page *int, size *int) ([]*models.ExperiencePaymentType, error) {
-		//var res []*models.ExperiencePaymentType
-		if page != nil && size != nil{
+	//var res []*models.ExperiencePaymentType
+	if page != nil && size != nil {
 
-			query := `SELECT * from experience_payment_types 
+		query := `SELECT * from experience_payment_types 
 				WHERE is_deleted = 0  AND is_active = 1 
  				ORDER BY created_date desc LIMIT ? OFFSET ? `
 
-			res, err := e.fetch(ctx, query, size, page)
-			if err != nil {
-				return nil, err
-			}
-
-			return res, err
-		}else {
-			query := `SELECT * from experience_payment_types 
-				WHERE is_deleted = 0  AND is_active = 1 
- 				ORDER BY created_date desc LIMIT ? OFFSET ? `
-
-			res, err := e.fetch(ctx, query, size, page)
-			if err != nil {
-				return nil, err
-			}
-			return res, err
+		res, err := e.fetch(ctx, query, size, page)
+		if err != nil {
+			return nil, err
 		}
+
+		return res, err
+	} else {
+		query := `SELECT * from experience_payment_types 
+				WHERE is_deleted = 0  AND is_active = 1 
+ 				ORDER BY created_date desc LIMIT ? OFFSET ? `
+
+		res, err := e.fetch(ctx, query, size, page)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	}
 
 	return nil, nil
 }

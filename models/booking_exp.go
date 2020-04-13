@@ -141,12 +141,12 @@ type AccountDesc struct {
 	AccHolder string `json:"acc_holder"`
 }
 type BookedByObj struct {
-	Title       string `json:"title"`
-	FullName    string `json:"fullname"`
-	Email       string `json:"email"`
+	Title       string      `json:"title"`
+	FullName    string      `json:"fullname"`
+	Email       string      `json:"email"`
 	PhoneNumber interface{} `json:"phonenumber"`
-	IdType      string `json:"idtype"`
-	IdNumber    string `json:"idnumber"`
+	IdType      string      `json:"idtype"`
+	IdNumber    string      `json:"idnumber"`
 }
 type GuestDescObj struct {
 	FullName string `json:"fullname"`

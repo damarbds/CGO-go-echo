@@ -21,11 +21,11 @@ func NewharborsUsecase(a harbors.Repository, timeout time.Duration) harbors.Usec
 		contextTimeout: timeout,
 	}
 }
-func (m harborsUsecase) GetAllWithJoinCPC(c context.Context, page *int,size *int,search string) ([]*models.HarborsWCPCDto, error) {
+func (m harborsUsecase) GetAllWithJoinCPC(c context.Context, page *int, size *int, search string) ([]*models.HarborsWCPCDto, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	res, err := m.harborsRepo.GetAllWithJoinCPC(ctx, page,size,search)
+	res, err := m.harborsRepo.GetAllWithJoinCPC(ctx, page, size, search)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (m harborsUsecase) GetAllWithJoinCPC(c context.Context, page *int,size *int
 			HarborsLongitude: element.HarborsLongitude,
 			HarborsLatitude:  element.HarborsLatitude,
 			HarborsImage:     element.HarborsImage,
-			CityId:element.CityId,
+			CityId:           element.CityId,
 			City:             element.CityName,
 			Province:         element.ProvinceName,
 			Country:          element.CountryName,

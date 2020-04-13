@@ -49,7 +49,7 @@ func (a *adminHandler) Createadmin(c echo.Context) error {
 	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	//}
 	adminCommand := models.NewCommandAdmin{
-		Id:               c.FormValue("id"),
+		Id:       c.FormValue("id"),
 		Name:     c.FormValue("name"),
 		Email:    c.FormValue("email"),
 		Password: c.FormValue("password"),
@@ -61,7 +61,7 @@ func (a *adminHandler) Createadmin(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	error := a.adminUsecase.Create(ctx, &adminCommand,"admin")
+	error := a.adminUsecase.Create(ctx, &adminCommand, "admin")
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -76,9 +76,9 @@ func (a *adminHandler) Updateadmin(c echo.Context) error {
 	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	//}
 	adminCommand := models.NewCommandAdmin{
-		Id:               c.FormValue("id"),
+		Id:       c.FormValue("id"),
 		Name:     c.FormValue("name"),
-		Email:     c.FormValue("email"),
+		Email:    c.FormValue("email"),
 		Password: c.FormValue("password"),
 	}
 	if ok, err := isRequestValid(&adminCommand); !ok {
@@ -89,7 +89,7 @@ func (a *adminHandler) Updateadmin(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	err := a.adminUsecase.Update(ctx, &adminCommand,"admin")
+	err := a.adminUsecase.Update(ctx, &adminCommand, "admin")
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
