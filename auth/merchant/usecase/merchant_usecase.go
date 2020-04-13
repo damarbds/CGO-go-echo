@@ -2,11 +2,12 @@ package usecase
 
 import (
 	"context"
+	"math"
+	"time"
+
 	"github.com/auth/identityserver"
 	"github.com/service/experience"
 	"github.com/service/transportation"
-	"math"
-	"time"
 
 	"github.com/auth/merchant"
 	"github.com/models"
@@ -14,16 +15,18 @@ import (
 
 type merchantUsecase struct {
 	merchantRepo     merchant.Repository
-	expRepo experience.Repository
-	transRepo transportation.Repository
+	expRepo          experience.Repository
+	transRepo        transportation.Repository
 	identityServerUc identityserver.Usecase
 	contextTimeout   time.Duration
 }
 
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
-func NewmerchantUsecase(a merchant.Repository, is identityserver.Usecase, timeout time.Duration) merchant.Usecase {
+func NewmerchantUsecase(a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
 		merchantRepo:     a,
+		expRepo:          ex,
+		transRepo:        tr,
 		identityServerUc: is,
 		contextTimeout:   timeout,
 	}
