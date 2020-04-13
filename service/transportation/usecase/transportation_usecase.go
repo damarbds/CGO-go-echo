@@ -36,6 +36,8 @@ func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase,
 
 func (t transportationUsecase) FilterSearchTrans(
 	ctx context.Context,
+	isMerchant bool,
+	token,
 	search,
 	qStatus,
 	sortBy,
@@ -89,6 +91,20 @@ func (t transportationUsecase) FilterSearchTrans(
 	WHERE
 		s.is_deleted = 0
 		AND s.is_active = 1`
+
+	if isMerchant {
+		if token == "" {
+			return nil, models.ErrUnAuthorize
+		}
+
+		currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+
+		query = query + `AND t.merchant_id =` + currentMerchant.Id
+		queryCount = queryCount + `AND t.merchant_id =` + currentMerchant.Id
+	}
 
 	if qStatus != "" {
 		var status int

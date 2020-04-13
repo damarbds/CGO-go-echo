@@ -336,6 +336,8 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 
 func (m experienceUsecase) FilterSearchExp(
 	ctx context.Context,
+	isMerchant bool,
+	token,
 	qStatus,
 	cityID string,
 	harborsId string,
@@ -401,6 +403,20 @@ func (m experienceUsecase) FilterSearchExp(
 
 	query = query + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
 	qCount = qCount + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
+
+	if isMerchant {
+		if token == "" {
+			return nil, models.ErrUnAuthorize
+		}
+
+		currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+
+		query = query + `AND e.merchant_id =` + currentMerchant.Id
+		qCount = qCount + `AND e.merchant_id =` + currentMerchant.Id
+	}
 
 	if cityID != "" {
 		city_id, _ := strconv.Atoi(cityID)

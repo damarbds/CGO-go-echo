@@ -245,6 +245,11 @@ func (a *experienceHandler) GetByCategoryID(c echo.Context) error {
 }
 
 func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	isMerchant := c.QueryParam("isMerchant")
+
 	harborID := c.QueryParam("harbor_id")
 	cityID := c.QueryParam("city_id")
 	qtype := c.QueryParam("type")
@@ -272,7 +277,12 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
+	needMerchantAuth := false
+	if isMerchant != "" {
+		needMerchantAuth = true
+	}
+
+	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, needMerchantAuth, token, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
 		bottomprice, upprice, sortby, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
