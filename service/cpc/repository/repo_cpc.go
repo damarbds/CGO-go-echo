@@ -53,10 +53,10 @@ func (m *cpcRepository) fetchCity(ctx context.Context, query string, args ...int
 			&t.DeletedDate,
 			&t.IsDeleted,
 			&t.IsActive,
-			&t.CityName		,
+			&t.CityName,
 			&t.CityDesc,
 			&t.CityPhotos,
-			&t.ProvinceId			,
+			&t.ProvinceId,
 		)
 
 		if err != nil {
@@ -183,6 +183,7 @@ func (m *cpcRepository) GetProvinceByID(ctx context.Context, id int) (res *model
 
 	return
 }
+
 //func (m *cpcRepository) GetBycpcEmail(ctx context.Context, cpcEmail string) (res *models.cpc, err error) {
 //	query := `SELECT * FROM cpcs WHERE cpc_email = ?`
 //

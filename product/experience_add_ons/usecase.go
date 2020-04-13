@@ -6,5 +6,5 @@ import (
 )
 
 type Usecase interface {
-	GetByExpId(ctx context.Context,exp_id string) ([]*models.ExperienceAddOnDto, error)
+	GetByExpId(ctx context.Context, exp_id string) ([]*models.ExperienceAddOnDto, error)
 }

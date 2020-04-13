@@ -22,15 +22,15 @@ type ResponseError struct {
 type isHandler struct {
 	merchantUsecase merchant.Usecase
 	userUsecase     user.Usecase
-	adminUsecase 	admin.Usecase
+	adminUsecase    admin.Usecase
 }
 
 // NewisHandler will initialize the iss/ resources endpoint
-func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase,a admin.Usecase) {
+func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usecase) {
 	handler := &isHandler{
 		merchantUsecase: m,
 		userUsecase:     u,
-		adminUsecase:a,
+		adminUsecase:    a,
 	}
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
@@ -69,7 +69,7 @@ func (a *isHandler) Login(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		responseToken = token
-	}else if isLogin.Type == "admin" {
+	} else if isLogin.Type == "admin" {
 
 		token, err := a.adminUsecase.Login(ctx, &isLogin)
 
@@ -95,7 +95,7 @@ func (a *isHandler) VerifiedEmail(c echo.Context) error {
 	typeUser := c.QueryParam("type")
 	otpCode := c.QueryParam("otp")
 	if typeUser == "user" {
-		response, err := a.userUsecase.VerifiedEmail(ctx, token,otpCode)
+		response, err := a.userUsecase.VerifiedEmail(ctx, token, otpCode)
 
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
@@ -103,7 +103,7 @@ func (a *isHandler) VerifiedEmail(c echo.Context) error {
 
 		return c.JSON(http.StatusOK, response)
 	} else if typeUser == "merchant" {
-		return c.JSON(http.StatusNotFound,"Not Implemented")
+		return c.JSON(http.StatusNotFound, "Not Implemented")
 	} else {
 		return c.JSON(http.StatusBadRequest, "Bad Request")
 	}
@@ -135,7 +135,7 @@ func (a *isHandler) GetInfo(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, response)
-	}else if typeUser == "admin" {
+	} else if typeUser == "admin" {
 		response, err := a.adminUsecase.GetAdminInfo(ctx, token)
 
 		if err != nil {

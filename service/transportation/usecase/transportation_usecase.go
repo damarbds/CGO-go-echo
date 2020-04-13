@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"encoding/json"
+	"math"
+	"sort"
+	"strconv"
 	"time"
 
 	"github.com/auth/merchant"
@@ -30,6 +33,187 @@ func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase,
 		timeOptionsRepo:    tmo,
 		contextTimeout:     timeout,
 	}
+}
+
+func (t transportationUsecase) FilterSearchTrans(
+	ctx context.Context,
+	sortBy,
+	harborSourceId,
+	harborDestId,
+	depDate,
+	class string,
+	isReturn bool,
+	depTimeOptions,
+	arrTimeOptions,
+	guest,
+	page,
+	limit,
+	offset int,
+) (*models.FilterSearchTransWithPagination, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+
+	query := `
+	SELECT
+		s.id as schedule_id,
+		s.departure_date,
+		s.departure_time,
+		s.arrival_time,
+		s.price,
+		s.trans_id,
+		t.trans_name,
+		t.trans_images,
+		h.id as harbor_source_id,
+		h.harbors_name as harbor_source_name,
+		hdest.id as harbor_dest_id,
+		hdest.harbors_name as harbor_dest_name
+	FROM
+		schedules s
+		JOIN transportations t ON s.trans_id = t.id
+		JOIN harbors h ON t.harbors_source_id = h.id
+		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+	WHERE
+		s.is_deleted = 0
+		AND s.is_active = 1`
+
+	queryCount := `
+	SELECT
+		COUNT(*)
+	FROM
+		schedules s
+		JOIN transportations t ON s.trans_id = t.id
+		JOIN harbors h ON t.harbors_source_id = h.id
+		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+	WHERE
+		s.is_deleted = 0
+		AND s.is_active = 1`
+
+	if harborSourceId != "" {
+		query = query + ` AND t.harbors_source_id =` + harborSourceId
+		queryCount = queryCount + ` AND t.harbors_source_id =` + harborSourceId
+		if isReturn {
+			query = query + ` AND t.harbors_source_id =` + harborDestId
+			queryCount = queryCount + ` AND t.harbors_source_id =` + harborDestId
+		}
+	}
+	if harborDestId != "" {
+		query = query + ` AND t.harbors_dest_id =` + harborDestId
+		queryCount = queryCount + ` AND t.harbors_dest_id =` + harborDestId
+		if isReturn {
+			query = query + ` AND t.harbors_dest_id =` + harborSourceId
+			queryCount = queryCount + ` AND t.harbors_dest_id =` + harborSourceId
+		}
+	}
+	if guest != 0 {
+		query = query + ` AND t.harbors_dest_id =` + strconv.Itoa(guest)
+		queryCount = queryCount + ` AND t.harbors_dest_id =` + strconv.Itoa(guest)
+	}
+	if depDate != "" {
+		query = query + ` AND s.departure_date =` + depDate
+		queryCount = queryCount + ` AND s.departure_date =` + depDate
+	}
+	if class != "" {
+		query = query + ` AND t.class =` + class
+		queryCount = queryCount + ` AND t.class =` + class
+	}
+	if depTimeOptions != 0 {
+		query = query + ` AND s.departure_timeoption_id =` + strconv.Itoa(depTimeOptions)
+		queryCount = queryCount + ` AND s.departure_timeoption_id =` + strconv.Itoa(depTimeOptions)
+	}
+	if arrTimeOptions != 0 {
+		query = query + ` AND s.departure_timeoption_id =` + strconv.Itoa(arrTimeOptions)
+		queryCount = queryCount + ` AND s.departure_timeoption_id =` + strconv.Itoa(arrTimeOptions)
+	}
+
+	transList, err := t.transportationRepo.FilterSearch(ctx, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	trans := make([]*models.TransportationSearchObj, len(transList))
+	for i, t := range transList {
+		var transImages []models.CoverPhotosObj
+		if errUnmarshal := json.Unmarshal([]byte(t.TransImages), &transImages); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+		var transPrice models.TransPriceObj
+		if errUnmarshal := json.Unmarshal([]byte(t.Price), &transPrice); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+		transPrice.PriceType = "pax"
+		if transPrice.Currency == 1 {
+			transPrice.CurrencyLabel = "USD"
+		} else {
+			transPrice.CurrencyLabel = "IDR"
+		}
+
+		departureTime, _ := time.Parse("15:04:05", t.DepartureTime)
+		arrivalTime, _ := time.Parse("15:04:05", t.ArrivalTime)
+
+		tripHour := arrivalTime.Hour() - departureTime.Hour()
+		tripMinute := arrivalTime.Minute() - departureTime.Minute()
+		tripDuration := strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+
+		trans[i] = &models.TransportationSearchObj{
+			ScheduleId:            t.ScheduleId,
+			DepartureDate:         t.DepartureDate,
+			DepartureTime:         t.DepartureTime,
+			ArrivalTime:           t.ArrivalTime,
+			TripDuration:          tripDuration,
+			TransportationId:      t.TransId,
+			TransportationName:    t.TransName,
+			TransportationImages:  transImages,
+			HarborSourceId:        t.HarborSourceId,
+			HarborSourceName:      t.HarborSourceName,
+			HarborDestinationId:   t.HarborDestId,
+			HarborDestinationName: t.HarborDestName,
+			Price:                 transPrice,
+		}
+	}
+	if sortBy != "" {
+		if sortBy == "priceup" {
+			sort.SliceStable(trans, func(i, j int) bool {
+				return trans[i].Price.AdultPrice > trans[j].Price.AdultPrice
+			})
+			sort.SliceStable(trans, func(i, j int) bool {
+				return trans[i].Price.ChildrenPrice > trans[j].Price.ChildrenPrice
+			})
+		} else if sortBy == "pricedown" {
+			sort.SliceStable(trans, func(i, j int) bool {
+				return trans[i].Price.AdultPrice < trans[j].Price.AdultPrice
+			})
+			sort.SliceStable(trans, func(i, j int) bool {
+				return trans[i].Price.ChildrenPrice < trans[j].Price.ChildrenPrice
+			})
+		}
+	}
+	totalRecords, _ := t.transportationRepo.CountFilterSearch(ctx, queryCount)
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
+
+	if page != totalPage {
+		next = page + 1
+	}
+
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(trans),
+	}
+
+	response := &models.FilterSearchTransWithPagination{
+		Data: trans,
+		Meta: meta,
+	}
+
+	return response, nil
 }
 
 func (t transportationUsecase) TimeOptions(ctx context.Context) ([]*models.TimeOptionDto, error) {
@@ -166,7 +350,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 							Day:                   day.Day,
 							Month:                 month.Month,
 							Year:                  year.Year,
-							DepartureDate: day.DepartureDate,
+							DepartureDate:         day.DepartureDate,
 							Price:                 string(price),
 							DepartureTimeoptionId: &departureTimeOption.Id,
 							ArrivalTimeoptionId:   &arrivalTimeOption.Id,
@@ -226,7 +410,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 						Day:                   day.Day,
 						Month:                 month.Month,
 						Year:                  year.Year,
-						DepartureDate: day.DepartureDate,
+						DepartureDate:         day.DepartureDate,
 						Price:                 string(price),
 						DepartureTimeoptionId: &departureTimeOption.Id,
 						ArrivalTimeoptionId:   &arrivalTimeOption.Id,
@@ -369,7 +553,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 							Day:                   day.Day,
 							Month:                 month.Month,
 							Year:                  year.Year,
-							DepartureDate: day.DepartureDate,
+							DepartureDate:         day.DepartureDate,
 							Price:                 string(price),
 							DepartureTimeoptionId: &departureTimeOption.Id,
 							ArrivalTimeoptionId:   &arrivalTimeOption.Id,
@@ -434,7 +618,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 						Day:                   day.Day,
 						Month:                 month.Month,
 						Year:                  year.Year,
-						DepartureDate: day.DepartureDate,
+						DepartureDate:         day.DepartureDate,
 						Price:                 string(price),
 						DepartureTimeoptionId: &departureTimeOption.Id,
 						ArrivalTimeoptionId:   &arrivalTimeOption.Id,

@@ -14,8 +14,6 @@ type exp_availabilityRepository struct {
 	Conn *sql.DB
 }
 
-
-
 // NewExpexp_availabilityRepository will create an object that represent the exp_exp_availability.Repository interface
 func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
 	return &exp_availabilityRepository{Conn}
@@ -47,10 +45,10 @@ func (m *exp_availabilityRepository) fetch(ctx context.Context, query string, ar
 			&t.DeletedDate,
 			&t.IsDeleted,
 			&t.IsActive,
-			&t.ExpAvailabilityMonth	,
-			&t.ExpAvailabilityDate		,
-			&t.ExpAvailabilityYear	 ,
-			&t.ExpId				,
+			&t.ExpAvailabilityMonth,
+			&t.ExpAvailabilityDate,
+			&t.ExpAvailabilityYear,
+			&t.ExpId,
 		)
 
 		if err != nil {
@@ -75,7 +73,7 @@ func (e exp_availabilityRepository) GetByExpId(ctx context.Context, expId string
 
 	return list, nil
 }
-func (m *exp_availabilityRepository) Insert(ctx context.Context, a models.ExpAvailability) (string,error) {
+func (m *exp_availabilityRepository) Insert(ctx context.Context, a models.ExpAvailability) (string, error) {
 	id := guuid.New()
 	a.Id = id.String()
 	query := `INSERT exp_availabilities SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
@@ -83,12 +81,12 @@ func (m *exp_availabilityRepository) Insert(ctx context.Context, a models.ExpAva
 				exp_availability_date=?,exp_availability_year=?,exp_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpAvailabilityMonth,
-		a.ExpAvailabilityDate,a.ExpAvailabilityYear,a.ExpId)
+		a.ExpAvailabilityDate, a.ExpAvailabilityYear, a.ExpId)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -97,7 +95,7 @@ func (m *exp_availabilityRepository) Insert(ctx context.Context, a models.ExpAva
 	//}
 
 	//a.Id = lastID
-	return a.Id,nil
+	return a.Id, nil
 }
 func (m *exp_availabilityRepository) Update(ctx context.Context, a models.ExpAvailability) error {
 	query := `UPDATE exp_availabilities SET modified_by=?, modified_date=? , 
@@ -109,7 +107,7 @@ func (m *exp_availabilityRepository) Update(ctx context.Context, a models.ExpAva
 		return err
 	}
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.ExpAvailabilityMonth,
-		a.ExpAvailabilityDate,a.ExpAvailabilityYear,a.ExpId,a.Id)
+		a.ExpAvailabilityDate, a.ExpAvailabilityYear, a.ExpId, a.Id)
 	if err != nil {
 		return err
 	}
@@ -140,7 +138,7 @@ func (m *exp_availabilityRepository) Deletes(ctx context.Context, ids []string, 
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,expId)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
 	if err != nil {
 		return err
 	}

@@ -54,8 +54,8 @@ func (m *exp_photosRepository) fetch(ctx context.Context, query string, args ...
 			&t.IsDeleted,
 			&t.IsActive,
 			&t.ExpPhotoFolder,
-			&t.ExpPhotoImage ,
-			&t.ExpId	,
+			&t.ExpPhotoImage,
+			&t.ExpId,
 		)
 
 		if err != nil {
@@ -104,7 +104,7 @@ func (m *exp_photosRepository) GetByID(ctx context.Context, id string) (res *mod
 
 	return
 }
-func (m *exp_photosRepository) GetByExperienceID(ctx context.Context, id string) (res[] *models.ExpPhotos, err error) {
+func (m *exp_photosRepository) GetByExperienceID(ctx context.Context, id string) (res []*models.ExpPhotos, err error) {
 	query := `SELECT * FROM exp_photos WHERE exp_id = ? AND is_deleted = 0 AND is_active = 1`
 
 	list, err := m.fetch(ctx, query, id)
@@ -120,7 +120,7 @@ func (m *exp_photosRepository) GetByExperienceID(ctx context.Context, id string)
 	return
 }
 
-func (m *exp_photosRepository) Insert(ctx context.Context, a *models.ExpPhotos) (*string,error) {
+func (m *exp_photosRepository) Insert(ctx context.Context, a *models.ExpPhotos) (*string, error) {
 	id := guuid.New()
 	a.Id = id.String()
 	query := `INSERT exp_photos SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
@@ -128,12 +128,12 @@ func (m *exp_photosRepository) Insert(ctx context.Context, a *models.ExpPhotos) 
 				exp_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpPhotoFolder,
-		a.ExpPhotoImage,a.ExpId)
+		a.ExpPhotoImage, a.ExpId)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -142,20 +142,20 @@ func (m *exp_photosRepository) Insert(ctx context.Context, a *models.ExpPhotos) 
 	//}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }
-func (m *exp_photosRepository) Update(ctx context.Context, a *models.ExpPhotos) (*string,error) {
+func (m *exp_photosRepository) Update(ctx context.Context, a *models.ExpPhotos) (*string, error) {
 	query := `UPDATE exp_photos SET modified_by=?, modified_date=? , 
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_photo_folder=?,exp_photo_image=?,
 				exp_id=? WHERE id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.ExpPhotoFolder,
-		a.ExpPhotoImage,a.ExpId,a.Id)
+		a.ExpPhotoImage, a.ExpId, a.Id)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -164,9 +164,9 @@ func (m *exp_photosRepository) Update(ctx context.Context, a *models.ExpPhotos) 
 	//}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }
-func (m *exp_photosRepository) Deletes(ctx context.Context, ids []string,expId string,deletedBy string) error {
+func (m *exp_photosRepository) Deletes(ctx context.Context, ids []string, expId string, deletedBy string) error {
 	query := `UPDATE  exp_photos SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
 	for index, id := range ids {
 		if index == 0 && index != (len(ids)-1) {
@@ -184,7 +184,7 @@ func (m *exp_photosRepository) Deletes(ctx context.Context, ids []string,expId s
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,expId)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
 	if err != nil {
 		return err
 	}

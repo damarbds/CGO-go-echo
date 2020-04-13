@@ -10,27 +10,27 @@ import (
 
 func main() {
 	db, err := gorm.Open("mysql", "AdminCgo@api-blog-cgo-mysqldbserver:Standar123.@(api-blog-cgo-mysqldbserver.mysql.database.azure.com)/cgo_indonesia?charset=utf8&parseTime=True&loc=Local")
-	if err != nil{
+	if err != nil {
 		fmt.Println(err)
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
 	user := model.Schedule{}
-	error := db.Model(&user).AddForeignKey("departure_timeoption_id","times_options(id)","RESTRICT", "RESTRICT")
-	if error != nil{
+	error := db.Model(&user).AddForeignKey("departure_timeoption_id", "times_options(id)", "RESTRICT", "RESTRICT")
+	if error != nil {
 		migration := model.MigrationHistory{
-			DescMigration:"Add_foregn_key_departure_time_option_Schedule",
-			Date:  time.Now(),
+			DescMigration: "Add_foregn_key_departure_time_option_Schedule",
+			Date:          time.Now(),
 		}
 
 		db.Create(&migration)
 	}
 	transportationdestid := model.Schedule{}
-	errortransportationdestid := db.AutoMigrate(&transportationdestid).AddForeignKey("arrival_timeoption_id","times_options(id)","RESTRICT", "RESTRICT")
-	if errortransportationdestid != nil{
+	errortransportationdestid := db.AutoMigrate(&transportationdestid).AddForeignKey("arrival_timeoption_id", "times_options(id)", "RESTRICT", "RESTRICT")
+	if errortransportationdestid != nil {
 		migration := model.MigrationHistory{
-			DescMigration:"Add_foregn_key_arrival_time_option_Schedule",
-			Date:  time.Now(),
+			DescMigration: "Add_foregn_key_arrival_time_option_Schedule",
+			Date:          time.Now(),
 		}
 
 		db.Create(&migration)

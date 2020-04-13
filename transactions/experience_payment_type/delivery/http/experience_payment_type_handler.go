@@ -25,6 +25,7 @@ func NewexpPaymentTypeHandlerHandler(e *echo.Echo, pus experience_payment_type.U
 	}
 	e.GET("/transaction/payments-types", handler.GetAllPaymentTypes)
 }
+
 // GetByID will get article by given id
 func (a *expPaymentTypeHandler) GetAllPaymentTypes(c echo.Context) error {
 	qpage := c.QueryParam("page")
@@ -34,16 +35,16 @@ func (a *expPaymentTypeHandler) GetAllPaymentTypes(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	if qpage != "" && qsize != ""{
-		page , _:= strconv.Atoi(qpage)
-		size , _:= strconv.Atoi(qsize)
-		art, err := a.experiencePaymentTypeUcase.GetAll(ctx,&page,&size)
+	if qpage != "" && qsize != "" {
+		page, _ := strconv.Atoi(qpage)
+		size, _ := strconv.Atoi(qsize)
+		art, err := a.experiencePaymentTypeUcase.GetAll(ctx, &page, &size)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
-	}else {
-		art, err := a.experiencePaymentTypeUcase.GetAll(ctx,nil,nil)
+	} else {
+		art, err := a.experiencePaymentTypeUcase.GetAll(ctx, nil, nil)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

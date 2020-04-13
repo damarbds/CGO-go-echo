@@ -51,16 +51,16 @@ func (a *harborsHandler) GetAllHarbors(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	if qpage != "" && qsize != ""{
-		page , _:= strconv.Atoi(qpage)
-		size , _:= strconv.Atoi(qsize)
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx,&size,&page,search)
+	if qpage != "" && qsize != "" {
+		page, _ := strconv.Atoi(qpage)
+		size, _ := strconv.Atoi(qsize)
+		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, &size, &page, search)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
-	}else {
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx,nil,nil,search)
+	} else {
+		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, nil, nil, search)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

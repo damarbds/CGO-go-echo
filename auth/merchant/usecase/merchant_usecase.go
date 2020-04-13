@@ -11,17 +11,17 @@ import (
 )
 
 type merchantUsecase struct {
-	merchantRepo   merchant.Repository
+	merchantRepo     merchant.Repository
 	identityServerUc identityserver.Usecase
-	contextTimeout time.Duration
+	contextTimeout   time.Duration
 }
 
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
-func NewmerchantUsecase(a merchant.Repository, is identityserver.Usecase,timeout time.Duration) merchant.Usecase {
+func NewmerchantUsecase(a merchant.Repository, is identityserver.Usecase, timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
-		merchantRepo:   a,
-		identityServerUc:is,
-		contextTimeout: timeout,
+		merchantRepo:     a,
+		identityServerUc: is,
+		contextTimeout:   timeout,
 	}
 }
 
@@ -40,7 +40,7 @@ func (m merchantUsecase) List(ctx context.Context, page, limit, offset int) (*mo
 			Id:            item.Id,
 			CreatedDate:   item.CreatedDate,
 			UpdatedDate:   item.ModifiedDate,
-			IsActive: item.IsActive,
+			IsActive:      item.IsActive,
 			MerchantName:  item.MerchantName,
 			MerchantDesc:  item.MerchantDesc,
 			MerchantEmail: item.MerchantEmail,
@@ -92,28 +92,28 @@ func (m merchantUsecase) Login(ctx context.Context, ar *models.Login) (*models.G
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	requestToken ,err:= m.identityServerUc.GetToken(ar.Email,ar.Password)
-	if err != nil{
-		return nil,err
+	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password)
+	if err != nil {
+		return nil, err
 	}
 	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, ar.Email)
 	if existedMerchant == nil {
-		return nil,models.ErrNotFound
+		return nil, models.ErrNotFound
 	}
-	return  requestToken,err
+	return requestToken, err
 }
 
 func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string) (*models.MerchantInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getInfoToIs ,err := m.identityServerUc.GetUserInfo(token)
-	if err != nil{
-		return nil,err
+	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
+	if err != nil {
+		return nil, err
 	}
 	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
 	if existedMerchant == nil {
-		return nil,models.ErrNotFound
+		return nil, models.ErrNotFound
 	}
 	merchantInfo := models.MerchantInfoDto{
 		Id:            existedMerchant.Id,
@@ -123,20 +123,20 @@ func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string
 		Balance:       existedMerchant.Balance,
 	}
 
-	return &merchantInfo,nil
+	return &merchantInfo, nil
 }
 
 func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*models.MerchantInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getInfoToIs ,err := m.identityServerUc.GetUserInfo(token)
-	if err != nil{
-		return nil,err
+	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
+	if err != nil {
+		return nil, err
 	}
 	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
 	if existedMerchant == nil {
-		return nil,models.ErrNotFound
+		return nil, models.ErrNotFound
 	}
 	merchantInfo := models.MerchantInfoDto{
 		Id:            existedMerchant.Id,
@@ -146,11 +146,10 @@ func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*mo
 		Balance:       existedMerchant.Balance,
 	}
 
-	return &merchantInfo,nil
+	return &merchantInfo, nil
 }
 
-
-func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant ,user string) error {
+func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant, user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
@@ -166,8 +165,8 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 		Website:       "",
 		Address:       "",
 	}
-	_ ,err:= m.identityServerUc.UpdateUser(&updateUser)
-	if err != nil{
+	_, err := m.identityServerUc.UpdateUser(&updateUser)
+	if err != nil {
 		return err
 	}
 
@@ -181,7 +180,7 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 	return m.merchantRepo.Update(ctx, &merchant)
 }
 
-func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant,user string) error {
+func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant, user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, ar.MerchantEmail)
@@ -199,12 +198,12 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		EmailVerified: false,
 		Website:       "",
 		Address:       "",
-		OTP:		 "",
-		UserType:		2,
+		OTP:           "",
+		UserType:      2,
 	}
-	isUser ,errorIs:= m.identityServerUc.CreateUser(&registerUser)
+	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	ar.Id = isUser.Id
-	if errorIs != nil{
+	if errorIs != nil {
 		return errorIs
 	}
 	merchant := models.Merchant{}
@@ -219,10 +218,8 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		return err
 	}
 
-
 	return nil
 }
-
 
 /*
 * In this function below, I'm using errgroup with the pipeline pattern

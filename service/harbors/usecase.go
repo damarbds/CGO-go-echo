@@ -6,5 +6,5 @@ import (
 )
 
 type Usecase interface {
-	GetAllWithJoinCPC(ctx context.Context, page *int,size *int,search string) ([]*models.HarborsWCPCDto, error)
+	GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string) ([]*models.HarborsWCPCDto, error)
 }

@@ -54,8 +54,8 @@ func (m *adminRepository) fetch(ctx context.Context, query string, args ...inter
 			&t.DeletedDate,
 			&t.IsDeleted,
 			&t.IsActive,
-			&t.Name 	,
-			&t.Email 		,
+			&t.Name,
+			&t.Email,
 		)
 
 		if err != nil {

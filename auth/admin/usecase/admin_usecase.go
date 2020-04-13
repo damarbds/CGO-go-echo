@@ -52,9 +52,9 @@ func (m adminUsecase) ValidateTokenAdmin(ctx context.Context, token string) (*mo
 		return nil, models.ErrNotFound
 	}
 	adminInfo := models.AdminDto{
-		Id:         existedadmin.Id,
+		Id:    existedadmin.Id,
 		Name:  existedadmin.Name,
-		Email:  existedadmin.Email,
+		Email: existedadmin.Email,
 	}
 
 	return &adminInfo, nil
@@ -73,9 +73,9 @@ func (m adminUsecase) GetAdminInfo(ctx context.Context, token string) (*models.A
 		return nil, models.ErrNotFound
 	}
 	adminInfo := models.AdminDto{
-		Id:         existedadmin.Id,
+		Id:    existedadmin.Id,
 		Name:  existedadmin.Name,
-		Email:  existedadmin.Email,
+		Email: existedadmin.Email,
 	}
 
 	return &adminInfo, nil

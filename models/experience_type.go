@@ -19,7 +19,7 @@ type ExperienceType struct {
 }
 
 type ExpTypeObject struct {
-	ExpTypeID int `json:"exp_type_id"`
+	ExpTypeID   int    `json:"exp_type_id"`
 	ExpTypeName string `json:"exp_type_name"`
 	ExpTypeIcon string `json:"exp_type_icon"`
 }

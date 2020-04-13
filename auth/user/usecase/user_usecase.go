@@ -11,30 +11,29 @@ import (
 )
 
 type userUsecase struct {
-	userRepo   user.Repository
+	userRepo         user.Repository
 	identityServerUc identityserver.Usecase
-	contextTimeout time.Duration
+	contextTimeout   time.Duration
 }
 
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
-func NewuserUsecase(a user.Repository, is identityserver.Usecase,timeout time.Duration) user.Usecase {
+func NewuserUsecase(a user.Repository, is identityserver.Usecase, timeout time.Duration) user.Usecase {
 	return &userUsecase{
-		userRepo:   a,
-		identityServerUc:is,
-		contextTimeout: timeout,
+		userRepo:         a,
+		identityServerUc: is,
+		contextTimeout:   timeout,
 	}
 }
-
 
 func (m userUsecase) List(ctx context.Context, page, limit, offset int) (*models.UserWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
-	
+
 	list, err := m.userRepo.List(ctx, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	users := make([]*models.UserInfoDto, len(list))
 	for i, item := range list {
 		users[i] = &models.UserInfoDto{
@@ -87,28 +86,28 @@ func (m userUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetTo
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	requestToken ,err:= m.identityServerUc.GetToken(ar.Email,ar.Password)
-	if err != nil{
-		return nil,err
+	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password)
+	if err != nil {
+		return nil, err
 	}
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.Email)
 	if existeduser == nil {
-		return nil,models.ErrNotFound
+		return nil, models.ErrNotFound
 	}
-	return  requestToken,err
+	return requestToken, err
 }
 
 func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*models.UserInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getInfoToIs ,err := m.identityServerUc.GetUserInfo(token)
-	if err != nil{
-		return nil,err
+	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
+	if err != nil {
+		return nil, err
 	}
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, getInfoToIs.Email)
 	if existeduser == nil {
-		return nil,models.ErrUnAuthorize
+		return nil, models.ErrUnAuthorize
 	}
 
 	userInfo := &models.UserInfoDto{
@@ -119,51 +118,51 @@ func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*mode
 		ProfilePictUrl: existeduser.ProfilePictUrl,
 	}
 
-	return userInfo ,nil
+	return userInfo, nil
 }
 
 func (m userUsecase) VerifiedEmail(ctx context.Context, token string, codeOTP string) (*models.UserInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getInfoToIs ,err := m.identityServerUc.GetUserInfo(token)
-	if err != nil{
-		return nil,err
+	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
+	if err != nil {
+		return nil, err
 	}
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, getInfoToIs.Email)
 	if existeduser == nil {
-		return nil,models.ErrUnAuthorize
+		return nil, models.ErrUnAuthorize
 	}
 	verifiedEmail := models.VerifiedEmail{
 		Email:   existeduser.UserEmail,
 		CodeOTP: codeOTP,
 	}
-	_ , error := m.identityServerUc.VerifiedEmail(&verifiedEmail)
-		if error!= nil {
-			return nil,error
-		}
+	_, error := m.identityServerUc.VerifiedEmail(&verifiedEmail)
+	if error != nil {
+		return nil, error
+	}
 	userInfo := &models.UserInfoDto{
 		Id:             existeduser.Id,
 		UserEmail:      existeduser.UserEmail,
 		FullName:       existeduser.FullName,
 		PhoneNumber:    existeduser.PhoneNumber,
 		ProfilePictUrl: existeduser.ProfilePictUrl,
-		ReferralCode:existeduser.ReferralCode,
+		ReferralCode:   existeduser.ReferralCode,
 	}
 
-	return userInfo ,nil
+	return userInfo, nil
 }
 func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.UserInfoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getInfoToIs ,err := m.identityServerUc.GetUserInfo(token)
-	if err != nil{
-		return nil,err
+	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
+	if err != nil {
+		return nil, err
 	}
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, getInfoToIs.Email)
 	if existeduser == nil {
-		return nil,models.ErrNotFound
+		return nil, models.ErrNotFound
 	}
 	userInfo := models.UserInfoDto{
 		Id:             existeduser.Id,
@@ -171,13 +170,13 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 		FullName:       existeduser.FullName,
 		PhoneNumber:    existeduser.PhoneNumber,
 		ProfilePictUrl: existeduser.ProfilePictUrl,
-		ReferralCode:existeduser.ReferralCode,
+		ReferralCode:   existeduser.ReferralCode,
 	}
 
-	return &userInfo,nil
+	return &userInfo, nil
 }
 
-func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser ,user string) error {
+func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
@@ -193,8 +192,8 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser ,user s
 		Website:       "",
 		Address:       "",
 	}
-	_ ,err:= m.identityServerUc.UpdateUser(&updateUser)
-	if err != nil{
+	_, err := m.identityServerUc.UpdateUser(&updateUser)
+	if err != nil {
 		return err
 	}
 	layoutFormat := "2006-01-02 15:04:05"
@@ -202,8 +201,8 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser ,user s
 	//if errDate != nil{
 	//	return errDate
 	//}
-	dob , errDateDob := time.Parse(layoutFormat,ar.Dob)
-	if errDateDob != nil{
+	dob, errDateDob := time.Parse(layoutFormat, ar.Dob)
+	if errDateDob != nil {
 		return errDateDob
 	}
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
@@ -214,7 +213,7 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser ,user s
 	userModel.FullName = ar.FullName
 	userModel.PhoneNumber = ar.PhoneNumber
 	userModel.VerificationSendDate = existeduser.VerificationSendDate
-	userModel.VerificationCode =existeduser.VerificationCode
+	userModel.VerificationCode = existeduser.VerificationCode
 	userModel.ProfilePictUrl = ar.ProfilePictUrl
 	userModel.Address = ar.Address
 	userModel.Dob = dob
@@ -246,7 +245,7 @@ func generateRandomBytes(n int) ([]byte, error) {
 
 	return b, nil
 }
-func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user string) error {
+func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	//existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
@@ -264,10 +263,10 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 		EmailVerified: false,
 		Website:       "",
 		Address:       "",
-		OTP:"",
-		UserType:1,
+		OTP:           "",
+		UserType:      1,
 	}
-	isUser ,errorIs:= m.identityServerUc.CreateUser(&registerUser)
+	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	message := "Please keep it a secret, and use this OTP: " + isUser.OTP + " code to verify your email"
 	email := models.SendingEmail{
 		Subject: "Verified Email",
@@ -275,29 +274,29 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 		From:    "helmy@cgo.co.id",
 		To:      isUser.Email,
 	}
-	_ ,errorSending:= m.identityServerUc.SendingEmail(&email)
+	_, errorSending := m.identityServerUc.SendingEmail(&email)
 	if errorSending != nil {
 		return models.ErrInternalServerError
 	}
 	ar.Id = isUser.Id
 	var dob time.Time
-	if ar.Dob != ""{
+	if ar.Dob != "" {
 
 		layoutFormat := "2006-01-02 15:04:05"
 
-		dobs , errDateDob := time.Parse(layoutFormat,ar.Dob)
+		dobs, errDateDob := time.Parse(layoutFormat, ar.Dob)
 
-		if errDateDob != nil{
+		if errDateDob != nil {
 			return errDateDob
 		}
 		dob = dobs
 	}
 
-	if errorIs != nil{
+	if errorIs != nil {
 		return errorIs
 	}
-	referralCode,er := generateRandomString(9)
-	if er != nil{
+	referralCode, er := generateRandomString(9)
+	if er != nil {
 		return er
 	}
 	userModel := models.User{}
@@ -307,7 +306,7 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser,user st
 	userModel.FullName = ar.FullName
 	userModel.PhoneNumber = ar.PhoneNumber
 	userModel.VerificationSendDate = time.Now()
-	userModel.VerificationCode =isUser.OTP
+	userModel.VerificationCode = isUser.OTP
 	userModel.ProfilePictUrl = ar.ProfilePictUrl
 	userModel.Address = ar.Address
 	userModel.Dob = dob
@@ -333,7 +332,7 @@ func (m userUsecase) GetCreditByID(ctx context.Context, id string) (*models.User
 		return nil, err
 	}
 
-	return &models.UserPoint{Points:point}, nil
+	return &models.UserPoint{Points: point}, nil
 }
 
 /*
@@ -341,4 +340,3 @@ func (m userUsecase) GetCreditByID(ctx context.Context, id string) (*models.User
 * Look how this works in this package explanation
 * in godoc: https://godoc.org/golang.org/x/sync/errgroup#ex-Group--Pipeline
  */
-

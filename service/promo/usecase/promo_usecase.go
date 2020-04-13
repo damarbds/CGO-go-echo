@@ -8,14 +8,14 @@ import (
 )
 
 type promoUsecase struct {
-	promoRepo     promo.Repository
+	promoRepo      promo.Repository
 	contextTimeout time.Duration
 }
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPromoUsecase(p promo.Repository,timeout time.Duration) promo.Usecase {
+func NewPromoUsecase(p promo.Repository, timeout time.Duration) promo.Usecase {
 	return &promoUsecase{
-		promoRepo:p,
+		promoRepo:      p,
 		contextTimeout: timeout,
 	}
 }
@@ -24,13 +24,13 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
-	promoList, err := p.promoRepo.Fetch(ctx,page,size)
+	promoList, err := p.promoRepo.Fetch(ctx, page, size)
 	if err != nil {
 		return nil, err
 	}
 	var promoDto []*models.PromoDto
 	for _, element := range promoList {
-		resPromo :=models.PromoDto{
+		resPromo := models.PromoDto{
 			Id:         element.Id,
 			PromoCode:  element.PromoCode,
 			PromoName:  element.PromoName,
@@ -42,7 +42,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 		promoDto = append(promoDto, &resPromo)
 	}
 
-	return promoDto,nil
+	return promoDto, nil
 }
 
 func (p promoUsecase) GetByCode(ctx context.Context, code string) (*models.PromoDto, error) {
@@ -66,5 +66,5 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string) (*models.Promo
 		}
 	}
 
-	return promoDto[0],nil
+	return promoDto[0], nil
 }

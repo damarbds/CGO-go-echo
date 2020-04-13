@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/models"
@@ -19,6 +20,86 @@ type transportationRepository struct {
 
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
+}
+
+func (t transportationRepository) CountFilterSearch(ctx context.Context, query string) (int, error) {
+	rows, err := t.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+
+func (t transportationRepository) FilterSearch(ctx context.Context, query string, limit, offset int) ([]*models.TransSearch, error) {
+	query = query + ` LIMIT ? OFFSET ?`
+	res, err := t.fetchSearchTrans(ctx, query, limit, offset)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return res, nil
+}
+
+func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query string, args ...interface{}) ([]*models.TransSearch, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.TransSearch, 0)
+	for rows.Next() {
+		t := new(models.TransSearch)
+		err = rows.Scan(
+			&t.ScheduleId,
+			&t.DepartureDate,
+			&t.DepartureTime,
+			&t.ArrivalTime,
+			&t.Price,
+			&t.TransId,
+			&t.TransName,
+			&t.TransImages,
+			&t.HarborSourceId,
+			&t.HarborSourceName,
+			&t.HarborDestId,
+			&t.HarborDestName,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
 }
 
 func (t transportationRepository) Insert(ctx context.Context, a models.Transportation) (*string, error) {

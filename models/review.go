@@ -17,13 +17,13 @@ type Review struct {
 	ExpId        string     `json:"exp_id"`
 }
 type ReviewDto struct {
-	Name 		 string		`json:"name"`
-	Image 		string		`json:"image"`
-	Desc         string     `json:"desc"`
-	Values       int        `json:"values"`
+	Name   string `json:"name"`
+	Image  string `json:"image"`
+	Desc   string `json:"desc"`
+	Values int    `json:"values"`
 }
 type ReviewDtoObject struct {
-	Name 	string 		`json:"name"`
-	UserId 	string		`json:"userid"`
-	Desc 	string		`json:"desc"`
+	Name   string `json:"name"`
+	UserId string `json:"userid"`
+	Desc   string `json:"desc"`
 }

@@ -50,9 +50,9 @@ func (a *experience_add_onsHandler) GetallexperienceAddOns(c echo.Context) error
 
 	art, err := a.experience_add_onsUsecase.GetByExpId(ctx, expId)
 	if err != nil {
-			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-		}
-		return c.JSON(http.StatusOK, art)
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, art)
 }
 func getStatusCode(err error) int {
 	if err == nil {

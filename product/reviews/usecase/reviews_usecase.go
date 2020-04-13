@@ -10,14 +10,15 @@ import (
 )
 
 type reviewsUsecase struct {
-	userRepo 		user.Repository
+	userRepo       user.Repository
 	reviewsRepo    reviews.Repository
 	contextTimeout time.Duration
 }
+
 // NewharborsUsecase will create new an harborsUsecase object representation of harbors.Usecase interface
-func NewreviewsUsecase(a  reviews.Repository, us user.Repository,timeout time.Duration) reviews.Usecase {
+func NewreviewsUsecase(a reviews.Repository, us user.Repository, timeout time.Duration) reviews.Usecase {
 	return &reviewsUsecase{
-		userRepo:us,
+		userRepo:       us,
 		reviewsRepo:    a,
 		contextTimeout: timeout,
 	}
@@ -27,7 +28,7 @@ func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id string) ([]*
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	res, err := r.reviewsRepo.GetByExpId(ctx,exp_id)
+	res, err := r.reviewsRepo.GetByExpId(ctx, exp_id)
 	if err != nil {
 		return nil, err
 	}
@@ -37,18 +38,18 @@ func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id string) ([]*
 		errObject := json.Unmarshal([]byte(element.Desc), &reviewDtoObject)
 		if errObject != nil {
 			//fmt.Println("Error : ",err.Error())
-			return nil,models.ErrInternalServerError
+			return nil, models.ErrInternalServerError
 		}
 		var imageUrl string
-		if reviewDtoObject.UserId != ""{
-			getUser, _ := r.userRepo.GetByID(ctx,reviewDtoObject.UserId)
+		if reviewDtoObject.UserId != "" {
+			getUser, _ := r.userRepo.GetByID(ctx, reviewDtoObject.UserId)
 			if getUser != nil {
 				imageUrl = getUser.ProfilePictUrl
 			}
 		}
 		reviewDto := models.ReviewDto{
 			Name:   reviewDtoObject.Name,
-			Image:imageUrl,
+			Image:  imageUrl,
 			Desc:   reviewDtoObject.Desc,
 			Values: element.Values,
 		}

@@ -6,6 +6,6 @@ import (
 )
 
 type Usecase interface {
-	Fetch(ctx context.Context, page *int , size *int) ([]*models.PromoDto, error)
+	Fetch(ctx context.Context, page *int, size *int) ([]*models.PromoDto, error)
 	GetByCode(ctx context.Context, code string) (*models.PromoDto, error)
 }

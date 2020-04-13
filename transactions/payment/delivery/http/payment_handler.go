@@ -88,9 +88,9 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		ctx = context.Background()
 	}
 	var promoId *string
-	if t.PromoId != ""{
+	if t.PromoId != "" {
 		promoId = &t.PromoId
-	}else {
+	} else {
 		promoId = nil
 	}
 	tr := &models.Transaction{

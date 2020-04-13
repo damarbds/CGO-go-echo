@@ -6,6 +6,6 @@ import (
 )
 
 type Repository interface {
-	Insert(ctx context.Context,a models.Schedule)(*string,error)
-	DeleteByTransId(ctx context.Context,transId *string)error
+	Insert(ctx context.Context, a models.Schedule) (*string, error)
+	DeleteByTransId(ctx context.Context, transId *string) error
 }

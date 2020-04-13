@@ -18,8 +18,6 @@ type experienceAddOnsRepository struct {
 	Conn *sql.DB
 }
 
-
-
 // NewexperienceRepository will create an object that represent the article.Repository interface
 func NewexperienceRepository(Conn *sql.DB) experience_add_ons.Repository {
 	return &experienceAddOnsRepository{Conn}
@@ -43,19 +41,19 @@ func (m *experienceAddOnsRepository) fetch(ctx context.Context, query string, ar
 		t := new(models.ExperienceAddOn)
 		err = rows.Scan(
 			&t.Id,
-			&t.	CreatedBy,
-			&t.	CreatedDate ,
-			&t.	ModifiedBy  ,
-			&t.	ModifiedDate  ,
-			&t.	DeletedBy ,
-			&t.	DeletedDate   ,
-			&t.	IsDeleted   ,
-			&t.	IsActive   ,
-			&t.	Name	,
-			&t.	Desc ,
-			&t.	Currency 	,
-			&t.	Amount 			,
-			&t.	ExpId			,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.Name,
+			&t.Desc,
+			&t.Currency,
+			&t.Amount,
+			&t.ExpId,
 		)
 
 		if err != nil {
@@ -71,14 +69,14 @@ func (m *experienceAddOnsRepository) fetch(ctx context.Context, query string, ar
 func (e experienceAddOnsRepository) GetByExpId(ctx context.Context, exp_id string) ([]*models.ExperienceAddOn, error) {
 	query := `select * from experience_add_ons where exp_id =? AND is_deleted = 0 AND is_active = 1`
 
-	res, err := e.fetch(ctx, query,exp_id)
+	res, err := e.fetch(ctx, query, exp_id)
 	if err != nil {
 		return nil, err
 	}
 	return res, err
 }
 
-func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.ExperienceAddOn) (string,error) {
+func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.ExperienceAddOn) (string, error) {
 	id := guuid.New()
 	a.Id = id.String()
 	query := `INSERT experience_add_ons SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
@@ -86,12 +84,12 @@ func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.Experi
 				experience_add_ons.desc = ? , currency=? , amount=?,exp_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Name,a.Desc,a.Currency,
-		a.Amount,a.ExpId)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Name, a.Desc, a.Currency,
+		a.Amount, a.ExpId)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -100,7 +98,7 @@ func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.Experi
 	//}
 
 	//a.Id = lastID
-	return a.Id,nil
+	return a.Id, nil
 }
 
 func (m *experienceAddOnsRepository) Update(ctx context.Context, a models.ExperienceAddOn) error {
@@ -112,8 +110,8 @@ func (m *experienceAddOnsRepository) Update(ctx context.Context, a models.Experi
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.Name,a.Desc,a.Currency,
-		a.Amount,a.ExpId,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.Name, a.Desc, a.Currency,
+		a.Amount, a.ExpId, a.Id)
 	if err != nil {
 		return err
 	}
@@ -144,7 +142,7 @@ func (m *experienceAddOnsRepository) Deletes(ctx context.Context, ids []string, 
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,expId)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
 	if err != nil {
 		return err
 	}

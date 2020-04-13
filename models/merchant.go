@@ -49,5 +49,5 @@ type LoginMerchant struct {
 
 type MerchantWithPagination struct {
 	Data []*MerchantInfoDto `json:"data"`
-	Meta *MetaPagination `json:"meta"`
+	Meta *MetaPagination    `json:"meta"`
 }

@@ -6,5 +6,5 @@ import (
 )
 
 type Repository interface {
-	GetByExpId(context context.Context,expId string)([]*models.FilterActivityType,error)
+	GetByExpId(context context.Context, expId string) ([]*models.FilterActivityType, error)
 }

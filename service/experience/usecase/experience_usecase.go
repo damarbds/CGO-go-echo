@@ -39,7 +39,6 @@ type experienceUsecase struct {
 	exp_availablitiy exp_availability.Repository
 }
 
-
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
 	adOns experience_add_ons.Repository,
@@ -357,7 +356,7 @@ func (m experienceUsecase) FilterSearchExp(
 	defer cancel()
 
 	var activityTypeArray []int
-	if activityType != "" && activityType != "[]"{
+	if activityType != "" && activityType != "[]" {
 		if errUnmarshal := json.Unmarshal([]byte(activityType), &activityTypeArray); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
 		}
@@ -378,7 +377,12 @@ func (m experienceUsecase) FilterSearchExp(
 	JOIN cities ci ON ha.city_id = ci.id
 	JOIN provinces p ON ci.province_id = p.id`
 
-	qCount := `select COUNT(*) from experiences e`
+	qCount := `
+	select COUNT(*) from experiences e
+	JOIN harbors ha ON e.harbors_id = ha.id
+	JOIN cities ci ON ha.city_id = ci.id
+	JOIN provinces p ON ci.province_id = p.id`
+
 	if bottomPrice != "" && upPrice != "" {
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
 		qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
@@ -463,42 +467,41 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 	}
 
-
 	if startDate != "" && endDate != "" {
 		var startDates []string
 
 		layoutFormat := "2006-01-02"
-		start , errDateDob := time.Parse(layoutFormat,startDate)
-		if errDateDob != nil{
-			return nil,errDateDob
+		start, errDateDob := time.Parse(layoutFormat, startDate)
+		if errDateDob != nil {
+			return nil, errDateDob
 		}
-		end , errDateDob := time.Parse(layoutFormat,endDate)
-		if errDateDob != nil{
-			return nil,errDateDob
+		end, errDateDob := time.Parse(layoutFormat, endDate)
+		if errDateDob != nil {
+			return nil, errDateDob
 		}
-		startDates = append(startDates,start.Format("2006-01-02"))
-	datess :
+		startDates = append(startDates, start.Format("2006-01-02"))
+	datess:
 
-		start = start.AddDate(0,0,1)
-		startDates = append(startDates,start.Format("2006-01-02"))
+		start = start.AddDate(0, 0, 1)
+		startDates = append(startDates, start.Format("2006-01-02"))
 		if start == end {
 
-		}else {
-			startDates = append(startDates,start.String())
+		} else {
+			startDates = append(startDates, start.String())
 			goto datess
 		}
 
-			for index, id := range startDates {
-				if index == 0 && index != (len(startDates)-1) {
-					query = query + ` AND (ead.exp_availability_date like '%` + id + `%' `
-				} else if index == 0 && index == (len(startDates)-1) {
-					query = query + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
-				} else if index == (len(startDates) - 1) {
-					query = query + ` OR ead.exp_availability_date like '%` + id + `%' ) `
-				} else {
-					query = query + ` OR ead.exp_availability_date like '%` + id + `%' `
-				}
+		for index, id := range startDates {
+			if index == 0 && index != (len(startDates)-1) {
+				query = query + ` AND (ead.exp_availability_date like '%` + id + `%' `
+			} else if index == 0 && index == (len(startDates)-1) {
+				query = query + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
+			} else if index == (len(startDates) - 1) {
+				query = query + ` OR ead.exp_availability_date like '%` + id + `%' ) `
+			} else {
+				query = query + ` OR ead.exp_availability_date like '%` + id + `%' `
 			}
+		}
 	}
 
 	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query, limit, offset)
@@ -571,7 +574,7 @@ func (m experienceUsecase) FilterSearchExp(
 			PaymentType: priceItemType,
 			Longitude:   exp.Longitude,
 			Latitude:    exp.Latitude,
-			Province: exp.Province,
+			Province:    exp.Province,
 			CoverPhoto:  coverPhoto,
 			ListPhoto:   listPhotos,
 		}
@@ -611,13 +614,13 @@ func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.Ex
 
 	query, err := m.inspirationRepo.GetExpInspirations(ctx)
 	var results []*models.ExpInspirationDto
-	for _,element := range query{
-		getCountReview ,err:= m.reviewsRepo.CountRating(ctx,element.ExpId)
+	for _, element := range query {
+		getCountReview, err := m.reviewsRepo.CountRating(ctx, element.ExpId)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		var expType []string
-		if element.ExpType != ""{
+		if element.ExpType != "" {
 			if errUnmarshal := json.Unmarshal([]byte(element.ExpType), &expType); errUnmarshal != nil {
 				return nil, models.ErrInternalServerError
 			}
@@ -632,7 +635,7 @@ func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.Ex
 			Rating:           element.Rating,
 			CountRating:      getCountReview,
 		}
-		results = append(results,&dto)
+		results = append(results, &dto)
 	}
 	if err != nil {
 		return nil, err
@@ -805,7 +808,7 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 
 		id, err := m.expPhotos.Insert(ctx, &expPhoto)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		element.Id = *id
 	}
@@ -841,9 +844,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 			CustomPrice:      nil,
 		}
 
-		id,err := m.paymentRepo.Insert(ctx, payments)
+		id, err := m.paymentRepo.Insert(ctx, payments)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		element.Id = id
 	}
@@ -866,9 +869,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 			ExpId:                *insertToExperience,
 		}
 
-		id,err := m.exp_availablitiy.Insert(ctx, expAvailability)
+		id, err := m.exp_availablitiy.Insert(ctx, expAvailability)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		element.Id = id
 	}
@@ -896,9 +899,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 			Amount:       element.Amount,
 			ExpId:        *insertToExperience,
 		}
-		id,err := m.adOnsRepo.Insert(ctx, addOns)
+		id, err := m.adOnsRepo.Insert(ctx, addOns)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		element.Id = id
 	}
@@ -906,7 +909,7 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	var status string
 	if commandExperience.Status == 0 {
 		status = "Draft"
-	}else if commandExperience.Status == 3 {
+	} else if commandExperience.Status == 3 {
 		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{
@@ -970,7 +973,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 
 	var photoIds []string
 	for _, element := range commandExperience.ExpPhotos {
-		if element.Id == ""{
+		if element.Id == "" {
 
 			images, _ := json.Marshal(element.ExpPhotoImage)
 			expPhoto := models.ExpPhotos{
@@ -990,11 +993,11 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 
 			id, err := m.expPhotos.Insert(ctx, &expPhoto)
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
-			photoIds = append(photoIds,*id)
+			photoIds = append(photoIds, *id)
 			element.Id = *id
-		}else {
+		} else {
 			images, _ := json.Marshal(element.ExpPhotoImage)
 			expPhoto := models.ExpPhotos{
 				Id:             element.Id,
@@ -1012,7 +1015,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			}
 
 			_, err = m.expPhotos.Update(ctx, &expPhoto)
-			photoIds = append(photoIds,element.Id)
+			photoIds = append(photoIds, element.Id)
 		}
 	}
 
@@ -1020,7 +1023,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 
 	var expPaymentIds []string
 	for _, element := range commandExperience.ExpPayment {
-		if element.Id == ""{
+		if element.Id == "" {
 			var priceItemType int
 			if element.PriceItemType == "Per Pax" {
 				priceItemType = 1
@@ -1051,14 +1054,14 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 				CustomPrice:      nil,
 			}
 
-			id,err := m.paymentRepo.Insert(ctx, payments)
+			id, err := m.paymentRepo.Insert(ctx, payments)
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
-			expPaymentIds = append(expPaymentIds,id)
+			expPaymentIds = append(expPaymentIds, id)
 			element.Id = id
 
-		}else {
+		} else {
 			var priceItemType int
 			if element.PriceItemType == "Per Pax" {
 				priceItemType = 1
@@ -1091,7 +1094,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 
 			err = m.paymentRepo.Update(ctx, payments)
 
-			expPaymentIds = append(expPaymentIds,element.Id)
+			expPaymentIds = append(expPaymentIds, element.Id)
 		}
 
 	}
@@ -1100,7 +1103,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 
 	var expAvailabilityIds []string
 	for _, element := range commandExperience.ExpAvailability {
-		if element.Id ==""{
+		if element.Id == "" {
 			date, _ := json.Marshal(element.Date)
 			expAvailability := models.ExpAvailability{
 				Id:                   "",
@@ -1118,13 +1121,13 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 				ExpId:                *insertToExperience,
 			}
 
-			id,err := m.exp_availablitiy.Insert(ctx, expAvailability)
+			id, err := m.exp_availablitiy.Insert(ctx, expAvailability)
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
-			expAvailabilityIds = append(expAvailabilityIds,id)
+			expAvailabilityIds = append(expAvailabilityIds, id)
 			element.Id = id
-		}else {
+		} else {
 			date, _ := json.Marshal(element.Date)
 			expAvailability := models.ExpAvailability{
 				Id:                   element.Id,
@@ -1143,7 +1146,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			}
 
 			err = m.exp_availablitiy.Update(ctx, expAvailability)
-			expAvailabilityIds = append(expAvailabilityIds,element.Id)
+			expAvailabilityIds = append(expAvailabilityIds, element.Id)
 		}
 
 	}
@@ -1152,7 +1155,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 
 	var addOnIds []string
 	for _, element := range commandExperience.ExperienceAddOn {
-		if element.Id == ""{
+		if element.Id == "" {
 			var currency int
 			if element.Currency == "USD" {
 				currency = 1
@@ -1175,13 +1178,13 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 				Amount:       element.Amount,
 				ExpId:        *insertToExperience,
 			}
-			id,err := m.adOnsRepo.Insert(ctx, addOns)
+			id, err := m.adOnsRepo.Insert(ctx, addOns)
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
-			addOnIds = append(addOnIds,id)
+			addOnIds = append(addOnIds, id)
 			element.Id = id
-		}else {
+		} else {
 			var currency int
 			if element.Currency == "USD" {
 				currency = 1
@@ -1205,7 +1208,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 				ExpId:        *insertToExperience,
 			}
 			err = m.adOnsRepo.Update(ctx, addOns)
-			addOnIds = append(addOnIds,element.Id)
+			addOnIds = append(addOnIds, element.Id)
 		}
 
 	}
@@ -1214,7 +1217,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	var status string
 	if commandExperience.Status == 0 {
 		status = "Draft"
-	}else if commandExperience.Status == 3 {
+	} else if commandExperience.Status == 3 {
 		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{
@@ -1224,24 +1227,24 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	return &response, nil
 
 }
-func (m experienceUsecase) PublishExperience(c context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error){
+func (m experienceUsecase) PublishExperience(c context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	var response *models.ResponseCreateExperience
-	if commandExperience.Id == ""{
-		create,err := m.CreateExperience(ctx,commandExperience,token)
+	if commandExperience.Id == "" {
+		create, err := m.CreateExperience(ctx, commandExperience, token)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		response = create
-	}else {
-		update,err := m.UpdateExperience(ctx,commandExperience,token)
+	} else {
+		update, err := m.UpdateExperience(ctx, commandExperience, token)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		response = update
 	}
-	return response,nil
+	return response, nil
 }
 func (m experienceUsecase) GetByID(c context.Context, id string) (*models.ExperienceDto, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
@@ -1256,7 +1259,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 	if expPhotoQuery != nil {
 		for _, element := range expPhotoQuery {
 			expPhoto := models.ExpPhotosObj{
-				Id:element.Id,
+				Id:            element.Id,
 				Folder:        element.ExpPhotoFolder,
 				ExpPhotoImage: nil,
 			}
@@ -1306,7 +1309,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 	if expAvailabilityQuery != nil {
 		for _, element := range expAvailabilityQuery {
 			expA := models.ExpAvailablitityObj{
-				Id:element.Id,
+				Id:    element.Id,
 				Year:  element.ExpAvailabilityYear,
 				Month: element.ExpAvailabilityMonth,
 				Date:  nil,
@@ -1359,7 +1362,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		MinimumBookingDesc:   res.MinimumBookingDesc,
 		MinimumBookingAmount: res.MinimumBookingAmount,
 	}
-	countRating,err := m.reviewsRepo.CountRating(ctx,res.Id)
+	countRating, err := m.reviewsRepo.CountRating(ctx, res.Id)
 	experiences := models.ExperienceDto{
 		Id:                      res.Id,
 		ExpTitle:                res.ExpTitle,
@@ -1382,7 +1385,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		ExpPhotos:               expPhotos,
 		Status:                  res.Status,
 		Rating:                  res.Rating,
-		CountRating:countRating,
+		CountRating:             countRating,
 		ExpLocationLatitude:     res.ExpLocationLatitude,
 		ExpLocationLongitude:    res.ExpLocationLongitude,
 		ExpLocationName:         res.ExpLocationName,
