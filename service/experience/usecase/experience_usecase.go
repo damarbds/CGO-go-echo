@@ -330,14 +330,13 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				}
 			}
 		}
-
-		//expListDto = append(expListDto,&expDto)
 	}
 	return expListDto, nil
 }
 
 func (m experienceUsecase) FilterSearchExp(
 	ctx context.Context,
+	qStatus,
 	cityID string,
 	harborsId string,
 	activityType string,
@@ -366,6 +365,7 @@ func (m experienceUsecase) FilterSearchExp(
 		e.id,
 		e.exp_title,
 		e.exp_type,
+		e.status as exp_status,
 		e.rating,
 		e.exp_location_latitude as latitude,
 		e.exp_location_longitude as longitude,
@@ -398,15 +398,35 @@ func (m experienceUsecase) FilterSearchExp(
 		query = query + ` join harbors h on h.id = e.harbors_id`
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
+
+	query = query + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
+	qCount = qCount + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
+
 	if cityID != "" {
 		city_id, _ := strconv.Atoi(cityID)
-		query = query + ` where h.city_id = ` + strconv.Itoa(city_id)
-		qCount = qCount + ` where h.city_id = ` + strconv.Itoa(city_id)
+		query = query + ` AND h.city_id = ` + strconv.Itoa(city_id)
+		qCount = qCount + ` AND h.city_id = ` + strconv.Itoa(city_id)
 	} else if harborsId != "" {
-		query = query + ` where e.harbors_id = '` + harborsId + `'`
-		qCount = qCount + ` where e.harbors_id = '` + harborsId + `'`
+		query = query + ` AND e.harbors_id = '` + harborsId + `'`
+		qCount = qCount + ` AND e.harbors_id = '` + harborsId + `'`
 	}
+	if qStatus != "" {
+		var status int
+		if qStatus == "preview" {
+			status = 0
+		} else if qStatus == "draft" {
+			status = 1
+		} else if qStatus == "published" {
+			status = 2
+		} else if qStatus == "unpublished" {
+			status = 3
+		} else if qStatus == "archived" {
+			status = 4
+		}
 
+		query = query + ` AND e.status =` + strconv.Itoa(status)
+		qCount = qCount + ` AND e.status =` + strconv.Itoa(status)
+	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
 		query = query + ` AND e.exp_max_guest =` + strconv.Itoa(guests)
@@ -427,7 +447,6 @@ func (m experienceUsecase) FilterSearchExp(
 	}
 
 	if len(activityTypeArray) != 0 {
-		//types, _ := strconv.Atoi(activityType)
 		for index, id := range activityTypeArray {
 			if index == 0 && index != (len(activityTypeArray)-1) {
 				query = query + ` AND (fat.id =` + strconv.Itoa(id)
@@ -556,7 +575,6 @@ func (m experienceUsecase) FilterSearchExp(
 				var expPhotoImage []models.CoverPhotosObj
 				errObject := json.Unmarshal([]byte(element.ExpPhotoImage), &expPhotoImage)
 				if errObject != nil {
-					//fmt.Println("Error : ",err.Error())
 					return nil, models.ErrInternalServerError
 				}
 				expPhoto.ExpPhotoImage = expPhotoImage
