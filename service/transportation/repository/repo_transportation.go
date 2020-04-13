@@ -104,6 +104,7 @@ func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query s
 			&t.TransId,
 			&t.TransName,
 			&t.TransImages,
+			&t.TransStatus,
 			&t.HarborSourceId,
 			&t.HarborSourceName,
 			&t.HarborDestId,

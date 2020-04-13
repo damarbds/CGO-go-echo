@@ -36,6 +36,8 @@ func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase,
 
 func (t transportationUsecase) FilterSearchTrans(
 	ctx context.Context,
+	search,
+	qStatus,
 	sortBy,
 	harborSourceId,
 	harborDestId,
@@ -62,6 +64,7 @@ func (t transportationUsecase) FilterSearchTrans(
 		s.trans_id,
 		t.trans_name,
 		t.trans_images,
+		t.trans_status,
 		h.id as harbor_source_id,
 		h.harbors_name as harbor_source_name,
 		hdest.id as harbor_dest_id,
@@ -87,6 +90,28 @@ func (t transportationUsecase) FilterSearchTrans(
 		s.is_deleted = 0
 		AND s.is_active = 1`
 
+	if qStatus != "" {
+		var status int
+		if qStatus == "preview" {
+			status = 0
+		} else if qStatus == "draft" {
+			status = 1
+		} else if qStatus == "published" {
+			status = 2
+		} else if qStatus == "unpublished" {
+			status = 3
+		} else if qStatus == "archived" {
+			status = 4
+		}
+
+		query = query + ` AND t.trans_status =` + strconv.Itoa(status)
+		queryCount = queryCount + ` AND t.trans_status =` + strconv.Itoa(status)
+	}
+	if search != "" {
+		keyword := `'%` + search + `%'`
+		query = query + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
+		queryCount = queryCount + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
+	}
 	if harborSourceId != "" {
 		query = query + ` AND t.harbors_source_id =` + harborSourceId
 		queryCount = queryCount + ` AND t.harbors_source_id =` + harborSourceId
@@ -153,6 +178,19 @@ func (t transportationUsecase) FilterSearchTrans(
 		tripMinute := arrivalTime.Minute() - departureTime.Minute()
 		tripDuration := strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 
+		var transStatus string
+		if t.TransStatus == 0 {
+			transStatus = "Preview"
+		} else if t.TransStatus == 1 {
+			transStatus = "Draft"
+		} else if t.TransStatus == 2 {
+			transStatus = "Published"
+		} else if t.TransStatus == 3 {
+			transStatus = "Unpublished"
+		} else if t.TransStatus == 4 {
+			transStatus = "Archived"
+		}
+
 		trans[i] = &models.TransportationSearchObj{
 			ScheduleId:            t.ScheduleId,
 			DepartureDate:         t.DepartureDate,
@@ -162,6 +200,7 @@ func (t transportationUsecase) FilterSearchTrans(
 			TransportationId:      t.TransId,
 			TransportationName:    t.TransName,
 			TransportationImages:  transImages,
+			TransportationStatus:  transStatus,
 			HarborSourceId:        t.HarborSourceId,
 			HarborSourceName:      t.HarborSourceName,
 			HarborDestinationId:   t.HarborDestId,
