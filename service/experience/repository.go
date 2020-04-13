@@ -23,4 +23,5 @@ type Repository interface {
 	GetExpPendingTransactionCount(ctx context.Context, merchantId string) (int, error)
 	GetExpFailedTransactionCount(ctx context.Context, merchantId string) (int, error)
 	CountFilterSearch(ctx context.Context, query string) (int, error)
+	GetExpCount(ctx context.Context, merchantId string) (int, error)
 }

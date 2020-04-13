@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"github.com/auth/identityserver"
+	"github.com/service/experience"
+	"github.com/service/transportation"
 	"math"
 	"time"
 
@@ -12,6 +14,8 @@ import (
 
 type merchantUsecase struct {
 	merchantRepo     merchant.Repository
+	expRepo experience.Repository
+	transRepo transportation.Repository
 	identityServerUc identityserver.Usecase
 	contextTimeout   time.Duration
 }
@@ -23,6 +27,38 @@ func NewmerchantUsecase(a merchant.Repository, is identityserver.Usecase, timeou
 		identityServerUc: is,
 		contextTimeout:   timeout,
 	}
+}
+
+func (m merchantUsecase) ServiceCount(ctx context.Context, token string) (*models.ServiceCount, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
+	if err != nil {
+		return nil, err
+	}
+
+	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
+	if existedMerchant == nil {
+		return nil, models.ErrNotFound
+	}
+
+	expCount, err := m.expRepo.GetExpCount(ctx, existedMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	transCount, err := m.transRepo.GetTransCount(ctx, existedMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &models.ServiceCount{
+		ExpCount:   expCount,
+		TransCount: transCount,
+	}
+
+	return response, nil
 }
 
 func (m merchantUsecase) List(ctx context.Context, page, limit, offset int) (*models.MerchantWithPagination, error) {

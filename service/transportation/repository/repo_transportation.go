@@ -22,6 +22,24 @@ func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
 }
 
+func (t transportationRepository) GetTransCount(ctx context.Context, merchantId string) (int, error) {
+	query := `SELECT count(*) as count FROM transportations WHERE merchant_id = ?`
+
+	rows, err := t.Conn.QueryContext(ctx, query, merchantId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (t transportationRepository) CountFilterSearch(ctx context.Context, query string) (int, error) {
 	rows, err := t.Conn.QueryContext(ctx, query)
 	if err != nil {

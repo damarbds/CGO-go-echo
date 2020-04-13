@@ -24,7 +24,6 @@ type transportationUsecase struct {
 	contextTimeout     time.Duration
 }
 
-// NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
 	return &transportationUsecase{
 		transportationRepo: tr,
