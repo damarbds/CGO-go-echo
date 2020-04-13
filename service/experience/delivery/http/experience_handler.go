@@ -263,6 +263,8 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
 	status := c.QueryParam("status")
+	search := c.QueryParam("search")
+
 
 	var limit = 20
 	var page = 1
@@ -282,7 +284,7 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 		needMerchantAuth = true
 	}
 
-	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, needMerchantAuth, token, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
+	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, needMerchantAuth, search, token, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
 		bottomprice, upprice, sortby, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

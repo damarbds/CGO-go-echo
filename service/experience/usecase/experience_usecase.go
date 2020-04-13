@@ -337,6 +337,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 func (m experienceUsecase) FilterSearchExp(
 	ctx context.Context,
 	isMerchant bool,
+	search,
 	token,
 	qStatus,
 	cityID string,
@@ -418,6 +419,11 @@ func (m experienceUsecase) FilterSearchExp(
 		qCount = qCount + `AND e.merchant_id =` + currentMerchant.Id
 	}
 
+	if search != "" {
+		keyword := `'%` + search + `%'`
+		query = query + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+		qCount = qCount + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+	}
 	if cityID != "" {
 		city_id, _ := strconv.Atoi(cityID)
 		query = query + ` AND h.city_id = ` + strconv.Itoa(city_id)
