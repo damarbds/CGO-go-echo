@@ -19,7 +19,7 @@ type Repository interface {
 	Insert(ctx context.Context, a *models.Experience) (*string, error)
 	Delete(ctx context.Context, id string, deleted_by string) error
 	GetSuccessBookCount(ctx context.Context, merchantId string) (int, error)
-	GetExpCount(ctx context.Context, merchantId string) (int, error)
+	GetPublishedExpCount(ctx context.Context, merchantId string) (int, error)
 	GetExpPendingTransactionCount(ctx context.Context, merchantId string) (int, error)
 	GetExpFailedTransactionCount(ctx context.Context, merchantId string) (int, error)
 	CountFilterSearch(ctx context.Context, query string) (int, error)

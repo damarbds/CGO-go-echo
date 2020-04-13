@@ -83,7 +83,7 @@ func (m *experienceRepository) GetExpFailedTransactionCount(ctx context.Context,
 	return count, nil
 }
 
-func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId string) (int, error) {
+func (m *experienceRepository) GetPublishedExpCount(ctx context.Context, merchantId string) (int, error) {
 	query := `
 	SELECT
 		count(*) AS count

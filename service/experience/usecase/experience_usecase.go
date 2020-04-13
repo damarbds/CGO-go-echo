@@ -104,7 +104,7 @@ func (m experienceUsecase) GetExpFailedTransactionCount(ctx context.Context, tok
 	return &models.Count{Count: count}, nil
 }
 
-func (m experienceUsecase) GetExpCount(ctx context.Context, token string) (*models.Count, error) {
+func (m experienceUsecase) GetPublishedExpCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -113,7 +113,7 @@ func (m experienceUsecase) GetExpCount(ctx context.Context, token string) (*mode
 		return nil, err
 	}
 
-	count, err := m.experienceRepo.GetExpCount(ctx, currentMerchant.Id)
+	count, err := m.experienceRepo.GetPublishedExpCount(ctx, currentMerchant.Id)
 	if err != nil {
 		return nil, err
 	}

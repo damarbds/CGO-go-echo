@@ -45,7 +45,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase, is identityserver
 	e.GET("service/experience/inspirations", handler.GetExpInspirations)
 	e.GET("service/experience/categories/:id", handler.GetByCategoryID)
 	e.GET("service/experience/success-book-count", handler.GetSuccessBookCount)
-	e.GET("service/experience/published-count", handler.GetExpCount)
+	e.GET("service/experience/published-count", handler.GetPublishedExpCount)
 	e.GET("service/experience/transaction-count", handler.GetExpTransactionCount)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
@@ -151,7 +151,7 @@ func (a *experienceHandler) GetExpTransactionCount(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func (a *experienceHandler) GetExpCount(c echo.Context) error {
+func (a *experienceHandler) GetPublishedExpCount(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -165,7 +165,7 @@ func (a *experienceHandler) GetExpCount(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.experienceUsecase.GetExpCount(ctx, token)
+	result, err := a.experienceUsecase.GetPublishedExpCount(ctx, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
