@@ -35,7 +35,13 @@ func NewtransportationHandler(e *echo.Echo, us transportation.Usecase) {
 	//e.GET("service/special-transportation/:code", handler.GettransportationByCode)
 	//e.DELETE("/transportations/:id", handler.Delete)
 }
+
 func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	isMerchant := c.QueryParam("isMerchant")
+
 	harborSourceId := c.QueryParam("harbor_source_id")
 	harborDestId := c.QueryParam("harbor_dest_id")
 	guest := c.QueryParam("guest")
@@ -48,6 +54,9 @@ func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
+
+	search := c.QueryParam("search")
+	status := c.QueryParam("status")
 
 	var limit = 20
 	var page = 1
@@ -62,6 +71,10 @@ func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 		ctx = context.Background()
 	}
 
+	needMerchantAuth := false
+	if isMerchant != "" {
+		needMerchantAuth = true
+	}
 	var isReturnTrip bool
 	if isReturn == "0" {
 		isReturnTrip = false
@@ -73,7 +86,7 @@ func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 	arrTimeOp, _ := strconv.Atoi(arrTimeOptions)
 
 
-	results, err := t.transportationUsecase.FilterSearchTrans(ctx, sortBy, harborSourceId, harborDestId, depDate, class, isReturnTrip, depTimeOp, arrTimeOp, guestTrip, page, limit, offset)
+	results, err := t.transportationUsecase.FilterSearchTrans(ctx, needMerchantAuth, token, search, status, sortBy, harborSourceId, harborDestId, depDate, class, isReturnTrip, depTimeOp, arrTimeOp, guestTrip, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

@@ -104,7 +104,7 @@ func (m experienceUsecase) GetExpFailedTransactionCount(ctx context.Context, tok
 	return &models.Count{Count: count}, nil
 }
 
-func (m experienceUsecase) GetExpCount(ctx context.Context, token string) (*models.Count, error) {
+func (m experienceUsecase) GetPublishedExpCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -113,7 +113,7 @@ func (m experienceUsecase) GetExpCount(ctx context.Context, token string) (*mode
 		return nil, err
 	}
 
-	count, err := m.experienceRepo.GetExpCount(ctx, currentMerchant.Id)
+	count, err := m.experienceRepo.GetPublishedExpCount(ctx, currentMerchant.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -330,14 +330,16 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				}
 			}
 		}
-
-		//expListDto = append(expListDto,&expDto)
 	}
 	return expListDto, nil
 }
 
 func (m experienceUsecase) FilterSearchExp(
 	ctx context.Context,
+	isMerchant bool,
+	search,
+	token,
+	qStatus,
 	cityID string,
 	harborsId string,
 	activityType string,
@@ -366,6 +368,7 @@ func (m experienceUsecase) FilterSearchExp(
 		e.id,
 		e.exp_title,
 		e.exp_type,
+		e.status as exp_status,
 		e.rating,
 		e.exp_location_latitude as latitude,
 		e.exp_location_longitude as longitude,
@@ -398,15 +401,59 @@ func (m experienceUsecase) FilterSearchExp(
 		query = query + ` join harbors h on h.id = e.harbors_id`
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
-	if cityID != "" {
-		city_id, _ := strconv.Atoi(cityID)
-		query = query + ` where h.city_id = ` + strconv.Itoa(city_id)
-		qCount = qCount + ` where h.city_id = ` + strconv.Itoa(city_id)
-	} else if harborsId != "" {
-		query = query + ` where e.harbors_id = '` + harborsId + `'`
-		qCount = qCount + ` where e.harbors_id = '` + harborsId + `'`
+
+	query = query + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
+	qCount = qCount + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
+
+	if isMerchant {
+		if token == "" {
+			return nil, models.ErrUnAuthorize
+		}
+
+		currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+
+		query = query + `AND e.merchant_id =` + currentMerchant.Id
+		qCount = qCount + `AND e.merchant_id =` + currentMerchant.Id
 	}
 
+	if search != "" {
+		keyword := `'%` + search + `%'`
+		query = query + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+		qCount = qCount + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+	}
+	if cityID != "" {
+		city_id, _ := strconv.Atoi(cityID)
+		query = query + ` AND h.city_id = ` + strconv.Itoa(city_id)
+		qCount = qCount + ` AND h.city_id = ` + strconv.Itoa(city_id)
+	} else if harborsId != "" {
+		query = query + ` AND e.harbors_id = '` + harborsId + `'`
+		qCount = qCount + ` AND e.harbors_id = '` + harborsId + `'`
+	}
+	if qStatus != "" {
+		var status int
+		if qStatus == "preview" {
+			status = 0
+		} else if qStatus == "draft" {
+			status = 1
+		} else if qStatus == "published" {
+			status = 2
+		} else if qStatus == "unpublished" {
+			status = 3
+		} else if qStatus == "archived" {
+			status = 4
+		}
+
+		query = query + ` AND e.status =` + strconv.Itoa(status)
+		qCount = qCount + ` AND e.status =` + strconv.Itoa(status)
+
+		if qStatus == "inService" {
+			query = query + ` AND e.status IN (2,3,4)`
+			qCount = qCount + ` AND e.status IN (2,3,4)`
+		}
+	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
 		query = query + ` AND e.exp_max_guest =` + strconv.Itoa(guests)
@@ -427,7 +474,6 @@ func (m experienceUsecase) FilterSearchExp(
 	}
 
 	if len(activityTypeArray) != 0 {
-		//types, _ := strconv.Atoi(activityType)
 		for index, id := range activityTypeArray {
 			if index == 0 && index != (len(activityTypeArray)-1) {
 				query = query + ` AND (fat.id =` + strconv.Itoa(id)
@@ -556,7 +602,6 @@ func (m experienceUsecase) FilterSearchExp(
 				var expPhotoImage []models.CoverPhotosObj
 				errObject := json.Unmarshal([]byte(element.ExpPhotoImage), &expPhotoImage)
 				if errObject != nil {
-					//fmt.Println("Error : ",err.Error())
 					return nil, models.ErrInternalServerError
 				}
 				expPhoto.ExpPhotoImage = expPhotoImage

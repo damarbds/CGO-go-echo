@@ -45,7 +45,7 @@ func NewexperienceHandler(e *echo.Echo, us experience.Usecase, is identityserver
 	e.GET("service/experience/inspirations", handler.GetExpInspirations)
 	e.GET("service/experience/categories/:id", handler.GetByCategoryID)
 	e.GET("service/experience/success-book-count", handler.GetSuccessBookCount)
-	e.GET("service/experience/published-count", handler.GetExpCount)
+	e.GET("service/experience/published-count", handler.GetPublishedExpCount)
 	e.GET("service/experience/transaction-count", handler.GetExpTransactionCount)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
@@ -151,7 +151,7 @@ func (a *experienceHandler) GetExpTransactionCount(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func (a *experienceHandler) GetExpCount(c echo.Context) error {
+func (a *experienceHandler) GetPublishedExpCount(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -165,7 +165,7 @@ func (a *experienceHandler) GetExpCount(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.experienceUsecase.GetExpCount(ctx, token)
+	result, err := a.experienceUsecase.GetPublishedExpCount(ctx, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -245,6 +245,11 @@ func (a *experienceHandler) GetByCategoryID(c echo.Context) error {
 }
 
 func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	isMerchant := c.QueryParam("isMerchant")
+
 	harborID := c.QueryParam("harbor_id")
 	cityID := c.QueryParam("city_id")
 	qtype := c.QueryParam("type")
@@ -257,6 +262,9 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	sortby := c.QueryParam("sortby")
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
+	status := c.QueryParam("status")
+	search := c.QueryParam("search")
+
 
 	var limit = 20
 	var page = 1
@@ -271,7 +279,12 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, cityID, harborID, qtype, startDate, endDate, guest, trip,
+	needMerchantAuth := false
+	if isMerchant != "" {
+		needMerchantAuth = true
+	}
+
+	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, needMerchantAuth, search, token, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
 		bottomprice, upprice, sortby, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

@@ -207,7 +207,7 @@ func main() {
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
-	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
+	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, experienceRepo, transportationRepo, isUsecase, timeoutContext)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		experienceAddOnRepo,
