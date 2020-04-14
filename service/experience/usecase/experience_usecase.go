@@ -173,7 +173,7 @@ func (m experienceUsecase) GetByCategoryID(ctx context.Context, categoryId int) 
 			priceItemType = "Per Trip"
 		}
 
-		countRating, err := m.reviewsRepo.CountRating(ctx, exp.Id)
+		countRating, err := m.reviewsRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -209,7 +209,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 		if errUnmarshal := json.Unmarshal([]byte(element.ExpType), &expType); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
 		}
-		countRating, err := m.reviewsRepo.CountRating(ctx, element.Id)
+		countRating, err := m.reviewsRepo.CountRating(ctx, 0, element.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -415,8 +415,8 @@ func (m experienceUsecase) FilterSearchExp(
 			return nil, err
 		}
 
-		query = query + `AND e.merchant_id =` + currentMerchant.Id
-		qCount = qCount + `AND e.merchant_id =` + currentMerchant.Id
+		query = query + `AND e.merchant_id = '` + currentMerchant.Id + `'`
+		qCount = qCount + `AND e.merchant_id = '` + currentMerchant.Id + `'`
 	}
 
 	if search != "" {
@@ -580,7 +580,7 @@ func (m experienceUsecase) FilterSearchExp(
 			priceItemType = "Per Trip"
 		}
 
-		countRating, err := m.reviewsRepo.CountRating(ctx, exp.Id)
+		countRating, err := m.reviewsRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -660,7 +660,7 @@ func (m experienceUsecase) GetExpInspirations(ctx context.Context) ([]*models.Ex
 	query, err := m.inspirationRepo.GetExpInspirations(ctx)
 	var results []*models.ExpInspirationDto
 	for _, element := range query {
-		getCountReview, err := m.reviewsRepo.CountRating(ctx, element.ExpId)
+		getCountReview, err := m.reviewsRepo.CountRating(ctx, 0, element.ExpId)
 		if err != nil {
 			return nil, err
 		}
@@ -735,7 +735,7 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 			priceItemType = "Per Trip"
 		}
 
-		countRating, err := m.reviewsRepo.CountRating(ctx, exp.Id)
+		countRating, err := m.reviewsRepo.CountRating(ctx, 0,  exp.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -1407,7 +1407,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		MinimumBookingDesc:   res.MinimumBookingDesc,
 		MinimumBookingAmount: res.MinimumBookingAmount,
 	}
-	countRating, err := m.reviewsRepo.CountRating(ctx, res.Id)
+	countRating, err := m.reviewsRepo.CountRating(ctx, 0, res.Id)
 	experiences := models.ExperienceDto{
 		Id:                      res.Id,
 		ExpTitle:                res.ExpTitle,

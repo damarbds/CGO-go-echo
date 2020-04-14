@@ -265,7 +265,6 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	status := c.QueryParam("status")
 	search := c.QueryParam("search")
 
-
 	var limit = 20
 	var page = 1
 	var offset = 0

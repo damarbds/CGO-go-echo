@@ -102,8 +102,8 @@ func (t transportationUsecase) FilterSearchTrans(
 			return nil, err
 		}
 
-		query = query + `AND t.merchant_id =` + currentMerchant.Id
-		queryCount = queryCount + `AND t.merchant_id =` + currentMerchant.Id
+		query = query + `AND t.merchant_id = '` + currentMerchant.Id + `'`
+		queryCount = queryCount + `AND t.merchant_id = '` + currentMerchant.Id + `'`
 	}
 
 	if qStatus != "" {
@@ -134,19 +134,19 @@ func (t transportationUsecase) FilterSearchTrans(
 		queryCount = queryCount + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
 	}
 	if harborSourceId != "" {
-		query = query + ` AND t.harbors_source_id =` + harborSourceId
-		queryCount = queryCount + ` AND t.harbors_source_id =` + harborSourceId
+		query = query + ` AND t.harbors_source_id = '` + harborSourceId + `'`
+		queryCount = queryCount + ` AND t.harbors_source_id = '` + harborSourceId + `'`
 		if isReturn {
-			query = query + ` AND t.harbors_source_id =` + harborDestId
-			queryCount = queryCount + ` AND t.harbors_source_id =` + harborDestId
+			query = query + ` AND t.harbors_source_id = '` + harborDestId + `'`
+			queryCount = queryCount + ` AND t.harbors_source_id = '` + harborDestId + `'`
 		}
 	}
 	if harborDestId != "" {
-		query = query + ` AND t.harbors_dest_id =` + harborDestId
-		queryCount = queryCount + ` AND t.harbors_dest_id =` + harborDestId
+		query = query + ` AND t.harbors_dest_id = '` + harborDestId + `'`
+		queryCount = queryCount + ` AND t.harbors_dest_id = '` + harborDestId + `'`
 		if isReturn {
-			query = query + ` AND t.harbors_dest_id =` + harborSourceId
-			queryCount = queryCount + ` AND t.harbors_dest_id =` + harborSourceId
+			query = query + ` AND t.harbors_dest_id = '` + harborSourceId + `'`
+			queryCount = queryCount + ` AND t.harbors_dest_id = '` + harborSourceId + `'`
 		}
 	}
 	if guest != 0 {
@@ -154,12 +154,12 @@ func (t transportationUsecase) FilterSearchTrans(
 		queryCount = queryCount + ` AND t.harbors_dest_id =` + strconv.Itoa(guest)
 	}
 	if depDate != "" {
-		query = query + ` AND s.departure_date =` + depDate
-		queryCount = queryCount + ` AND s.departure_date =` + depDate
+		query = query + ` AND s.departure_date = '` + depDate + `'`
+		queryCount = queryCount + ` AND s.departure_date = '` + depDate + `'`
 	}
 	if class != "" {
-		query = query + ` AND t.class =` + class
-		queryCount = queryCount + ` AND t.class =` + class
+		query = query + ` AND t.class = '` + class + `'`
+		queryCount = queryCount + ` AND t.class = '` + class + `'`
 	}
 	if depTimeOptions != 0 {
 		query = query + ` AND s.departure_timeoption_id =` + strconv.Itoa(depTimeOptions)
