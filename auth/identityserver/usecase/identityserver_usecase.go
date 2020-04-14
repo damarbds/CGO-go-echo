@@ -5,10 +5,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/Azure/azure-storage-blob-go/azblob"
-	"github.com/auth/identityserver"
-	"github.com/models"
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -17,6 +13,11 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/auth/identityserver"
+	"github.com/models"
+	"golang.org/x/net/context"
 )
 
 type identityserverUsecase struct {
@@ -25,8 +26,6 @@ type identityserverUsecase struct {
 	accountStorage   string
 	accessKeyStorage string
 }
-
-
 
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
 func NewidentityserverUsecase(baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
@@ -188,15 +187,15 @@ func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, e
 	return &user, nil
 }
 
-func (m identityserverUsecase) GetToken(username string, password string,scope string) (*models.GetToken, error) {
+func (m identityserverUsecase) GetToken(username string, password string, scope string) (*models.GetToken, error) {
 
 	var param = url.Values{}
 	param.Set("grant_type", "password")
 	param.Set("username", username)
 	param.Set("password", password)
-	if scope == "phone_number"{
+	if scope == "phone_number" {
 		param.Set("scope", "phone_number")
-	}else {
+	} else {
 		param.Set("scope", "openid")
 	}
 
@@ -381,7 +380,7 @@ func (m identityserverUsecase) RequestOTP(phoneNumber string) (*models.RequestOT
 	}
 	user := models.RequestOTP{}
 	json.NewDecoder(resp.Body).Decode(&user)
-	
+	user.ExpiredInMSecond = 300000
 	sms := models.SendingSMS{
 		Source:      "CGO Indonesia",
 		Destination: phoneNumber,
@@ -389,9 +388,9 @@ func (m identityserverUsecase) RequestOTP(phoneNumber string) (*models.RequestOT
 		Encoding:    "AUTO",
 	}
 	_, err = m.SendingSMS(&sms)
-	 if err != nil {
-	 	return nil,err
-	 }
+	if err != nil {
+		return nil, err
+	}
 	return &user, nil
 }
 
@@ -424,6 +423,7 @@ func (m identityserverUsecase) SendingSMS(sms *models.SendingSMS) (*models.Sendi
 	json.NewDecoder(resp.Body).Decode(&user)
 	return &user, nil
 }
+
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation
