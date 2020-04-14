@@ -6,6 +6,7 @@ import (
 	"github.com/models"
 	"github.com/product/reviews"
 	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 type reviewRepository struct {
@@ -59,9 +60,11 @@ func (m *reviewRepository) fetch(ctx context.Context, query string, args ...inte
 	return result, nil
 }
 
-func (r reviewRepository) CountRating(ctx context.Context, expID string) (int, error) {
-	query := `SELECT COUNT(*) as count FROM reviews WHERE exp_id = ?`
-
+func (r reviewRepository) CountRating(ctx context.Context, rating int, expID string) (int, error) {
+	query := `SELECT COUNT(*) as count FROM reviews r WHERE exp_id = ? AND is_deleted = 0 AND is_active = 1`
+	if rating != 0 {
+		query = query + ` AND r.values = ` + strconv.Itoa(rating)
+	}
 	rows, err := r.Conn.QueryContext(ctx, query, expID)
 	if err != nil {
 		logrus.Error(err)
@@ -77,10 +80,24 @@ func (r reviewRepository) CountRating(ctx context.Context, expID string) (int, e
 	return count, nil
 }
 
-func (r reviewRepository) GetByExpId(ctx context.Context, expID string) ([]*models.Review, error) {
-	query := `select * from reviews where exp_id = ? AND is_deleted = 0 AND is_active = 1`
-
-	res, err := r.fetch(ctx, query, expID)
+func (r reviewRepository) GetByExpId(ctx context.Context, expID, sortBy string, rating, limit, offset int) ([]*models.Review, error) {
+	query := `select * from reviews r where exp_id = ? AND is_deleted = 0 AND is_active = 1`
+	if rating != 0 {
+		query = query + ` AND r.values = ` + strconv.Itoa(rating)
+	}
+	if sortBy != "" {
+		if sortBy == "ratingup" {
+			query = query + ` ORDER BY r.values DESC`
+		} else if sortBy == "ratingdown" {
+			query = query + ` ORDER BY r.values ASC`
+		} else if sortBy == "latestdate" {
+			query = query + ` ORDER BY created_date DESC`
+		} else if sortBy == "oldestdate" {
+			query = query + ` ORDER BY created_date ASC`
+		}
+	}
+	query = query + ` LIMIT ? OFFSET ?`
+	res, err := r.fetch(ctx, query, expID, limit, offset)
 	if err != nil {
 		return nil, err
 	}

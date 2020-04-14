@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/context"
 	validator "gopkg.in/go-playground/validator.v9"
 	"net/http"
+	"strconv"
 )
 
 // ResponseError represent the reseponse error struct
@@ -40,20 +41,48 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 	return true, nil
 }
 
-// GetByID will get article by given id
 func (a *reviewsHandler) GetReviewsByExpId(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	isMerchant := c.QueryParam("isMerchant")
+
+	if isMerchant != "" {
+		if token != "" {
+			return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+		}
+	}
+
 	expId := c.QueryParam("exp_id")
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
+	sortBy := c.QueryParam("sortBy")
+	qRating := c.QueryParam("rating")
+
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
+
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	art, err := a.reviewsUsecase.GetReviewsByExpId(ctx, expId)
+	var rating int
+	if qRating != "" {
+		rating, _ = strconv.Atoi(qRating)
+	}
+	res, err := a.reviewsUsecase.GetReviewsByExpIdWithPagination(ctx, page, limit, offset, rating, sortBy, expId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-	return c.JSON(http.StatusOK, art)
+	return c.JSON(http.StatusOK, res)
 }
+
 func getStatusCode(err error) int {
 	if err == nil {
 		return http.StatusOK
