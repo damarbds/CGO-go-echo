@@ -32,8 +32,30 @@ func NewmerchantHandler(e *echo.Echo, us merchant.Usecase) {
 	e.PUT("/merchants/:id", handler.UpdateMerchant)
 	e.GET("/merchants/count", handler.Count)
 	e.GET("/merchants", handler.List)
+	e.DELETE("/merchants/:id",handler.Delete)
 	//e.GET("/merchants/:id", handler.GetByID)
 	//e.DELETE("/merchants/:id", handler.Delete)
+}
+func (a *merchantHandler) Delete(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	id := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.MerchantUsecase.Delete(ctx,id,token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 func (a *merchantHandler) List(c echo.Context) error {
@@ -61,7 +83,7 @@ func (a *merchantHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.MerchantUsecase.List(ctx, page, limit, offset)
+	result, err := a.MerchantUsecase.List(ctx, page, limit, offset,token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -100,6 +122,13 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 
 // Store will store the merchant by given request body
 func (a *merchantHandler) CreateMerchant(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
 	//var merchantCommand models.NewCommandMerchant
 	//err := c.Bind(&merchantCommand)
 	//if err != nil {
@@ -121,7 +150,7 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	error := a.MerchantUsecase.Create(ctx, &merchantCommand, "admin")
+	error := a.MerchantUsecase.Create(ctx, &merchantCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})

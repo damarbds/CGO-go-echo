@@ -26,6 +26,8 @@ type identityserverUsecase struct {
 	accessKeyStorage string
 }
 
+
+
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
 func NewidentityserverUsecase(baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
 	return &identityserverUsecase{
@@ -186,13 +188,18 @@ func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, e
 	return &user, nil
 }
 
-func (m identityserverUsecase) GetToken(username string, password string) (*models.GetToken, error) {
+func (m identityserverUsecase) GetToken(username string, password string,scope string) (*models.GetToken, error) {
 
 	var param = url.Values{}
 	param.Set("grant_type", "password")
 	param.Set("username", username)
 	param.Set("password", password)
-	param.Set("scope", "openid")
+	if scope == "phone_number"{
+		param.Set("scope", "phone_number")
+	}else {
+		param.Set("scope", "openid")
+	}
+
 	var payload = bytes.NewBufferString(param.Encode())
 
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/token", payload)
@@ -344,6 +351,79 @@ func (m identityserverUsecase) VerifiedEmail(r *models.VerifiedEmail) (*models.V
 	return &user, nil
 }
 
+func (m identityserverUsecase) RequestOTP(phoneNumber string) (*models.RequestOTP, error) {
+	var param = url.Values{}
+	param.Set("phone_number", phoneNumber)
+	var payload = bytes.NewBufferString(param.Encode())
+
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/request-otp", payload)
+	//os.Exit(1)
+	//req.Header.Set("Authorization", "Basic "+m.basicAuth)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrUsernamePassword
+	}
+	user := models.RequestOTP{}
+	json.NewDecoder(resp.Body).Decode(&user)
+	
+	sms := models.SendingSMS{
+		Source:      "CGO Indonesia",
+		Destination: phoneNumber,
+		Text:        "Hi I'm from CGO Indonesia, your OTP: " + user.OTP + ",your grace period is only 5 minutes, if it fails try to request again",
+		Encoding:    "AUTO",
+	}
+	_, err = m.SendingSMS(&sms)
+	 if err != nil {
+	 	return nil,err
+	 }
+	return &user, nil
+}
+
+func (m identityserverUsecase) SendingSMS(sms *models.SendingSMS) (*models.SendingSMS, error) {
+	data, _ := json.Marshal(sms)
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/push-sms", bytes.NewReader(data))
+	//os.Exit(1)
+	//req.Header.Set("Authorization", "Basic YWRtaW5AZ21haWwuY29tOmFkbWlu")
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrBadParamInput
+	}
+	user := models.SendingSMS{}
+	json.NewDecoder(resp.Body).Decode(&user)
+	return &user, nil
+}
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation

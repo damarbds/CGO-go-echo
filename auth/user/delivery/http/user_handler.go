@@ -128,7 +128,7 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 		}
 	}
 
-	phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
+	//phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
 	verificationCode, _ := strconv.Atoi(c.FormValue("verification_code"))
 	gender, _ := strconv.Atoi(c.FormValue("gender"))
 	idType, _ := strconv.Atoi(c.FormValue("id_type"))
@@ -139,7 +139,7 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 		UserEmail:            c.FormValue("user_email"),
 		Password:             c.FormValue("password"),
 		FullName:             c.FormValue("full_name"),
-		PhoneNumber:          phoneNumber,
+		PhoneNumber:          c.FormValue("phone_number"),
 		VerificationSendDate: c.FormValue("verification_send_date"),
 		VerificationCode:     verificationCode,
 		ProfilePictUrl:       imagePath,
@@ -192,7 +192,7 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 	if errRemove != nil {
 		return models.ErrInternalServerError
 	}
-	phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
+	//phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
 	verificationCode, _ := strconv.Atoi(c.FormValue("verification_code"))
 	gender, _ := strconv.Atoi(c.FormValue("gender"))
 	idType, _ := strconv.Atoi(c.FormValue("id_type"))
@@ -203,7 +203,7 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 		UserEmail:            c.FormValue("user_email"),
 		Password:             c.FormValue("password"),
 		FullName:             c.FormValue("full_name"),
-		PhoneNumber:          phoneNumber,
+		PhoneNumber:          c.FormValue("phone_number"),
 		VerificationSendDate: c.FormValue("verification_send_date"),
 		VerificationCode:     verificationCode,
 		ProfilePictUrl:       imagePath,

@@ -16,7 +16,7 @@ type User struct {
 	IsActive             int        `json:"is_active" validate:"required"`
 	UserEmail            string     `json:"user_email" validate:"required"`
 	FullName             string     `json:"full_name"`
-	PhoneNumber          int        `json:"phone_number" validate:"required"`
+	PhoneNumber          string        `json:"phone_number" validate:"required"`
 	VerificationSendDate time.Time  `json:"verification_send_date"`
 	VerificationCode     string     `json:"verification_code"`
 	ProfilePictUrl       string     `json:"profile_pict_url"`
@@ -33,7 +33,7 @@ type NewCommandUser struct {
 	UserEmail            string `json:"user_email" validate:"required"`
 	Password             string `json:"password"`
 	FullName             string `json:"full_name"`
-	PhoneNumber          int    `json:"phone_number"`
+	PhoneNumber          string    `json:"phone_number"`
 	VerificationSendDate string `json:"verification_send_date"`
 	VerificationCode     int    `json:"verification_code"`
 	ProfilePictUrl       string `json:"profile_pict_url"`
@@ -52,7 +52,7 @@ type UserInfoDto struct {
 	IsActive       int        `json:"is_active" validate:"required"`
 	UserEmail      string     `json:"user_email" validate:"required"`
 	FullName       string     `json:"full_name"`
-	PhoneNumber    int        `json:"phone_number" validate:"required"`
+	PhoneNumber    string        `json:"phone_number" validate:"required"`
 	ProfilePictUrl string     `json:"profile_pict_url"`
 	Address        string     `json:"address"`
 	Dob            time.Time  `json:"dob"`

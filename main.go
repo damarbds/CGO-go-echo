@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	_merchantUcase "github.com/auth/merchant/usecase"
 	"log"
 	"net/url"
 	"os"
@@ -39,13 +40,11 @@ import (
 	_isHttpDeliver "github.com/auth/identityserver/delivery/http"
 	_isUcase "github.com/auth/identityserver/usecase"
 
-	_merchantHttpDeliver "github.com/auth/merchant/delivery/http"
-	_merchantRepo "github.com/auth/merchant/repository"
-	_merchantUcase "github.com/auth/merchant/usecase"
-
 	_adminHttpDeliver "github.com/auth/admin/delivery/http"
 	_adminRepo "github.com/auth/admin/repository"
 	_adminUcase "github.com/auth/admin/usecase"
+	_merchantHttpDeliver "github.com/auth/merchant/delivery/http"
+	_merchantRepo "github.com/auth/merchant/repository"
 
 	_promoHttpDeliver "github.com/service/promo/delivery/http"
 	_promoRepo "github.com/service/promo/repository"
@@ -207,8 +206,8 @@ func main() {
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
-	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, timeoutContext)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
+	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, adminUsecase,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		experienceAddOnRepo,
 		expAvailabilityRepo,
@@ -243,7 +242,7 @@ func main() {
 	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
 	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase, isUsecase)
-	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase)
+	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase,isUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)

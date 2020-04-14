@@ -16,6 +16,8 @@ type userUsecase struct {
 	contextTimeout   time.Duration
 }
 
+
+
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase, timeout time.Duration) user.Usecase {
 	return &userUsecase{
@@ -24,7 +26,26 @@ func NewuserUsecase(a user.Repository, is identityserver.Usecase, timeout time.D
 		contextTimeout:   timeout,
 	}
 }
+func (m userUsecase) RequestOTP(ctx context.Context, phoneNumber string) (*models.RequestOTP, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
 
+	requestOTP ,err := m.identityServerUc.RequestOTP(phoneNumber)
+	if err != nil {
+		return nil,err
+	}
+
+	getUserByPhoneNumber ,err := m.userRepo.GetByUserNumberOTP(ctx,phoneNumber,"")
+
+	user := getUserByPhoneNumber
+	user.VerificationCode = requestOTP.OTP
+
+	err = m.userRepo.Update(ctx,user)
+	if err != nil {
+		return nil,err
+	}
+	return requestOTP,nil
+}
 func (m userUsecase) List(ctx context.Context, page, limit, offset int) (*models.UserWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -86,13 +107,20 @@ func (m userUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetTo
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password)
+	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password,ar.Scope)
 	if err != nil {
 		return nil, err
 	}
-	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.Email)
-	if existeduser == nil {
-		return nil, models.ErrNotFound
+	if ar.Scope == "phone_number"{
+		existeduser, _ := m.userRepo.GetByUserNumberOTP(ctx, ar.Email,ar.Password)
+		if existeduser == nil {
+			return nil, models.ErrUnAuthorize
+		}
+	}else {
+		existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.Email)
+		if existeduser == nil {
+			return nil, models.ErrUsernamePassword
+		}
 	}
 	return requestToken, err
 }

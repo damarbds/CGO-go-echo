@@ -31,6 +31,17 @@ type SendingEmail struct {
 	From    string `json:"from"`
 	To      string `json:"to"`
 }
+type SendingSMS struct {
+	Source string `json:"source"`
+	Destination string `json:"destination"`
+	Text    string `json:"text"`
+	Encoding      string `json:"encoding"`
+}
+
+type RequestOTP struct {
+	OTP string `json:"OTP"`
+	ExpiredDate string `json:"ExpiredDate"`
+}
 type VerifiedEmail struct {
 	Email   string `json:"email"`
 	CodeOTP string `json:"codeOTP"`
@@ -51,4 +62,9 @@ type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Type     string `json:"type"`
+	Scope 	string `json:"scope"`
 }
+
+type RequestOTPNumber struct {
+	PhoneNumber 	string	`json:"phone_number"`
+} 

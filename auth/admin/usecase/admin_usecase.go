@@ -28,7 +28,7 @@ func (m adminUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetT
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password)
+	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password,ar.Scope)
 	if err != nil {
 		return nil, err
 	}

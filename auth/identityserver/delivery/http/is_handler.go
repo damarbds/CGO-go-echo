@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"github.com/auth/admin"
+	"github.com/auth/identityserver"
 	"github.com/auth/merchant"
 	"github.com/auth/user"
 	"net/http"
@@ -20,23 +21,45 @@ type ResponseError struct {
 
 // isHandler  represent the httphandler for is
 type isHandler struct {
+	isUsecase 		identityserver.Usecase
 	merchantUsecase merchant.Usecase
 	userUsecase     user.Usecase
 	adminUsecase    admin.Usecase
 }
 
 // NewisHandler will initialize the iss/ resources endpoint
-func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usecase) {
+func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usecase,is identityserver.Usecase) {
 	handler := &isHandler{
 		merchantUsecase: m,
 		userUsecase:     u,
 		adminUsecase:    a,
+		isUsecase:is,
 	}
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
+	e.POST("/account/request-otp", handler.RequestOTP)
 	e.GET("/account/verified-email", handler.VerifiedEmail)
 }
 
+func (a *isHandler) RequestOTP(c echo.Context) error {
+	var requestOTP models.RequestOTPNumber
+	err := c.Bind(&requestOTP)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	requestOTP.PhoneNumber = c.Request().Form.Get("phone_number")
+	responseOTP , err:= a.userUsecase.RequestOTP(ctx,requestOTP.PhoneNumber)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, responseOTP)
+}
 func (a *isHandler) Login(c echo.Context) error {
 	var isLogin models.Login
 	err := c.Bind(&isLogin)
@@ -52,6 +75,7 @@ func (a *isHandler) Login(c echo.Context) error {
 	isLogin.Email = c.Request().Form.Get("email")
 	isLogin.Password = c.Request().Form.Get("password")
 	isLogin.Type = c.Request().Form.Get("type")
+	isLogin.Scope = c.Request().Form.Get("scope")
 	var responseToken *models.GetToken
 	if isLogin.Type == "user" {
 

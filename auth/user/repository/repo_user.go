@@ -185,6 +185,38 @@ func (m *userRepository) GetByUserEmail(ctx context.Context, userEmail string) (
 	}
 	return
 }
+
+func (m *userRepository) GetByUserNumberOTP(ctx context.Context, phoneNumber string, otp string) (res *models.User, err error) {
+	if otp == ""{
+		query := `SELECT * FROM users WHERE phone_number = ?`
+
+		list, err := m.fetch(ctx, query, phoneNumber)
+		if err != nil {
+			return nil,err
+		}
+
+		if len(list) > 0 {
+			res = list[0]
+		} else {
+			return nil, models.ErrNotFound
+		}
+	}else {
+		query := `SELECT * FROM users WHERE phone_number = ? AND verification_code =?`
+
+		list, err := m.fetch(ctx, query, phoneNumber,otp)
+		if err != nil {
+			return nil,err
+		}
+
+		if len(list) > 0 {
+			res = list[0]
+		} else {
+			return nil, models.ErrNotFound
+		}
+	}
+	return
+}
+
 func (m *userRepository) Insert(ctx context.Context, a *models.User) error {
 	query := `INSERT users SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , user_email=? , full_name=? , phone_number=? ,verification_send_date=?,verification_code=?,profile_pict_url=?,address=?,dob=?,gender=?,id_type=?,id_number=?,referral_code=?,points=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -207,7 +239,7 @@ func (m *userRepository) Insert(ctx context.Context, a *models.User) error {
 }
 
 func (m *userRepository) Delete(ctx context.Context, id string, deleted_by string) error {
-	query := `UPDATE  users SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
+	query := `UPDATE users SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err

@@ -3,7 +3,10 @@ package models
 type Count struct {
 	Count int `json:"count"`
 }
-
+type ResponseDelete struct {
+	Id 			string	`json:"id"`
+	Message		string	`json:"message"`
+} 
 type MetaPagination struct {
 	Page          int `json:"page"`
 	Total         int `json:"total_pages"`
