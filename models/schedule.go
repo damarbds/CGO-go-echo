@@ -30,3 +30,15 @@ type PriceObj struct {
 	ChildrenPrice float64 `json:"children_price"`
 	Currency      int     `json:"currency"`
 }
+type ScheduleDtos struct {
+	TransId 	string		`json:"trans_id"`
+	DepartureDate string	`json:"departure_date"`
+}
+type ScheduleDto struct {
+	MerchantId 		string 		`json:"merchant_id"`
+	
+}
+type ScheduleDateObj struct {
+
+}
+

@@ -44,6 +44,7 @@ type NewCommandUser struct {
 	IdNumber             string `json:"id_number"`
 	ReferralCode         int    `json:"referral_code"`
 	Points               int    `json:"points"`
+	Token 				 *string `json:"token"`
 }
 type UserInfoDto struct {
 	Id             string     `json:"id"`

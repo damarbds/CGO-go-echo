@@ -20,6 +20,7 @@ var (
 //authValidation
 var (
 	ErrUsernamePassword = errors.New("Please Check again your email and Password")
+	ErrNotYetRegister = errors.New("User not found Please Register now")
 	ErrInvalidOTP       = errors.New("Your OTP invalid Please check again ")
 )
 var (

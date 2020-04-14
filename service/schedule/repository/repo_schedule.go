@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"github.com/sirupsen/logrus"
 
 	//"fmt"
 	guuid "github.com/google/uuid"
@@ -21,9 +22,42 @@ type scheduleRepository struct {
 	Conn *sql.DB
 }
 
+
+
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewScheduleRepository(Conn *sql.DB) schedule.Repository {
 	return &scheduleRepository{Conn}
+}
+func (t scheduleRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.ScheduleDtos, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ScheduleDtos, 0)
+	for rows.Next() {
+		t := new(models.ScheduleDtos)
+		err = rows.Scan(
+			&t.TransId ,
+			&t.DepartureDate ,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
 }
 func (s scheduleRepository) Insert(ctx context.Context, a models.Schedule) (*string, error) {
 	a.Id = guuid.New().String()
@@ -73,4 +107,16 @@ func (s scheduleRepository) DeleteByTransId(ctx context.Context, transId *string
 	//}
 
 	return nil
+}
+
+func (t scheduleRepository) GetScheduleByTransId(ctx context.Context, transId string) ([]*models.ScheduleDtos, error) {
+	query := `SELECT distinct trans_id,departure_date FROM schedules WHERE trans_id = ?`
+	res, err := t.fetch(ctx, query,transId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return res, nil
 }

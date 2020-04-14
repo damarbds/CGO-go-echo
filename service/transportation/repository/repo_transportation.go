@@ -18,6 +18,8 @@ type transportationRepository struct {
 	Conn *sql.DB
 }
 
+
+
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
 }
@@ -77,7 +79,56 @@ func (t transportationRepository) FilterSearch(ctx context.Context, query string
 	}
 	return res, nil
 }
+func (t *transportationRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Transportation, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
 
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.Transportation, 0)
+	for rows.Next() {
+		t := new(models.Transportation)
+		err = rows.Scan(
+			&t.Id   ,
+			&t.CreatedBy   ,
+			&t.CreatedDate  ,
+			&t.ModifiedBy     ,
+			&t.ModifiedDate  ,
+			&t.DeletedBy     ,
+			&t.DeletedDate    ,
+			&t.IsDeleted     ,
+			&t.IsActive     ,
+			&t.TransName    ,
+			&t.HarborsSourceId ,
+			&t.HarborsDestId ,
+			&t.MerchantId  ,
+			&t.TransCapacity ,
+			&t.TransTitle ,
+			&t.TransStatus   ,
+			&t.TransImages   ,
+			&t.ReturnTransId  ,
+			&t.BoatDetails     ,
+			&t.Transcoverphoto,
+			&t.Class       ,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
 func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query string, args ...interface{}) ([]*models.TransSearch, error) {
 	rows, err := t.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -169,4 +220,15 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 
 	//a.Id = lastID
 	return &a.Id, nil
+}
+func (t transportationRepository) GetByMerchantId(ctx context.Context, merchantId string) (*models.Transportation, error) {
+	query := `SELECT * FROM transportations WHERE merchant_id = ?`
+	res, err := t.fetch(ctx, query,merchantId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return res[0], nil
 }

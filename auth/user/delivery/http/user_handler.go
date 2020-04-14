@@ -158,12 +158,12 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	error := a.userUsecase.Create(ctx, &userCommand, "admin")
+	user,error := a.userUsecase.Create(ctx, &userCommand, "admin")
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
-	return c.JSON(http.StatusOK, userCommand)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (a *userHandler) UpdateUser(c echo.Context) error {

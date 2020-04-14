@@ -193,6 +193,8 @@ func getStatusCode(err error) int {
 		return http.StatusUnauthorized
 	case models.ErrInvalidOTP:
 		return http.StatusUnauthorized
+	case models.ErrNotYetRegister:
+		return http.StatusNotFound
 	default:
 		return http.StatusInternalServerError
 	}
