@@ -81,6 +81,7 @@ type TransSearch struct {
 	TransId          string `json:"trans_id"`
 	TransName        string `json:"trans_name"`
 	TransImages      string `json:"trans_images"`
+	TransStatus int `json:"trans_status"`
 	HarborSourceId   string `json:"harbor_source_id"`
 	HarborSourceName string `json:"harbor_source_name"`
 	HarborDestId     string `json:"harbor_dest_id"`
@@ -102,6 +103,7 @@ type TransportationSearchObj struct {
 	TransportationId      string           `json:"transportation_id"`
 	TransportationName    string           `json:"transportation_name"`
 	TransportationImages  []CoverPhotosObj `json:"transportation_images"`
+	TransportationStatus string `json:"transportation_status"`
 	HarborSourceId        string           `json:"harbor_source_id"`
 	HarborSourceName      string           `json:"harbor_source_name"`
 	HarborDestinationId   string           `json:"harbor_destination_id"`

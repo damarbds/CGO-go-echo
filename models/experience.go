@@ -207,6 +207,7 @@ type ExpSearch struct {
 	Id         string  `json:"id" validate:"required"`
 	ExpTitle   string  `json:"exp_title"`
 	ExpType    string  `json:"exp_type"`
+	ExpStatus  int     `json:"exp_status"`
 	Rating     float64 `json:"rating"`
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
@@ -218,6 +219,7 @@ type ExpSearchObject struct {
 	Id          string         `json:"id" validate:"required"`
 	ExpTitle    string         `json:"exp_title"`
 	ExpType     []string       `json:"exp_type"`
+	ExpStatus   string         `json:"exp_status"`
 	Rating      float64        `json:"rating"`
 	CountRating int            `json:"count_rating"`
 	Currency    string         `json:"currency"`

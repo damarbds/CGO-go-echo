@@ -3,11 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_merchantUcase "github.com/auth/merchant/usecase"
 	"log"
 	"net/url"
 	"os"
 	"time"
+
+	_merchantUcase "github.com/auth/merchant/usecase"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
@@ -206,8 +207,9 @@ func main() {
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
+
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
-	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, isUsecase, adminUsecase,timeoutContext)
+	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		experienceAddOnRepo,
 		expAvailabilityRepo,
@@ -242,7 +244,7 @@ func main() {
 	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
 	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase, isUsecase)
-	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase,isUsecase)
+	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase, isUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)

@@ -27,6 +27,31 @@ func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
 
+func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId string) (int, error) {
+	query := `
+	SELECT
+		count(*) AS count
+	FROM
+		experiences
+	WHERE
+		merchant_id = ?`
+
+	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+
 func (m *experienceRepository) GetExpPendingTransactionCount(ctx context.Context, merchantId string) (int, error) {
 	query := `
 	SELECT
@@ -83,7 +108,7 @@ func (m *experienceRepository) GetExpFailedTransactionCount(ctx context.Context,
 	return count, nil
 }
 
-func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId string) (int, error) {
+func (m *experienceRepository) GetPublishedExpCount(ctx context.Context, merchantId string) (int, error) {
 	query := `
 	SELECT
 		count(*) AS count

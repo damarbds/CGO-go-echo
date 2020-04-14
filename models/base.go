@@ -15,3 +15,8 @@ type MetaPagination struct {
 	Next          int `json:"next"`
 	RecordPerPage int `json:"record_per_page"`
 }
+
+type ServiceCount struct {
+	ExpCount   int `json:"exp_count"`
+	TransCount int `json:"trans_count"`
+}

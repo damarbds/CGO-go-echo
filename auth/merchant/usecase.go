@@ -12,6 +12,7 @@ type Usecase interface {
 	ValidateTokenMerchant(ctx context.Context, token string) (*models.MerchantInfoDto, error)
 	GetMerchantInfo(ctx context.Context, token string) (*models.MerchantInfoDto, error)
 	Count(ctx context.Context) (*models.Count, error)
-	List(ctx context.Context, page, limit, offset int,token string) (*models.MerchantWithPagination, error)
-	Delete(ctx context.Context,id string,token string)(*models.ResponseDelete,error)
+	List(ctx context.Context, page, limit, offset int, token string) (*models.MerchantWithPagination, error)
+	Delete(ctx context.Context, id string, token string) (*models.ResponseDelete, error)
+	ServiceCount(ctx context.Context, token string) (*models.ServiceCount, error)
 }

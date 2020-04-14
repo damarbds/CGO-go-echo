@@ -2,40 +2,79 @@ package usecase
 
 import (
 	"context"
-	"github.com/auth/admin"
-	"github.com/auth/identityserver"
 	"math"
 	"time"
+
+	"github.com/auth/admin"
+	"github.com/auth/identityserver"
+
+	"github.com/auth/identityserver"
+	"github.com/service/experience"
+	"github.com/service/transportation"
 
 	"github.com/auth/merchant"
 	"github.com/models"
 )
 
 type merchantUsecase struct {
-	adminUsecase        admin.Usecase
+	adminUsecase     admin.Usecase
 	merchantRepo     merchant.Repository
+	expRepo          experience.Repository
+	transRepo        transportation.Repository
 	identityServerUc identityserver.Usecase
 	contextTimeout   time.Duration
 }
 
-
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
-func NewmerchantUsecase(a merchant.Repository, is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) merchant.Usecase {
+func NewmerchantUsecase(a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
 		merchantRepo:     a,
+		expRepo:          ex,
+		transRepo:        tr,
 		identityServerUc: is,
-		adminUsecase:adm,
+		adminUsecase:     adm,
 		contextTimeout:   timeout,
 	}
 }
 
+func (m merchantUsecase) ServiceCount(ctx context.Context, token string) (*models.ServiceCount, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
 
-func (m merchantUsecase) List(c context.Context, page, limit, offset int,token string) (*models.MerchantWithPagination, error) {
-	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
+	if err != nil {
+		return nil, err
+	}
+
+	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
+	if existedMerchant == nil {
+		return nil, models.ErrNotFound
+	}
+
+	expCount, err := m.expRepo.GetExpCount(ctx, existedMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	transCount, err := m.transRepo.GetTransCount(ctx, existedMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &models.ServiceCount{
+		ExpCount:   expCount,
+		TransCount: transCount,
+	}
+
+	return response, nil
+}
+
+func (m merchantUsecase) List(ctx context.Context, page, limit, offset int) (*models.MerchantWithPagination, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 	_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	list, err := m.merchantRepo.List(ctx, limit, offset)
@@ -101,7 +140,7 @@ func (m merchantUsecase) Login(ctx context.Context, ar *models.Login) (*models.G
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password,ar.Scope)
+	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password, ar.Scope)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +228,7 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 	return m.merchantRepo.Update(ctx, &merchant)
 }
 
-func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant,token string) error {
+func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant, token string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	currentUserAdmin, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
@@ -240,21 +279,22 @@ func (m merchantUsecase) Delete(c context.Context, id string, token string) (*mo
 	if err != nil {
 		return nil, err
 	}
-	error := m.merchantRepo.Delete(ctx,id,currentUserAdmin.Name)
+	error := m.merchantRepo.Delete(ctx, id, currentUserAdmin.Name)
 	if error != nil {
 		response := models.ResponseDelete{
 			Id:      id,
 			Message: error.Error(),
 		}
-		return &response,nil
+		return &response, nil
 	}
-	response:=models.ResponseDelete{
+	response := models.ResponseDelete{
 		Id:      id,
 		Message: "Deleted Success",
 	}
 
-	return &response,nil
+	return &response, nil
 }
+
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation
