@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/auth/admin"
-	"github.com/auth/identityserver"
 
 	"github.com/auth/identityserver"
 	"github.com/service/experience"
@@ -26,7 +25,7 @@ type merchantUsecase struct {
 }
 
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
-func NewmerchantUsecase(a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, timeout time.Duration) merchant.Usecase {
+func NewmerchantUsecase(a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
 		merchantRepo:     a,
 		expRepo:          ex,
@@ -69,7 +68,7 @@ func (m merchantUsecase) ServiceCount(ctx context.Context, token string) (*model
 	return response, nil
 }
 
-func (m merchantUsecase) List(ctx context.Context, page, limit, offset int) (*models.MerchantWithPagination, error) {
+func (m merchantUsecase) List(ctx context.Context, page, limit, offset int,token string) (*models.MerchantWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 	_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)

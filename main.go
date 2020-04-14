@@ -209,7 +209,7 @@ func main() {
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
-	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
+	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		experienceAddOnRepo,
 		expAvailabilityRepo,
