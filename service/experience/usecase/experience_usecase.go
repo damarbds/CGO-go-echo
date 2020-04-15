@@ -277,9 +277,12 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				Rating:       element.Rating,
 				CountRating:  countRating,
 				Currency:     currency,
-				Price:        expPayment[0].Price,
+				//Price:        expPayment[0].Price,
 				Payment_type: priceItemType,
 				Cover_Photo:  coverPhotos,
+			}
+			if expPayment != nil {
+				expDto.Price =  expPayment[0].Price
 			}
 			cityDto.Item = append(cityDto.Item, expDto)
 			expListDto = append(expListDto, &cityDto)
@@ -305,9 +308,12 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 					Rating:       element.Rating,
 					CountRating:  countRating,
 					Currency:     currency,
-					Price:        expPayment[0].Price,
+					//Price:        expPayment[0].Price,
 					Payment_type: priceItemType,
 					Cover_Photo:  coverPhotos,
+				}
+				if expPayment != nil {
+					expDto.Price =  expPayment[0].Price
 				}
 				cityDto.Item = append(cityDto.Item, expDto)
 				expListDto = append(expListDto, &cityDto)
@@ -321,9 +327,12 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 							Rating:       element.Rating,
 							CountRating:  countRating,
 							Currency:     currency,
-							Price:        expPayment[0].Price,
+							//Price:        expPayment[0].Price,
 							Payment_type: priceItemType,
 							Cover_Photo:  coverPhotos,
+						}
+						if expPayment != nil {
+							expDto.Price =  expPayment[0].Price
 						}
 						dto.Item = append(dto.Item, expDto)
 					}

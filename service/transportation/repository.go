@@ -11,5 +11,5 @@ type Repository interface {
 	FilterSearch(ctx context.Context, query string, limit, offset int) ([]*models.TransSearch, error)
 	CountFilterSearch(ctx context.Context, query string) (int, error)
 	GetTransCount(ctx context.Context, merchantId string) (int, error)
-	GetByMerchantId(ctx context.Context,merchantId string)(*models.Transportation,error)
+	SelectIdGetByMerchantId(ctx context.Context,merchantId string)([]*string,error)
 }

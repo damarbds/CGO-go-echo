@@ -232,14 +232,17 @@ func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID s
 		exp.id,
 		exp_title,
 		exp_type,
+		exp.status as exp_status,
 		exp_location_latitude as latitude ,
 		exp_location_longitude as longitude, 
 		rating,
-		exp_cover_photo as cover_photo
+		exp_cover_photo as cover_photo,
+		p.province_name as province
 	FROM
 		experiences exp
 		JOIN harbors ON harbors.id = harbors_id
 		JOIN cities ON cities.id = harbors.city_id
+		JOIN provinces p ON cities.province_id = p.id
 	WHERE
 		(harbors_id = ? OR harbors.city_id = ?)
 		AND exp.is_deleted = 0
@@ -345,6 +348,7 @@ func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string,
 			&t.Id,
 			&t.ExpTitle,
 			&t.ExpType,
+			&t.ExpStatus,
 			&t.Rating,
 			&t.Latitude,
 			&t.Longitude,
@@ -621,20 +625,29 @@ func (m *experienceRepository) GetByID(ctx context.Context, id string) (res *mod
 
 	return
 }
-func (m *experienceRepository) GetByExperienceEmail(ctx context.Context, experienceEmail string) (res *models.Experience, err error) {
-	query := `SELECT * FROM experiences WHERE experience_email = ?`
-
-	list, err := m.fetch(ctx, query, experienceEmail)
+func (m *experienceRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string) (res []*string, err error) {
+	query := `SELECT id FROM experiences WHERE merchant_id = ?`
+	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
-		return
+		logrus.Error(err)
+		return nil, err
+	}
+	result := make([]*string, 0)
+	for rows.Next() {
+		t := new(string)
+		err = rows.Scan(
+			&t,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
 	}
 
-	if len(list) > 0 {
-		res = list[0]
-	} else {
-		return nil, models.ErrNotFound
-	}
-	return
+	return result, err
+
 }
 
 func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience) (*string, error) {
