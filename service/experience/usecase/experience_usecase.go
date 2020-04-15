@@ -838,9 +838,15 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		ExpLocationName:         commandExperience.ExpLocationName,
 		ExpCoverPhoto:           commandExperience.ExpCoverPhoto,
 		ExpDuration:             commandExperience.ExpDuration,
-		MinimumBookingId:        commandExperience.MinimumBookingId,
+		MinimumBookingId:        &commandExperience.MinimumBookingId,
 		MerchantId:              currentUserMerchant.Id,
-		HarborsId:               commandExperience.HarborsId,
+		HarborsId:               &commandExperience.HarborsId,
+	}
+	if *experiences.HarborsId == "" && experiences.Status == 1{
+		experiences.HarborsId = nil
+	}
+	if *experiences.MinimumBookingId == "" && experiences.Status == 1{
+		experiences.MinimumBookingId = nil
 	}
 	insertToExperience, err := m.experienceRepo.Insert(ctx, &experiences)
 	for _, element := range commandExperience.ExpPhotos {
@@ -961,9 +967,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	}
 
 	var status string
-	if commandExperience.Status == 0 {
+	if commandExperience.Status == 1 {
 		status = "Draft"
-	} else if commandExperience.Status == 3 {
+	} else if commandExperience.Status == 2 {
 		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{
@@ -1019,9 +1025,15 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		ExpLocationName:         commandExperience.ExpLocationName,
 		ExpCoverPhoto:           commandExperience.ExpCoverPhoto,
 		ExpDuration:             commandExperience.ExpDuration,
-		MinimumBookingId:        commandExperience.MinimumBookingId,
+		MinimumBookingId:        &commandExperience.MinimumBookingId,
 		MerchantId:              currentUserMerchant.Id,
-		HarborsId:               commandExperience.HarborsId,
+		HarborsId:               &commandExperience.HarborsId,
+	}
+	if *experiences.HarborsId == "" && experiences.Status == 1{
+		experiences.HarborsId = nil
+	}
+	if *experiences.MinimumBookingId == "" && experiences.Status == 1{
+		experiences.MinimumBookingId = nil
 	}
 	insertToExperience, err := m.experienceRepo.Update(ctx, &experiences)
 
@@ -1269,9 +1281,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	_ = m.adOnsRepo.Deletes(ctx, addOnIds, *insertToExperience, currentUserMerchant.MerchantEmail)
 
 	var status string
-	if commandExperience.Status == 0 {
+	if commandExperience.Status == 1 {
 		status = "Draft"
-	} else if commandExperience.Status == 3 {
+	} else if commandExperience.Status == 2 {
 		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{

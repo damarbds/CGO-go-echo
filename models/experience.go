@@ -34,9 +34,9 @@ type Experience struct {
 	ExpLocationName         string     `json:"exp_location_name"`
 	ExpCoverPhoto           *string    `json:"exp_cover_photo"`
 	ExpDuration             int        `json:"exp_duration"`
-	MinimumBookingId        string     `json:"minimum_booking_id"`
+	MinimumBookingId        *string     `json:"minimum_booking_id"`
 	MerchantId              string     `json:"merchant_id"`
-	HarborsId               string     `json:"harbors_id"`
+	HarborsId               *string     `json:"harbors_id"`
 }
 type ExperienceJoinForegnKey struct {
 	Id                      string     `json:"id" validate:"required"`

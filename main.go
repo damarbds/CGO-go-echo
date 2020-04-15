@@ -108,6 +108,10 @@ import (
 	_transactionHttpHandler "github.com/transactions/transaction/delivery/http"
 	_transactionRepo "github.com/transactions/transaction/repository"
 	_transactionUcase "github.com/transactions/transaction/usecase"
+
+	_balanceHistoryHttpHandler "github.com/transactions/balance_history/delivery/http"
+	_balanceHistoryRepo "github.com/transactions/balance_history/repository"
+	_balanceHistoryUcase "github.com/transactions/balance_history/usecase"
 )
 
 // func init() {
@@ -199,6 +203,7 @@ func main() {
 	timeOptionsRepo := _timeOptionsRepo.NewTimeOptionsRepository(dbConn)
 	schedulerRepo := _scheduleRepo.NewScheduleRepository(dbConn)
 	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
+	balanceHistoryRepo := _balanceHistoryRepo.NewbalanceHistoryRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -238,6 +243,7 @@ func main() {
 	transportationUcase := _transportationUcase.NewTransportationUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo,merchantUsecase,schedulerRepo,timeOptionsRepo,experienceRepo,expAvailabilityRepo,timeoutContext)
+	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(balanceHistoryRepo,merchantUsecase,timeoutContext)
 
 	_scheduleHttpHandler.NewScheduleHandler(e,promoUsecase,scheduleUcase)
 	_adminHttpDeliver.NewadminHandler(e, adminUsecase)
@@ -261,5 +267,6 @@ func main() {
 	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
 	_transportationHttpHandler.NewtransportationHandler(e, transportationUcase)
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
+	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e,balanceHistoryUcase)
 	log.Fatal(e.Start(":9090"))
 }

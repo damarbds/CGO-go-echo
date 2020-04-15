@@ -19,3 +19,24 @@ type BalanceHistory struct {
 	DateOfPayment time.Time  `json:"date_of_payment"`
 	Remarks       string     `json:"remarks"`
 }
+type NewBalanceHistoryCommand struct {
+	Id 			string 		`json:"id"`
+	Status 		int		`json:"status"`
+	Amount 		float64		`json:"amount"`
+	DateOfPayment string	`json:"date_of_payment"`
+	Remarks 	string	`json:"remarks"`
+}
+type BalanceHistoryDto struct {
+	Id 			string 		`json:"id"`
+	MerchantId 	string		`json:"merchant_id"`
+	Status 		int		`json:"status"`
+	Amount 		float64		`json:"amount"`
+	DateOfRequest time.Time	`json:"date_of_request"`
+	DateOfPayment time.Time	`json:"date_of_payment"`
+	Remarks 	string	`json:"remarks"`
+}
+type BalanceHistoryDtoWithPagination struct {
+	Data []*BalanceHistoryDto `json:"data"`
+	Meta *MetaPagination   `json:"meta"`
+
+}
