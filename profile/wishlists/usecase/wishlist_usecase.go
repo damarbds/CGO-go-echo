@@ -85,7 +85,7 @@ func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.Wish
 			priceItemType = "Per Trip"
 		}
 
-		countRating, err := w.reviewRepo.CountRating(ctx, exp.Id)
+		countRating, err := w.reviewRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
 			return nil, err
 		}
