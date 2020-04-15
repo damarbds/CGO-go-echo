@@ -99,7 +99,10 @@ import (
 	_transportationRepo "github.com/service/transportation/repository"
 	_transportationUcase "github.com/service/transportation/usecase"
 
-	_schedulerRepo "github.com/service/schedule/repository"
+	_scheduleHttpHandler "github.com/service/schedule/delivery/http"
+	_scheduleRepo "github.com/service/schedule/repository"
+	_scheduleUsecase "github.com/service/schedule/usecase"
+
 	_timeOptionsRepo "github.com/service/time_options/repository"
 
 	_transactionHttpHandler "github.com/transactions/transaction/delivery/http"
@@ -194,7 +197,7 @@ func main() {
 	adminRepo := _adminRepo.NewadminRepository(dbConn)
 	transportationRepo := _transportationRepo.NewTransportationRepository(dbConn)
 	timeOptionsRepo := _timeOptionsRepo.NewTimeOptionsRepository(dbConn)
-	schedulerRepo := _schedulerRepo.NewScheduleRepository(dbConn)
+	schedulerRepo := _scheduleRepo.NewScheduleRepository(dbConn)
 	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
@@ -234,7 +237,9 @@ func main() {
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
 	transportationUcase := _transportationUcase.NewTransportationUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(transactionRepo, timeoutContext)
+	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo,merchantUsecase,schedulerRepo,timeOptionsRepo,experienceRepo,expAvailabilityRepo,timeoutContext)
 
+	_scheduleHttpHandler.NewScheduleHandler(e,promoUsecase,scheduleUcase)
 	_adminHttpDeliver.NewadminHandler(e, adminUsecase)
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)

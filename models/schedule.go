@@ -31,14 +31,25 @@ type PriceObj struct {
 	Currency      int     `json:"currency"`
 }
 type ScheduleDtos struct {
-	TransId 	string		`json:"trans_id"`
-	DepartureDate string	`json:"departure_date"`
+	DepartureDate time.Time	`json:"departure_date"`
 }
 type ScheduleDto struct {
 	MerchantId 		string 		`json:"merchant_id"`
-	
+	ScheduleDate 	[]ScheduleDateObj `json:"schedule_date"`
 }
 type ScheduleDateObj struct {
+	Type 		string 	`json:"type"`
+	Date 		string	`json:"date"`
+	Count		int 	`json:"count"`
+}
+type ScheduleObjDate struct {
+	Date 		string	`json:"date"`
+	TransportationCount int `json:"transportation_count"`
+	ExperienceCount int 	`json:"experience_count"`
+}
 
+type ScheduleDtoObj struct {
+	MerchantId 		string 		`json:"merchant_id"`
+	ScheduleDate 	[]ScheduleObjDate `json:"schedule_date"`
 }
 

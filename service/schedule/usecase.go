@@ -1,7 +1,10 @@
 package schedule
 
-import "context"
+import (
+	"context"
+	"github.com/models"
+)
 
 type Usecase interface {
-	GetScheduleByMerchantId(ctx context.Context,merchantId  string)()
+	GetScheduleByMerchantId(ctx context.Context,merchantId  string)(*models.ScheduleDtoObj,error)
 }

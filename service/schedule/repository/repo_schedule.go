@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"github.com/sirupsen/logrus"
-
 	//"fmt"
 	guuid "github.com/google/uuid"
 	"github.com/service/schedule"
@@ -46,7 +45,6 @@ func (t scheduleRepository) fetch(ctx context.Context, query string, args ...int
 	for rows.Next() {
 		t := new(models.ScheduleDtos)
 		err = rows.Scan(
-			&t.TransId ,
 			&t.DepartureDate ,
 		)
 
@@ -109,9 +107,20 @@ func (s scheduleRepository) DeleteByTransId(ctx context.Context, transId *string
 	return nil
 }
 
-func (t scheduleRepository) GetScheduleByTransId(ctx context.Context, transId string) ([]*models.ScheduleDtos, error) {
-	query := `SELECT distinct trans_id,departure_date FROM schedules WHERE trans_id = ?`
-	res, err := t.fetch(ctx, query,transId)
+func (t scheduleRepository) GetScheduleByTransId(ctx context.Context, transId []*string) ([]*models.ScheduleDtos, error) {
+	query := `SELECT distinct departure_date FROM schedules WHERE `
+	for index, id := range transId {
+		if index == 0 && index != (len(transId)-1) {
+			query = query + ` trans_id LIKE '%` + *id + `%' `
+		} else if index == 0 && index == (len(transId)-1) {
+			query = query + ` trans_id LIKE '%` + *id + `%' `
+		} else if index == (len(transId) - 1) {
+			query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+		} else {
+			query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+		}
+	}
+	res, err := t.fetch(ctx, query)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrNotFound
@@ -119,4 +128,48 @@ func (t scheduleRepository) GetScheduleByTransId(ctx context.Context, transId st
 		return nil, err
 	}
 	return res, nil
+}
+
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+func (m scheduleRepository) GetCountSchedule(ctx context.Context, transId []*string, date string) (int, error) {
+	query := `
+	SELECT
+		count(DISTINCT departure_date,trans_id) AS count
+	FROM
+		schedules
+	WHERE
+		departure_date = ?`
+
+	for index, id := range transId {
+		if index == 0 && index != (len(transId)-1) {
+			query = query + ` AND (trans_id LIKE '%` + *id + `%' `
+		} else if index == 0 && index == (len(transId)-1) {
+			query = query + ` AND (trans_id LIKE '%` + *id + `%' ) `
+		} else if index == (len(transId) - 1) {
+			query = query + ` OR  trans_id LIKE '%` + *id + `%' ) `
+		} else {
+			query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+		}
+	}
+	rows, err := m.Conn.QueryContext(ctx, query,date)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
 }

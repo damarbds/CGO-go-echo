@@ -14,9 +14,76 @@ type exp_availabilityRepository struct {
 	Conn *sql.DB
 }
 
+func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*string) ([]*models.ExpAvailability, error) {
+	query := `SELECT * FROM exp_availabilities WHERE `
+	for index, id := range expId {
+		if index == 0 && index != (len(expId)-1) {
+			query = query + ` exp_id = '` + *id + `' `
+		} else if index == 0 && index == (len(expId)-1) {
+			query = query + ` exp_id = '` + *id + `' `
+		} else if index == (len(expId) - 1) {
+			query = query + ` OR  exp_id = '` + *id + `' `
+		} else {
+			query = query + ` OR  exp_id = '` + *id + `' `
+		}
+	}
+	res, err := m.fetch(ctx, query)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return res, nil
+}
+
 // NewExpexp_availabilityRepository will create an object that represent the exp_exp_availability.Repository interface
 func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
 	return &exp_availabilityRepository{Conn}
+}
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date string,expId []*string) (int, error) {
+	query := `
+	SELECT
+		count(*) AS count
+	FROM
+		exp_availabilities
+	WHERE
+		exp_availability_date LIKE ?`
+
+	date = "%" + date + "%"
+	for index, id := range expId {
+		if index == 0 && index != (len(expId)-1) {
+			query = query + ` AND (exp_id LIKE '%` + *id + `%' `
+		} else if index == 0 && index == (len(expId)-1) {
+			query = query + ` AND (exp_id LIKE '%` + *id + `%' ) `
+		} else if index == (len(expId) - 1) {
+			query = query + ` OR  exp_id LIKE '%` + *id + `%' ) `
+		} else {
+			query = query + ` OR  exp_id LIKE '%` + *id + `%' `
+		}
+	}
+	rows, err := m.Conn.QueryContext(ctx, query,date)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
 }
 func (m *exp_availabilityRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.ExpAvailability, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)

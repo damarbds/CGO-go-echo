@@ -221,14 +221,33 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	//a.Id = lastID
 	return &a.Id, nil
 }
-func (t transportationRepository) GetByMerchantId(ctx context.Context, merchantId string) (*models.Transportation, error) {
-	query := `SELECT * FROM transportations WHERE merchant_id = ?`
-	res, err := t.fetch(ctx, query,merchantId)
+func (t transportationRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string) ([]*string, error) {
+	query := `SELECT id FROM transportations WHERE merchant_id = ?`
+	rows, err := t.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, models.ErrNotFound
-		}
+		logrus.Error(err)
 		return nil, err
 	}
-	return res[0], nil
+	result := make([]*string, 0)
+	for rows.Next() {
+		t := new(string)
+		err = rows.Scan(
+			&t,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, err
+	//if err != nil {
+	//	if err == sql.ErrNoRows {
+	//		return nil, models.ErrNotFound
+	//	}
+	//	return nil, err
+	//}
+	//return res, nil
 }
