@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"encoding/json"
+	"math"
+	"time"
+
 	"github.com/auth/user"
 	"github.com/models"
 	"github.com/product/reviews"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type reviewsUsecase struct {
@@ -15,7 +17,6 @@ type reviewsUsecase struct {
 	contextTimeout time.Duration
 }
 
-// NewharborsUsecase will create new an harborsUsecase object representation of harbors.Usecase interface
 func NewreviewsUsecase(a reviews.Repository, us user.Repository, timeout time.Duration) reviews.Usecase {
 	return &reviewsUsecase{
 		userRepo:       us,
@@ -24,11 +25,57 @@ func NewreviewsUsecase(a reviews.Repository, us user.Repository, timeout time.Du
 	}
 }
 
-func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id string) ([]*models.ReviewDto, error) {
+func (r reviewsUsecase) GetReviewsByExpIdWithPagination(
+	ctx context.Context,
+	page int,
+	limit int,
+	offset int,
+	rating int,
+	sortBy,
+	exp_id string,
+) (*models.ReviewsWithPagination, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.contextTimeout)
+	defer cancel()
+
+	results, err := r.GetReviewsByExpId(ctx, exp_id, sortBy, rating, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	totalRecords, _ := r.reviewsRepo.CountRating(ctx, rating, exp_id)
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
+
+	if page != totalPage {
+		next = page + 1
+	}
+
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(results),
+	}
+
+	response := &models.ReviewsWithPagination{
+		Data: results,
+		Meta: meta,
+	}
+
+	return response, nil
+}
+
+func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id, sortBy string, rating, limit, offset int) ([]*models.ReviewDto, error) {
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	res, err := r.reviewsRepo.GetByExpId(ctx, exp_id)
+	res, err := r.reviewsRepo.GetByExpId(ctx, exp_id, sortBy, rating, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +84,6 @@ func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id string) ([]*
 		reviewDtoObject := models.ReviewDtoObject{}
 		errObject := json.Unmarshal([]byte(element.Desc), &reviewDtoObject)
 		if errObject != nil {
-			//fmt.Println("Error : ",err.Error())
 			return nil, models.ErrInternalServerError
 		}
 		var imageUrl string
@@ -52,6 +98,7 @@ func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id string) ([]*
 			Image:  imageUrl,
 			Desc:   reviewDtoObject.Desc,
 			Values: element.Values,
+			Date:   element.CreatedDate,
 		}
 		reviewDtos = append(reviewDtos, &reviewDto)
 	}
