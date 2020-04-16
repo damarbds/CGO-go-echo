@@ -102,8 +102,8 @@ func (t transportationUsecase) FilterSearchTrans(
 			return nil, err
 		}
 
-		query = query + `AND t.merchant_id = '` + currentMerchant.Id + `'`
-		queryCount = queryCount + `AND t.merchant_id = '` + currentMerchant.Id + `'`
+		query = query + ` AND t.merchant_id = '` + currentMerchant.Id + `'`
+		queryCount = queryCount + ` AND t.merchant_id = '` + currentMerchant.Id + `'`
 	}
 
 	if qStatus != "" {

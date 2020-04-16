@@ -424,8 +424,8 @@ func (m experienceUsecase) FilterSearchExp(
 			return nil, err
 		}
 
-		query = query + `AND e.merchant_id = '` + currentMerchant.Id + `'`
-		qCount = qCount + `AND e.merchant_id = '` + currentMerchant.Id + `'`
+		query = query + ` AND e.merchant_id = '` + currentMerchant.Id + `'`
+		qCount = qCount + ` AND e.merchant_id = '` + currentMerchant.Id + `'`
 	}
 
 	if search != "" {
@@ -491,8 +491,8 @@ func (m experienceUsecase) FilterSearchExp(
 				query = query + ` AND (fat.id =` + strconv.Itoa(id) + ` ) `
 				qCount = qCount + ` AND (fat.id =` + strconv.Itoa(id) + ` ) `
 			} else if index == (len(activityTypeArray) - 1) {
-				query = query + ` OR fat.id =` + strconv.Itoa(id) + ` ) `
-				qCount = qCount + ` OR fat.id =` + strconv.Itoa(id) + ` ) `
+				query = query + ` OR fat.id =` + strconv.Itoa(id) + ` )`
+				qCount = qCount + ` OR fat.id =` + strconv.Itoa(id) + ` )`
 			} else {
 				query = query + ` OR fat.id =` + strconv.Itoa(id)
 				qCount = qCount + ` OR fat.id =` + strconv.Itoa(id)
@@ -558,7 +558,7 @@ func (m experienceUsecase) FilterSearchExp(
 			}
 		}
 	}
-
+	fmt.Println(query)
 	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -617,10 +617,25 @@ func (m experienceUsecase) FilterSearchExp(
 				listPhotos = append(listPhotos, expPhoto)
 			}
 		}
+
+		var transStatus string
+		if exp.ExpStatus == 0 {
+			transStatus = "Preview"
+		} else if exp.ExpStatus == 1 {
+			transStatus = "Draft"
+		} else if exp.ExpStatus == 2 {
+			transStatus = "Published"
+		} else if exp.ExpStatus == 3 {
+			transStatus = "Unpublished"
+		} else if exp.ExpStatus == 4 {
+			transStatus = "Archived"
+		}
+
 		results[i] = &models.ExpSearchObject{
 			Id:          exp.Id,
 			ExpTitle:    exp.ExpTitle,
 			ExpType:     expType,
+			ExpStatus: transStatus,
 			Rating:      exp.Rating,
 			CountRating: countRating,
 			Currency:    currency,
