@@ -199,33 +199,36 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 	}
 	rows, err := t.Conn.QueryContext(ctx, query)
 	var transactionStatus int
-	if status == "pending" {
-		transactionStatus = 0
-	} else if status == "waitingApproval" {
-		transactionStatus = 1
-	} else if status == "confirm" {
-		transactionStatus = 2
-	}
-	queryWithStatus := query + ` AND t.status = ?`
-	rows, err = t.Conn.QueryContext(ctx, queryWithStatus, transactionStatus)
+	if status  != ""{
+		if status == "pending" {
+			transactionStatus = 0
+		} else if status == "waitingApproval" {
+			transactionStatus = 1
+		} else if status == "confirm" {
+			transactionStatus = 2
+		}
+		queryWithStatus := query + ` AND t.status = ?`
+		rows, err = t.Conn.QueryContext(ctx, queryWithStatus, transactionStatus)
 
-	if status == "failed" {
-		transactionStatus = 3
-		cancelledStatus := 4
-		queryWithStatus = query + ` AND t.status IN (?,?)`
-		rows, err = t.Conn.QueryContext(ctx, query, transactionStatus, cancelledStatus)
+		if status == "failed" {
+			transactionStatus = 3
+			cancelledStatus := 4
+			queryWithStatus = query + ` AND t.status IN (?,?)`
+			rows, err = t.Conn.QueryContext(ctx, query, transactionStatus, cancelledStatus)
+		}
+
+		if status == "boarded" {
+			transactionStatus = 1
+			bookingStatus := 3
+			queryWithStatus = query + ` AND t.status = ? AND b.status = ?`
+			rows, err = t.Conn.QueryContext(ctx, queryWithStatus, transactionStatus, bookingStatus)
+		}
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
 	}
 
-	if status == "boarded" {
-		transactionStatus = 1
-		bookingStatus := 3
-		queryWithStatus = query + ` AND t.status = ? AND b.status = ?`
-		rows, err = t.Conn.QueryContext(ctx, queryWithStatus, transactionStatus, bookingStatus)
-	}
-	if err != nil {
-		logrus.Error(err)
-		return 0, err
-	}
 
 	count, err := checkCount(rows)
 	if err != nil {
