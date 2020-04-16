@@ -48,6 +48,7 @@ func (m *paymentMethodRepository) fetch(ctx context.Context, query string, args 
 			&t.Type,
 			&t.Desc,
 			&t.Icon,
+			&t.MidtransPaymentCode,
 		)
 
 		if err != nil {

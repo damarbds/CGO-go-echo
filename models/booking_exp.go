@@ -24,6 +24,8 @@ type BookingExpHistory struct {
 	TicketCode         string     `json:"ticket_code"`
 	TicketQRCode       string     `json:"ticket_qr_code"`
 	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
+	TransId				*string `json:"trans_id"`
+	PaymentUrl 			*string `json:"payment_url"`
 	ExpTitle           string     `json:"exp_title"`
 	ExpType            *string    `json:"exp_type"`
 	ExpDuration        int        `json:"exp_duration"`
@@ -70,6 +72,8 @@ type BookingExp struct {
 	TicketCode         string     `json:"ticket_code"`
 	TicketQRCode       string     `json:"ticket_qr_code"`
 	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
+	TransId				*string `json:"trans_id"`
+	PaymentUrl 			*string `json:"payment_url"`
 }
 type BookingExpJoin struct {
 	Id                     string     `json:"id" validate:"required"`
@@ -93,6 +97,8 @@ type BookingExpJoin struct {
 	TicketCode             string     `json:"ticket_code"`
 	TicketQRCode           string     `json:"ticket_qr_code"`
 	ExperienceAddOnId      *string    `json:"experience_add_on_id"`
+	TransId				*string `json:"trans_id"`
+	PaymentUrl 			*string `json:"payment_url"`
 	ExpTitle               string     `json:"exp_title"`
 	ExpType                string     `json:"exp_type"`
 	ExpPickupPlace         string     `json:"exp_pickup_place"`
