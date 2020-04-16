@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	model "github.com/models"
-	"time"
 )
 
 func main() {
@@ -15,11 +16,11 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.Schedule{}
-	error := db.Model(&user).AddForeignKey("departure_timeoption_id", "times_options(id)", "RESTRICT", "RESTRICT")
+	user := model.BookingExp{}
+	error := db.Model(&user).AddForeignKey("trans_id", "transportations(id)", "RESTRICT", "RESTRICT")
 	if error != nil {
 		migration := model.MigrationHistory{
-			DescMigration: "Add_foregn_key_departure_time_option_Schedule",
+			DescMigration: "Add_foregn_key_trans_id_bookingExp",
 			Date:          time.Now(),
 		}
 
