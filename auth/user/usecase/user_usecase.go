@@ -1,13 +1,14 @@
 package usecase
 
 import (
+	"math"
+	"math/rand"
+	"time"
+
 	"github.com/auth/identityserver"
 	"github.com/auth/user"
 	"github.com/models"
 	"golang.org/x/net/context"
-	"math"
-	"math/rand"
-	"time"
 )
 
 type userUsecase struct {
@@ -15,8 +16,6 @@ type userUsecase struct {
 	identityServerUc identityserver.Usecase
 	contextTimeout   time.Duration
 }
-
-
 
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase, timeout time.Duration) user.Usecase {
@@ -30,29 +29,29 @@ func (m userUsecase) RequestOTP(ctx context.Context, phoneNumber string) (*model
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	requestOTP ,err := m.identityServerUc.RequestOTP(phoneNumber)
+	requestOTP, err := m.identityServerUc.RequestOTP(phoneNumber)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	getUserByPhoneNumber ,err := m.userRepo.GetByUserNumberOTP(ctx,phoneNumber,"")
+	getUserByPhoneNumber, err := m.userRepo.GetByUserNumberOTP(ctx, phoneNumber, "")
 	if getUserByPhoneNumber != nil {
 		user := getUserByPhoneNumber
 		user.VerificationCode = requestOTP.OTP
 
-		err = m.userRepo.Update(ctx,user)
+		err = m.userRepo.Update(ctx, user)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 	}
 
-	return requestOTP,nil
+	return requestOTP, nil
 }
-func (m userUsecase) List(ctx context.Context, page, limit, offset int) (*models.UserWithPagination, error) {
+func (m userUsecase) List(ctx context.Context, page, limit, offset int,search string) (*models.UserWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	list, err := m.userRepo.List(ctx, limit, offset)
+	list, err := m.userRepo.List(ctx, limit, offset,search)
 	if err != nil {
 		return nil, err
 	}
@@ -110,23 +109,23 @@ func (m userUsecase) Login(ctx context.Context, ar *models.Login) (*models.GetTo
 	defer cancel()
 	var requestToken *models.GetToken
 
-	if ar.Scope == "phone_number"{
-		checkPhoneNumberExists ,_ := m.userRepo.GetByUserNumberOTP(ctx, ar.Email,"")
+	if ar.Scope == "phone_number" {
+		checkPhoneNumberExists, _ := m.userRepo.GetByUserNumberOTP(ctx, ar.Email, "")
 		if checkPhoneNumberExists == nil {
 			return nil, models.ErrNotYetRegister
 		}
-		existeduser, _ := m.userRepo.GetByUserNumberOTP(ctx, ar.Email,ar.Password)
+		existeduser, _ := m.userRepo.GetByUserNumberOTP(ctx, ar.Email, ar.Password)
 		if existeduser == nil {
 			return nil, models.ErrInvalidOTP
 		}
-		getToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password,ar.Scope)
+		getToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password, ar.Scope)
 		if err != nil {
 			return nil, err
 		}
 
 		requestToken = getToken
-	}else {
-		getToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password,ar.Scope)
+	} else {
+		getToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password, ar.Scope)
 		if err != nil {
 			return nil, err
 		}
@@ -158,6 +157,7 @@ func (m userUsecase) ValidateTokenUser(ctx context.Context, token string) (*mode
 		FullName:       existeduser.FullName,
 		PhoneNumber:    existeduser.PhoneNumber,
 		ProfilePictUrl: existeduser.ProfilePictUrl,
+		Points:         existeduser.Points,
 	}
 
 	return userInfo, nil
@@ -213,6 +213,7 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 		PhoneNumber:    existeduser.PhoneNumber,
 		ProfilePictUrl: existeduser.ProfilePictUrl,
 		ReferralCode:   existeduser.ReferralCode,
+		Points:         existeduser.Points,
 	}
 
 	return &userInfo, nil
@@ -287,7 +288,7 @@ func generateRandomBytes(n int) ([]byte, error) {
 
 	return b, nil
 }
-func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user string) (*models.NewCommandUser,error) {
+func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user string) (*models.NewCommandUser, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	//existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
@@ -307,6 +308,7 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 		Address:       "",
 		OTP:           "",
 		UserType:      1,
+		PhoneNumber:   ar.PhoneNumber,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	message := "Please keep it a secret, and use this OTP: " + isUser.OTP + " code to verify your email"
@@ -318,7 +320,7 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 	}
 	_, errorSending := m.identityServerUc.SendingEmail(&email)
 	if errorSending != nil {
-		return nil,models.ErrInternalServerError
+		return nil, models.ErrInternalServerError
 	}
 	ar.Id = isUser.Id
 	var dob time.Time
@@ -329,17 +331,17 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 		dobs, errDateDob := time.Parse(layoutFormat, ar.Dob)
 
 		if errDateDob != nil {
-			return nil,errDateDob
+			return nil, errDateDob
 		}
 		dob = dobs
 	}
 
 	if errorIs != nil {
-		return nil,errorIs
+		return nil, errorIs
 	}
 	referralCode, er := generateRandomString(9)
 	if er != nil {
-		return nil,er
+		return nil, er
 	}
 	userModel := models.User{}
 	userModel.Id = isUser.Id
@@ -361,10 +363,10 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 	if err != nil {
 		return nil, err
 	}
-	requestToken ,err := m.identityServerUc.GetToken(ar.UserEmail,ar.Password,"")
+	requestToken, err := m.identityServerUc.GetToken(ar.UserEmail, ar.Password, "")
 
 	ar.Token = &requestToken.AccessToken
-	return ar,nil
+	return ar, nil
 }
 
 func (m userUsecase) GetCreditByID(ctx context.Context, id string) (*models.UserPoint, error) {

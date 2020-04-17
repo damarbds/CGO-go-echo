@@ -60,6 +60,7 @@ func (a *userHandler) List(c echo.Context) error {
 
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
+	search := c.QueryParam("search")
 
 	var limit = 20
 	var page = 1
@@ -74,7 +75,7 @@ func (a *userHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.userUsecase.List(ctx, page, limit, offset)
+	result, err := a.userUsecase.List(ctx, page, limit, offset,search)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

@@ -19,6 +19,7 @@ type RegisterAndUpdateUser struct {
 	Address       string `json:"address"`
 	OTP           string `json:"oTP"`
 	UserType      int    `json:"userType"`
+	PhoneNumber   string `json:"phoneNumber"`
 }
 
 type Response struct {
@@ -58,7 +59,9 @@ type GetUserInfo struct {
 	Website       string `json:"website"`
 	Address       string `json:"address"`
 }
-
+type Roles struct {
+	RoleId string	`json:"role_id"`
+}
 type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
