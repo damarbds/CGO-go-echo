@@ -179,6 +179,8 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 		TicketCode:        c.FormValue("ticket_code"),
 		TicketQRCode:      "#",
 		ExperienceAddOnId: &exp_add_ons,
+		TransId:	c.FormValue("trans_id"),
+		PaymentUrl: c.FormValue("payment_url"),
 	}
 
 	if ok, err := isRequestValid(&bookingExpcommand); !ok {

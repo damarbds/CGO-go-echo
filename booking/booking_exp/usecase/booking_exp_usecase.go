@@ -261,7 +261,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 
-	if booking.ExpId == "" {
+	if booking.ExpId == "" && booking.TransId == ""{
 		return nil, models.ValidationExpId, nil
 	}
 	if booking.BookingDate == "" {
@@ -319,7 +319,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		DeletedDate:       nil,
 		IsDeleted:         0,
 		IsActive:          1,
-		ExpId:             booking.ExpId,
+		ExpId:             &booking.ExpId,
 		OrderId:           orderId,
 		GuestDesc:         booking.GuestDesc,
 		BookedBy:          booking.BookedBy,
@@ -330,12 +330,23 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		TicketCode:        ticketCode,
 		TicketQRCode:      imagePath,
 		ExperienceAddOnId: booking.ExperienceAddOnId,
+		TransId:			&booking.TransId,
+		PaymentUrl:			&booking.PaymentUrl,
 	}
 	if *bookingExp.ExperienceAddOnId == "" {
 		bookingExp.ExperienceAddOnId = nil
 	}
 	if *bookingExp.UserId == "" {
 		bookingExp.UserId = nil
+	}
+	if *bookingExp.TransId == ""{
+		bookingExp.TransId = nil
+	}
+	if *bookingExp.ExpId == ""{
+		bookingExp.ExpId = nil
+	}
+	if *bookingExp.PaymentUrl == ""{
+		bookingExp.PaymentUrl = nil
 	}
 	res, err := b.bookingExpRepo.Insert(ctx, &bookingExp)
 	if err != nil {

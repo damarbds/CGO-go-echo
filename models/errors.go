@@ -24,7 +24,7 @@ var (
 	ErrInvalidOTP       = errors.New("Your OTP invalid Please check again ")
 )
 var (
-	ValidationExpId = errors.New("ExpId Required")
+	ValidationExpId = errors.New("ExpId Required Or TransId Required")
 	// ErrNotFound will throw if the requested item is not exists
 	ValidationStatus = errors.New("Status Required")
 	// ErrConflict will throw if the current action already exists

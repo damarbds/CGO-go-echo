@@ -201,7 +201,7 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 	a.Id = id.String()
 	query := `INSERT  booking_exps SET id=?,created_by=?,created_date=?,modified_by=?,modified_date=?,deleted_by=?,
 				deleted_date=?,is_deleted=?,is_active=?,exp_id=?,order_id=?,guest_desc=?,booked_by=?,booked_by_email=?,
-				booking_date=?,user_id=?,status=?,ticket_code=?,ticket_qr_code=?,experience_add_on_id=?`
+				booking_date=?,user_id=?,status=?,ticket_code=?,ticket_qr_code=?,experience_add_on_id=?,payment_url=?,trans_id=?`
 
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -209,7 +209,7 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 	}
 
 	_, error := stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpId, a.OrderId, a.GuestDesc, a.BookedBy,
-		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId)
+		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId,a.PaymentUrl,a.TransId)
 	if error != nil {
 		return nil, err
 	}
