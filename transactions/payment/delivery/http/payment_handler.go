@@ -2,10 +2,12 @@ package http
 
 import (
 	"context"
+	"github.com/booking/booking_exp"
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"github.com/transactions/payment"
+	"github.com/transactions/payment_methods"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 )
@@ -17,11 +19,17 @@ type ResponseError struct {
 
 type paymentHandler struct {
 	paymentUsecase payment.Usecase
+	bookingUsecase booking_exp.Usecase
+	bookingRepo booking_exp.Repository
+	paymentMethodRepo payment_methods.Repository
 }
 
-func NewPaymentHandler(e *echo.Echo, pus payment.Usecase) {
+func NewPaymentHandler(e *echo.Echo, pus payment.Usecase, bus booking_exp.Usecase, bur booking_exp.Repository, pmr payment_methods.Repository) {
 	handler := &paymentHandler{
 		paymentUsecase: pus,
+		bookingUsecase: bus,
+		bookingRepo: bur,
+		paymentMethodRepo: pmr,
 	}
 	e.POST("/transaction/payments", handler.CreatePayment)
 	e.PUT("/transaction/payments/confirm", handler.ConfirmPayment)
@@ -104,18 +112,26 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		Currency:            t.Currency,
 	}
 
-	res, err := p.paymentUsecase.Insert(ctx, tr, token)
+	_, err := p.paymentUsecase.Insert(ctx, tr, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
-	response := &models.PaymentTransaction{
-		Status:        http.StatusOK,
-		Message:       "Payment Transaction Succeeds",
-		TransactionID: res,
+	pm, err := p.paymentMethodRepo.GetByID(ctx, tr.PaymentMethodId)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, response)
+	data, err := p.bookingUsecase.SendCharge(ctx, tr.BookingExpId, pm.MidtransPaymentCode)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	if err := p.bookingRepo.UpdatePaymentUrl(ctx, tr.BookingExpId, data["redirect_url"].(string)); err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, data)
 }
 
 func getStatusCode(err error) int {
