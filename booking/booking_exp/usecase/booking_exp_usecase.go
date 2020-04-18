@@ -1,10 +1,19 @@
 package usecase
 
 import (
+	"bytes"
 	"encoding/json"
+	b64 "encoding/base64"
+	"errors"
+	"fmt"
+	"github.com/third-party/midtrans"
 	"io/ioutil"
+	"math"
 	"math/rand"
+	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/auth/identityserver"
@@ -32,6 +41,75 @@ func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.U
 		merchantUsecase: m,
 		isUsecase:       is,
 		contextTimeout:  timeout,
+	}
+}
+
+func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentType string) (map[string]interface{}, error) {
+	var data map[string]interface{}
+
+	client := &http.Client{}
+
+	booking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, "")
+	if err != nil {
+		return nil, err
+	}
+
+	var bookedBy []models.BookedByObj
+	if booking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return nil, err
+		}
+	}
+
+	fullName := bookedBy[0].FullName
+	email := bookedBy[0].Email
+
+	var phoneNumber string
+	if phoneStr, ok := bookedBy[0].PhoneNumber.(string); ok {
+		phoneNumber = phoneStr
+	} else if phoneInt, ok := bookedBy[0].PhoneNumber.(int); ok {
+		phoneNumber = strconv.Itoa(phoneInt)
+	}
+
+	name := strings.Split(fullName, " ")
+
+	var charge midtrans.MidtransCharge
+	charge.CustomerDetail = midtrans.CustomerDetail{
+		FirstName: name[0],
+		LastName:  name[1],
+		Phone:     phoneNumber,
+		Email:     email,
+	}
+
+	charge.TransactionDetails.GrossAmount = math.Round(booking.TotalPrice)
+	charge.TransactionDetails.OrderID = booking.OrderId
+
+	charge.EnablePayment = []string{paymentType}
+	charge.OptionColorTheme = midtrans.OptionColorTheme{
+		Primary:     "#c51f1f",
+		PrimaryDark: "#1a4794",
+		Secondary:   "#1fce38",
+	}
+	j, _ := json.Marshal(charge)
+	fmt.Println(string(j))
+	AUTH_STRING := b64.StdEncoding.EncodeToString([]byte(midtrans.MidtransServerKey + ":"))
+	req, _ := http.NewRequest("POST", midtrans.TransactionEndpoint, bytes.NewBuffer(j))
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Basic "+AUTH_STRING)
+
+	resp, _ := client.Do(req)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var data map[string]interface{}
+		decoder := json.NewDecoder(resp.Body)
+		err := decoder.Decode(&data)
+		if err != nil {
+			return data, err
+		}
+		return data, nil
+	} else {
+		err := errors.New("MIDTRANS ERROR : " + resp.Status)
+		return data, err
 	}
 }
 
@@ -110,10 +188,10 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 	return myBooking, nil
 }
 
-func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId string) (*models.BookingExpDetailDto, error) {
+func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
-	getDetailBooking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId)
+	getDetailBooking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, bookingCode)
 	if err != nil {
 		return nil, err
 	}

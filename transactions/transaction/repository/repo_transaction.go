@@ -18,6 +18,21 @@ func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
+func (t transactionRepository) UpdateStatus(ctx context.Context, status int, transactionId, bookingId string) error {
+	query := `UPDATE transactions SET status = ? WHERE (id = ? OR booking_exp_id = ?)`
+
+	stmt, err := t.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, status, transactionId, bookingId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.TotalTransaction, error) {
 	query := `
 	SELECT

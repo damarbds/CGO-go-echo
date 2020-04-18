@@ -11,4 +11,5 @@ type Repository interface {
 	Count(ctx context.Context, startDate, endDate, search, status string) (int, error)
 	List(ctx context.Context, startDate, endDate, search, status string, limit, offset int) ([]*models.TransactionOut, error)
 	CountThisMonth(ctx context.Context) (*models.TotalTransaction, error)
+	UpdateStatus(ctx context.Context, status int, transactionId, bookingId string) error
 }
