@@ -222,7 +222,7 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
-
+	var roles []string
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            ar.Id,
 		Username:      ar.UserEmail,
@@ -234,6 +234,10 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user s
 		EmailVerified: true,
 		Website:       "",
 		Address:       "",
+		OTP:           "",
+		UserType:      1,
+		PhoneNumber:   ar.PhoneNumber,
+		UserRoles:roles,
 	}
 	_, err := m.identityServerUc.UpdateUser(&updateUser)
 	if err != nil {
@@ -295,6 +299,7 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 	//if existeduser != nil {
 	//	return models.ErrConflict
 	//}
+	var roles []string
 	registerUser := models.RegisterAndUpdateUser{
 		Id:            "",
 		Username:      ar.UserEmail,
@@ -309,6 +314,7 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 		OTP:           "",
 		UserType:      1,
 		PhoneNumber:   ar.PhoneNumber,
+		UserRoles:roles,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	message := "Please keep it a secret, and use this OTP: " + isUser.OTP + " code to verify your email"

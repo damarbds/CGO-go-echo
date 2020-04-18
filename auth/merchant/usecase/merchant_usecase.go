@@ -2,10 +2,9 @@ package usecase
 
 import (
 	"context"
+	"github.com/auth/admin"
 	"math"
 	"time"
-
-	"github.com/auth/admin"
 
 	"github.com/auth/identityserver"
 	"github.com/service/experience"
@@ -200,6 +199,7 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
+	var roles []string
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            ar.Id,
 		Username:      ar.MerchantEmail,
@@ -211,6 +211,10 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 		EmailVerified: false,
 		Website:       "",
 		Address:       "",
+		OTP:           "",
+		UserType:      2,
+		PhoneNumber:"",
+		UserRoles:roles,
 	}
 	_, err := m.identityServerUc.UpdateUser(&updateUser)
 	if err != nil {
@@ -238,6 +242,7 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 	if existedMerchant != nil {
 		return models.ErrConflict
 	}
+	var roles []string
 	registerUser := models.RegisterAndUpdateUser{
 		Id:            "",
 		Username:      ar.MerchantEmail,
@@ -251,6 +256,8 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		Address:       "",
 		OTP:           "",
 		UserType:      2,
+		PhoneNumber:"",
+		UserRoles:roles,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	ar.Id = isUser.Id

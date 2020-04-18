@@ -20,6 +20,7 @@ type RegisterAndUpdateUser struct {
 	OTP           string `json:"oTP"`
 	UserType      int    `json:"userType"`
 	PhoneNumber   string `json:"phoneNumber"`
+	UserRoles	 []string	`json:"userRoles"`
 }
 
 type Response struct {
