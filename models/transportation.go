@@ -86,6 +86,9 @@ type TransSearch struct {
 	HarborSourceName string `json:"harbor_source_name"`
 	HarborDestId     string `json:"harbor_dest_id"`
 	HarborDestName   string `json:"harbor_dest_name"`
+	MerchantName 		  string		`json:"merchant_name"`
+	MerchantPicture 	 *string		`json:"merchant_picture"`
+	Class				  *string 		`json:"class"`
 }
 type TransPriceObj struct {
 	AdultPrice    float64 `json:"adult_price"`
@@ -109,6 +112,9 @@ type TransportationSearchObj struct {
 	HarborDestinationId   string           `json:"harbor_destination_id"`
 	HarborDestinationName string           `json:"harbor_destination_name"`
 	Price                 TransPriceObj    `json:"price"`
+	MerchantName 		  string		`json:"merchant_name"`
+	MerchantPicture 	 *string		`json:"merchant_picture"`
+	Class				  *string 		`json:"class"`
 }
 type FilterSearchTransWithPagination struct {
 	Data []*TransportationSearchObj `json:"data"`

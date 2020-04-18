@@ -37,6 +37,7 @@ func (p paymentMethodUsecase) Fetch(ctx context.Context) ([]*models.PaymentMetho
 			Type: pay.Type,
 			Desc: pay.Desc.String,
 			Icon: pay.Icon,
+			MidtransPaymentCode:pay.MidtransPaymentCode,
 		}
 	}
 

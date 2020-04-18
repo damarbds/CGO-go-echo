@@ -199,8 +199,8 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 		MerchantPassword: c.FormValue("password"),
 		Balance:          balance,
 		MerchantPicture:	&imagePath,
+		PhoneNumber : c.FormValue("phone_number"),
 	}
-	*merchantCommand.PhoneNumber = c.FormValue("phone_number")
 	if ok, err := isRequestValid(&merchantCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -258,8 +258,8 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 		MerchantEmail:    c.FormValue("merchant_email"),
 		MerchantPassword: c.FormValue("password"),
 		Balance:          balance,
+		PhoneNumber : c.FormValue("phone_number"),
 	}
-	*merchantCommand.PhoneNumber = c.FormValue("phone_number")
 	if imagePath != ""{
 		merchantCommand.MerchantPicture = &imagePath
 	}
