@@ -39,9 +39,28 @@ func NewmerchantHandler(e *echo.Echo, us merchant.Usecase,is identityserver.Usec
 	e.GET("/merchants/count", handler.Count)
 	e.GET("/merchants", handler.List)
 	e.DELETE("/merchants/:id", handler.Delete)
+	e.GET("/merchants/:id", handler.GetDetailID)
 	e.GET("/merchants/service-count", handler.GetServiceCount)
 	//e.GET("/merchants/:id", handler.GetByID)
 	//e.DELETE("/merchants/:id", handler.Delete)
+}
+func (a *merchantHandler) GetDetailID(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	id := c.Param("id")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.MerchantUsecase.GetDetailMerchantById(ctx, id,token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 func (a *merchantHandler) Delete(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

@@ -44,6 +44,20 @@ type MerchantInfoDto struct {
 	Balance       float64    `json:"balance"`
 	PhoneNumber   *string    `json:"phone_number"`
 }
+
+type MerchantDto struct {
+	Id            string     `json:"id"`
+	CreatedDate   time.Time  `json:"created_date"`
+	UpdatedDate   *time.Time `json:"updated_date"`
+	IsActive      int        `json:"is_active"`
+	MerchantName  string     `json:"merchant_name" validate:"required"`
+	MerchantDesc  string     `json:"merchant_desc"`
+	MerchantEmail string     `json:"merchant_email" validate:"required"`
+	Password 		string 		`json:"password"`
+	Balance       float64    `json:"balance"`
+	PhoneNumber   *string    `json:"phone_number"`
+	MerchantPicture *string 	`json:"merchant_picture"`
+}
 type LoginMerchant struct {
 	MerchantEmail string `json:"merchant_email"`
 	Password      string `json:"password"`

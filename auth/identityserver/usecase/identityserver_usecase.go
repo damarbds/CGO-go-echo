@@ -27,6 +27,8 @@ type identityserverUsecase struct {
 	accessKeyStorage string
 }
 
+
+
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
 func NewidentityserverUsecase(baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
 	return &identityserverUsecase{
@@ -158,6 +160,7 @@ func (m identityserverUsecase) UploadFileToBlob(image string, folder string) (st
 	//os.Remove(image)
 	return blobURL.String(), err
 }
+
 func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, error) {
 
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/userinfo", nil)
@@ -295,6 +298,7 @@ func (m identityserverUsecase) CreateUser(ar *models.RegisterAndUpdateUser) (*mo
 	json.NewDecoder(resp.Body).Decode(&user)
 	return &user, nil
 }
+
 func (m identityserverUsecase) SendingEmail(r *models.SendingEmail) (*models.SendingEmail, error) {
 	data, _ := json.Marshal(r)
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/push-email", bytes.NewReader(data))
@@ -425,6 +429,40 @@ func (m identityserverUsecase) SendingSMS(sms *models.SendingSMS) (*models.Sendi
 		return nil, models.ErrBadParamInput
 	}
 	user := models.SendingSMS{}
+	json.NewDecoder(resp.Body).Decode(&user)
+	return &user, nil
+}
+
+func (m identityserverUsecase) GetDetailUserById(id string, token string) (*models.GetUserDetail, error) {
+	var param = url.Values{}
+	param.Set("id", id)
+
+	var payload = bytes.NewBufferString(param.Encode())
+
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/user-detail", payload)
+	//os.Exit(1)
+	req.Header.Set("Authorization", "Bearer "+ token)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrUsernamePassword
+	}
+	user := models.GetUserDetail{}
 	json.NewDecoder(resp.Body).Decode(&user)
 	return &user, nil
 }

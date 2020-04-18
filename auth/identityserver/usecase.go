@@ -14,4 +14,5 @@ type Usecase interface {
 	UploadFileToBlob(image string, folder string) (string, error)
 	RequestOTP(phoneNumber string)(*models.RequestOTP,error)
 	SendingSMS(sms *models.SendingSMS)(*models.SendingSMS,error)
+	GetDetailUserById(id string,token string)(*models.GetUserDetail,error)
 }

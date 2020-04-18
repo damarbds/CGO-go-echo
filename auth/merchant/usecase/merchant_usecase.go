@@ -23,6 +23,8 @@ type merchantUsecase struct {
 	contextTimeout   time.Duration
 }
 
+
+
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
 func NewmerchantUsecase(a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
@@ -305,6 +307,32 @@ func (m merchantUsecase) Delete(c context.Context, id string, token string) (*mo
 	return &response, nil
 }
 
+func (m merchantUsecase) GetDetailMerchantById(c context.Context, id string, token string) (*models.MerchantDto, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token)
+	if err != nil {
+		return nil,err
+	}
+	getMerchant , err := m.merchantRepo.GetByID(ctx,id)
+	
+	result := models.MerchantDto{
+		Id:            getMerchant.Id,
+		CreatedDate:   getMerchant.CreatedDate,
+		UpdatedDate:   getMerchant.ModifiedDate,
+		IsActive:      getMerchant.IsActive,
+		MerchantName:  getMerchant.MerchantName,
+		MerchantDesc:  getMerchant.MerchantDesc,
+		MerchantEmail: getMerchant.MerchantEmail,
+		Password:      getUserIdentity.Password,
+		Balance:       getMerchant.Balance,
+		PhoneNumber:   getMerchant.PhoneNumber,
+		MerchantPicture:getMerchant.MerchantPicture,
+	}
+
+	return &result,nil
+}
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation

@@ -15,4 +15,5 @@ type Usecase interface {
 	List(ctx context.Context, page, limit, offset int, token string) (*models.MerchantWithPagination, error)
 	Delete(ctx context.Context, id string, token string) (*models.ResponseDelete, error)
 	ServiceCount(ctx context.Context, token string) (*models.ServiceCount, error)
+	GetDetailMerchantById(ctx context.Context, id string,token string)(*models.MerchantDto,error)
 }

@@ -19,6 +19,8 @@ type userUsecase struct {
 	contextTimeout   time.Duration
 }
 
+
+
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Usecase,timeout time.Duration) user.Usecase {
 	return &userUsecase{
@@ -408,6 +410,38 @@ func (m userUsecase) GetCreditByID(ctx context.Context, id string) (*models.User
 	return &models.UserPoint{Points: point}, nil
 }
 
+func (m userUsecase) GetUserDetailById(ctx context.Context, id string, token string) (*models.UserDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token)
+	if err != nil {
+		return nil,err
+	}
+	getUserById ,err := m.userRepo.GetByID(ctx,id)
+
+	result := models.UserDto{
+		Id:             getUserById.Id,
+		CreatedDate:    getUserById.CreatedDate,
+		UpdatedDate:    getUserById.ModifiedDate,
+		IsActive:       getUserById.IsActive,
+		UserEmail:      getUserById.UserEmail,
+		Password:       getUserIdentity.Password,
+		FullName:       getUserById.FullName,
+		PhoneNumber:    getUserById.PhoneNumber,
+		ProfilePictUrl: getUserById.ProfilePictUrl,
+		Address:        getUserById.Address,
+		Dob:            getUserById.Dob,
+		Gender:         getUserById.Gender,
+		IdType:         getUserById.IdType,
+		IdNumber:       getUserById.IdNumber,
+		ReferralCode:   getUserById.ReferralCode,
+		Points:         getUserById.Points,
+	}
+
+	return &result,nil
+
+}
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation

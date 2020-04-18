@@ -63,6 +63,24 @@ type UserInfoDto struct {
 	ReferralCode   string     `json:"referral_code"`
 	Points         int        `json:"points"`
 }
+type UserDto struct {
+	Id             string     `json:"id"`
+	CreatedDate    time.Time  `json:"created_date"`
+	UpdatedDate    *time.Time `json:"updated_date"`
+	IsActive       int        `json:"is_active" validate:"required"`
+	UserEmail      string     `json:"user_email" validate:"required"`
+	Password 		string	`json:"password"`
+	FullName       string     `json:"full_name"`
+	PhoneNumber    string        `json:"phone_number" validate:"required"`
+	ProfilePictUrl string     `json:"profile_pict_url"`
+	Address        string     `json:"address"`
+	Dob            time.Time  `json:"dob"`
+	Gender         int        `json:"gender"`
+	IdType         int        `json:"id_type"`
+	IdNumber       string     `json:"id_number"`
+	ReferralCode   string     `json:"referral_code"`
+	Points         int        `json:"points"`
+}
 
 type UserPoint struct {
 	Points int `json:"points"`

@@ -37,6 +37,7 @@ func NewuserHandler(e *echo.Echo, us user.Usecase, is identityserver.Usecase) {
 	e.POST("/users", handler.CreateUser)
 	e.PUT("/users/:id", handler.UpdateUser)
 	e.GET("/users/:id/credit", handler.GetCreditByID)
+	e.GET("/users/:id", handler.GetDetailID)
 	e.GET("/users", handler.List)
 }
 
@@ -96,7 +97,24 @@ func (a *userHandler) GetCreditByID(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, result)
 }
+func (a *userHandler) GetDetailID(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
 
+	id := c.Param("id")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.userUsecase.GetUserDetailById(ctx, id,token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
 // Store will store the user by given request body
 func (a *userHandler) CreateUser(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
