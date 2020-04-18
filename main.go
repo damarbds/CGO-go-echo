@@ -112,6 +112,8 @@ import (
 	_balanceHistoryHttpHandler "github.com/transactions/balance_history/delivery/http"
 	_balanceHistoryRepo "github.com/transactions/balance_history/repository"
 	_balanceHistoryUcase "github.com/transactions/balance_history/usecase"
+
+	_midtransHttpHandler "github.com/third-party/midtrans/delivery/http"
 )
 
 // func init() {
@@ -261,12 +263,13 @@ func main() {
 	_articleHttpDeliver.NewArticleHandler(e, au)
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
-	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase)
+	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase, bookingExpUcase, bookingExpRepo, paymentMethodRepo)
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
 	_notifHttpHandler.NewNotifHandler(e, notifUcase)
 	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
 	_transportationHttpHandler.NewtransportationHandler(e, transportationUcase)
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
 	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e,balanceHistoryUcase)
+	_midtransHttpHandler.NewMidtransHandler(e,bookingExpRepo, experienceRepo, transactionRepo)
 	log.Fatal(e.Start(":9090"))
 }

@@ -17,6 +17,18 @@ func NewPaymentMethodRepository(Conn *sql.DB) pm.Repository {
 	return &paymentMethodRepository{Conn}
 }
 
+func (m *paymentMethodRepository) GetByID(ctx context.Context, paymentMethodId string) (*models.PaymentMethod, error) {
+	query := `SELECT * FROM payment_methods WHERE is_deleted = 0 AND is_active = 1 where id = ?`
+
+	res, err := m.fetch(ctx, query, paymentMethodId)
+	if err != nil {
+		return nil, err
+	}
+
+	return res[0], nil
+}
+
+
 func (m *paymentMethodRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.PaymentMethod, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -61,10 +73,10 @@ func (m *paymentMethodRepository) fetch(ctx context.Context, query string, args 
 	return result, nil
 }
 
-func (p paymentMethodRepository) Fetch(ctx context.Context) ([]*models.PaymentMethod, error) {
+func (m *paymentMethodRepository) Fetch(ctx context.Context) ([]*models.PaymentMethod, error) {
 	query := `SELECT * FROM payment_methods WHERE is_deleted = 0 AND is_active = 1 ORDER BY created_date desc`
 
-	res, err := p.fetch(ctx, query)
+	res, err := m.fetch(ctx, query)
 	if err != nil {
 		return nil, err
 	}
