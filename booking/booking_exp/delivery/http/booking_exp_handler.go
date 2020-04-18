@@ -150,7 +150,7 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id)
+	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id, "")
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

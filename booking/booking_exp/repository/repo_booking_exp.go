@@ -19,9 +19,25 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewMysqlArticleRepository will create an object that represent the article.Repository interface
 func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
+}
+
+func (b bookingExpRepository) UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error {
+	query := `UPDATE booking_exps SET payment_url = ? WHERE id = ?`
+
+	stmt, err := b.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, paymentUrl, bookingId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b bookingExpRepository) CountThisMonth(ctx context.Context) (int, error) {
@@ -284,7 +300,7 @@ func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string
 	return email, err
 }
 
-func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId string) (*models.BookingExpJoin, error) {
+func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error) {
 	var booking *models.BookingExpJoin
 	query := `select  a.*, b.exp_title,b.exp_type,b.exp_duration,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type,
 			city_name as city, province_name as province, country_name as country, c.id as experience_payment_id,c.currency,pm.desc as account_bank,pm.icon,t.created_date as created_date_transaction from booking_exps a
@@ -296,9 +312,9 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId 
 			JOIN cities ci ON h.city_id = ci.id
 			JOIN provinces p ON ci.province_id = p.id
 			JOIN countries co ON p.country_id = co.id
-            where a.id = ? AND a.is_active = 1 AND a.is_deleted = 0`
+            where a.is_active = 1 AND a.is_deleted = 0 AND (a.id = ? OR a.order_id = ?)`
 
-	list, err := b.fetch(ctx, query, bookingId)
+	list, err := b.fetch(ctx, query, bookingId, bookingCode)
 	if err != nil {
 		return nil, err
 	}
