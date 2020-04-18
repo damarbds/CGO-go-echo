@@ -259,7 +259,7 @@ func main() {
 	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase, isUsecase)
 	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase, isUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
-	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
+	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase,isUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)

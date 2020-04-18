@@ -19,6 +19,7 @@ type Merchant struct {
 	MerchantEmail string     `json:"merchant_email" validate:"required"`
 	Balance       float64    `json:"balance"`
 	PhoneNumber   *string    `json:"phone_number"`
+	MerchantPicture *string 	`json:"merchant_picture"`
 }
 
 type NewCommandMerchant struct {
@@ -28,6 +29,8 @@ type NewCommandMerchant struct {
 	MerchantEmail    string  `json:"merchant_email" validate:"required"`
 	MerchantPassword string  `json:"merchant_password"`
 	Balance          float64 `json:"balance"`
+	PhoneNumber   *string    `json:"phone_number"`
+	MerchantPicture *string 	`json:"merchant_picture"`
 }
 
 type MerchantInfoDto struct {

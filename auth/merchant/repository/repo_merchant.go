@@ -98,6 +98,7 @@ func (m *merchantRepository) fetch(ctx context.Context, query string, args ...in
 			&t.MerchantEmail,
 			&t.Balance,
 			&t.PhoneNumber,
+			&t.MerchantPicture,
 		)
 
 		if err != nil {
@@ -162,13 +163,13 @@ func (m *merchantRepository) GetByMerchantEmail(ctx context.Context, merchantEma
 	return
 }
 func (m *merchantRepository) Insert(ctx context.Context, a *models.Merchant) error {
-	query := `INSERT merchants SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , merchant_name=? , merchant_desc=? , merchant_email=? ,balance=?`
+	query := `INSERT merchants SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , merchant_name=? , merchant_desc=? , merchant_email=? ,balance=?,phone_number=?,merchant_picture=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.MerchantName, a.MerchantDesc,
-		a.MerchantEmail, a.Balance)
+		a.MerchantEmail, a.Balance,a.PhoneNumber,a.MerchantPicture)
 	if err != nil {
 		return err
 	}
@@ -204,7 +205,7 @@ func (m *merchantRepository) Delete(ctx context.Context, id string, deleted_by s
 }
 func (m *merchantRepository) Update(ctx context.Context, ar *models.Merchant) error {
 	query := `UPDATE merchants set modified_by=?, modified_date=? , merchant_name=? , 
-				merchant_desc=? , merchant_email=? , balance=? WHERE id = ?`
+				merchant_desc=? , merchant_email=? , balance=? ,phone_number=?,merchant_picture=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -212,7 +213,7 @@ func (m *merchantRepository) Update(ctx context.Context, ar *models.Merchant) er
 	}
 
 	res, err := stmt.ExecContext(ctx, ar.ModifiedBy, time.Now(), ar.MerchantName, ar.MerchantDesc, ar.MerchantEmail,
-		ar.Balance, ar.Id)
+		ar.Balance, ar.PhoneNumber,ar.MerchantPicture,ar.Id)
 	if err != nil {
 		return err
 	}
