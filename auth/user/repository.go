@@ -15,5 +15,5 @@ type Repository interface {
 	Delete(ctx context.Context, id string, deleted_by string) error
 	GetCreditByID(ctx context.Context, id string) (int, error)
 	Count(ctx context.Context) (int, error)
-	List(ctx context.Context, limit, offset int) ([]*models.User, error)
+	List(ctx context.Context, limit, offset int,search string) ([]*models.User, error)
 }

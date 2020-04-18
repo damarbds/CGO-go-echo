@@ -2,11 +2,10 @@ package usecase
 
 import (
 	"bytes"
-	"encoding/json"
 	b64 "encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/third-party/midtrans"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/third-party/midtrans"
 
 	"github.com/auth/identityserver"
 	"github.com/auth/merchant"
@@ -49,7 +50,7 @@ func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentTyp
 
 	client := &http.Client{}
 
-	booking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, "", "")
+	booking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, "")
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +192,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
-	getDetailBooking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, bookingCode, "")
+	getDetailBooking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, bookingCode)
 	if err != nil {
 		return nil, err
 	}

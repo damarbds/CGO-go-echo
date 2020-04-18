@@ -7,9 +7,9 @@ var CoreGateway midtrans.CoreGateway
 var SnapGateway midtrans.SnapGateway
 
 var (
-	MidtransServerKey = "SB-Mid-server-hchRew4btzvmS0-CjbYf2SiU"
-	MidtransClientKey = "SB-Mid-client-jcybnuzY-VtfDW-U"
-	TransactionEndpoint = "https://app.midtrans.com/snap/v1/transactions"
+	MidtransServerKey   = "SB-Mid-server-hchRew4btzvmS0-CjbYf2SiU"
+	MidtransClientKey   = "SB-Mid-client-jcybnuzY-VtfDW-U"
+	TransactionEndpoint = "https://app.sandbox.midtrans.com/snap/v1/transactions"
 )
 
 func SetupMidtrans() {
@@ -87,6 +87,3 @@ type MidtransCharge struct {
 	EnablePayment      []string           `json:"enabled_payments"`
 	CustomerDetail     CustomerDetail     `json:"customer_details"`
 }
-
-
-

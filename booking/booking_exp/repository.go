@@ -1,15 +1,16 @@
 package booking_exp
 
 import (
+	"time"
+
 	"github.com/models"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type Repository interface {
 	Insert(ctx context.Context, booking *models.BookingExp) (*models.BookingExp, error)
 	GetEmailByID(ctx context.Context, bookingId string) (string, error)
-	GetDetailBookingID(ctx context.Context, bookingId, bookingCode, status string) (*models.BookingExpJoin, error)
+	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error)
 	UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error
 	GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error)
 	QueryHistoryPer30DaysByUserId(ctx context.Context, userId string) ([]*models.BookingExpHistory, error)

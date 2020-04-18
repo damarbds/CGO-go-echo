@@ -2,6 +2,8 @@ package http
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/booking/booking_exp"
 	"github.com/labstack/echo"
 	"github.com/models"
@@ -9,7 +11,6 @@ import (
 	"github.com/transactions/payment"
 	"github.com/transactions/payment_methods"
 	"gopkg.in/go-playground/validator.v9"
-	"net/http"
 )
 
 // ResponseError represent the response error struct
@@ -18,17 +19,17 @@ type ResponseError struct {
 }
 
 type paymentHandler struct {
-	paymentUsecase payment.Usecase
-	bookingUsecase booking_exp.Usecase
-	bookingRepo booking_exp.Repository
+	paymentUsecase    payment.Usecase
+	bookingUsecase    booking_exp.Usecase
+	bookingRepo       booking_exp.Repository
 	paymentMethodRepo payment_methods.Repository
 }
 
 func NewPaymentHandler(e *echo.Echo, pus payment.Usecase, bus booking_exp.Usecase, bur booking_exp.Repository, pmr payment_methods.Repository) {
 	handler := &paymentHandler{
-		paymentUsecase: pus,
-		bookingUsecase: bus,
-		bookingRepo: bur,
+		paymentUsecase:    pus,
+		bookingUsecase:    bus,
+		bookingRepo:       bur,
 		paymentMethodRepo: pmr,
 	}
 	e.POST("/transaction/payments", handler.CreatePayment)
@@ -122,7 +123,7 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
-	data, err := p.bookingUsecase.SendCharge(ctx, tr.BookingExpId, pm.MidtransPaymentCode)
+	data, err := p.bookingUsecase.SendCharge(ctx, tr.BookingExpId, *pm.MidtransPaymentCode)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

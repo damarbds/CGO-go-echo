@@ -55,9 +55,17 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	return count, nil
 }
 
-func (m *userRepository) List(ctx context.Context, limit, offset int) ([]*models.User, error) {
-	query := `SELECT * FROM users WHERE is_deleted = 0 and is_active = 1 LIMIT ? OFFSET ?`
-
+func (m *userRepository) List(ctx context.Context, limit, offset int,search string) ([]*models.User, error) {
+	query := `SELECT * FROM users WHERE is_deleted = 0 and is_active = 1 `
+	if search != "" {
+		query = query + ` AND ( user_email LIKE '%` + search + `%' ` +
+						`OR full_name LIKE '%` + search + `%' ` +
+						`OR phone_number LIKE '%` + search + `%' ` +
+						`OR address LIKE '%` + search + `%' ` +
+						`OR dob LIKE '%` + search + `%' ` +
+						`OR points LIKE '%` + search + `%' )`
+	}
+	query = query + ` LIMIT ? OFFSET ?`
 	list, err := m.fetch(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err

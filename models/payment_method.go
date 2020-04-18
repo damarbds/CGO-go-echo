@@ -19,7 +19,7 @@ type PaymentMethod struct {
 	Type         int            `json:"type"`
 	Desc         sql.NullString `json:"desc"`
 	Icon         string         `json:"icon"`
-	MidtransPaymentCode string	`json:"midtrans_payment_code"`
+	MidtransPaymentCode *string	`json:"midtrans_payment_code"`
 }
 
 type PaymentMethodObject struct {
