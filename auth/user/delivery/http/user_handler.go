@@ -99,7 +99,14 @@ func (a *userHandler) GetCreditByID(c echo.Context) error {
 
 // Store will store the user by given request body
 func (a *userHandler) CreateUser(c echo.Context) error {
-
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	isAdmin :=  c.FormValue("is_admin")
+	needAdminAuth := false
+	if isAdmin != "" {
+		needAdminAuth = true
+	}
 	filupload, image, _ := c.Request().FormFile("profile_pict_url")
 	dir, err := os.Getwd()
 	if err != nil {
@@ -159,7 +166,7 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	user,error := a.userUsecase.Create(ctx, &userCommand, "admin")
+	user,error := a.userUsecase.Create(ctx, &userCommand, needAdminAuth,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})

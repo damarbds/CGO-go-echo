@@ -234,7 +234,7 @@ func main() {
 		merchantUsecase,
 		timeoutContext,
 	)
-	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, timeoutContext)
+	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase,timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
