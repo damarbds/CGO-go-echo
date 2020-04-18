@@ -234,7 +234,7 @@ func main() {
 		merchantUsecase,
 		timeoutContext,
 	)
-	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, timeoutContext)
+	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase,timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
@@ -259,7 +259,7 @@ func main() {
 	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase, isUsecase)
 	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase, isUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
-	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase)
+	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase,isUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)

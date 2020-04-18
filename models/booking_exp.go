@@ -60,7 +60,7 @@ type BookingExp struct {
 	DeletedDate        *time.Time `json:"deleted_date"`
 	IsDeleted          int        `json:"is_deleted" validate:"required"`
 	IsActive           int        `json:"is_active" validate:"required"`
-	ExpId              string     `json:"exp_id"`
+	ExpId              *string     `json:"exp_id"`
 	OrderId            string     `json:"order_id"`
 	GuestDesc          string     `json:"guest_desc"`
 	BookedBy           string     `json:"booked_by"`
@@ -173,6 +173,8 @@ type NewBookingExpCommand struct {
 	TicketCode        string  `json:"ticket_code"`
 	TicketQRCode      string  `json:"ticket_qr_code"`
 	ExperienceAddOnId *string `json:"experience_add_on_id"`
+	TransId 		 string		`json:"trans_id"`
+	PaymentUrl 		string 		`json:"payment_url"`
 }
 type MyBooking struct {
 	ExpId       string    `json:"exp_id"`

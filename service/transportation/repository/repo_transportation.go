@@ -160,6 +160,9 @@ func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query s
 			&t.HarborSourceName,
 			&t.HarborDestId,
 			&t.HarborDestName,
+			&t.MerchantName,
+			&t.MerchantPicture,
+			&t.Class,
 		)
 
 		if err != nil {

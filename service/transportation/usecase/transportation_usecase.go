@@ -70,12 +70,16 @@ func (t transportationUsecase) FilterSearchTrans(
 		h.id as harbor_source_id,
 		h.harbors_name as harbor_source_name,
 		hdest.id as harbor_dest_id,
-		hdest.harbors_name as harbor_dest_name
+		hdest.harbors_name as harbor_dest_name,
+		m.merchant_name,
+		m.merchant_picture,
+		t.class
 	FROM
 		schedules s
 		JOIN transportations t ON s.trans_id = t.id
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		s.is_deleted = 0
 		AND s.is_active = 1`
@@ -88,6 +92,7 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN transportations t ON s.trans_id = t.id
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		s.is_deleted = 0
 		AND s.is_active = 1`
@@ -227,6 +232,9 @@ func (t transportationUsecase) FilterSearchTrans(
 			HarborDestinationId:   t.HarborDestId,
 			HarborDestinationName: t.HarborDestName,
 			Price:                 transPrice,
+			MerchantName:t.MerchantName,
+			MerchantPicture:t.MerchantPicture,
+			Class:t.Class,
 		}
 	}
 	if sortBy != "" {

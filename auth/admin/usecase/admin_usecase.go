@@ -84,7 +84,7 @@ func (m adminUsecase) GetAdminInfo(ctx context.Context, token string) (*models.A
 func (m adminUsecase) Update(c context.Context, ar *models.NewCommandAdmin, user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
-	var roles []string
+	//var roles []string
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            ar.Id,
 		Username:      ar.Email,
@@ -99,7 +99,7 @@ func (m adminUsecase) Update(c context.Context, ar *models.NewCommandAdmin, user
 		OTP:           "",
 		UserType:      3,
 		PhoneNumber:"",
-		UserRoles:roles,
+		UserRoles:nil,
 	}
 	_, err := m.identityServerUc.UpdateUser(&updateUser)
 	if err != nil {
@@ -121,7 +121,7 @@ func (m adminUsecase) Create(c context.Context, ar *models.NewCommandAdmin, user
 	if existedadmin != nil {
 		return models.ErrConflict
 	}
-	var roles []string
+	//var roles []string
 	registerUser := models.RegisterAndUpdateUser{
 		Id:            "",
 		Username:      ar.Email,
@@ -136,7 +136,7 @@ func (m adminUsecase) Create(c context.Context, ar *models.NewCommandAdmin, user
 		OTP:           "",
 		UserType:      3,
 		PhoneNumber:"",
-		UserRoles:roles,
+		UserRoles:nil,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	ar.Id = isUser.Id

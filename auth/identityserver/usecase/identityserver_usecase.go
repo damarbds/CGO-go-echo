@@ -230,7 +230,9 @@ func (m identityserverUsecase) GetToken(username string, password string, scope 
 }
 
 func (m identityserverUsecase) UpdateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error) {
-
+	if ar.UserRoles == nil{
+		ar.UserRoles = make([]string,0)
+	}
 	data, _ := json.Marshal(ar)
 
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/update-user", bytes.NewReader(data))
@@ -262,6 +264,9 @@ func (m identityserverUsecase) UpdateUser(ar *models.RegisterAndUpdateUser) (*mo
 }
 
 func (m identityserverUsecase) CreateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error) {
+	if ar.UserRoles == nil{
+		ar.UserRoles = make([]string,0)
+	}
 	data, _ := json.Marshal(ar)
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/register", bytes.NewReader(data))
 	//os.Exit(1)

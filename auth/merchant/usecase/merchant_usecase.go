@@ -199,7 +199,7 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	var roles []string
+	//var roles []string
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            ar.Id,
 		Username:      ar.MerchantEmail,
@@ -213,8 +213,8 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 		Address:       "",
 		OTP:           "",
 		UserType:      2,
-		PhoneNumber:"",
-		UserRoles:roles,
+		PhoneNumber:  ar.PhoneNumber,
+		UserRoles:nil,
 	}
 	_, err := m.identityServerUc.UpdateUser(&updateUser)
 	if err != nil {
@@ -228,6 +228,8 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 	merchant.MerchantDesc = ar.MerchantDesc
 	merchant.MerchantEmail = ar.MerchantEmail
 	merchant.Balance = ar.Balance
+	merchant.PhoneNumber = &ar.PhoneNumber
+	merchant.MerchantPicture = ar.MerchantPicture
 	return m.merchantRepo.Update(ctx, &merchant)
 }
 
@@ -242,7 +244,7 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 	if existedMerchant != nil {
 		return models.ErrConflict
 	}
-	var roles []string
+	//var roles []string
 	registerUser := models.RegisterAndUpdateUser{
 		Id:            "",
 		Username:      ar.MerchantEmail,
@@ -256,8 +258,8 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		Address:       "",
 		OTP:           "",
 		UserType:      2,
-		PhoneNumber:"",
-		UserRoles:roles,
+		PhoneNumber: ar.PhoneNumber,
+		UserRoles:nil,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	ar.Id = isUser.Id
@@ -271,6 +273,8 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 	merchant.MerchantDesc = ar.MerchantDesc
 	merchant.MerchantEmail = ar.MerchantEmail
 	merchant.Balance = ar.Balance
+	merchant.PhoneNumber = &ar.PhoneNumber
+	merchant.MerchantPicture = ar.MerchantPicture
 	err = m.merchantRepo.Insert(ctx, &merchant)
 	if err != nil {
 		return err

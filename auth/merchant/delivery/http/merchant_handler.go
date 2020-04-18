@@ -2,7 +2,11 @@ package http
 
 import (
 	"context"
+	"github.com/auth/identityserver"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/labstack/echo"
@@ -21,12 +25,14 @@ type ResponseError struct {
 // merchantHandler  represent the httphandler for merchant
 type merchantHandler struct {
 	MerchantUsecase merchant.Usecase
+	IdentityUsecase identityserver.Usecase
 }
 
 // NewmerchantHandler will initialize the merchants/ resources endpoint
-func NewmerchantHandler(e *echo.Echo, us merchant.Usecase) {
+func NewmerchantHandler(e *echo.Echo, us merchant.Usecase,is identityserver.Usecase) {
 	handler := &merchantHandler{
 		MerchantUsecase: us,
+		IdentityUsecase:is,
 	}
 	e.POST("/merchants", handler.CreateMerchant)
 	e.PUT("/merchants/:id", handler.UpdateMerchant)
@@ -156,6 +162,34 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 	//if err != nil {
 	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	//}
+	filupload, image, _ := c.Request().FormFile("profile_pict_url")
+	dir, err := os.Getwd()
+	if err != nil {
+		return models.ErrInternalServerError
+	}
+	var imagePath string
+	if filupload != nil {
+		fileLocation := filepath.Join(dir, "files", image.Filename)
+		targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
+			return models.ErrInternalServerError
+		}
+		defer targetFile.Close()
+
+		if _, err := io.Copy(targetFile, filupload); err != nil {
+			return models.ErrInternalServerError
+		}
+
+		//w.Write([]byte("done"))
+		imagePat, _ := a.IdentityUsecase.UploadFileToBlob(fileLocation, "MerchantLogo")
+		imagePath = imagePat
+		targetFile.Close()
+		errRemove := os.Remove(fileLocation)
+		if errRemove != nil {
+			return models.ErrInternalServerError
+		}
+	}
 	balance, _ := strconv.ParseFloat(c.FormValue("balance"), 64)
 	merchantCommand := models.NewCommandMerchant{
 		Id:               c.FormValue("id"),
@@ -164,6 +198,8 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 		MerchantEmail:    c.FormValue("merchant_email"),
 		MerchantPassword: c.FormValue("password"),
 		Balance:          balance,
+		MerchantPicture:	&imagePath,
+		PhoneNumber : c.FormValue("phone_number"),
 	}
 	if ok, err := isRequestValid(&merchantCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -186,6 +222,34 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 	//if err != nil {
 	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	//}
+	filupload, image, _ := c.Request().FormFile("profile_pict_url")
+	dir, err := os.Getwd()
+	if err != nil {
+		return models.ErrInternalServerError
+	}
+	var imagePath string
+	if filupload != nil {
+		fileLocation := filepath.Join(dir, "files", image.Filename)
+		targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
+			return models.ErrInternalServerError
+		}
+		defer targetFile.Close()
+
+		if _, err := io.Copy(targetFile, filupload); err != nil {
+			return models.ErrInternalServerError
+		}
+
+		//w.Write([]byte("done"))
+		imagePat, _ := a.IdentityUsecase.UploadFileToBlob(fileLocation, "MerchantLogo")
+		imagePath = imagePat
+		targetFile.Close()
+		errRemove := os.Remove(fileLocation)
+		if errRemove != nil {
+			return models.ErrInternalServerError
+		}
+	}
 	balance, _ := strconv.ParseFloat(c.FormValue("balance"), 64)
 	merchantCommand := models.NewCommandMerchant{
 		Id:               c.FormValue("id"),
@@ -194,6 +258,10 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 		MerchantEmail:    c.FormValue("merchant_email"),
 		MerchantPassword: c.FormValue("password"),
 		Balance:          balance,
+		PhoneNumber : c.FormValue("phone_number"),
+	}
+	if imagePath != ""{
+		merchantCommand.MerchantPicture = &imagePath
 	}
 	if ok, err := isRequestValid(&merchantCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -203,7 +271,7 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	err := a.MerchantUsecase.Update(ctx, &merchantCommand, "admin")
+	err = a.MerchantUsecase.Update(ctx, &merchantCommand, "admin")
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

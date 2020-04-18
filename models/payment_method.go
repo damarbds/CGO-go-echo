@@ -28,4 +28,5 @@ type PaymentMethodObject struct {
 	Type int    `json:"type"`
 	Desc string `json:"desc"`
 	Icon string `json:"icon"`
+	MidtransPaymentCode *string	`json:"midtrans_payment_code"`
 }

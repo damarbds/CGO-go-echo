@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/auth/admin"
 	"math"
 	"math/rand"
 	"time"
@@ -12,16 +13,18 @@ import (
 )
 
 type userUsecase struct {
+	adminUsecase    admin.Usecase
 	userRepo         user.Repository
 	identityServerUc identityserver.Usecase
 	contextTimeout   time.Duration
 }
 
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
-func NewuserUsecase(a user.Repository, is identityserver.Usecase, timeout time.Duration) user.Usecase {
+func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Usecase,timeout time.Duration) user.Usecase {
 	return &userUsecase{
 		userRepo:         a,
 		identityServerUc: is,
+		adminUsecase:au,
 		contextTimeout:   timeout,
 	}
 }
@@ -222,7 +225,7 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
-	var roles []string
+	//var roles []string
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            ar.Id,
 		Username:      ar.UserEmail,
@@ -237,7 +240,7 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user s
 		OTP:           "",
 		UserType:      1,
 		PhoneNumber:   ar.PhoneNumber,
-		UserRoles:roles,
+		UserRoles:nil,
 	}
 	_, err := m.identityServerUc.UpdateUser(&updateUser)
 	if err != nil {
@@ -292,14 +295,28 @@ func generateRandomBytes(n int) ([]byte, error) {
 
 	return b, nil
 }
-func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user string) (*models.NewCommandUser, error) {
+func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, isAdmin bool,token string) (*models.NewCommandUser, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	//existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
 	//if existeduser != nil {
 	//	return models.ErrConflict
 	//}
-	var roles []string
+	//var roles []string
+
+	var createdBy string
+	if isAdmin == true{
+		if token == ""{
+			return nil,models.ErrUnAuthorize
+		}else {
+			currentUserAdmin ,err := m.adminUsecase.ValidateTokenAdmin(ctx,token)
+			if err != nil {
+				return nil,models.ErrUnAuthorize
+			}
+			createdBy = currentUserAdmin.Name
+		}
+	}
+
 	registerUser := models.RegisterAndUpdateUser{
 		Id:            "",
 		Username:      ar.UserEmail,
@@ -314,20 +331,24 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 		OTP:           "",
 		UserType:      1,
 		PhoneNumber:   ar.PhoneNumber,
-		UserRoles:roles,
+		UserRoles: nil,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
-	message := "Please keep it a secret, and use this OTP: " + isUser.OTP + " code to verify your email"
-	email := models.SendingEmail{
-		Subject: "Verified Email",
-		Message: message,
-		From:    "helmy@cgo.co.id",
-		To:      isUser.Email,
+	if isAdmin == false {
+		message := "Please keep it a secret, and use this OTP: " + isUser.OTP + " code to verify your email"
+		email := models.SendingEmail{
+			Subject: "Verified Email",
+			Message: message,
+			From:    "helmy@cgo.co.id",
+			To:      isUser.Email,
+		}
+		_, errorSending := m.identityServerUc.SendingEmail(&email)
+		if errorSending != nil {
+			return nil, models.ErrInternalServerError
+		}
+		createdBy = ar.UserEmail
 	}
-	_, errorSending := m.identityServerUc.SendingEmail(&email)
-	if errorSending != nil {
-		return nil, models.ErrInternalServerError
-	}
+
 	ar.Id = isUser.Id
 	var dob time.Time
 	if ar.Dob != "" {
@@ -351,7 +372,7 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, user s
 	}
 	userModel := models.User{}
 	userModel.Id = isUser.Id
-	userModel.CreatedBy = ar.UserEmail
+	userModel.CreatedBy = createdBy
 	userModel.UserEmail = ar.UserEmail
 	userModel.FullName = ar.FullName
 	userModel.PhoneNumber = ar.PhoneNumber

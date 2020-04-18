@@ -465,8 +465,8 @@ func (m experienceUsecase) FilterSearchExp(
 	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
-		query = query + ` AND e.exp_max_guest =` + strconv.Itoa(guests)
-		qCount = qCount + ` AND e.exp_max_guest =` + strconv.Itoa(guests)
+		query = query + ` AND e.exp_max_guest <=` + strconv.Itoa(guests)
+		qCount = qCount + ` AND e.exp_max_guest <=` + strconv.Itoa(guests)
 	}
 	if trip != "" {
 		trips, _ := strconv.Atoi(trip)
