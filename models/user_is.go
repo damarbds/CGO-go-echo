@@ -85,3 +85,7 @@ type Login struct {
 type RequestOTPNumber struct {
 	PhoneNumber string `json:"phone_number"`
 }
+type RequestOTPTmpNumber struct {
+	PhoneNumber string `json:"phone_number"`
+	Email 		string	`json:"email"`
+}
