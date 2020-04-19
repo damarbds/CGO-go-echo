@@ -402,10 +402,10 @@ func (m experienceUsecase) FilterSearchExp(
 	if startDate != "" && endDate != "" {
 		query = query + ` join exp_availabilities ead on ead.exp_id = e.id`
 	}
-	if len(activityTypeArray) != 0 {
-		query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
-		qCount = qCount + ` join filter_activity_types fat on fat.exp_id = e.id`
-	}
+	//if len(activityTypeArray) != 0 {
+	//	query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
+	//	qCount = qCount + ` join filter_activity_types fat on fat.exp_id = e.id`
+	//}
 	if cityID != "" {
 		query = query + ` join harbors h on h.id = e.harbors_id`
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
@@ -485,17 +485,17 @@ func (m experienceUsecase) FilterSearchExp(
 	if len(activityTypeArray) != 0 {
 		for index, id := range activityTypeArray {
 			if index == 0 && index != (len(activityTypeArray)-1) {
-				query = query + ` AND (fat.id =` + strconv.Itoa(id)
-				qCount = qCount + ` AND (fat.id =` + strconv.Itoa(id)
+				query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
+				qCount = qCount + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
 			} else if index == 0 && index == (len(activityTypeArray)-1) {
-				query = query + ` AND (fat.id =` + strconv.Itoa(id) + ` ) `
-				qCount = qCount + ` AND (fat.id =` + strconv.Itoa(id) + ` ) `
+				query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` ) `
+				qCount = qCount + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` ) `
 			} else if index == (len(activityTypeArray) - 1) {
-				query = query + ` OR fat.id =` + strconv.Itoa(id) + ` )`
-				qCount = qCount + ` OR fat.id =` + strconv.Itoa(id) + ` )`
+				query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` )`
+				qCount = qCount + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` )`
 			} else {
-				query = query + ` OR fat.id =` + strconv.Itoa(id)
-				qCount = qCount + ` OR fat.id =` + strconv.Itoa(id)
+				query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
+				qCount = qCount + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
 			}
 		}
 
