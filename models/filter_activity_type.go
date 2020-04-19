@@ -13,5 +13,5 @@ type FilterActivityType struct {
 	IsDeleted    int        `json:"is_deleted" validate:"required"`
 	IsActive     int        `json:"is_active" validate:"required"`
 	ExpTypeId    int        `json:"exp_type_id"`
-	ExpId        string     `json:"exp_id"`
+	ExpId        *string     `json:"exp_id"`
 }

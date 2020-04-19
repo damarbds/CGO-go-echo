@@ -12,6 +12,8 @@ type expTypeRepository struct {
 	Conn *sql.DB
 }
 
+
+
 // NewExpTypeRepository will create an object that represent the exp_payment.Repository interface
 func NewExpTypeRepository(Conn *sql.DB) types.Repository {
 	return &expTypeRepository{Conn}
@@ -71,4 +73,26 @@ func (e expTypeRepository) GetExpTypes(ctx context.Context) ([]*models.ExpTypeOb
 	}
 
 	return list, nil
+}
+func (e *expTypeRepository) GetByName(ctx context.Context, name string) (*models.ExpTypeObject, error) {
+	query := `
+	SELECT
+		id AS exp_type_id,
+		exp_type_name,
+		COALESCE(exp_type_icon,"") AS exp_type_icon
+	FROM
+		experience_types
+	WHERE
+		is_active = 1
+		AND is_deleted = 0 AND exp_type_name = ?`
+
+	list, err := e.fetch(ctx, query,name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return list[0], nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/service/filter_activity_type"
 	"math"
 	"strconv"
 	"time"
@@ -25,6 +26,7 @@ import (
 )
 
 type experienceUsecase struct {
+	filterATRepo     filter_activity_type.Repository
 	adOnsRepo        experience_add_ons.Repository
 	experienceRepo   experience.Repository
 	harborsRepo      harbors.Repository
@@ -41,6 +43,7 @@ type experienceUsecase struct {
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
+	fac filter_activity_type.Repository,
 	adOns experience_add_ons.Repository,
 	ea exp_availability.Repository,
 	ps exp_photos.Repository,
@@ -55,6 +58,7 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
+		filterATRepo:fac,
 		adOnsRepo:        adOns,
 		exp_availablitiy: ea,
 		experienceRepo:   a,
@@ -874,6 +878,31 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		experiences.MinimumBookingId = nil
 	}
 	insertToExperience, err := m.experienceRepo.Insert(ctx, &experiences)
+
+	for _,element := range commandExperience.ExpType{
+		getExpType ,err := m.typesRepo.GetByName(ctx,element)
+		if err != nil {
+			return nil ,err
+		}
+		filterActivityT := models.FilterActivityType{
+			Id:           0,
+			CreatedBy:    currentUserMerchant.MerchantEmail,
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     1,
+			ExpTypeId:    getExpType.ExpTypeID,
+			ExpId:        insertToExperience,
+		}
+		insertToFilterAT := m.filterATRepo.Insert(ctx,&filterActivityT)
+		if insertToFilterAT != nil {
+			return nil,insertToFilterAT
+		}
+	}
+
 	for _, element := range commandExperience.ExpPhotos {
 		images, _ := json.Marshal(element.ExpPhotoImage)
 		expPhoto := models.ExpPhotos{

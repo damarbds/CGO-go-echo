@@ -114,6 +114,8 @@ import (
 	_balanceHistoryUcase "github.com/transactions/balance_history/usecase"
 
 	_midtransHttpHandler "github.com/third-party/midtrans/delivery/http"
+
+	_filterActivityTypeRepo "github.com/service/filter_activity_type/repository"
 )
 
 // func init() {
@@ -177,6 +179,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	filterActivityTypeRepo := _filterActivityTypeRepo.NewFilterActivityTypeRepository(dbConn)
 	expAvailabilityRepo := _expAvailabilityRepo.NewExpavailabilityRepository(dbConn)
 	bookingExpRepo := _bookingExpRepo.NewbookingExpRepository(dbConn)
 	fAQRepo := _fAQRepo.NewReviewRepository(dbConn)
@@ -221,6 +224,7 @@ func main() {
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		filterActivityTypeRepo,
 		experienceAddOnRepo,
 		expAvailabilityRepo,
 		exp_photos,
