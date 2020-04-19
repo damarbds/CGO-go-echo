@@ -199,24 +199,27 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 	if err != nil {
 		return models.ErrInternalServerError
 	}
-	fileLocation := filepath.Join(dir, "files", image.Filename)
-	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
-		return models.ErrInternalServerError
-	}
-	defer targetFile.Close()
+	var imagePath string
+	if filupload != nil {
+		fileLocation := filepath.Join(dir, "files", image.Filename)
+		targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
+			return models.ErrInternalServerError
+		}
+		defer targetFile.Close()
 
-	if _, err := io.Copy(targetFile, filupload); err != nil {
-		return models.ErrInternalServerError
-	}
+		if _, err := io.Copy(targetFile, filupload); err != nil {
+			return models.ErrInternalServerError
+		}
 
-	//w.Write([]byte("done"))
-	imagePath, _ := a.isUsecase.UploadFileToBlob(fileLocation, "UserProfile")
-	targetFile.Close()
-	errRemove := os.Remove(fileLocation)
-	if errRemove != nil {
-		return models.ErrInternalServerError
+		//w.Write([]byte("done"))
+		imagePath, _ = a.isUsecase.UploadFileToBlob(fileLocation, "UserProfile")
+		targetFile.Close()
+		errRemove := os.Remove(fileLocation)
+		if errRemove != nil {
+			return models.ErrInternalServerError
+		}
 	}
 	//phoneNumber, _ := strconv.Atoi(c.FormValue("phone_number"))
 	verificationCode, _ := strconv.Atoi(c.FormValue("verification_code"))

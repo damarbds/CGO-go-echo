@@ -248,15 +248,17 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user s
 	if err != nil {
 		return err
 	}
-	layoutFormat := "2006-01-02 15:04:05"
-	//verificationSendDate, errDate := time.Parse(layoutFormat,ar.VerificationSendDate)
-	//if errDate != nil{
-	//	return errDate
-	//}
-	dob, errDateDob := time.Parse(layoutFormat, ar.Dob)
-	if errDateDob != nil {
-		return errDateDob
+	var dob time.Time
+	if ar.Dob != ""{
+
+		layoutFormat := "2006-01-02 15:04:05"
+		dobParse, errDateDob := time.Parse(layoutFormat, ar.Dob)
+		if errDateDob != nil {
+			return errDateDob
+		}
+		dob = dobParse
 	}
+
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
 	userModel := models.User{}
 	userModel.Id = existeduser.Id
@@ -266,7 +268,12 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user s
 	userModel.PhoneNumber = ar.PhoneNumber
 	userModel.VerificationSendDate = existeduser.VerificationSendDate
 	userModel.VerificationCode = existeduser.VerificationCode
-	userModel.ProfilePictUrl = ar.ProfilePictUrl
+	if ar.ProfilePictUrl != ""{
+		userModel.ProfilePictUrl = ar.ProfilePictUrl
+	}else {
+		userModel.ProfilePictUrl = existeduser.ProfilePictUrl
+	}
+
 	userModel.Address = ar.Address
 	userModel.Dob = dob
 	userModel.Gender = ar.Gender
