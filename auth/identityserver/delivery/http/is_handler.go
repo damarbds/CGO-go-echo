@@ -38,6 +38,7 @@ func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usec
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
 	e.POST("/account/request-otp", handler.RequestOTP)
+	e.POST("/account/request-otp-tmp", handler.RequestOTPTmp)
 	e.GET("/account/verified-email", handler.VerifiedEmail)
 }
 
@@ -55,6 +56,26 @@ func (a *isHandler) RequestOTP(c echo.Context) error {
 
 	requestOTP.PhoneNumber = c.Request().Form.Get("phone_number")
 	responseOTP , err:= a.userUsecase.RequestOTP(ctx,requestOTP.PhoneNumber)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, responseOTP)
+}
+func (a *isHandler) RequestOTPTmp(c echo.Context) error {
+	var requestOTP models.RequestOTPTmpNumber
+	err := c.Bind(&requestOTP)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	requestOTP.PhoneNumber = c.Request().Form.Get("phone_number")
+	requestOTP.Email = c.Request().Form.Get("email")
+	responseOTP , err:= a.isUsecase.RequestOTPTmp(requestOTP.PhoneNumber,requestOTP.Email)
 	if err != nil {
 		return err
 	}
@@ -109,28 +130,32 @@ func (a *isHandler) Login(c echo.Context) error {
 }
 
 func (a *isHandler) VerifiedEmail(c echo.Context) error {
-	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	token := c.Request().Header.Get("Authorization")
-	typeUser := c.QueryParam("type")
+	//token := c.Request().Header.Get("Authorization")
+	email := c.QueryParam("email")
 	otpCode := c.QueryParam("otp")
-	if typeUser == "user" {
-		response, err := a.userUsecase.VerifiedEmail(ctx, token, otpCode)
+	verified := models.VerifiedEmail{
+		Email:   email,
+		CodeOTP: otpCode,
+	}
+	//if typeUser == "user" {
+		response, err := a.isUsecase.VerifiedEmail(&verified)
 
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 
 		return c.JSON(http.StatusOK, response)
-	} else if typeUser == "merchant" {
-		return c.JSON(http.StatusNotFound, "Not Implemented")
-	} else {
-		return c.JSON(http.StatusBadRequest, "Bad Request")
-	}
+	//} else if typeUser == "merchant" {
+	//	return c.JSON(http.StatusNotFound, "Not Implemented")
+	//} else {
+	//	return c.JSON(http.StatusBadRequest, "Bad Request")
+	//}
 
 	return c.JSON(http.StatusBadRequest, "Bad Request")
 }

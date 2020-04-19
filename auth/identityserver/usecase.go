@@ -13,6 +13,7 @@ type Usecase interface {
 	GetToken(username string, password string,scope string) (*models.GetToken, error)
 	UploadFileToBlob(image string, folder string) (string, error)
 	RequestOTP(phoneNumber string)(*models.RequestOTP,error)
+	RequestOTPTmp(phoneNumber string,email string)(*models.RequestOTP,error)
 	SendingSMS(sms *models.SendingSMS)(*models.SendingSMS,error)
 	GetDetailUserById(id string,token string)(*models.GetUserDetail,error)
 }

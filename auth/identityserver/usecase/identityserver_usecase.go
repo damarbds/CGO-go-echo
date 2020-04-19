@@ -354,8 +354,13 @@ func (m identityserverUsecase) VerifiedEmail(r *models.VerifiedEmail) (*models.V
 	if resp.StatusCode != 200 {
 		return nil, models.ErrInvalidOTP
 	}
+	var response bool
 	user := models.VerifiedEmail{}
-	json.NewDecoder(resp.Body).Decode(&user)
+	json.NewDecoder(resp.Body).Decode(&response)
+	if response == false {
+		return nil,models.ErrInvalidOTP
+	}
+	user = *r
 	return &user, nil
 }
 
@@ -397,6 +402,51 @@ func (m identityserverUsecase) RequestOTP(phoneNumber string) (*models.RequestOT
 		Encoding:    "AUTO",
 	}
 	_, err = m.SendingSMS(&sms)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+func (m identityserverUsecase) RequestOTPTmp(phoneNumber string,email string) (*models.RequestOTP, error) {
+	var param = url.Values{}
+	param.Set("phone_number", phoneNumber)
+	param.Set("email", email)
+	var payload = bytes.NewBufferString(param.Encode())
+
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/request-otp-temp", payload)
+	//os.Exit(1)
+	//req.Header.Set("Authorization", "Basic "+m.basicAuth)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrUsernamePassword
+	}
+	user := models.RequestOTP{}
+	json.NewDecoder(resp.Body).Decode(&user)
+	user.ExpiredInMSecond = 300000
+	pushEmail := models.SendingEmail{
+		Subject: "Verified Email",
+		Message: "Hi I'm from CGO Indonesia, your OTP: " + user.OTP + ",your grace period is only 5 minutes, if it fails try to request again",
+		From:    "CGO Indonesia",
+		To:      email,
+	}
+
+	_, err = m.SendingEmail(&pushEmail)
 	if err != nil {
 		return nil, err
 	}

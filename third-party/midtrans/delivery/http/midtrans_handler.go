@@ -64,7 +64,6 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 
 	var transactionStatus int
 	if callback.TransactionStatus == "capture" || callback.TransactionStatus == "settlement" {
-		transactionStatus = 2
 		if booking.ExpId != nil {
 			exp, err := m.expRepo.GetByID(ctx, *booking.ExpId)
 			if err != nil {
@@ -75,10 +74,16 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			} else {
 				transactionStatus = 2
 			}
+			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
+				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+			}
+		} else {
+			transactionStatus = 2
+			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
+				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+			}
 		}
-		if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
-			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-		}
+
 	}
 
 	if callback.TransactionStatus == "expire" || callback.TransactionStatus == "deny" {
