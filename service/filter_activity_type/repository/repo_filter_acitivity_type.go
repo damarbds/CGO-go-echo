@@ -17,7 +17,32 @@ type filterActivityTypeRepository struct {
 	Conn *sql.DB
 }
 
+func (m filterActivityTypeRepository) DeleteByExpId(ctx context.Context, expId string) error {
+	query := "DELETE FROM filter_activity_types WHERE exp_id = ?"
 
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, expId)
+	if err != nil {
+
+		return err
+	}
+
+	//rowsAfected, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if rowsAfected != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", rowsAfected)
+	//	return err
+	//}
+
+	return nil
+}
 
 func (f filterActivityTypeRepository) GetByExpId(context context.Context, expId string) ([]*models.FilterActivityType, error) {
 	panic("implement me")

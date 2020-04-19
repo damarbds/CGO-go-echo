@@ -1091,6 +1091,32 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	}
 	insertToExperience, err := m.experienceRepo.Update(ctx, &experiences)
 
+
+	err = m.filterATRepo.DeleteByExpId(ctx,experiences.Id)
+	
+	for _,element := range commandExperience.ExpType{
+		getExpType ,err := m.typesRepo.GetByName(ctx,element)
+		if err != nil {
+			return nil ,err
+		}
+		filterActivityT := models.FilterActivityType{
+			Id:           0,
+			CreatedBy:    currentUserMerchant.MerchantEmail,
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     1,
+			ExpTypeId:    getExpType.ExpTypeID,
+			ExpId:        insertToExperience,
+		}
+		insertToFilterAT := m.filterATRepo.Insert(ctx,&filterActivityT)
+		if insertToFilterAT != nil {
+			return nil,insertToFilterAT
+		}
+	}
 	var photoIds []string
 	for _, element := range commandExperience.ExpPhotos {
 		if element.Id == "" {
