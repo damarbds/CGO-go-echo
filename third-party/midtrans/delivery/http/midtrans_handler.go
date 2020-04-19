@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha512"
 	"encoding/hex"
+	"net/http"
+
 	"github.com/booking/booking_exp"
 	"github.com/labstack/echo"
 	"github.com/models"
@@ -11,7 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/third-party/midtrans"
 	"github.com/transactions/transaction"
-	"net/http"
 )
 
 type ResponseError struct {
@@ -19,15 +20,15 @@ type ResponseError struct {
 }
 
 type midtransHandler struct {
-	bookingRepo booking_exp.Repository
-	expRepo experience.Repository
+	bookingRepo     booking_exp.Repository
+	expRepo         experience.Repository
 	transactionRepo transaction.Repository
 }
 
 func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository) {
 	handler := &midtransHandler{
-		bookingRepo: br,
-		expRepo: er,
+		bookingRepo:     br,
+		expRepo:         er,
 		transactionRepo: tr,
 	}
 	e.POST("/midtrans/notif", handler.MidtransNotif)
