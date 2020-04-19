@@ -56,7 +56,51 @@ func (t transportationUsecase) FilterSearchTrans(
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 
-	query := `
+	var query string
+	var queryCount string
+
+	if isMerchant == true {
+		query = `
+	SELECT 
+		(SELECT id FROM schedules where trans_id = t.id LIMIT 0,1) as schedule_id,
+		(SELECT departure_date FROM schedules where trans_id = t.id LIMIT 0,1) as departure_date,
+		(SELECT departure_time FROM schedules where trans_id = t.id LIMIT 0,1) as departure_time,
+		(SELECT arrival_time FROM schedules where trans_id = t.id LIMIT 0,1) as arrival_time,
+        (SELECT price FROM schedules where trans_id = t.id LIMIT 0,1) as price,
+		(SELECT trans_id FROM schedules where trans_id = t.id LIMIT 0,1) as trans_id,
+		t.trans_name,
+		t.trans_images,
+		t.trans_status,
+		h.id as harbor_source_id,
+		h.harbors_name as harbor_source_name,
+		hdest.id as harbor_dest_id,
+		hdest.harbors_name as harbor_dest_name,
+		m.merchant_name,
+		m.merchant_picture,
+		t.class
+	FROM
+		transportations t
+		JOIN harbors h ON t.harbors_source_id = h.id
+		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN merchants m on t.merchant_id = m.id
+	WHERE
+		t.is_deleted = 0
+		AND t.is_active = 1`
+
+		queryCount = `
+	SELECT
+		COUNT(distinct s.trans_id)
+	FROM
+		schedules s
+		JOIN transportations t ON s.trans_id = t.id
+		JOIN harbors h ON t.harbors_source_id = h.id
+		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN merchants m on t.merchant_id = m.id
+	WHERE
+		s.is_deleted = 0
+		AND s.is_active = 1`
+	}else {
+		query = `
 	SELECT
 		s.id as schedule_id,
 		s.departure_date,
@@ -84,7 +128,7 @@ func (t transportationUsecase) FilterSearchTrans(
 		s.is_deleted = 0
 		AND s.is_active = 1`
 
-	queryCount := `
+		queryCount = `
 	SELECT
 		COUNT(*)
 	FROM
@@ -96,6 +140,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	WHERE
 		s.is_deleted = 0
 		AND s.is_active = 1`
+	}
 
 	if isMerchant {
 		if token == "" {
