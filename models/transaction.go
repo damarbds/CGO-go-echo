@@ -16,7 +16,7 @@ type Transaction struct {
 	BookingExpId        string     `json:"booking_exp_id"`
 	PromoId             *string    `json:"promo_id"`
 	PaymentMethodId     string     `json:"payment_method_id"`
-	ExperiencePaymentId string     `json:"experience_payment_id"`
+	ExperiencePaymentId *string    `json:"experience_payment_id"`
 	Status              int        `json:"status"`
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
@@ -30,7 +30,7 @@ type PaymentTransaction struct {
 
 type TransactionIn struct {
 	BookingType         int     `json:"booking_type,omitempty"`
-	BookingExpId        string  `json:"booking_exp_id"`
+	BookingId           string  `json:"booking_id"`
 	PromoId             string  `json:"promo_id"`
 	PaymentMethodId     string  `json:"payment_method_id"`
 	ExperiencePaymentId string  `json:"experience_payment_id"`

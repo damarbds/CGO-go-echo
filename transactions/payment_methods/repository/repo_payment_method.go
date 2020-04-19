@@ -18,7 +18,7 @@ func NewPaymentMethodRepository(Conn *sql.DB) pm.Repository {
 }
 
 func (m *paymentMethodRepository) GetByID(ctx context.Context, paymentMethodId string) (*models.PaymentMethod, error) {
-	query := `SELECT * FROM payment_methods WHERE is_deleted = 0 AND is_active = 1 where id = ?`
+	query := `SELECT * FROM payment_methods WHERE is_deleted = 0 AND is_active = 1 AND id = ?`
 
 	res, err := m.fetch(ctx, query, paymentMethodId)
 	if err != nil {

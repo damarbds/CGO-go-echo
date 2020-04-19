@@ -155,8 +155,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		}
 	}
 	if guest != 0 {
-		query = query + ` AND t.harbors_dest_id =` + strconv.Itoa(guest)
-		queryCount = queryCount + ` AND t.harbors_dest_id =` + strconv.Itoa(guest)
+		query = query + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
+		queryCount = queryCount + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
 	}
 	if depDate != "" {
 		query = query + ` AND s.departure_date = '` + depDate + `'`

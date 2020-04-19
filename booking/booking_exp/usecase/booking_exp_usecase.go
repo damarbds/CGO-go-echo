@@ -2,11 +2,10 @@ package usecase
 
 import (
 	"bytes"
-	"encoding/json"
 	b64 "encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/third-party/midtrans"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/third-party/midtrans"
 
 	"github.com/auth/identityserver"
 	"github.com/auth/merchant"
@@ -47,10 +48,12 @@ func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.U
 func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentType string) (map[string]interface{}, error) {
 	var data map[string]interface{}
 
+	midtrans.SetupMidtrans()
 	client := &http.Client{}
 
-	booking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, "")
+	booking, err := b.bookingExpRepo.GetByID(ctx, bookingId)
 	if err != nil {
+		fmt.Println("errGet", err.Error())
 		return nil, err
 	}
 
@@ -92,7 +95,7 @@ func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentTyp
 	}
 	j, _ := json.Marshal(charge)
 	fmt.Println(string(j))
-	AUTH_STRING := b64.StdEncoding.EncodeToString([]byte(midtrans.MidtransServerKey + ":"))
+	AUTH_STRING := b64.StdEncoding.EncodeToString([]byte(midtrans.Midclient.ServerKey + ":"))
 	req, _ := http.NewRequest("POST", midtrans.TransactionEndpoint, bytes.NewBuffer(j))
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
