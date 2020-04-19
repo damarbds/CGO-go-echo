@@ -75,11 +75,19 @@ func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentTyp
 	}
 
 	name := strings.Split(fullName, " ")
+	var first, last string
+	if len(name) < 2 {
+		first = fullName
+		last = fullName
+	} else {
+		first = name[0]
+		last = name[1]
+	}
 
 	var charge midtrans.MidtransCharge
 	charge.CustomerDetail = midtrans.CustomerDetail{
-		FirstName: name[0],
-		LastName:  name[1],
+		FirstName: first,
+		LastName:  last,
 		Phone:     phoneNumber,
 		Email:     email,
 	}
