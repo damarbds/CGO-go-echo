@@ -576,18 +576,25 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 
 		var currency string
-		if expPayment[0].Currency == 1 {
-			currency = "USD"
-		} else {
-			currency = "IDR"
+		var price float64
+		var priceItemType string
+
+		if expPayment != nil {
+
+			price = expPayment[0].Price
+			if expPayment[0].Currency == 1 {
+				currency = "USD"
+			} else {
+				currency = "IDR"
+			}
+
+			if expPayment[0].PriceItemType == 1 {
+				priceItemType = "Per Pax"
+			} else {
+				priceItemType = "Per Trip"
+			}
 		}
 
-		var priceItemType string
-		if expPayment[0].PriceItemType == 1 {
-			priceItemType = "Per Pax"
-		} else {
-			priceItemType = "Per Trip"
-		}
 
 		countRating, err := m.reviewsRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
@@ -639,7 +646,7 @@ func (m experienceUsecase) FilterSearchExp(
 			Rating:      exp.Rating,
 			CountRating: countRating,
 			Currency:    currency,
-			Price:       expPayment[0].Price,
+			Price:       price,
 			PaymentType: priceItemType,
 			Longitude:   exp.Longitude,
 			Latitude:    exp.Latitude,
