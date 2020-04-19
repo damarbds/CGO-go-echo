@@ -72,6 +72,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
+			} else {
+				transactionStatus = 2
 			}
 		}
 		if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
