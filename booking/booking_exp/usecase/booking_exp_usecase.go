@@ -51,7 +51,7 @@ func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentTyp
 	midtrans.SetupMidtrans()
 	client := &http.Client{}
 
-	booking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, "")
+	booking, err := b.bookingExpRepo.GetByID(ctx, bookingId)
 	if err != nil {
 		fmt.Println("errGet", err.Error())
 		return nil, err

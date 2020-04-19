@@ -24,8 +24,8 @@ type BookingExpHistory struct {
 	TicketCode         string     `json:"ticket_code"`
 	TicketQRCode       string     `json:"ticket_qr_code"`
 	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
-	TransId				*string `json:"trans_id"`
-	PaymentUrl 			*string `json:"payment_url"`
+	TransId            *string    `json:"trans_id"`
+	PaymentUrl         *string    `json:"payment_url"`
 	ExpTitle           string     `json:"exp_title"`
 	ExpType            *string    `json:"exp_type"`
 	ExpDuration        int        `json:"exp_duration"`
@@ -60,7 +60,7 @@ type BookingExp struct {
 	DeletedDate        *time.Time `json:"deleted_date"`
 	IsDeleted          int        `json:"is_deleted" validate:"required"`
 	IsActive           int        `json:"is_active" validate:"required"`
-	ExpId              *string     `json:"exp_id"`
+	ExpId              *string    `json:"exp_id"`
 	OrderId            string     `json:"order_id"`
 	GuestDesc          string     `json:"guest_desc"`
 	BookedBy           string     `json:"booked_by"`
@@ -72,8 +72,8 @@ type BookingExp struct {
 	TicketCode         string     `json:"ticket_code"`
 	TicketQRCode       string     `json:"ticket_qr_code"`
 	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
-	TransId				*string `json:"trans_id"`
-	PaymentUrl 			*string `json:"payment_url"`
+	TransId            *string    `json:"trans_id"`
+	PaymentUrl         *string    `json:"payment_url"`
 }
 type BookingExpJoin struct {
 	Id                     string     `json:"id" validate:"required"`
@@ -97,8 +97,8 @@ type BookingExpJoin struct {
 	TicketCode             string     `json:"ticket_code"`
 	TicketQRCode           string     `json:"ticket_qr_code"`
 	ExperienceAddOnId      *string    `json:"experience_add_on_id"`
-	TransId				*string `json:"trans_id"`
-	PaymentUrl 			*string `json:"payment_url"`
+	TransId                *string    `json:"trans_id"`
+	PaymentUrl             *string    `json:"payment_url"`
 	ExpTitle               string     `json:"exp_title"`
 	ExpType                string     `json:"exp_type"`
 	ExpPickupPlace         string     `json:"exp_pickup_place"`
@@ -173,8 +173,8 @@ type NewBookingExpCommand struct {
 	TicketCode        string  `json:"ticket_code"`
 	TicketQRCode      string  `json:"ticket_qr_code"`
 	ExperienceAddOnId *string `json:"experience_add_on_id"`
-	TransId 		 string		`json:"trans_id"`
-	PaymentUrl 		string 		`json:"payment_url"`
+	TransId           string  `json:"trans_id"`
+	PaymentUrl        string  `json:"payment_url"`
 }
 type MyBooking struct {
 	ExpId       string    `json:"exp_id"`
@@ -193,4 +193,30 @@ type BookingGrowth struct {
 type BookingGrowthDto struct {
 	Date  string `json:"date"`
 	Count int    `json:"count"`
+}
+type BookingTransactionExp struct {
+	Id                 string     `json:"id" validate:"required"`
+	CreatedBy          string     `json:"created_by":"required"`
+	CreatedDate        time.Time  `json:"created_date" validate:"required"`
+	ModifiedBy         *string    `json:"modified_by"`
+	ModifiedDate       *time.Time `json:"modified_date"`
+	DeletedBy          *string    `json:"deleted_by"`
+	DeletedDate        *time.Time `json:"deleted_date"`
+	IsDeleted          int        `json:"is_deleted" validate:"required"`
+	IsActive           int        `json:"is_active" validate:"required"`
+	ExpId              *string    `json:"exp_id"`
+	OrderId            string     `json:"order_id"`
+	GuestDesc          string     `json:"guest_desc"`
+	BookedBy           string     `json:"booked_by"`
+	BookedByEmail      string     `json:"booked_by_email"`
+	BookingDate        time.Time  `json:"booking_date"`
+	ExpiredDatePayment *time.Time `json:"expired_date_payment"`
+	UserId             *string    `json:"user_id"`
+	Status             int        `json:"status"`
+	TicketCode         string     `json:"ticket_code"`
+	TicketQRCode       string     `json:"ticket_qr_code"`
+	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
+	TransId            *string    `json:"trans_id"`
+	PaymentUrl         *string    `json:"payment_url"`
+	TotalPrice         float64    `json:"total_price"`
 }

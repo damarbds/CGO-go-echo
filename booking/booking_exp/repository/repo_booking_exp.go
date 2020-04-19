@@ -24,6 +24,71 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }
 
+func (b bookingExpRepository) GetByID(ctx context.Context, bookingId string) (*models.BookingTransactionExp, error) {
+	query := `SELECT a.*, t.total_price from booking_exps a JOIN transactions t ON t.booking_exp_id = a.id where a.id = ?`
+
+	list, err := b.fetchBooking(ctx, query, bookingId)
+	if err != nil {
+		return nil, err
+	}
+
+	return list[0], nil
+}
+
+func (b bookingExpRepository) fetchBooking(ctx context.Context, query string, args ...interface{}) ([]*models.BookingTransactionExp, error) {
+	rows, err := b.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.BookingTransactionExp, 0)
+	for rows.Next() {
+		t := new(models.BookingTransactionExp)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.ExpId,
+			&t.OrderId,
+			&t.GuestDesc,
+			&t.BookedBy,
+			&t.BookedByEmail,
+			&t.BookingDate,
+			&t.ExpiredDatePayment,
+			&t.UserId,
+			&t.Status,
+			&t.TicketCode,
+			&t.TicketQRCode,
+			&t.ExperienceAddOnId,
+			&t.TransId,
+			&t.PaymentUrl,
+			&t.TotalPrice,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
 func (b bookingExpRepository) UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error {
 	query := `UPDATE booking_exps SET payment_url = ? WHERE id = ?`
 

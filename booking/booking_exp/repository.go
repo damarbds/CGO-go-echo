@@ -18,4 +18,5 @@ type Repository interface {
 	GetGrowthByMerchantID(ctx context.Context, merchantId string) ([]*models.BookingGrowth, error)
 	CountThisMonth(ctx context.Context) (int, error)
 	UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error
+	GetByID(ctx context.Context, bookingId string) (*models.BookingTransactionExp, error)
 }
