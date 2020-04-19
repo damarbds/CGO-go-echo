@@ -57,7 +57,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 		return c.JSON(http.StatusBadGateway, ResponseError{Message: "Signature key invalid"})
 	}
 
-	booking, err := m.bookingRepo.GetDetailBookingID(ctx, "", callback.OrderId)
+	booking, err := m.bookingRepo.GetByID(ctx, callback.OrderId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -65,8 +65,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 	var transactionStatus int
 	if callback.TransactionStatus == "capture" || callback.TransactionStatus == "settlement" {
 		transactionStatus = 2
-		if booking.ExpId != "" {
-			exp, err := m.expRepo.GetByID(ctx, booking.ExpId)
+		if booking.ExpId != nil {
+			exp, err := m.expRepo.GetByID(ctx, *booking.ExpId)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}

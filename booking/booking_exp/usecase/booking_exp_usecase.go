@@ -248,6 +248,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		CreatedDateTransaction: getDetailBooking.CreatedDateTransaction,
 		UserId:                 getDetailBooking.UserId,
 		Status:                 getDetailBooking.Status,
+		TransactionStatus:      getDetailBooking.TransactionStatus,
 		//TicketCode:        getDetailBooking.TicketCode,
 		TicketQRCode:        getDetailBooking.TicketQRCode,
 		ExperienceAddOnId:   getDetailBooking.ExperienceAddOnId,
@@ -262,6 +263,9 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		AccountHolder:       accountBank.AccHolder,
 		BankIcon:            getDetailBooking.Icon,
 		ExperiencePaymentId: getDetailBooking.ExperiencePaymentId,
+		MerchantName:        getDetailBooking.MerchantName.String,
+		MerchantPhone:       getDetailBooking.MerchantPhone.String,
+		MerchantPicture:     getDetailBooking.MerchantPicture.String,
 	}
 	return &bookingExp, nil
 
@@ -272,7 +276,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 
-	if booking.ExpId == "" && booking.TransId == ""{
+	if booking.ExpId == "" && booking.TransId == "" {
 		return nil, models.ValidationExpId, nil
 	}
 	if booking.BookingDate == "" {
@@ -341,8 +345,8 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		TicketCode:        ticketCode,
 		TicketQRCode:      imagePath,
 		ExperienceAddOnId: booking.ExperienceAddOnId,
-		TransId:			&booking.TransId,
-		PaymentUrl:			&booking.PaymentUrl,
+		TransId:           &booking.TransId,
+		PaymentUrl:        &booking.PaymentUrl,
 	}
 	if *bookingExp.ExperienceAddOnId == "" {
 		bookingExp.ExperienceAddOnId = nil
@@ -350,13 +354,13 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if *bookingExp.UserId == "" {
 		bookingExp.UserId = nil
 	}
-	if *bookingExp.TransId == ""{
+	if *bookingExp.TransId == "" {
 		bookingExp.TransId = nil
 	}
-	if *bookingExp.ExpId == ""{
+	if *bookingExp.ExpId == "" {
 		bookingExp.ExpId = nil
 	}
-	if *bookingExp.PaymentUrl == ""{
+	if *bookingExp.PaymentUrl == "" {
 		bookingExp.PaymentUrl = nil
 	}
 	res, err := b.bookingExpRepo.Insert(ctx, &bookingExp)
