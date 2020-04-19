@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/booking/booking_exp"
@@ -124,24 +123,20 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 
 	_, err := p.paymentUsecase.Insert(ctx, tr, token)
 	if err != nil {
-		fmt.Println("err1", err.Error())
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	pm, err := p.paymentMethodRepo.GetByID(ctx, tr.PaymentMethodId)
 	if err != nil {
-		fmt.Println("err2", err.Error())
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	data, err := p.bookingUsecase.SendCharge(ctx, tr.BookingExpId, *pm.MidtransPaymentCode)
 	if err != nil {
-		fmt.Println("err3", err.Error())
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	if err := p.bookingRepo.UpdatePaymentUrl(ctx, tr.BookingExpId, data["redirect_url"].(string)); err != nil {
-		fmt.Println("err4", err.Error())
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
