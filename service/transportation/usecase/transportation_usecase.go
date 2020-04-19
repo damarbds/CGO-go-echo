@@ -59,7 +59,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	var query string
 	var queryCount string
 
-	if isMerchant == true {
+	if isMerchant == true && qStatus == "draft"{
 		query = `
 	SELECT 
 		(SELECT id FROM schedules where trans_id = t.id LIMIT 0,1) as schedule_id,
@@ -67,7 +67,42 @@ func (t transportationUsecase) FilterSearchTrans(
 		(SELECT departure_time FROM schedules where trans_id = t.id LIMIT 0,1) as departure_time,
 		(SELECT arrival_time FROM schedules where trans_id = t.id LIMIT 0,1) as arrival_time,
         (SELECT price FROM schedules where trans_id = t.id LIMIT 0,1) as price,
-		(SELECT trans_id FROM schedules where trans_id = t.id LIMIT 0,1) as trans_id,
+		t.id as trans_id,
+		t.trans_name,
+		t.trans_images,
+		t.trans_status,
+		(SELECT id FROM harbors where id = t.harbors_source_id LIMIT 0,1) as harbor_source_id,
+		(SELECT harbors_name FROM harbors where id = t.harbors_source_id LIMIT 0,1) as harbor_source_name,
+		(SELECT id FROM harbors where id = t.harbors_dest_id LIMIT 0,1) as harbor_dest_id,
+		(SELECT harbors_name FROM harbors where id = t.harbors_dest_id LIMIT 0,1) as harbor_dest_name,
+		m.merchant_name,
+		m.merchant_picture,
+		t.class
+	FROM
+		transportations t
+		JOIN merchants m on t.merchant_id = m.id
+	WHERE
+		t.is_deleted = 0
+		AND t.is_active = 1`
+
+		queryCount = `
+	SELECT
+		COUNT(t.id)
+	FROM
+		transportations t
+		JOIN merchants m on t.merchant_id = m.id
+	WHERE
+		t.is_deleted = 0
+		AND t.is_active = 1`
+	}else if isMerchant == true {
+		query = `
+	SELECT 
+		(SELECT id FROM schedules where trans_id = t.id LIMIT 0,1) as schedule_id,
+		(SELECT departure_date FROM schedules where trans_id = t.id LIMIT 0,1) as departure_date,
+		(SELECT departure_time FROM schedules where trans_id = t.id LIMIT 0,1) as departure_time,
+		(SELECT arrival_time FROM schedules where trans_id = t.id LIMIT 0,1) as arrival_time,
+        (SELECT price FROM schedules where trans_id = t.id LIMIT 0,1) as price,
+		t.id as trans_id,
 		t.trans_name,
 		t.trans_images,
 		t.trans_status,
@@ -170,13 +205,15 @@ func (t transportationUsecase) FilterSearchTrans(
 			status = 4
 		}
 
-		query = query + ` AND t.trans_status =` + strconv.Itoa(status)
-		queryCount = queryCount + ` AND t.trans_status =` + strconv.Itoa(status)
 
 		if qStatus == "inService" {
 			query = query + ` AND t.trans_status IN (2,3,4)`
 			queryCount = queryCount + ` AND t.trans_status IN (2,3,4)`
+		}else {
+			query = query + ` AND t.trans_status =` + strconv.Itoa(status)
+			queryCount = queryCount + ` AND t.trans_status =` + strconv.Itoa(status)
 		}
+
 	}
 	if search != "" {
 		keyword := `'%` + search + `%'`
@@ -232,22 +269,28 @@ func (t transportationUsecase) FilterSearchTrans(
 			return nil, errUnmarshal
 		}
 		var transPrice models.TransPriceObj
-		if errUnmarshal := json.Unmarshal([]byte(t.Price), &transPrice); errUnmarshal != nil {
-			return nil, errUnmarshal
-		}
-		transPrice.PriceType = "pax"
-		if transPrice.Currency == 1 {
-			transPrice.CurrencyLabel = "USD"
-		} else {
-			transPrice.CurrencyLabel = "IDR"
+		if t.Price != nil {
+			if errUnmarshal := json.Unmarshal([]byte(*t.Price), &transPrice); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+			transPrice.PriceType = "pax"
+			if transPrice.Currency == 1 {
+				transPrice.CurrencyLabel = "USD"
+			} else {
+				transPrice.CurrencyLabel = "IDR"
+			}
 		}
 
-		departureTime, _ := time.Parse("15:04:05", t.DepartureTime)
-		arrivalTime, _ := time.Parse("15:04:05", t.ArrivalTime)
+		 var tripDuration string
+		if t.DepartureDate != nil && t.ArrivalTime != nil{
+			departureTime, _ := time.Parse("15:04:05", *t.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04:05", *t.ArrivalTime)
 
-		tripHour := arrivalTime.Hour() - departureTime.Hour()
-		tripMinute := arrivalTime.Minute() - departureTime.Minute()
-		tripDuration := strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+			tripHour := arrivalTime.Hour() - departureTime.Hour()
+			tripMinute := arrivalTime.Minute() - departureTime.Minute()
+			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+		}
+
 
 		var transStatus string
 		if t.TransStatus == 0 {
@@ -267,7 +310,7 @@ func (t transportationUsecase) FilterSearchTrans(
 			DepartureDate:         t.DepartureDate,
 			DepartureTime:         t.DepartureTime,
 			ArrivalTime:           t.ArrivalTime,
-			TripDuration:          tripDuration,
+			TripDuration:          &tripDuration,
 			TransportationId:      t.TransId,
 			TransportationName:    t.TransName,
 			TransportationImages:  transImages,
@@ -358,8 +401,8 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		return nil, err
 	}
 	var transImages string
-	var harborsSourceId string
-	var harborsDestId string
+	var harborsSourceId *string
+	var harborsDestId *string
 	if len(newCommandTransportation.TransImages) != 0 {
 		transImagesConvert, _ := json.Marshal(newCommandTransportation.TransImages)
 		transImages = string(transImagesConvert)
@@ -391,7 +434,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		Transcoverphoto: newCommandTransportation.Transcoverphoto,
 		Class:           newCommandTransportation.Class,
 	}
-	if newCommandTransportation.ReturnRoute != nil {
+	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil{
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
 		transportationReturn := models.Transportation{
@@ -536,9 +579,9 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		}
 	}
 	var status string
-	if newCommandTransportation.Status == 0 {
+	if newCommandTransportation.Status == 1 {
 		status = "Draft"
-	} else if newCommandTransportation.Status == 3 {
+	} else if newCommandTransportation.Status == 2 {
 		status = "Publish"
 	}
 	response := models.ResponseCreateExperience{
@@ -558,8 +601,8 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		return nil, err
 	}
 	var transImages string
-	var harborsSourceId string
-	var harborsDestId string
+	var harborsSourceId *string
+	var harborsDestId *string
 	if len(newCommandTransportation.TransImages) != 0 {
 		transImagesConvert, _ := json.Marshal(newCommandTransportation.TransImages)
 		transImages = string(transImagesConvert)
@@ -591,7 +634,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		Transcoverphoto: newCommandTransportation.Transcoverphoto,
 		Class:           newCommandTransportation.Class,
 	}
-	if newCommandTransportation.ReturnRoute != nil {
+	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
 		transportationReturn := models.Transportation{

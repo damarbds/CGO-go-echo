@@ -13,8 +13,8 @@ type Transportation struct {
 	IsDeleted       int        `json:"is_deleted" validate:"required"`
 	IsActive        int        `json:"is_active" validate:"required"`
 	TransName       string     `json:"trans_name"`
-	HarborsSourceId string     `json:"harbors_source_id"`
-	HarborsDestId   string     `json:"harbors_dest_id"`
+	HarborsSourceId *string     `json:"harbors_source_id"`
+	HarborsDestId   *string     `json:"harbors_dest_id"`
 	MerchantId      string     `json:"merchant_id"`
 	TransCapacity   int        `json:"trans_capacity"`
 	TransTitle      string     `json:"trans_title"`
@@ -42,8 +42,8 @@ type NewCommandTransportation struct {
 }
 type RouteObj struct {
 	Id            string    `json:"id"`
-	HarborsIdFrom string    `json:"harbors_id_from"`
-	HarborsIdTo   string    `json:"harbors_id_to"`
+	HarborsIdFrom *string    `json:"harbors_id_from"`
+	HarborsIdTo   *string    `json:"harbors_id_to"`
 	Time          []TimeObj `json:"time"`
 	Schedule      []YearObj `json:"schedule"`
 }
@@ -73,19 +73,19 @@ type BoatDetailsObj struct {
 	Cabin   int     `json:"cabin"`
 }
 type TransSearch struct {
-	ScheduleId       string `json:"schedule_id"`
-	DepartureDate    string `json:"departure_date"`
-	DepartureTime    string `json:"departure_time"`
-	ArrivalTime      string `json:"arrival_time"`
-	Price            string `json:"price"`
+	ScheduleId       *string `json:"schedule_id"`
+	DepartureDate    *string `json:"departure_date"`
+	DepartureTime    *string `json:"departure_time"`
+	ArrivalTime      *string `json:"arrival_time"`
+	Price            *string `json:"price"`
 	TransId          string `json:"trans_id"`
 	TransName        string `json:"trans_name"`
 	TransImages      string `json:"trans_images"`
 	TransStatus int `json:"trans_status"`
-	HarborSourceId   string `json:"harbor_source_id"`
-	HarborSourceName string `json:"harbor_source_name"`
-	HarborDestId     string `json:"harbor_dest_id"`
-	HarborDestName   string `json:"harbor_dest_name"`
+	HarborSourceId   *string `json:"harbor_source_id"`
+	HarborSourceName *string `json:"harbor_source_name"`
+	HarborDestId     *string `json:"harbor_dest_id"`
+	HarborDestName   *string `json:"harbor_dest_name"`
 	MerchantName 		  string		`json:"merchant_name"`
 	MerchantPicture 	 *string		`json:"merchant_picture"`
 	Class				  *string 		`json:"class"`
@@ -98,19 +98,19 @@ type TransPriceObj struct {
 	PriceType     string  `json:"price_type"`
 }
 type TransportationSearchObj struct {
-	ScheduleId            string           `json:"schedule_id"`
-	DepartureDate         string           `json:"departure_date"`
-	DepartureTime         string           `json:"departure_time"`
-	ArrivalTime           string           `json:"arrival_time"`
-	TripDuration          string           `json:"trip_duration"`
+	ScheduleId            *string           `json:"schedule_id"`
+	DepartureDate         *string           `json:"departure_date"`
+	DepartureTime         *string           `json:"departure_time"`
+	ArrivalTime           *string           `json:"arrival_time"`
+	TripDuration          *string           `json:"trip_duration"`
 	TransportationId      string           `json:"transportation_id"`
 	TransportationName    string           `json:"transportation_name"`
 	TransportationImages  []CoverPhotosObj `json:"transportation_images"`
 	TransportationStatus string `json:"transportation_status"`
-	HarborSourceId        string           `json:"harbor_source_id"`
-	HarborSourceName      string           `json:"harbor_source_name"`
-	HarborDestinationId   string           `json:"harbor_destination_id"`
-	HarborDestinationName string           `json:"harbor_destination_name"`
+	HarborSourceId        *string           `json:"harbor_source_id"`
+	HarborSourceName      *string           `json:"harbor_source_name"`
+	HarborDestinationId   *string           `json:"harbor_destination_id"`
+	HarborDestinationName *string           `json:"harbor_destination_name"`
 	Price                 TransPriceObj    `json:"price"`
 	MerchantName 		  string		`json:"merchant_name"`
 	MerchantPicture 	 *string		`json:"merchant_picture"`
