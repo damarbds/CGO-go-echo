@@ -35,16 +35,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		return "", models.BookingExpIdRequired
 	}
 
-	//if payment.PromoId == "" {
-	//	return "", models.PromoIdRequired
-	//}
-
 	if payment.PaymentMethodId == "" {
 		return "", models.PaymentMethodIdRequired
-	}
-
-	if payment.ExperiencePaymentId == "" {
-		return "", models.ExpPaymentIdRequired
 	}
 
 	if payment.Currency == "" {
