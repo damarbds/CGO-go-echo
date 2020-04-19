@@ -25,9 +25,9 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 }
 
 func (b bookingExpRepository) GetByID(ctx context.Context, bookingId string) (*models.BookingTransactionExp, error) {
-	query := `SELECT a.*, t.total_price from booking_exps a JOIN transactions t ON t.booking_exp_id = a.id where a.id = ?`
+	query := `SELECT a.*, t.total_price from booking_exps a JOIN transactions t ON t.booking_exp_id = a.id where (a.id = ? OR a.order_id = ?)`
 
-	list, err := b.fetchBooking(ctx, query, bookingId)
+	list, err := b.fetchBooking(ctx, query, bookingId, bookingId)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +336,11 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.Currency,
 			&t.AccountBank,
 			&t.Icon,
+			&t.TransactionStatus,
 			&t.CreatedDateTransaction,
+			&t.MerchantName,
+			&t.MerchantPhone,
+			&t.MerchantPicture,
 		)
 
 		if err != nil {
@@ -366,17 +370,44 @@ func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string
 
 func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error) {
 	var booking *models.BookingExpJoin
-	query := `select  a.*, b.exp_title,b.exp_type,b.exp_duration,b.exp_pickup_place,b.exp_pickup_time,t.total_price ,pm.name as payment_type,
-			city_name as city, province_name as province, country_name as country, c.id as experience_payment_id,c.currency,pm.desc as account_bank,pm.icon,t.created_date as created_date_transaction from booking_exps a
-			join experiences b on a.exp_id = b.id
-			join experience_payments c on b.id = c.exp_id
-            join transactions t on t.booking_exp_id = a.id            
-            join payment_methods pm on pm.id = t.payment_method_id
-			JOIN harbors h ON b.harbors_id = h.id
-			JOIN cities ci ON h.city_id = ci.id
-			JOIN provinces p ON ci.province_id = p.id
-			JOIN countries co ON p.country_id = co.id
-            where a.is_active = 1 AND a.is_deleted = 0 AND (a.id = ? OR a.order_id = ?)`
+	query := `
+	SELECT
+		a.*,
+		b.exp_title,
+		b.exp_type,
+		b.exp_duration,
+		b.exp_pickup_place,
+		b.exp_pickup_time,
+		t.total_price,
+		pm.name AS payment_type,
+		city_name AS city,
+		province_name AS province,
+		country_name AS country,
+		c.id AS experience_payment_id,
+		c.currency,
+		pm.desc AS account_bank,
+		pm.icon,
+		t.status AS transaction_status,
+		t.created_date AS created_date_transaction,
+		m.merchant_name,
+		m.phone_number as merchant_phone,
+		m.merchant_picture
+	FROM
+		booking_exps a
+		JOIN experiences b ON a.exp_id = b.id
+		JOIN experience_payments c ON b.id = c.exp_id
+		JOIN transactions t ON t.booking_exp_id = a.id
+		JOIN payment_methods pm ON pm.id = t.payment_method_id
+		JOIN harbors h ON b.harbors_id = h.id
+		JOIN cities ci ON h.city_id = ci.id
+		JOIN provinces p ON ci.province_id = p.id
+		JOIN countries co ON p.country_id = co.id
+		JOIN merchants m ON b.merchant_id = m.id
+	WHERE
+		a.is_active = 1
+		AND a.is_deleted = 0
+		AND(a.id = ?
+			OR a.order_id = ?)`
 
 	list, err := b.fetch(ctx, query, bookingId, bookingCode)
 	if err != nil {
