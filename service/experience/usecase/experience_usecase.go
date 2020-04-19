@@ -395,18 +395,18 @@ func (m experienceUsecase) FilterSearchExp(
 	JOIN cities ci ON ha.city_id = ci.id
 	JOIN provinces p ON ci.province_id = p.id`
 
-	if bottomPrice != "" && upPrice != "" {
+	if bottomPrice != "" && upPrice != "" && qStatus != "draft"{
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
 		qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
 	}
-	if startDate != "" && endDate != "" {
+	if startDate != "" && endDate != "" && qStatus != "draft"{
 		query = query + ` join exp_availabilities ead on ead.exp_id = e.id`
 	}
 	//if len(activityTypeArray) != 0 {
 	//	query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
 	//	qCount = qCount + ` join filter_activity_types fat on fat.exp_id = e.id`
 	//}
-	if cityID != "" {
+	if cityID != "" && qStatus != "draft"{
 		query = query + ` join harbors h on h.id = e.harbors_id`
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
@@ -454,14 +454,14 @@ func (m experienceUsecase) FilterSearchExp(
 		} else if qStatus == "archived" {
 			status = 4
 		}
-
-		query = query + ` AND e.status =` + strconv.Itoa(status)
-		qCount = qCount + ` AND e.status =` + strconv.Itoa(status)
-
 		if qStatus == "inService" {
 			query = query + ` AND e.status IN (2,3,4)`
 			qCount = qCount + ` AND e.status IN (2,3,4)`
+		}else {
+			query = query + ` AND e.status =` + strconv.Itoa(status)
+			qCount = qCount + ` AND e.status =` + strconv.Itoa(status)
 		}
+
 	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
@@ -500,7 +500,7 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 
 	}
-	if bottomPrice != "" && upPrice != "" {
+	if bottomPrice != "" && upPrice != "" && qStatus != "draft"{
 		bottomprices, _ := strconv.ParseFloat(bottomPrice, 64)
 		upprices, _ := strconv.ParseFloat(upPrice, 64)
 
