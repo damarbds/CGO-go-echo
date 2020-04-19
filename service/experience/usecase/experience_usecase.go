@@ -271,18 +271,18 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				CityPhotos: cityPhotos,
 			}
 			expDto := models.ExperienceUserDiscoverPreferenceDto{
-				Id:           element.Id,
-				ExpTitle:     element.ExpTitle,
-				ExpType:      expType,
-				Rating:       element.Rating,
-				CountRating:  countRating,
-				Currency:     currency,
+				Id:          element.Id,
+				ExpTitle:    element.ExpTitle,
+				ExpType:     expType,
+				Rating:      element.Rating,
+				CountRating: countRating,
+				Currency:    currency,
 				//Price:        expPayment[0].Price,
 				Payment_type: priceItemType,
 				Cover_Photo:  coverPhotos,
 			}
 			if expPayment != nil {
-				expDto.Price =  expPayment[0].Price
+				expDto.Price = expPayment[0].Price
 			}
 			cityDto.Item = append(cityDto.Item, expDto)
 			expListDto = append(expListDto, &cityDto)
@@ -302,18 +302,18 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 					Item:       nil,
 				}
 				expDto := models.ExperienceUserDiscoverPreferenceDto{
-					Id:           element.Id,
-					ExpTitle:     element.ExpTitle,
-					ExpType:      expType,
-					Rating:       element.Rating,
-					CountRating:  countRating,
-					Currency:     currency,
+					Id:          element.Id,
+					ExpTitle:    element.ExpTitle,
+					ExpType:     expType,
+					Rating:      element.Rating,
+					CountRating: countRating,
+					Currency:    currency,
 					//Price:        expPayment[0].Price,
 					Payment_type: priceItemType,
 					Cover_Photo:  coverPhotos,
 				}
 				if expPayment != nil {
-					expDto.Price =  expPayment[0].Price
+					expDto.Price = expPayment[0].Price
 				}
 				cityDto.Item = append(cityDto.Item, expDto)
 				expListDto = append(expListDto, &cityDto)
@@ -321,18 +321,18 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				for _, dto := range expListDto {
 					if dto.CityId == element.CityId {
 						expDto := models.ExperienceUserDiscoverPreferenceDto{
-							Id:           element.Id,
-							ExpTitle:     element.ExpTitle,
-							ExpType:      expType,
-							Rating:       element.Rating,
-							CountRating:  countRating,
-							Currency:     currency,
+							Id:          element.Id,
+							ExpTitle:    element.ExpTitle,
+							ExpType:     expType,
+							Rating:      element.Rating,
+							CountRating: countRating,
+							Currency:    currency,
 							//Price:        expPayment[0].Price,
 							Payment_type: priceItemType,
 							Cover_Photo:  coverPhotos,
 						}
 						if expPayment != nil {
-							expDto.Price =  expPayment[0].Price
+							expDto.Price = expPayment[0].Price
 						}
 						dto.Item = append(dto.Item, expDto)
 					}
@@ -485,17 +485,17 @@ func (m experienceUsecase) FilterSearchExp(
 	if len(activityTypeArray) != 0 {
 		for index, id := range activityTypeArray {
 			if index == 0 && index != (len(activityTypeArray)-1) {
-				query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
-				qCount = qCount + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
+				query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
+				qCount = qCount + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
 			} else if index == 0 && index == (len(activityTypeArray)-1) {
-				query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` ) `
-				qCount = qCount + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` ) `
+				query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` ) `
+				qCount = qCount + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` ) `
 			} else if index == (len(activityTypeArray) - 1) {
-				query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` )`
-				qCount = qCount + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )` + ` )`
+				query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` )`
+				qCount = qCount + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` )`
 			} else {
-				query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
-				qCount = qCount + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) +` )`
+				query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
+				qCount = qCount + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
 			}
 		}
 
@@ -549,12 +549,16 @@ func (m experienceUsecase) FilterSearchExp(
 		for index, id := range startDates {
 			if index == 0 && index != (len(startDates)-1) {
 				query = query + ` AND (ead.exp_availability_date like '%` + id + `%' `
+				qCount = qCount + ` AND (ead.exp_availability_date like '%` + id + `%' `
 			} else if index == 0 && index == (len(startDates)-1) {
 				query = query + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
+				qCount = qCount + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
 			} else if index == (len(startDates) - 1) {
 				query = query + ` OR ead.exp_availability_date like '%` + id + `%' ) `
+				qCount = qCount + ` OR ead.exp_availability_date like '%` + id + `%' ) `
 			} else {
 				query = query + ` OR ead.exp_availability_date like '%` + id + `%' `
+				qCount = qCount + ` OR ead.exp_availability_date like '%` + id + `%' `
 			}
 		}
 	}
@@ -594,7 +598,6 @@ func (m experienceUsecase) FilterSearchExp(
 				priceItemType = "Per Trip"
 			}
 		}
-
 
 		countRating, err := m.reviewsRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
@@ -642,7 +645,7 @@ func (m experienceUsecase) FilterSearchExp(
 			Id:          exp.Id,
 			ExpTitle:    exp.ExpTitle,
 			ExpType:     expType,
-			ExpStatus: transStatus,
+			ExpStatus:   transStatus,
 			Rating:      exp.Rating,
 			CountRating: countRating,
 			Currency:    currency,
@@ -766,7 +769,7 @@ func (m experienceUsecase) SearchExp(ctx context.Context, harborID, cityID strin
 			priceItemType = "Per Trip"
 		}
 
-		countRating, err := m.reviewsRepo.CountRating(ctx, 0,  exp.Id)
+		countRating, err := m.reviewsRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -864,10 +867,10 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		MerchantId:              currentUserMerchant.Id,
 		HarborsId:               &commandExperience.HarborsId,
 	}
-	if *experiences.HarborsId == "" && experiences.Status == 1{
+	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
 	}
-	if *experiences.MinimumBookingId == "" && experiences.Status == 1{
+	if *experiences.MinimumBookingId == "" && experiences.Status == 1 {
 		experiences.MinimumBookingId = nil
 	}
 	insertToExperience, err := m.experienceRepo.Insert(ctx, &experiences)
@@ -1051,10 +1054,10 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		MerchantId:              currentUserMerchant.Id,
 		HarborsId:               &commandExperience.HarborsId,
 	}
-	if *experiences.HarborsId == "" && experiences.Status == 1{
+	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
 	}
-	if *experiences.MinimumBookingId == "" && experiences.Status == 1{
+	if *experiences.MinimumBookingId == "" && experiences.Status == 1 {
 		experiences.MinimumBookingId = nil
 	}
 	insertToExperience, err := m.experienceRepo.Update(ctx, &experiences)
