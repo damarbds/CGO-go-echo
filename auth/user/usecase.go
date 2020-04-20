@@ -6,7 +6,8 @@ import (
 )
 
 type Usecase interface {
-	Update(ctx context.Context, ar *models.NewCommandUser, user string) error
+	Delete(ctx context.Context,userId string,token string)(*models.ResponseDelete, error)
+	Update(ctx context.Context, ar *models.NewCommandUser, isAdmin bool ,token string) error
 	Create(ctx context.Context, ar *models.NewCommandUser, isAdmin bool,token string) (*models.NewCommandUser,error)
 	ValidateTokenUser(ctx context.Context, token string) (*models.UserInfoDto, error)
 	RequestOTP(ctx context.Context,phoneNumber string)(*models.RequestOTP,error)

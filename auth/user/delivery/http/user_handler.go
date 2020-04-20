@@ -36,6 +36,7 @@ func NewuserHandler(e *echo.Echo, us user.Usecase, is identityserver.Usecase) {
 	}
 	e.POST("/users", handler.CreateUser)
 	e.PUT("/users/:id", handler.UpdateUser)
+	e.DELETE("/users/:id", handler.Delete)
 	e.GET("/users/:id/credit", handler.GetCreditByID)
 	e.GET("/users/:id", handler.GetDetailID)
 	e.GET("/users", handler.List)
@@ -48,6 +49,27 @@ func isRequestValid(m *models.NewCommandUser) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+func (a *userHandler) Delete(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	id := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.userUsecase.Delete(ctx, id, token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 
 func (a *userHandler) List(c echo.Context) error {
@@ -193,6 +215,13 @@ func (a *userHandler) CreateUser(c echo.Context) error {
 }
 
 func (a *userHandler) UpdateUser(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
 
 	filupload, image, _ := c.Request().FormFile("profile_pict_url")
 	dir, err := os.Getwd()
@@ -251,8 +280,14 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
-	error := a.userUsecase.Update(ctx, &userCommand, "admin")
+	var isAdmin bool
+	currentUser := c.FormValue("isAdmin")
+	if currentUser != ""{
+		isAdmin = true
+	}else {
+		isAdmin = false
+	}
+	error := a.userUsecase.Update(ctx, &userCommand, isAdmin,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})

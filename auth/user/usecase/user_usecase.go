@@ -20,7 +20,6 @@ type userUsecase struct {
 }
 
 
-
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Usecase,timeout time.Duration) user.Usecase {
 	return &userUsecase{
@@ -29,6 +28,29 @@ func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Useca
 		adminUsecase:au,
 		contextTimeout:   timeout,
 	}
+}
+
+func (m userUsecase) Delete(c context.Context, userId string, token string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+	currentUserAdmin, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	error := m.userRepo.Delete(ctx, userId, currentUserAdmin.Name)
+	if error != nil {
+		response := models.ResponseDelete{
+			Id:      userId,
+			Message: error.Error(),
+		}
+		return &response, nil
+	}
+	response := models.ResponseDelete{
+		Id:      userId,
+		Message: "Deleted Success",
+	}
+
+	return &response, nil
 }
 func (m userUsecase) RequestOTP(ctx context.Context, phoneNumber string) (*models.RequestOTP, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
@@ -224,9 +246,23 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 	return &userInfo, nil
 }
 
-func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user string) error {
+func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmin bool,token string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
+	var currentUser string
+	if isAdmin == true {
+		currentUserAdmin, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
+		if err != nil {
+			return err
+		}
+		currentUser = currentUserAdmin.Name
+	}else {
+		currentUsers, err := m.ValidateTokenUser(ctx, token)
+		if err != nil {
+			return err
+		}
+		currentUser = currentUsers.UserEmail
+	}
 	//var roles []string
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            ar.Id,
@@ -262,7 +298,7 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, user s
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
 	userModel := models.User{}
 	userModel.Id = existeduser.Id
-	userModel.ModifiedBy = &ar.UserEmail
+	userModel.ModifiedBy = &currentUser
 	userModel.UserEmail = ar.UserEmail
 	userModel.FullName = ar.FullName
 	userModel.PhoneNumber = ar.PhoneNumber
