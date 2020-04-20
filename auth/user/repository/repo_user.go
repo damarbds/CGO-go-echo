@@ -247,13 +247,13 @@ func (m *userRepository) Insert(ctx context.Context, a *models.User) error {
 }
 
 func (m *userRepository) Delete(ctx context.Context, id string, deleted_by string) error {
-	query := `UPDATE users SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
+	query := `UPDATE users SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0)
+	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0,id)
 	if err != nil {
 		return err
 	}
