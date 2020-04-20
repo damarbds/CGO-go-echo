@@ -27,7 +27,7 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	handler := &booking_expHandler{
 		booking_expUsecase: us,
 	}
-	e.POST("booking/checkout", handler.Createbooking_exp)
+	e.POST("booking/checkout", handler.CreateBooking)
 	e.GET("booking/detail/:id", handler.GetDetail)
 	e.GET("booking/my", handler.GetMyBooking)
 	e.GET("booking/history-user", handler.GetHistoryBookingByUser)
@@ -158,13 +158,14 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 }
 
 // Store will store the booking_exp by given request body
-func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
+func (a *booking_expHandler) CreateBooking(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
 	//filupload, image, _ := c.Request().FormFile("ticket_qr_code")
 
 	var bookingExpcommand models.NewBookingExpCommand
+	transReturnId := c.FormValue("trans_return_id")
 	user_id := c.FormValue("user_id")
 	exp_add_ons := c.FormValue("experience_add_on_id")
 	bookingExpcommand = models.NewBookingExpCommand{
@@ -179,8 +180,8 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 		TicketCode:        c.FormValue("ticket_code"),
 		TicketQRCode:      "#",
 		ExperienceAddOnId: &exp_add_ons,
-		TransId:	c.FormValue("trans_id"),
-		PaymentUrl: c.FormValue("payment_url"),
+		TransId:           c.FormValue("trans_id"),
+		PaymentUrl:        c.FormValue("payment_url"),
 	}
 
 	if ok, err := isRequestValid(&bookingExpcommand); !ok {
@@ -190,12 +191,12 @@ func (a *booking_expHandler) Createbooking_exp(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	res, error, errorValidation := a.booking_expUsecase.Insert(ctx, &bookingExpcommand, token)
+	res, err, errorValidation := a.booking_expUsecase.Insert(ctx, &bookingExpcommand, transReturnId, token)
 	if errorValidation != nil {
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: error.Error()})
+		return c.JSON(http.StatusBadRequest, ResponseError{Message: errorValidation.Error()})
 	}
-	if error != nil {
-		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, res)

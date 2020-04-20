@@ -24,6 +24,19 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }
 
+func (b bookingExpRepository) CheckBookingCode(ctx context.Context, bookingCode string) bool {
+	var code string
+	query := `SELECT order_id as code FROM booking_exps WHERE order_id = ?`
+
+	_ = b.Conn.QueryRowContext(ctx, query, bookingCode).Scan(&code)
+
+	if bookingCode == code {
+		return true
+	}
+
+	return false
+}
+
 func (b bookingExpRepository) GetByID(ctx context.Context, bookingId string) (*models.BookingTransactionExp, error) {
 	query := `SELECT a.*, t.total_price from booking_exps a JOIN transactions t ON t.booking_exp_id = a.id where (a.id = ? OR a.order_id = ?)`
 
@@ -272,9 +285,9 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 		return nil, err
 	}
 
-	_, error := stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpId, a.OrderId, a.GuestDesc, a.BookedBy,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpId, a.OrderId, a.GuestDesc, a.BookedBy,
 		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId,a.PaymentUrl,a.TransId)
-	if error != nil {
+	if err != nil {
 		return nil, err
 	}
 

@@ -10,7 +10,7 @@ var (
 	// ErrConflict will throw if the current action already exists
 	ErrUnAuthorize = errors.New("Unauthorize")
 	// ErrConflict will throw if the current action already exists
-	ErrConflict = errors.New("Your Item already exist")
+	ErrConflict = errors.New("Your Item already exist or duplicate")
 	// ErrBadParamInput will throw if the given request-body or params is not valid
 	ErrBadParamInput = errors.New("Bad Request")
 
