@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -59,8 +60,16 @@ func isRequestValid(m *models.NewCommandExperience) (bool, error) {
 	return true, nil
 }
 func (a *experienceHandler) UploadFile(c echo.Context) error {
+	err := c.Request().ParseMultipartForm(200000) // grab the multipart form
+	if err != nil {
+		fmt.Fprintln(c.Response(), err)
+		return nil
+	}
 
-	filupload, image, _ := c.Request().FormFile("image")
+	formdata := c.Request().MultipartForm
+
+	files := formdata.File["image"]
+	//filupload, image, _ := c.Request().FormFile("image")
 	folder := c.QueryParam("folder")
 	ctx := c.Request().Context()
 	if ctx == nil {
@@ -70,30 +79,45 @@ func (a *experienceHandler) UploadFile(c echo.Context) error {
 	if err != nil {
 		return models.ErrInternalServerError
 	}
-	var imagePath string
-	fileLocation := filepath.Join(dir, "files", image.Filename)
-	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
-		return models.ErrInternalServerError
-	}
-	defer targetFile.Close()
+	var imagePath []string
 
-	if _, err := io.Copy(targetFile, filupload); err != nil {
-		return models.ErrInternalServerError
-	}
+	for i, _ := range files { // loop through the files one by one
+		file, err := files[i].Open()
+		defer file.Close()
+		if err != nil {
+			fmt.Fprintln(c.Response(), err)
+			return err
+		}
+		//out, err := os.Create("/tmp/" + files[i].Filename)
+		fileLocation := filepath.Join(dir, "files", files[i].Filename)
+		targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			os.MkdirAll(filepath.Join(dir, "files"), os.ModePerm)
+			return models.ErrInternalServerError
+		}
+		defer targetFile.Close()
+		//out.Close()
+		if _, err := io.Copy(targetFile, file); err != nil {
+			return models.ErrInternalServerError
+		}
 
-	//w.Write([]byte("done"))
-	imagePat, error := a.isUsecase.UploadFileToBlob(fileLocation, folder)
-	imagePath = imagePat
-	targetFile.Close()
-	errRemove := os.Remove(fileLocation)
-	if errRemove != nil {
-		return models.ErrInternalServerError
-	}
+		//w.Write([]byte("done"))
+		imagePat, error := a.isUsecase.UploadFileToBlob(fileLocation, folder)
+		if error != nil {
+			return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+		}
+			imagePath = append(imagePath,imagePat)
+		targetFile.Close()
+			
+			//out.Close()
+			//os.Remove(out.Name())
+		errRemove := os.Remove(fileLocation)
+		if errRemove != nil {
+			return models.ErrInternalServerError
+		}
 
-	if error != nil {
-		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+
+
 	}
 	return c.JSON(http.StatusOK, imagePath)
 }

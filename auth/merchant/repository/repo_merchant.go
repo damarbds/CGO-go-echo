@@ -27,8 +27,19 @@ func NewmerchantRepository(Conn *sql.DB) merchant.Repository {
 	return &merchantRepository{Conn}
 }
 
-func (m *merchantRepository) List(ctx context.Context, limit, offset int) ([]*models.Merchant, error) {
-	query := `SELECT * FROM merchants WHERE is_deleted = 0 and is_active = 1 LIMIT ? OFFSET ?`
+func (m *merchantRepository) List(ctx context.Context, limit, offset int,search string) ([]*models.Merchant, error) {
+	var query string
+	if search != ""{
+		query = `SELECT * FROM merchants WHERE is_deleted = 0 and is_active = 1 
+				and (merchant_name LIKE '%` + search + `%'` +
+				`OR merchant_email LIKE '%` + search + `%'` +
+				`OR merchant_desc LIKE '%` + search + `%'` +
+				`OR balance LIKE '%` + search + `%'` +
+				`OR phone_number LIKE '%` + search + `%' )` +
+				` LIMIT ? OFFSET ?`
+	}else {
+		query = `SELECT * FROM merchants WHERE is_deleted = 0 and is_active = 1 LIMIT ? OFFSET ?`
+	}
 
 	list, err := m.fetch(ctx, query, limit, offset)
 	if err != nil {

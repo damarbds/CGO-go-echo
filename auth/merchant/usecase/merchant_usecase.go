@@ -69,7 +69,7 @@ func (m merchantUsecase) ServiceCount(ctx context.Context, token string) (*model
 	return response, nil
 }
 
-func (m merchantUsecase) List(ctx context.Context, page, limit, offset int,token string) (*models.MerchantWithPagination, error) {
+func (m merchantUsecase) List(ctx context.Context, page, limit, offset int,token string,search string) (*models.MerchantWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 	_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
@@ -77,7 +77,7 @@ func (m merchantUsecase) List(ctx context.Context, page, limit, offset int,token
 		return nil, err
 	}
 
-	list, err := m.merchantRepo.List(ctx, limit, offset)
+	list, err := m.merchantRepo.List(ctx, limit, offset,search)
 	if err != nil {
 		return nil, err
 	}
@@ -197,11 +197,25 @@ func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*mo
 	return &merchantInfo, nil
 }
 
-func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant, user string) error {
+func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant, isAdmin bool,token string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	//var roles []string
+	var currentUser string
+	if isAdmin == true {
+		currentUserAdmin, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
+		if err != nil {
+			return err
+		}
+		currentUser = currentUserAdmin.Name
+	}else {
+		currentUsers, err := m.ValidateTokenMerchant(ctx, token)
+		if err != nil {
+			return err
+		}
+		currentUser = currentUsers.MerchantEmail
+	}
+
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            ar.Id,
 		Username:      ar.MerchantEmail,
@@ -225,7 +239,7 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 
 	merchant := models.Merchant{}
 	merchant.Id = ar.Id
-	merchant.ModifiedBy = &user
+	merchant.ModifiedBy = &currentUser
 	merchant.MerchantName = ar.MerchantName
 	merchant.MerchantDesc = ar.MerchantDesc
 	merchant.MerchantEmail = ar.MerchantEmail

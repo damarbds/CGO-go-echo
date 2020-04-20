@@ -116,6 +116,7 @@ func (a *merchantHandler) List(c echo.Context) error {
 
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
+	search := c.QueryParam("search")
 
 	var limit = 20
 	var page = 1
@@ -130,7 +131,7 @@ func (a *merchantHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.MerchantUsecase.List(ctx, page, limit, offset, token)
+	result, err := a.MerchantUsecase.List(ctx, page, limit, offset, token,search)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -236,11 +237,20 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 }
 
 func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
-	//var merchantCommand models.NewCommandMerchant
-	//err := c.Bind(&merchantCommand)
-	//if err != nil {
-	//	return c.JSON(http.StatusUnprocessableEntity, err.Error())
-	//}
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	var isAdmin bool
+	currentUser := c.FormValue("isAdmin")
+	if currentUser != ""{
+		isAdmin = true
+	}else {
+		isAdmin = false
+	}
 	filupload, image, _ := c.Request().FormFile("profile_pict_url")
 	dir, err := os.Getwd()
 	if err != nil {
@@ -290,7 +300,7 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	err = a.MerchantUsecase.Update(ctx, &merchantCommand, "admin")
+	err = a.MerchantUsecase.Update(ctx, &merchantCommand, isAdmin,token)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

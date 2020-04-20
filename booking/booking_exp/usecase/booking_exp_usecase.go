@@ -331,7 +331,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	}
 	booking.TicketQRCode = imagePath
 
-	reqBooking := make([]models.BookingExp, 0)
+	reqBooking := make([]*models.BookingExp, 0)
 
 	bookingExp := models.BookingExp{
 		Id:                "",
@@ -372,7 +372,8 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if *bookingExp.PaymentUrl == "" {
 		bookingExp.PaymentUrl = nil
 	}
-	reqBooking = append(reqBooking, bookingExp)
+	reqBooking = append(reqBooking, &bookingExp)
+
 	if transReturnId != "" {
 		bookingReturn := models.BookingExp{
 			Id:                "",
@@ -414,18 +415,32 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 			bookingReturn.PaymentUrl = nil
 		}
 
-		reqBooking = append(reqBooking, bookingReturn)
+		reqBooking = append(reqBooking, &bookingReturn)
 	}
 
 	resBooking := make([]*models.NewBookingExpCommand, len(reqBooking))
-	for _, req := range reqBooking {
-		res, err := b.bookingExpRepo.Insert(ctx, &req)
+	for i, req := range reqBooking {
+		res, err := b.bookingExpRepo.Insert(ctx, req)
 		if err != nil {
 			return nil, err, nil
 		}
-		booking.Id = res.Id
-
-		resBooking = append(resBooking, booking)
+		reqBooking[i].Id = res.Id
+		resBooking[i] = &models.NewBookingExpCommand{
+			Id:                res.Id,
+			ExpId:             booking.ExpId,
+			GuestDesc:         res.GuestDesc,
+			BookedBy:          res.BookedBy,
+			BookedByEmail:     res.BookedByEmail,
+			BookingDate:       res.BookingDate.String(),
+			UserId:            res.UserId,
+			Status:            strconv.Itoa(res.Status),
+			OrderId:           res.OrderId,
+			TicketCode:        res.TicketCode,
+			TicketQRCode:      res.TicketQRCode,
+			ExperienceAddOnId: res.ExperienceAddOnId,
+			TransId:           *res.TransId,
+			PaymentUrl:        booking.PaymentUrl,
+		}
 	}
 
 	return resBooking, nil, nil

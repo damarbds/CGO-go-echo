@@ -82,7 +82,8 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		guest_desc,
 		b.booked_by_email as email,
 		t.status as transaction_status,
-		b.status as booking_status
+		b.status as booking_status,
+		t.total_price
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
@@ -164,6 +165,7 @@ func (t transactionRepository) fetch(ctx context.Context, query string, args ...
 			&t.Email,
 			&t.TransactionStatus,
 			&t.BookingStatus,
+			&t.TotalPrice,
 		)
 
 		if err != nil {
