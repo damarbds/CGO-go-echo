@@ -59,6 +59,7 @@ type TransactionOut struct {
 	Email             string    `json:"email"`
 	TransactionStatus int       `json:"transaction_status"`
 	BookingStatus     int       `json:"booking_status"`
+	TotalPrice 			float64 `json:"total_price"`
 }
 
 type TransactionDto struct {
@@ -74,6 +75,7 @@ type TransactionDto struct {
 	Guest         int           `json:"guest"`
 	Email         string        `json:"email"`
 	Status        string        `json:"status"`
+	TotalPrice 	  float64   	`json:"total_price"`
 }
 
 type TransactionWithPagination struct {

@@ -92,6 +92,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			Guest:         len(guestDesc),
 			Email:         item.Email,
 			Status:        status,
+			TotalPrice:item.TotalPrice,
 		}
 	}
 	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status)
