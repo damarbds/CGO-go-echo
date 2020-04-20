@@ -295,7 +295,7 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmi
 		dob = dobParse
 	}
 
-	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
+	existeduser, _ := m.userRepo.GetByID(ctx, ar.Id)
 	userModel := models.User{}
 	userModel.Id = existeduser.Id
 	userModel.ModifiedBy = &currentUser
