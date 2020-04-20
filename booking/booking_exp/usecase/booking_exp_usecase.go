@@ -271,7 +271,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 
 }
 
-func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand, token string) (*models.NewBookingExpCommand, error, error) {
+func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand, transReturnId, token string) ([]*models.NewBookingExpCommand, error, error) {
 
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
@@ -289,7 +289,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		return nil, models.ValidationBookedBy, nil
 	}
 	layoutFormat := "2006-01-02 15:04:05"
-	bookngDate, errDate := time.Parse(layoutFormat, booking.BookingDate)
+	bookingDate, errDate := time.Parse(layoutFormat, booking.BookingDate)
 	if errDate != nil {
 		return nil, errDate, nil
 	}
@@ -297,6 +297,12 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if err != nil {
 		return nil, models.ErrInternalServerError, nil
 	}
+
+	// check duplicate order id or booking code
+	if b.bookingExpRepo.CheckBookingCode(ctx, orderId) {
+		return nil, models.ErrConflict, nil
+	}
+
 	ticketCode, err := generateRandomString(12)
 	if err != nil {
 		return nil, models.ErrInternalServerError, nil
@@ -324,6 +330,9 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		return nil, models.ErrInternalServerError, nil
 	}
 	booking.TicketQRCode = imagePath
+
+	reqBooking := make([]*models.BookingExp, 0)
+
 	bookingExp := models.BookingExp{
 		Id:                "",
 		CreatedBy:         createdBy,
@@ -339,7 +348,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		GuestDesc:         booking.GuestDesc,
 		BookedBy:          booking.BookedBy,
 		BookedByEmail:     booking.BookedByEmail,
-		BookingDate:       bookngDate,
+		BookingDate:       bookingDate,
 		UserId:            booking.UserId,
 		Status:            0,
 		TicketCode:        ticketCode,
@@ -363,12 +372,78 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if *bookingExp.PaymentUrl == "" {
 		bookingExp.PaymentUrl = nil
 	}
-	res, err := b.bookingExpRepo.Insert(ctx, &bookingExp)
-	if err != nil {
-		return nil, err, nil
+	reqBooking = append(reqBooking, &bookingExp)
+
+	if transReturnId != "" {
+		bookingReturn := models.BookingExp{
+			Id:                "",
+			CreatedBy:         createdBy,
+			CreatedDate:       time.Now(),
+			ModifiedBy:        nil,
+			ModifiedDate:      nil,
+			DeletedBy:         nil,
+			DeletedDate:       nil,
+			IsDeleted:         0,
+			IsActive:          1,
+			ExpId:             &booking.ExpId,
+			OrderId:           orderId,
+			GuestDesc:         booking.GuestDesc,
+			BookedBy:          booking.BookedBy,
+			BookedByEmail:     booking.BookedByEmail,
+			BookingDate:       bookingDate,
+			UserId:            booking.UserId,
+			Status:            0,
+			TicketCode:        ticketCode,
+			TicketQRCode:      imagePath,
+			ExperienceAddOnId: booking.ExperienceAddOnId,
+			TransId:           &transReturnId,
+			PaymentUrl:        &booking.PaymentUrl,
+		}
+		if *bookingReturn.ExperienceAddOnId == "" {
+			bookingReturn.ExperienceAddOnId = nil
+		}
+		if *bookingReturn.UserId == "" {
+			bookingReturn.UserId = nil
+		}
+		if *bookingReturn.TransId == "" {
+			bookingReturn.TransId = nil
+		}
+		if *bookingReturn.ExpId == "" {
+			bookingReturn.ExpId = nil
+		}
+		if *bookingReturn.PaymentUrl == "" {
+			bookingReturn.PaymentUrl = nil
+		}
+
+		reqBooking = append(reqBooking, &bookingReturn)
 	}
-	booking.Id = res.Id
-	return booking, nil, nil
+
+	resBooking := make([]*models.NewBookingExpCommand, len(reqBooking))
+	for i, req := range reqBooking {
+		res, err := b.bookingExpRepo.Insert(ctx, req)
+		if err != nil {
+			return nil, err, nil
+		}
+		reqBooking[i].Id = res.Id
+		resBooking[i] = &models.NewBookingExpCommand{
+			Id:                res.Id,
+			ExpId:             booking.ExpId,
+			GuestDesc:         res.GuestDesc,
+			BookedBy:          res.BookedBy,
+			BookedByEmail:     res.BookedByEmail,
+			BookingDate:       res.BookingDate.String(),
+			UserId:            res.UserId,
+			Status:            strconv.Itoa(res.Status),
+			OrderId:           res.OrderId,
+			TicketCode:        res.TicketCode,
+			TicketQRCode:      res.TicketQRCode,
+			ExperienceAddOnId: res.ExperienceAddOnId,
+			TransId:           *res.TransId,
+			PaymentUrl:        booking.PaymentUrl,
+		}
+	}
+
+	return resBooking, nil, nil
 }
 
 func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string, monthType string) ([]*models.BookingHistoryDto, error) {
