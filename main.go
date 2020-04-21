@@ -46,6 +46,9 @@ import (
 	_adminUcase "github.com/auth/admin/usecase"
 	_merchantHttpDeliver "github.com/auth/merchant/delivery/http"
 	_merchantRepo "github.com/auth/merchant/repository"
+	_userMerchantHttpDeliver "github.com/auth/user_merchant/delivery/http"
+	_userMerchantRepo "github.com/auth/user_merchant/repository"
+	_userMerchantUcase "github.com/auth/user_merchant/usecase"
 
 	_promoHttpDeliver "github.com/service/promo/delivery/http"
 	_promoRepo "github.com/service/promo/repository"
@@ -209,6 +212,7 @@ func main() {
 	schedulerRepo := _scheduleRepo.NewScheduleRepository(dbConn)
 	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
 	balanceHistoryRepo := _balanceHistoryRepo.NewbalanceHistoryRepository(dbConn)
+	userMerchantRepo := _userMerchantRepo.NewuserMerchantRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -250,7 +254,9 @@ func main() {
 	transactionUcase := _transactionUcase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo,merchantUsecase,schedulerRepo,timeOptionsRepo,experienceRepo,expAvailabilityRepo,timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(balanceHistoryRepo,merchantUsecase,timeoutContext)
+	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo,merchantUsecase,isUsecase,adminUsecase,timeoutContext)
 
+	_userMerchantHttpDeliver.NewuserMerchantHandler(e,userMerchantUcase)
 	_scheduleHttpHandler.NewScheduleHandler(e,promoUsecase,scheduleUcase)
 	_adminHttpDeliver.NewadminHandler(e, adminUsecase)
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)

@@ -16,26 +16,26 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.BookingExp{}
-	error := db.Model(&user).AddForeignKey("trans_id", "transportations(id)", "RESTRICT", "RESTRICT")
+	user := model.UserMerchant{}
+	error := db.AutoMigrate(&user).AddForeignKey("merchant_id", "merchants(id)", "RESTRICT", "RESTRICT")
 	if error != nil {
 		migration := model.MigrationHistory{
-			DescMigration: "Add_foregn_key_trans_id_bookingExp",
+			DescMigration: "Add_table_UserMerchant",
 			Date:          time.Now(),
 		}
 
 		db.Create(&migration)
 	}
-	transportationdestid := model.Schedule{}
-	errortransportationdestid := db.AutoMigrate(&transportationdestid).AddForeignKey("arrival_timeoption_id", "times_options(id)", "RESTRICT", "RESTRICT")
-	if errortransportationdestid != nil {
-		migration := model.MigrationHistory{
-			DescMigration: "Add_foregn_key_arrival_time_option_Schedule",
-			Date:          time.Now(),
-		}
-
-		db.Create(&migration)
-	}
+	//transportationdestid := model.Schedule{}
+	//errortransportationdestid := db.AutoMigrate(&transportationdestid).AddForeignKey("arrival_timeoption_id", "times_options(id)", "RESTRICT", "RESTRICT")
+	//if errortransportationdestid != nil {
+	//	migration := model.MigrationHistory{
+	//		DescMigration: "Add_foregn_key_arrival_time_option_Schedule",
+	//		Date:          time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
 	//merchantId := model.Transportation{}
 	//errormerchantId := db.Model(&merchantId).AddForeignKey("merchant_id","merchants(id)","RESTRICT", "RESTRICT")
 	//if errormerchantId != nil{
