@@ -28,7 +28,6 @@ type identityserverUsecase struct {
 }
 
 
-
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
 func NewidentityserverUsecase(baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
 	return &identityserverUsecase{
@@ -55,6 +54,71 @@ func handleErrors(err error) {
 		}
 		log.Fatal(err)
 	}
+}
+
+func (m identityserverUsecase) DeleteUser(userId string) error {
+	var param = url.Values{}
+	param.Set("id", userId)
+
+	var payload = bytes.NewBufferString(param.Encode())
+
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/delete-user", payload)
+	//os.Exit(1)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return models.ErrBadParamInput
+	}
+	//user := models.GetUserDetail{}
+	//json.NewDecoder(resp.Body).Decode(&user)
+	return nil
+}
+func (m identityserverUsecase) GetListOfRole(roleType int) ([]*models.RolesPermissionIs, error) {
+	var param = url.Values{}
+	param.Set("type", strconv.Itoa(roleType))
+
+	var payload = bytes.NewBufferString(param.Encode())
+
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/roles", payload)
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrBadParamInput
+	}
+	var roles []*models.RolesPermissionIs
+	json.NewDecoder(resp.Body).Decode(&roles)
+	return roles, nil
 }
 func (m identityserverUsecase) UploadFileToBlob(image string, folder string) (string, error) {
 	// From the Azure portal, get your storage account name and key and set environment variables.
@@ -483,10 +547,12 @@ func (m identityserverUsecase) SendingSMS(sms *models.SendingSMS) (*models.Sendi
 	return &user, nil
 }
 
-func (m identityserverUsecase) GetDetailUserById(id string, token string) (*models.GetUserDetail, error) {
+func (m identityserverUsecase) GetDetailUserById(id string, token string,isDetail string) (*models.GetUserDetail, error) {
 	var param = url.Values{}
 	param.Set("id", id)
-
+	if isDetail != ""{
+		param.Set("isDetail", "true")
+	}
 	var payload = bytes.NewBufferString(param.Encode())
 
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/user-detail", payload)

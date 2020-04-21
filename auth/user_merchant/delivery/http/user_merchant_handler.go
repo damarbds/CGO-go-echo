@@ -33,8 +33,67 @@ func NewuserMerchantHandler(e *echo.Echo, us user_merchant.Usecase) {
 	e.GET("/user-merchants", handler.List)
 	e.DELETE("/user-merchants/:id", handler.Delete)
 	e.GET("/user-merchants/:id", handler.GetDetailID)
+	e.GET("/roles-merchants", handler.GetRoles)
+	e.POST("/assign-roles-merchants", handler.AssignRoles)
 	//e.GET("/merchants/:id", handler.GetByID)
 	//e.DELETE("/merchants/:id", handler.Delete)
+}
+func (a *userMerchantHandler) AssignRoles(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	var isAdmin bool
+	currentUser := c.QueryParam("isAdmin")
+	if currentUser != ""{
+		isAdmin = true
+	}else {
+		isAdmin = false
+	}
+	cp := new(models.NewCommandAssignRoleUserMerchant)
+	if err := c.Bind(cp); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.userMerchantUsecase.AssignRoles(ctx, token,isAdmin,cp)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
+func (a *userMerchantHandler) GetRoles(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	var isAdmin bool
+	currentUser := c.QueryParam("isAdmin")
+	if currentUser != ""{
+		isAdmin = true
+	}else {
+		isAdmin = false
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.userMerchantUsecase.GetRoles(ctx, token,isAdmin)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
 }
 func (a *userMerchantHandler) GetDetailID(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -89,7 +148,7 @@ func (a *userMerchantHandler) List(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
 	search := c.QueryParam("search")
-
+	merchantId := c.QueryParam("merchant_id")
 	var limit = 20
 	var page = 1
 	var offset = 0
@@ -102,12 +161,21 @@ func (a *userMerchantHandler) List(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if merchantId != ""{
 
-	result, err := a.userMerchantUsecase.List(ctx, page, limit, offset, token,search)
-	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		result, err := a.userMerchantUsecase.GetUserByMerchantId(ctx, merchantId,token)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, result)
+	}else {
+		result, err := a.userMerchantUsecase.List(ctx, page, limit, offset, token,search)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, result)
 	}
-	return c.JSON(http.StatusOK, result)
+	return nil
 }
 
 func isRequestValid(m *models.NewCommandUserMerchant) (bool, error) {

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/auth/admin"
+	"github.com/auth/user_merchant"
 	"math"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 )
 
 type merchantUsecase struct {
+	userMerchantRepo user_merchant.Repository
 	adminUsecase     admin.Usecase
 	merchantRepo     merchant.Repository
 	expRepo          experience.Repository
@@ -26,8 +28,9 @@ type merchantUsecase struct {
 
 
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
-func NewmerchantUsecase(a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) merchant.Usecase {
+func NewmerchantUsecase(usm user_merchant.Repository,a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
+		userMerchantRepo:usm,
 		merchantRepo:     a,
 		expRepo:          ex,
 		transRepo:        tr,
@@ -159,16 +162,16 @@ func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string
 	if err != nil {
 		return nil, err
 	}
-	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
+	existedMerchant, _ := m.userMerchantRepo.GetByUserEmail(ctx, getInfoToIs.Email)
 	if existedMerchant == nil {
 		return nil, models.ErrNotFound
 	}
 	merchantInfo := models.MerchantInfoDto{
 		Id:            existedMerchant.Id,
-		MerchantName:  existedMerchant.MerchantName,
-		MerchantDesc:  existedMerchant.MerchantDesc,
-		MerchantEmail: existedMerchant.MerchantEmail,
-		Balance:       existedMerchant.Balance,
+		MerchantName:  existedMerchant.FullName,
+		MerchantDesc:  "",
+		MerchantEmail: existedMerchant.Email,
+		Balance:       0,
 	}
 
 	return &merchantInfo, nil
@@ -306,6 +309,7 @@ func (m merchantUsecase) Delete(c context.Context, id string, token string) (*mo
 		return nil, err
 	}
 	error := m.merchantRepo.Delete(ctx, id, currentUserAdmin.Name)
+	_ = m.identityServerUc.DeleteUser(id)
 	if error != nil {
 		response := models.ResponseDelete{
 			Id:      id,
@@ -325,7 +329,7 @@ func (m merchantUsecase) GetDetailMerchantById(c context.Context, id string, tok
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token)
+	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token,"true")
 	if err != nil {
 		return nil,err
 	}

@@ -19,6 +19,8 @@ type userMerchantRepository struct {
 	Conn *sql.DB
 }
 
+
+
 // NewuserRepository will create an object that represent the article.Repository interface
 func NewuserMerchantRepository(Conn *sql.DB) user_merchant.Repository {
 	return &userMerchantRepository{Conn}
@@ -102,7 +104,22 @@ func (m *userMerchantRepository) GetByID(ctx context.Context, id string) (res *m
 
 	return
 }
+func (m *userMerchantRepository) GetUserByMerchantId(ctx context.Context, merchantId string) (res []*models.UserMerchant, err error) {
+	query := `SELECT * FROM user_merchants WHERE is_deleted = 0 and is_active = 1 and merchant_id = ?`
 
+	list, err := m.fetch(ctx, query, merchantId)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		res = list
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return
+}
 func (m *userMerchantRepository) GetByUserEmail(ctx context.Context, userEmail string) (res *models.UserMerchant,err error) {
 	query := `SELECT * FROM user_merchant WHERE email = ?`
 

@@ -5,7 +5,20 @@ type GetToken struct {
 	ExpiresIn   int    `json:"expires_in"`
 	TokenType   string `json:"token_type"`
 }
-
+type RolesPermissionIs struct {
+	Id 		string 		`json:"Id"`
+	RoleName string 	`json:"RoleName"`
+	RoleType int 		`json:"RoleType"`
+	Description string 	`json:"Description"`
+	Permissions []PermissionIs	`json:"Permissions"`
+}
+type PermissionIs struct {
+	Id 		int 		`json:"Id"`
+	ActivityCode string 	`json:"ActivityCode"`
+	ActivityName string	`json:"ActivityName"`
+	Description string	`json:"Description"`
+	Status 		string	`json:"Status"`
+}
 type RegisterAndUpdateUser struct {
 	Id            string `json:"id"`
 	Username      string `json:"username"`
@@ -71,10 +84,10 @@ type GetUserDetail struct {
 	EmailVerified bool   `json:"emailverified"`
 	Website       string `json:"website"`
 	Address       string `json:"address"`
+	PhoneNumber 	string	`json:"phone_number"`
+	Roles 		[]*RolesPermissionIs `json:"Roles"`
 }
-type Roles struct {
-	RoleId string	`json:"role_id"`
-}
+
 type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

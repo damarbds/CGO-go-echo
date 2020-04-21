@@ -6,6 +6,7 @@ import (
 )
 
 type Repository interface {
+	GetUserByMerchantId(ctx context.Context,merchantId string)([]*models.UserMerchant,error)
 	Fetch(ctx context.Context, cursor string, num int64) (res []*models.UserMerchant, nextCursor string, err error)
 	GetByID(ctx context.Context, id string) (*models.UserMerchant, error)
 	GetByUserEmail(ctx context.Context, userEmail string) (*models.UserMerchant, error)

@@ -20,6 +20,7 @@ type userMerchantUsecase struct {
 	contextTimeout   time.Duration
 }
 
+
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
 func NewuserMerchantUsecase(a user_merchant.Repository,  m merchant.Usecase,is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) user_merchant.Usecase {
 	return &userMerchantUsecase{
@@ -31,6 +32,134 @@ func NewuserMerchantUsecase(a user_merchant.Repository,  m merchant.Usecase,is i
 	}
 }
 
+func (m userMerchantUsecase) GetUserByMerchantId(c context.Context, merchantId string,token string) ([]*models.UserMerchantWithRole, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	_, err := m.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil,models.ErrUnAuthorize
+	}
+
+	getUserByMerchantId ,err := m.userMerchantRepo.GetUserByMerchantId(ctx,merchantId)
+	if err != nil {
+		return nil,models.ErrBadParamInput
+	}
+	var result []*models.UserMerchantWithRole
+	for _,element := range getUserByMerchantId {
+			getUserDetail ,err := m.identityServerUc.GetDetailUserById(element.Id,token,"")
+			if err != nil {
+				return nil,models.ErrBadParamInput
+			}
+			user := models.UserMerchantWithRole{
+				Id:          getUserDetail.Id,
+				FullName:    element.FullName,
+				Email:       element.Email,
+				PhoneNumber: element.PhoneNumber,
+				Roles:       nil,
+			}
+			var roles []models.RolesWithUserMerchant
+			for _,role :=range getUserDetail.Roles {
+				role := models.RolesWithUserMerchant{
+					Id:       role.Id,
+					RoleName: role.RoleName,
+				}
+				roles = append(roles,role)
+			}
+			user.Roles = roles
+			result = append(result,&user)
+	}
+	return result,nil
+}
+func (m userMerchantUsecase) AssignRoles(c context.Context, token string, isAdmin bool,aRoles *models.NewCommandAssignRoleUserMerchant) (*models.ResponseAssignRoles, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	if isAdmin == true {
+		_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
+		if err != nil {
+			return nil,models.ErrUnAuthorize
+		}
+	}else {
+		_, err := m.merchantUsecase.ValidateTokenMerchant(ctx, token)
+		if err != nil {
+			return nil,models.ErrUnAuthorize
+		}
+	}
+	getUserById,err := m.identityServerUc.GetDetailUserById(aRoles.Id,token,"true")
+	if err != nil{
+		return nil,err
+	}
+	updateUser := models.RegisterAndUpdateUser{
+		Id:            aRoles.Id,
+		Username:      getUserById.Email,
+		Password:      getUserById.Password,
+		Name:          getUserById.Name,
+		GivenName:     "",
+		FamilyName:    "",
+		Email:         getUserById.Email,
+		EmailVerified: false,
+		Website:       "",
+		Address:       "",
+		OTP:           "",
+		UserType:      2,
+		PhoneNumber:  getUserById.PhoneNumber,
+		UserRoles:aRoles.RolesId,
+	}
+	_, err = m.identityServerUc.UpdateUser(&updateUser)
+	if err != nil {
+		return nil,err
+	}
+	result := models.ResponseAssignRoles{
+		UserId:  aRoles.Id,
+		RoleID:  aRoles.RolesId,
+		Message: "Success Assign Roles",
+	}
+	return &result,nil
+}
+func (m userMerchantUsecase) GetRoles(c context.Context,token string ,isAdmin bool) ([]*models.RolesUserMerchant, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	if isAdmin == true {
+		_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
+		if err != nil {
+			return nil,models.ErrUnAuthorize
+		}
+	}else {
+		_, err := m.merchantUsecase.ValidateTokenMerchant(ctx, token)
+		if err != nil {
+			return nil,models.ErrUnAuthorize
+		}
+	}
+
+	getRoles , err := m.identityServerUc.GetListOfRole(2)
+	if err != nil {
+		return nil,err
+	}
+	
+	var result []*models.RolesUserMerchant
+	for _,element := range getRoles{
+		role := models.RolesUserMerchant{
+			Id:          element.Id,
+			RoleName:    element.RoleName,
+			Description: element.Description,
+			Permissions: nil,
+		}
+		var permissions []models.PermissionUserMerchant
+		for _,permission := range element.Permissions{
+			permission := models.PermissionUserMerchant{
+				Id:           permission.Id,
+				ActivityName: permission.ActivityName,
+				Description:permission.Description,
+			}
+			permissions = append(permissions,permission)
+		}
+		role.Permissions = permissions
+		result = append(result,&role)
+	}
+	return result,nil
+}
 
 func (m userMerchantUsecase) Delete(c context.Context, userId string, token string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
@@ -40,6 +169,7 @@ func (m userMerchantUsecase) Delete(c context.Context, userId string, token stri
 		return nil, err
 	}
 	error := m.userMerchantRepo.Delete(ctx, userId, currentUserAdmin.Name)
+	_ = m.identityServerUc.DeleteUser(userId)
 	if error != nil {
 		response := models.ResponseDelete{
 			Id:      userId,
@@ -63,13 +193,13 @@ func (m userMerchantUsecase) Update(c context.Context, ar *models.NewCommandUser
 	if isAdmin == true {
 		currentUserAdmin, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
 		if err != nil {
-			return err
+			return models.ErrUnAuthorize
 		}
 		currentUser = currentUserAdmin.Name
 	}else {
 		currentUsers, err := m.merchantUsecase.ValidateTokenMerchant(ctx, token)
 		if err != nil {
-			return err
+			return models.ErrUnAuthorize
 		}
 		currentUser = currentUsers.MerchantEmail
 	}
@@ -211,7 +341,7 @@ func (m userMerchantUsecase) GetUserDetailById(c context.Context, id string, tok
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token)
+	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token,"true")
 	if err != nil {
 		return nil,models.ErrNotFound
 	}
@@ -225,6 +355,29 @@ func (m userMerchantUsecase) GetUserDetailById(c context.Context, id string, tok
 		PhoneNumber:   getMerchant.PhoneNumber,
 		MerchantId:getMerchant.MerchantId,
 	}
+	var roles []models.RolesUserMerchant
+	if getUserIdentity.Roles != nil {
+		for _,element := range getUserIdentity.Roles  {
+			role := models.RolesUserMerchant{
+				Id:          element.Id,
+				RoleName:    element.RoleName,
+				Description: element.Description,
+				Permissions: nil,
+			}
+			var permissions []models.PermissionUserMerchant
+			for _,permission := range element.Permissions{
+				permission := models.PermissionUserMerchant{
+					Id:           permission.Id,
+					ActivityName: permission.ActivityName,
+					Description:permission.Description,
+				}
+				permissions = append(permissions,permission)
+			}
+			role.Permissions = permissions
+			roles = append(roles,role)
+		}
+	}
+	result.Roles = &roles
 
 	return &result,nil
 }

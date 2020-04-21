@@ -17,7 +17,28 @@ type UserMerchant struct {
 	PhoneNumber 		string		`json:"phone_number"`
 	MerchantId 			string		`json:"merchant_id"`
 }
-
+type UserMerchantWithRole struct {
+	Id                   string     `json:"id" validate:"required"`
+	FullName 			string		`json:"full_name"`
+	Email 				string 		`json:"email"`
+	PhoneNumber 		string		`json:"phone_number"`
+	Roles 			[]RolesWithUserMerchant	`json:"roles"`
+}
+type RolesWithUserMerchant struct {
+	Id 			string	`json:"id"`
+	RoleName 	string	`json:"role_name"`
+}
+type RolesUserMerchant struct {
+	Id 		string 		`json:"id"`
+	RoleName string 	`json:"role_name"`
+	Description string 	`json:"description"`
+	Permissions []PermissionUserMerchant	`json:"permissions"`
+}
+type PermissionUserMerchant struct {
+	Id 		int 		`json:"id"`
+	ActivityName string	`json:"activity_name"`
+	Description string	`json:"description"`
+}
 type NewCommandUserMerchant struct {
 	Id                   string     `json:"id"`
 	FullName 			string		`json:"full_name"`
@@ -26,6 +47,10 @@ type NewCommandUserMerchant struct {
 	PhoneNumber 		string		`json:"phone_number"`
 	MerchantId 			string		`json:"merchant_id"`
 }
+type NewCommandAssignRoleUserMerchant struct {
+	Id                   string     `json:"id"`
+	RolesId				[]string	`json:"roles_id"`
+}
 type UserMerchantDto struct {
 	Id                   string     `json:"id" validate:"required"`
 	FullName 			string		`json:"full_name"`
@@ -33,6 +58,7 @@ type UserMerchantDto struct {
 	Password 			string		`json:"password"`
 	PhoneNumber 		string		`json:"phone_number"`
 	MerchantId 			string		`json:"merchant_id"`
+	Roles 				*[]RolesUserMerchant `json:"roles"`
 }
 
 type UserMerchantInfoDto struct {
