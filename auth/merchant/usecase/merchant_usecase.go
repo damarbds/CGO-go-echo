@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"context"
-	"github.com/auth/admin"
 	"math"
 	"time"
+
+	"github.com/auth/admin"
+	"github.com/auth/user_merchant"
 
 	"github.com/auth/identityserver"
 	"github.com/service/experience"
@@ -15,6 +17,7 @@ import (
 )
 
 type merchantUsecase struct {
+	userMerchantRepo user_merchant.Repository
 	adminUsecase     admin.Usecase
 	merchantRepo     merchant.Repository
 	expRepo          experience.Repository
@@ -23,11 +26,10 @@ type merchantUsecase struct {
 	contextTimeout   time.Duration
 }
 
-
-
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
-func NewmerchantUsecase(a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) merchant.Usecase {
+func NewmerchantUsecase(usm user_merchant.Repository, a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase, timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
+		userMerchantRepo: usm,
 		merchantRepo:     a,
 		expRepo:          ex,
 		transRepo:        tr,
@@ -69,7 +71,7 @@ func (m merchantUsecase) ServiceCount(ctx context.Context, token string) (*model
 	return response, nil
 }
 
-func (m merchantUsecase) List(ctx context.Context, page, limit, offset int,token string,search string) (*models.MerchantWithPagination, error) {
+func (m merchantUsecase) List(ctx context.Context, page, limit, offset int, token string, search string) (*models.MerchantWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 	_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
@@ -77,7 +79,7 @@ func (m merchantUsecase) List(ctx context.Context, page, limit, offset int,token
 		return nil, err
 	}
 
-	list, err := m.merchantRepo.List(ctx, limit, offset,search)
+	list, err := m.merchantRepo.List(ctx, limit, offset, search)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +146,7 @@ func (m merchantUsecase) Login(ctx context.Context, ar *models.Login) (*models.G
 	if err != nil {
 		return nil, err
 	}
-	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, ar.Email)
+	existedMerchant, _ := m.userMerchantRepo.GetByUserEmail(ctx, ar.Email)
 	if existedMerchant == nil {
 		return nil, models.ErrNotFound
 	}
@@ -159,16 +161,16 @@ func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string
 	if err != nil {
 		return nil, err
 	}
-	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
+	existedMerchant, _ := m.userMerchantRepo.GetByUserEmail(ctx, getInfoToIs.Email)
 	if existedMerchant == nil {
 		return nil, models.ErrNotFound
 	}
 	merchantInfo := models.MerchantInfoDto{
-		Id:            existedMerchant.Id,
-		MerchantName:  existedMerchant.MerchantName,
-		MerchantDesc:  existedMerchant.MerchantDesc,
-		MerchantEmail: existedMerchant.MerchantEmail,
-		Balance:       existedMerchant.Balance,
+		Id:            existedMerchant.MerchantId,
+		MerchantName:  existedMerchant.FullName,
+		MerchantDesc:  "",
+		MerchantEmail: existedMerchant.Email,
+		Balance:       0,
 	}
 
 	return &merchantInfo, nil
@@ -182,22 +184,22 @@ func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*mo
 	if err != nil {
 		return nil, err
 	}
-	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
+	existedMerchant, _ := m.userMerchantRepo.GetByUserEmail(ctx, getInfoToIs.Email)
 	if existedMerchant == nil {
 		return nil, models.ErrNotFound
 	}
 	merchantInfo := models.MerchantInfoDto{
-		Id:            existedMerchant.Id,
-		MerchantName:  existedMerchant.MerchantName,
-		MerchantDesc:  existedMerchant.MerchantDesc,
-		MerchantEmail: existedMerchant.MerchantEmail,
-		Balance:       existedMerchant.Balance,
+		Id:            existedMerchant.MerchantId,
+		MerchantName:  existedMerchant.FullName,
+		MerchantDesc:  "",
+		MerchantEmail: existedMerchant.Email,
+		Balance:       0,
 	}
 
 	return &merchantInfo, nil
 }
 
-func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant, isAdmin bool,token string) error {
+func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant, isAdmin bool, token string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
@@ -208,7 +210,7 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 			return err
 		}
 		currentUser = currentUserAdmin.Name
-	}else {
+	} else {
 		currentUsers, err := m.ValidateTokenMerchant(ctx, token)
 		if err != nil {
 			return err
@@ -229,8 +231,8 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 		Address:       "",
 		OTP:           "",
 		UserType:      2,
-		PhoneNumber:  ar.PhoneNumber,
-		UserRoles:nil,
+		PhoneNumber:   ar.PhoneNumber,
+		UserRoles:     nil,
 	}
 	_, err := m.identityServerUc.UpdateUser(&updateUser)
 	if err != nil {
@@ -274,8 +276,8 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		Address:       "",
 		OTP:           "",
 		UserType:      2,
-		PhoneNumber: ar.PhoneNumber,
-		UserRoles:nil,
+		PhoneNumber:   ar.PhoneNumber,
+		UserRoles:     nil,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	ar.Id = isUser.Id
@@ -306,6 +308,7 @@ func (m merchantUsecase) Delete(c context.Context, id string, token string) (*mo
 		return nil, err
 	}
 	error := m.merchantRepo.Delete(ctx, id, currentUserAdmin.Name)
+	_ = m.identityServerUc.DeleteUser(id)
 	if error != nil {
 		response := models.ResponseDelete{
 			Id:      id,
@@ -325,28 +328,29 @@ func (m merchantUsecase) GetDetailMerchantById(c context.Context, id string, tok
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token)
+	getUserIdentity, err := m.identityServerUc.GetDetailUserById(id, token, "true")
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	getMerchant , err := m.merchantRepo.GetByID(ctx,id)
-	
+	getMerchant, err := m.merchantRepo.GetByID(ctx, id)
+
 	result := models.MerchantDto{
-		Id:            getMerchant.Id,
-		CreatedDate:   getMerchant.CreatedDate,
-		UpdatedDate:   getMerchant.ModifiedDate,
-		IsActive:      getMerchant.IsActive,
-		MerchantName:  getMerchant.MerchantName,
-		MerchantDesc:  getMerchant.MerchantDesc,
-		MerchantEmail: getMerchant.MerchantEmail,
-		Password:      getUserIdentity.Password,
-		Balance:       getMerchant.Balance,
-		PhoneNumber:   getMerchant.PhoneNumber,
-		MerchantPicture:getMerchant.MerchantPicture,
+		Id:              getMerchant.Id,
+		CreatedDate:     getMerchant.CreatedDate,
+		UpdatedDate:     getMerchant.ModifiedDate,
+		IsActive:        getMerchant.IsActive,
+		MerchantName:    getMerchant.MerchantName,
+		MerchantDesc:    getMerchant.MerchantDesc,
+		MerchantEmail:   getMerchant.MerchantEmail,
+		Password:        getUserIdentity.Password,
+		Balance:         getMerchant.Balance,
+		PhoneNumber:     getMerchant.PhoneNumber,
+		MerchantPicture: getMerchant.MerchantPicture,
 	}
 
-	return &result,nil
+	return &result, nil
 }
+
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation

@@ -168,6 +168,7 @@ func (a *booking_expHandler) CreateBooking(c echo.Context) error {
 	transReturnId := c.FormValue("trans_return_id")
 	user_id := c.FormValue("user_id")
 	exp_add_ons := c.FormValue("experience_add_on_id")
+	transId := c.FormValue("trans_id")
 	bookingExpcommand = models.NewBookingExpCommand{
 		Id:                c.FormValue("id"),
 		ExpId:             c.FormValue("exp_id"),
@@ -180,7 +181,7 @@ func (a *booking_expHandler) CreateBooking(c echo.Context) error {
 		TicketCode:        c.FormValue("ticket_code"),
 		TicketQRCode:      "#",
 		ExperienceAddOnId: &exp_add_ons,
-		TransId:           c.FormValue("trans_id"),
+		TransId:           &transId,
 		PaymentUrl:        c.FormValue("payment_url"),
 	}
 

@@ -6,7 +6,12 @@ type Count struct {
 type ResponseDelete struct {
 	Id 			string	`json:"id"`
 	Message		string	`json:"message"`
-} 
+}
+type ResponseAssignRoles struct {
+	UserId 			string	`json:"id"`
+	RoleID		[]string	`json:"role_id"`
+	Message		string	`json:"message"`
+}
 type MetaPagination struct {
 	Page          int `json:"page"`
 	Total         int `json:"total_pages"`

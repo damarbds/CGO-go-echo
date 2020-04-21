@@ -38,6 +38,7 @@ func (m userUsecase) Delete(c context.Context, userId string, token string) (*mo
 		return nil, err
 	}
 	error := m.userRepo.Delete(ctx, userId, currentUserAdmin.Name)
+	_ = m.identityServerUc.DeleteUser(userId)
 	if error != nil {
 		response := models.ResponseDelete{
 			Id:      userId,
@@ -457,7 +458,7 @@ func (m userUsecase) GetUserDetailById(ctx context.Context, id string, token str
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token)
+	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token,"true")
 	if err != nil {
 		return nil,err
 	}

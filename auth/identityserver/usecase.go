@@ -5,6 +5,8 @@ import (
 )
 
 type Usecase interface {
+	DeleteUser(userId string)error
+	GetListOfRole(roleType int)([]*models.RolesPermissionIs,error)
 	UpdateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error)
 	CreateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error)
 	SendingEmail(r *models.SendingEmail) (*models.SendingEmail, error)
@@ -15,5 +17,5 @@ type Usecase interface {
 	RequestOTP(phoneNumber string)(*models.RequestOTP,error)
 	RequestOTPTmp(phoneNumber string,email string)(*models.RequestOTP,error)
 	SendingSMS(sms *models.SendingSMS)(*models.SendingSMS,error)
-	GetDetailUserById(id string,token string)(*models.GetUserDetail,error)
+	GetDetailUserById(id string,token string,isDetail string)(*models.GetUserDetail,error)
 }

@@ -184,7 +184,7 @@ type NewBookingExpCommand struct {
 	TicketCode        string  `json:"ticket_code"`
 	TicketQRCode      string  `json:"ticket_qr_code"`
 	ExperienceAddOnId *string `json:"experience_add_on_id"`
-	TransId           string  `json:"trans_id"`
+	TransId           *string  `json:"trans_id"`
 	PaymentUrl        string  `json:"payment_url"`
 }
 type MyBooking struct {
