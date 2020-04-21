@@ -226,7 +226,7 @@ func main() {
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
-	merchantUsecase := _merchantUcase.NewmerchantUsecase(merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase,timeoutContext)
+	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		filterActivityTypeRepo,
 		experienceAddOnRepo,
@@ -242,7 +242,7 @@ func main() {
 		merchantUsecase,
 		timeoutContext,
 	)
-	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase,timeoutContext)
+	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
@@ -252,12 +252,12 @@ func main() {
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
 	transportationUcase := _transportationUcase.NewTransportationUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(transactionRepo, timeoutContext)
-	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo,merchantUsecase,schedulerRepo,timeOptionsRepo,experienceRepo,expAvailabilityRepo,timeoutContext)
-	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(balanceHistoryRepo,merchantUsecase,timeoutContext)
-	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo,merchantUsecase,isUsecase,adminUsecase,timeoutContext)
+	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
+	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(balanceHistoryRepo, merchantUsecase, timeoutContext)
+	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)
 
-	_userMerchantHttpDeliver.NewuserMerchantHandler(e,userMerchantUcase)
-	_scheduleHttpHandler.NewScheduleHandler(e,promoUsecase,scheduleUcase)
+	_userMerchantHttpDeliver.NewuserMerchantHandler(e, userMerchantUcase)
+	_scheduleHttpHandler.NewScheduleHandler(e, promoUsecase, scheduleUcase)
 	_adminHttpDeliver.NewadminHandler(e, adminUsecase)
 	_expPaymentTypeHttpDeliver.NewexpPaymentTypeHandlerHandler(e, expPaymentTypeUsecase)
 	_bookingExpHttpDeliver.Newbooking_expHandler(e, bookingExpUcase)
@@ -269,7 +269,7 @@ func main() {
 	_experienceHttpDeliver.NewexperienceHandler(e, experienceUsecase, isUsecase)
 	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase, isUsecase)
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
-	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase,isUsecase)
+	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase, isUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
 	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
@@ -279,7 +279,7 @@ func main() {
 	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
 	_transportationHttpHandler.NewtransportationHandler(e, transportationUcase)
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
-	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e,balanceHistoryUcase)
-	_midtransHttpHandler.NewMidtransHandler(e,bookingExpRepo, experienceRepo, transactionRepo)
+	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e, balanceHistoryUcase)
+	_midtransHttpHandler.NewMidtransHandler(e, bookingExpRepo, experienceRepo, transactionRepo)
 	log.Fatal(e.Start(":9090"))
 }
