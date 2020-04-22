@@ -45,6 +45,15 @@ func (b bookingExpRepository) GetByID(ctx context.Context, bookingId string) (*m
 		return nil, err
 	}
 
+	if len(list) < 1 {
+		query = `SELECT a.*, t.total_price from booking_exps a LEFT JOIN transactions t ON t.order_id = a.order_id where a.order_id = ?`
+
+		list, err = b.fetchBooking(ctx, query, bookingId)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return list[0], nil
 }
 
@@ -104,13 +113,13 @@ func (b bookingExpRepository) fetchBooking(ctx context.Context, query string, ar
 }
 
 func (b bookingExpRepository) UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error {
-	query := `UPDATE booking_exps SET payment_url = ? WHERE id = ?`
+	query := `UPDATE booking_exps SET payment_url = ? WHERE (id = ? OR order_id = ?)`
 
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, paymentUrl, bookingId)
+	_, err = stmt.ExecContext(ctx, paymentUrl, bookingId, bookingId)
 	if err != nil {
 		return err
 	}
@@ -260,13 +269,13 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 }
 
 func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error {
-	query := `UPDATE booking_exps SET status = 1, expired_date_payment = ? WHERE id = ?`
+	query := `UPDATE booking_exps SET status = 1, expired_date_payment = ? WHERE (id = ? OR order_id = ?)`
 
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, expiredDatePayment, bookingId)
+	_, err = stmt.ExecContext(ctx, expiredDatePayment, bookingId, bookingId)
 	if err != nil {
 		return err
 	}
@@ -287,7 +296,7 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 	}
 
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpId, a.OrderId, a.GuestDesc, a.BookedBy,
-		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId,a.PaymentUrl,a.TransId)
+		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId, a.PaymentUrl, a.TransId)
 	if err != nil {
 		return nil, err
 	}
@@ -370,9 +379,9 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 
 func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string) (string, error) {
 	var email string
-	query := `SELECT booked_by_email as email FROM booking_exps WHERE id = ?`
+	query := `SELECT booked_by_email as email FROM booking_exps WHERE (id = ? OR order_id = ?) LIMIT 1`
 
-	err := b.Conn.QueryRowContext(ctx, query, bookingId).Scan(&email)
+	err := b.Conn.QueryRowContext(ctx, query, bookingId, bookingId).Scan(&email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", models.ErrNotFound

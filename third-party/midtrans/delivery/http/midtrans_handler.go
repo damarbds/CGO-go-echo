@@ -5,8 +5,9 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/auth/identityserver"
 	"net/http"
+
+	"github.com/auth/identityserver"
 
 	"github.com/booking/booking_exp"
 	"github.com/labstack/echo"
@@ -25,7 +26,7 @@ type midtransHandler struct {
 	bookingRepo     booking_exp.Repository
 	expRepo         experience.Repository
 	transactionRepo transaction.Repository
-	isUsecase identityserver.Usecase
+	isUsecase       identityserver.Usecase
 }
 
 func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, is identityserver.Usecase) {
@@ -33,7 +34,7 @@ func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.R
 		bookingRepo:     br,
 		expRepo:         er,
 		transactionRepo: tr,
-		isUsecase: is,
+		isUsecase:       is,
 	}
 	e.POST("/midtrans/notif", handler.MidtransNotif)
 }
@@ -85,16 +86,16 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			} else {
 				transactionStatus = 2
 			}
-			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
+			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		} else {
 			transactionStatus = 2
-			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
+			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		}
-		msg := "<p>This is your order id "+ booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
+		msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
 		pushEmail := &models.SendingEmail{
 			Subject: "E-Ticket cGO",
 			Message: msg,

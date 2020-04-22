@@ -13,14 +13,14 @@ type Transaction struct {
 	IsDeleted           int        `json:"is_deleted" validate:"required"`
 	IsActive            int        `json:"is_active" validate:"required"`
 	BookingType         int        `json:"booking_type"`
-	BookingExpId        string     `json:"booking_exp_id"`
+	BookingExpId        *string    `json:"booking_exp_id"`
 	PromoId             *string    `json:"promo_id"`
 	PaymentMethodId     string     `json:"payment_method_id"`
 	ExperiencePaymentId *string    `json:"experience_payment_id"`
 	Status              int        `json:"status"`
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
-	OrderId				*string 		`json:"order_id"`
+	OrderId             *string    `json:"order_id"`
 }
 
 type PaymentTransaction struct {
@@ -32,6 +32,7 @@ type PaymentTransaction struct {
 type TransactionIn struct {
 	BookingType         int     `json:"booking_type,omitempty"`
 	BookingId           string  `json:"booking_id"`
+	OrderId             string  `json:"order_id"`
 	PromoId             string  `json:"promo_id"`
 	PaymentMethodId     string  `json:"payment_method_id"`
 	ExperiencePaymentId string  `json:"experience_payment_id"`
@@ -60,7 +61,7 @@ type TransactionOut struct {
 	Email             string    `json:"email"`
 	TransactionStatus int       `json:"transaction_status"`
 	BookingStatus     int       `json:"booking_status"`
-	TotalPrice 			float64 `json:"total_price"`
+	TotalPrice        float64   `json:"total_price"`
 }
 
 type TransactionDto struct {
@@ -76,7 +77,7 @@ type TransactionDto struct {
 	Guest         int           `json:"guest"`
 	Email         string        `json:"email"`
 	Status        string        `json:"status"`
-	TotalPrice 	  float64   	`json:"total_price"`
+	TotalPrice    float64       `json:"total_price"`
 }
 
 type TransactionWithPagination struct {

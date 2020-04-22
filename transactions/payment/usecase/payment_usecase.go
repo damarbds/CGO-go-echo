@@ -31,10 +31,6 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
-	if payment.BookingExpId == "" {
-		return "", models.BookingExpIdRequired
-	}
-
 	if payment.PaymentMethodId == "" {
 		return "", models.PaymentMethodIdRequired
 	}
@@ -42,10 +38,13 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 	if payment.Currency == "" {
 		payment.Currency = "IDR"
 	}
-
-	createdBy, err := p.bookingRepo.GetEmailByID(ctx, payment.BookingExpId)
+	bookingCode := payment.OrderId
+	if payment.BookingExpId != nil {
+		bookingCode = payment.BookingExpId
+	}
+	createdBy, err := p.bookingRepo.GetEmailByID(ctx, *bookingCode)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	if token != "" {
 		currentUser, err := p.userUsercase.ValidateTokenUser(ctx, token)
@@ -73,6 +72,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		Status:              payment.Status,
 		TotalPrice:          payment.TotalPrice,
 		Currency:            payment.Currency,
+		OrderId:             payment.OrderId,
 	}
 
 	res, err := p.paymentRepo.Insert(ctx, newData)
@@ -80,8 +80,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		return "", models.ErrInternalServerError
 	}
 
-	expiredPayment := res.CreatedDate.Add(24 * time.Hour)
-	err = p.bookingRepo.UpdateStatus(ctx, res.BookingExpId, expiredPayment)
+	expiredPayment := res.CreatedDate.Add(2 * time.Hour)
+	err = p.bookingRepo.UpdateStatus(ctx, *bookingCode, expiredPayment)
 	if err != nil {
 		return "", err
 	}
