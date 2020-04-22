@@ -6,34 +6,34 @@ type GetToken struct {
 	TokenType   string `json:"token_type"`
 }
 type RolesPermissionIs struct {
-	Id 		string 		`json:"Id"`
-	RoleName string 	`json:"RoleName"`
-	RoleType int 		`json:"RoleType"`
-	Description string 	`json:"Description"`
-	Permissions []PermissionIs	`json:"Permissions"`
+	Id          string         `json:"Id"`
+	RoleName    string         `json:"RoleName"`
+	RoleType    int            `json:"RoleType"`
+	Description string         `json:"Description"`
+	Permissions []PermissionIs `json:"Permissions"`
 }
 type PermissionIs struct {
-	Id 		int 		`json:"Id"`
-	ActivityCode string 	`json:"ActivityCode"`
-	ActivityName string	`json:"ActivityName"`
-	Description string	`json:"Description"`
-	Status 		string	`json:"Status"`
+	Id           int    `json:"Id"`
+	ActivityCode string `json:"ActivityCode"`
+	ActivityName string `json:"ActivityName"`
+	Description  string `json:"Description"`
+	Status       string `json:"Status"`
 }
 type RegisterAndUpdateUser struct {
-	Id            string `json:"id"`
-	Username      string `json:"username"`
-	Password      string `json:"password"`
-	Name          string `json:"name"`
-	GivenName     string `json:"givenname"`
-	FamilyName    string `json:"familyname"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"emailverified"`
-	Website       string `json:"website"`
-	Address       string `json:"address"`
-	OTP           string `json:"oTP"`
-	UserType      int    `json:"userType"`
-	PhoneNumber   string `json:"phoneNumber"`
-	UserRoles	 []string	`json:"userRoles"`
+	Id            string   `json:"id"`
+	Username      string   `json:"username"`
+	Password      string   `json:"password"`
+	Name          string   `json:"name"`
+	GivenName     string   `json:"givenname"`
+	FamilyName    string   `json:"familyname"`
+	Email         string   `json:"email"`
+	EmailVerified bool     `json:"emailverified"`
+	Website       string   `json:"website"`
+	Address       string   `json:"address"`
+	OTP           string   `json:"oTP"`
+	UserType      int      `json:"userType"`
+	PhoneNumber   string   `json:"phoneNumber"`
+	UserRoles     []string `json:"userRoles"`
 }
 
 type Response struct {
@@ -74,18 +74,18 @@ type GetUserInfo struct {
 	Address       string `json:"address"`
 }
 type GetUserDetail struct {
-	Id            string `json:"id"`
-	Username      string `json:"username"`
-	Password 	  string `json:"password"`
-	Name          string `json:"name"`
-	GivenName     string `json:"givenname"`
-	FamilyName    string `json:"familyname"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"emailverified"`
-	Website       string `json:"website"`
-	Address       string `json:"address"`
-	PhoneNumber 	string	`json:"phone_number"`
-	Roles 		[]*RolesPermissionIs `json:"Roles"`
+	Id            string               `json:"id"`
+	Username      string               `json:"username"`
+	Password      string               `json:"password"`
+	Name          string               `json:"name"`
+	GivenName     string               `json:"givenname"`
+	FamilyName    string               `json:"familyname"`
+	Email         string               `json:"email"`
+	EmailVerified bool                 `json:"emailverified"`
+	Website       string               `json:"website"`
+	Address       string               `json:"address"`
+	PhoneNumber   string               `json:"phone_number"`
+	Roles         []*RolesPermissionIs `json:"Roles"`
 }
 
 type Login struct {
@@ -100,5 +100,5 @@ type RequestOTPNumber struct {
 }
 type RequestOTPTmpNumber struct {
 	PhoneNumber string `json:"phone_number"`
-	Email 		string	`json:"email"`
+	Email       string `json:"email"`
 }
