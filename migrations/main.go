@@ -16,11 +16,11 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.UserMerchant{}
-	error := db.AutoMigrate(&user).AddForeignKey("merchant_id", "merchants(id)", "RESTRICT", "RESTRICT")
+	user := model.Transaction{}
+	error := db.Model(&user).AddForeignKey("order_id", "booking_exps(order_id)", "RESTRICT", "RESTRICT")
 	if error != nil {
 		migration := model.MigrationHistory{
-			DescMigration: "Add_table_UserMerchant",
+			DescMigration: "Add_foregn_key_order_id_in_table_Transaction",
 			Date:          time.Now(),
 		}
 
