@@ -18,6 +18,11 @@ type Promo struct {
 	PromoValue   float64    `json:"promo_value"`
 	PromoType    int        `json:"promo_type"`
 	PromoImage   string     `json:"promo_image"`
+	StartDate 	 *string		`json:"start_date"`
+	EndDate 	*string		`json:"end_date"`
+	Currency 	*int 		`json:"currency"`
+	MaxUsage   	*int 		`json:"max_usage"`
+	VoucherValueOptionType *string 	`json:"voucher_value_option_type"`
 }
 type PromoDto struct {
 	Id         string  `json:"id" validate:"required"`
@@ -27,4 +32,27 @@ type PromoDto struct {
 	PromoValue float64 `json:"promo_value"`
 	PromoType  int     `json:"promo_type"`
 	PromoImage string  `json:"promo_image"`
+	StartDate 	 *string		`json:"start_date"`
+	EndDate 	*string		`json:"end_date"`
+	Currency 	*int 		`json:"currency"`
+	MaxUsage   	*int 		`json:"max_usage"`
+	VoucherValueOptionType *string 	`json:"voucher_value_option_type"`
+}
+type NewCommandPromo struct {
+	Id         string  `json:"id"`
+	PromoCode  string  `json:"promo_code"`
+	PromoName  string  `json:"promo_name"`
+	PromoDesc  string  `json:"promo_desc"`
+	PromoValue float64 `json:"promo_value"`
+	PromoType  int     `json:"promo_type"`
+	PromoImage string  `json:"promo_image"`
+	StartDate 	 string		`json:"start_date"`
+	EndDate 	string		`json:"end_date"`
+	Currency 	int 		`json:"currency"`
+	MaxUsage   	int 		`json:"max_usage"`
+	VoucherValueOptionType string 	`json:"voucher_value_option_type"`
+}
+type PromoWithPagination struct {
+	Data []*PromoDto `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
 }

@@ -220,13 +220,14 @@ func main() {
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, userRepo, timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
-	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
+
+	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, adminUsecase,timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		filterActivityTypeRepo,
 		experienceAddOnRepo,
@@ -271,7 +272,7 @@ func main() {
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase, isUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
-	_promoHttpDeliver.NewpromoHandler(e, promoUsecase)
+	_promoHttpDeliver.NewpromoHandler(e, promoUsecase,isUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
 	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase, bookingExpUcase, bookingExpRepo, paymentMethodRepo)
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
