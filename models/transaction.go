@@ -20,6 +20,7 @@ type Transaction struct {
 	Status              int        `json:"status"`
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
+	OrderId				*string 		`json:"order_id"`
 }
 
 type PaymentTransaction struct {

@@ -89,6 +89,7 @@ func (b bookingExpRepository) fetchBooking(ctx context.Context, query string, ar
 			&t.ExperienceAddOnId,
 			&t.TransId,
 			&t.PaymentUrl,
+			&t.ScheduleId,
 			&t.TotalPrice,
 		)
 
@@ -335,6 +336,7 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.ExperienceAddOnId,
 			&t.TransId,
 			&t.PaymentUrl,
+			&t.ScheduleId,
 			&t.ExpTitle,
 			&t.ExpType,
 			&t.ExpDuration,
@@ -476,6 +478,7 @@ func (b bookingExpRepository) fetchQueryHistory(ctx context.Context, query strin
 			&t.ExperienceAddOnId,
 			&t.TransId,
 			&t.PaymentUrl,
+			&t.ScheduleId,
 			&t.ExpTitle,
 			&t.ExpType,
 			&t.ExpDuration,
