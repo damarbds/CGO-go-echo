@@ -43,6 +43,8 @@ type Response struct {
 type SendingEmail struct {
 	Subject string `json:"subject"`
 	Message string `json:"message"`
+	AttachmentFileUrl string `json:"attachmentFileUrl"`
+	FileName string `json:"FileName"`
 	From    string `json:"from"`
 	To      string `json:"to"`
 }
