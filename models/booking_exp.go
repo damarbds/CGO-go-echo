@@ -29,7 +29,7 @@ type BookingExpHistory struct {
 	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
 	TransId            *string    `json:"trans_id"`
 	PaymentUrl         *string    `json:"payment_url"`
-	ScheduleId 	   *string	`json:"schedule_id"`
+	ScheduleId         *string    `json:"schedule_id"`
 	ExpTitle           string     `json:"exp_title"`
 	ExpType            *string    `json:"exp_type"`
 	ExpDuration        int        `json:"exp_duration"`
@@ -78,7 +78,7 @@ type BookingExp struct {
 	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
 	TransId            *string    `json:"trans_id"`
 	PaymentUrl         *string    `json:"payment_url"`
-	ScheduleId 	   *string	`json:"schedule_id"`
+	ScheduleId         *string    `json:"schedule_id"`
 }
 type BookingExpJoin struct {
 	Id                     string         `json:"id" validate:"required"`
@@ -105,7 +105,7 @@ type BookingExpJoin struct {
 	ExperienceAddOnId      *string        `json:"experience_add_on_id"`
 	TransId                *string        `json:"trans_id"`
 	PaymentUrl             *string        `json:"payment_url"`
-	ScheduleId 	   *string	`json:"schedule_id"`
+	ScheduleId             *string        `json:"schedule_id"`
 	ExpTitle               string         `json:"exp_title"`
 	ExpType                string         `json:"exp_type"`
 	ExpPickupPlace         string         `json:"exp_pickup_place"`
@@ -187,8 +187,8 @@ type NewBookingExpCommand struct {
 	TicketCode        string  `json:"ticket_code"`
 	TicketQRCode      string  `json:"ticket_qr_code"`
 	ExperienceAddOnId *string `json:"experience_add_on_id"`
-	TransId           *string  `json:"trans_id"`
-	PaymentUrl        string  `json:"payment_url"`
+	TransId           *string `json:"trans_id"`
+	ScheduleId        *string `json:"schedule_id"`
 }
 type MyBooking struct {
 	ExpId       string    `json:"exp_id"`
@@ -232,6 +232,6 @@ type BookingTransactionExp struct {
 	ExperienceAddOnId  *string    `json:"experience_add_on_id"`
 	TransId            *string    `json:"trans_id"`
 	PaymentUrl         *string    `json:"payment_url"`
-	ScheduleId 	   *string	`json:"schedule_id"`
+	ScheduleId         *string    `json:"schedule_id"`
 	TotalPrice         float64    `json:"total_price"`
 }

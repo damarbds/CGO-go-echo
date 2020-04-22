@@ -8,7 +8,7 @@ import (
 type Usecase interface {
 	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)
 	GetHistoryBookingByUserId(ctx context.Context, token string, monthType string) ([]*models.BookingHistoryDto, error)
-	Insert(ctx context.Context, booking *models.NewBookingExpCommand, transReturnId, token string) ([]*models.NewBookingExpCommand, error, error)
+	Insert(ctx context.Context, booking *models.NewBookingExpCommand, transReturnId, scheduleReturnId, token string) ([]*models.NewBookingExpCommand, error, error)
 	GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string) ([]*models.MyBooking, error)
 	GetGrowthByMerchantID(ctx context.Context, token string) ([]*models.BookingGrowthDto, error)
 	CountThisMonth(ctx context.Context) (*models.Count, error)

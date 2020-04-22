@@ -271,12 +271,12 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 
 }
 
-func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand, transReturnId, token string) ([]*models.NewBookingExpCommand, error, error) {
+func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand, transReturnId, scheduleReturnId, token string) ([]*models.NewBookingExpCommand, error, error) {
 
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 
-	if booking.ExpId == "" && booking.TransId == nil {
+	if booking.ExpId == "" && booking.TransId == nil && booking.ScheduleId != nil {
 		return nil, models.ValidationExpId, nil
 	}
 	if booking.BookingDate == "" {
@@ -298,9 +298,12 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		return nil, models.ErrInternalServerError, nil
 	}
 
-	// check duplicate order id or booking code
+	// re-generate if duplicate order id
 	if b.bookingExpRepo.CheckBookingCode(ctx, orderId) {
-		return nil, models.ErrConflict, nil
+		orderId, err = generateRandomString(12)
+		if err != nil {
+			return nil, models.ErrInternalServerError, nil
+		}
 	}
 
 	ticketCode, err := generateRandomString(12)
@@ -355,7 +358,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		TicketQRCode:      imagePath,
 		ExperienceAddOnId: booking.ExperienceAddOnId,
 		TransId:           booking.TransId,
-		PaymentUrl:        &booking.PaymentUrl,
+		ScheduleId:        booking.ScheduleId,
 	}
 	if *bookingExp.ExperienceAddOnId == "" {
 		bookingExp.ExperienceAddOnId = nil
@@ -369,12 +372,13 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if *bookingExp.ExpId == "" {
 		bookingExp.ExpId = nil
 	}
-	if *bookingExp.PaymentUrl == "" {
-		bookingExp.PaymentUrl = nil
+	if *bookingExp.ScheduleId == "" {
+		bookingExp.ScheduleId = nil
 	}
+
 	reqBooking = append(reqBooking, &bookingExp)
 
-	if transReturnId != "" {
+	if transReturnId != "" && scheduleReturnId != "" {
 		bookingReturn := models.BookingExp{
 			Id:                "",
 			CreatedBy:         createdBy,
@@ -397,7 +401,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 			TicketQRCode:      imagePath,
 			ExperienceAddOnId: booking.ExperienceAddOnId,
 			TransId:           &transReturnId,
-			PaymentUrl:        &booking.PaymentUrl,
+			ScheduleId:        &scheduleReturnId,
 		}
 		if *bookingReturn.ExperienceAddOnId == "" {
 			bookingReturn.ExperienceAddOnId = nil
@@ -411,8 +415,8 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		if *bookingReturn.ExpId == "" {
 			bookingReturn.ExpId = nil
 		}
-		if *bookingReturn.PaymentUrl == "" {
-			bookingReturn.PaymentUrl = nil
+		if *bookingExp.ScheduleId == "" {
+			bookingExp.ScheduleId = nil
 		}
 
 		reqBooking = append(reqBooking, &bookingReturn)
@@ -439,7 +443,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 			TicketQRCode:      res.TicketQRCode,
 			ExperienceAddOnId: res.ExperienceAddOnId,
 			TransId:           res.TransId,
-			PaymentUrl:        booking.PaymentUrl,
+			ScheduleId:        res.ScheduleId,
 		}
 	}
 
