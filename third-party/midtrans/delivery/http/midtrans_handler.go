@@ -94,7 +94,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		}
-		msg := "<p>This is your order id "+booking.OrderId+" and your ticket QR code "+booking.TicketQRCode+"</p>"
+		msg := "<p>This is your order id "+ booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
 		pushEmail := &models.SendingEmail{
 			Subject: "E-Ticket cGO",
 			Message: msg,

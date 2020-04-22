@@ -280,6 +280,6 @@ func main() {
 	_transportationHttpHandler.NewtransportationHandler(e, transportationUcase)
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
 	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e, balanceHistoryUcase)
-	_midtransHttpHandler.NewMidtransHandler(e, bookingExpRepo, experienceRepo, transactionRepo)
+	_midtransHttpHandler.NewMidtransHandler(e, bookingExpRepo, experienceRepo, transactionRepo, isUsecase)
 	log.Fatal(e.Start(":9090"))
 }
