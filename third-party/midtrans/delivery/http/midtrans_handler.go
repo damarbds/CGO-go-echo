@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
+	"github.com/auth/identityserver"
 	"net/http"
 
 	"github.com/booking/booking_exp"
@@ -23,13 +25,15 @@ type midtransHandler struct {
 	bookingRepo     booking_exp.Repository
 	expRepo         experience.Repository
 	transactionRepo transaction.Repository
+	isUsecase identityserver.Usecase
 }
 
-func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository) {
+func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, is identityserver.Usecase) {
 	handler := &midtransHandler{
 		bookingRepo:     br,
 		expRepo:         er,
 		transactionRepo: tr,
+		isUsecase: is,
 	}
 	e.POST("/midtrans/notif", handler.MidtransNotif)
 }
@@ -62,6 +66,13 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
+	var bookedBy []models.BookedByObj
+	if booking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return errUnmarshal
+		}
+	}
+
 	var transactionStatus int
 	if callback.TransactionStatus == "capture" || callback.TransactionStatus == "settlement" {
 		if booking.ExpId != nil {
@@ -83,7 +94,16 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		}
-
+		msg := "<p>This is your order id "+booking.OrderId+" and your ticket QR code "+booking.TicketQRCode+"</p>"
+		pushEmail := &models.SendingEmail{
+			Subject: "E-Ticket cGO",
+			Message: msg,
+			From:    "CGO Indonesia",
+			To:      bookedBy[0].Email,
+		}
+		if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
+			return nil
+		}
 	}
 
 	if callback.TransactionStatus == "expire" || callback.TransactionStatus == "deny" {
