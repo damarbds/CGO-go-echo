@@ -24,6 +24,53 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }
 
+func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) ([]*models.BookingExpJoin, error) {
+	q := `
+	SELECT
+		a.*,
+		b.trans_name,
+		b.trans_title,
+		b.trans_status,
+		b.class AS trans_class,
+		s.departure_date,
+		s.departure_time,
+		s.arrival_time,
+		t.total_price,
+		pm.name AS payment_type,
+		pm.desc AS account_bank,
+		pm.icon,
+		t.status AS transaction_status,
+		t.created_date AS created_date_transaction,
+		m.merchant_name,
+		m.phone_number AS merchant_phone,
+		m.merchant_picture,
+		hs.harbors_name AS harbor_source_name,
+		h.harbors_name AS harbor_dest_name
+	FROM
+		booking_exps a
+		LEFT JOIN transactions t ON t.booking_exp_id = a.id
+			OR t.order_id = a.order_id
+		LEFT JOIN payment_methods pm ON t.payment_method_id = pm.id
+		JOIN transportations b ON a.trans_id = b.id
+		LEFT JOIN schedules s ON b.id = s.trans_id
+			AND a.schedule_id = s.id
+		JOIN harbors h ON b.harbors_dest_id = h.id
+		JOIN harbors hs ON b.harbors_source_id = hs.id
+		JOIN merchants m ON b.merchant_id = m.id
+	WHERE
+		a.is_active = 1
+		AND a.is_deleted = 0
+		AND(a.id = ?
+			OR a.order_id = ?)`
+
+	list, err := b.fetchDetailTransport(ctx, q, bookingId, bookingCode)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
+
 func (b bookingExpRepository) CheckBookingCode(ctx context.Context, bookingCode string) bool {
 	var code string
 	query := `SELECT order_id as code FROM booking_exps WHERE order_id = ?`
@@ -43,6 +90,15 @@ func (b bookingExpRepository) GetByID(ctx context.Context, bookingId string) (*m
 	list, err := b.fetchBooking(ctx, query, bookingId, bookingId)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(list) < 1 {
+		query = `SELECT a.*, t.total_price from booking_exps a LEFT JOIN transactions t ON t.order_id = a.order_id where a.order_id = ?`
+
+		list, err = b.fetchBooking(ctx, query, bookingId)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return list[0], nil
@@ -104,13 +160,13 @@ func (b bookingExpRepository) fetchBooking(ctx context.Context, query string, ar
 }
 
 func (b bookingExpRepository) UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error {
-	query := `UPDATE booking_exps SET payment_url = ? WHERE id = ?`
+	query := `UPDATE booking_exps SET payment_url = ? WHERE (id = ? OR order_id = ?)`
 
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, paymentUrl, bookingId)
+	_, err = stmt.ExecContext(ctx, paymentUrl, bookingId, bookingId)
 	if err != nil {
 		return err
 	}
@@ -260,13 +316,13 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 }
 
 func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error {
-	query := `UPDATE booking_exps SET status = 1, expired_date_payment = ? WHERE id = ?`
+	query := `UPDATE booking_exps SET status = 1, expired_date_payment = ? WHERE (id = ? OR order_id = ?)`
 
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, expiredDatePayment, bookingId)
+	_, err = stmt.ExecContext(ctx, expiredDatePayment, bookingId, bookingId)
 	if err != nil {
 		return err
 	}
@@ -279,7 +335,7 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 	a.Id = id.String()
 	query := `INSERT  booking_exps SET id=?,created_by=?,created_date=?,modified_by=?,modified_date=?,deleted_by=?,
 				deleted_date=?,is_deleted=?,is_active=?,exp_id=?,order_id=?,guest_desc=?,booked_by=?,booked_by_email=?,
-				booking_date=?,user_id=?,status=?,ticket_code=?,ticket_qr_code=?,experience_add_on_id=?,payment_url=?,trans_id=?`
+				booking_date=?,user_id=?,status=?,ticket_code=?,ticket_qr_code=?,experience_add_on_id=?,payment_url=?,trans_id=?,schedule_id=?`
 
 	stmt, err := b.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -287,12 +343,84 @@ func (b bookingExpRepository) Insert(ctx context.Context, a *models.BookingExp) 
 	}
 
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpId, a.OrderId, a.GuestDesc, a.BookedBy,
-		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId,a.PaymentUrl,a.TransId)
+		a.BookedByEmail, a.BookingDate, a.UserId, a.Status, a.TicketCode, a.TicketQRCode, a.ExperienceAddOnId, a.PaymentUrl, a.TransId, a.ScheduleId)
 	if err != nil {
 		return nil, err
 	}
 
 	return a, nil
+}
+
+func (b bookingExpRepository) fetchDetailTransport(ctx context.Context, query string, args ...interface{}) ([]*models.BookingExpJoin, error) {
+	rows, err := b.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.BookingExpJoin, 0)
+	for rows.Next() {
+		t := new(models.BookingExpJoin)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.ExpId,
+			&t.OrderId,
+			&t.GuestDesc,
+			&t.BookedBy,
+			&t.BookedByEmail,
+			&t.BookingDate,
+			&t.ExpiredDatePayment,
+			&t.UserId,
+			&t.Status,
+			&t.TicketCode,
+			&t.TicketQRCode,
+			&t.ExperienceAddOnId,
+			&t.TransId,
+			&t.PaymentUrl,
+			&t.ScheduleId,
+			&t.TransName,
+			&t.TransTitle,
+			&t.TransStatus,
+			&t.TransClass,
+			&t.DepartureDate,
+			&t.DepartureTime,
+			&t.ArrivalTime,
+			&t.TotalPrice,
+			&t.PaymentType,
+			&t.AccountBank,
+			&t.Icon,
+			&t.TransactionStatus,
+			&t.CreatedDateTransaction,
+			&t.MerchantName,
+			&t.MerchantPhone,
+			&t.MerchantPicture,
+			&t.HarborSourceName,
+			&t.HarborDestName,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
 }
 
 func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.BookingExpJoin, error) {
@@ -370,9 +498,9 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 
 func (b bookingExpRepository) GetEmailByID(ctx context.Context, bookingId string) (string, error) {
 	var email string
-	query := `SELECT booked_by_email as email FROM booking_exps WHERE id = ?`
+	query := `SELECT booked_by_email as email FROM booking_exps WHERE (id = ? OR order_id = ?) LIMIT 1`
 
-	err := b.Conn.QueryRowContext(ctx, query, bookingId).Scan(&email)
+	err := b.Conn.QueryRowContext(ctx, query, bookingId, bookingId).Scan(&email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", models.ErrNotFound

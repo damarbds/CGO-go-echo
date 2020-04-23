@@ -152,9 +152,17 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 
 	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id, id)
 	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		if err == models.ErrNotFound {
+			result, err = a.booking_expUsecase.GetDetailTransportBookingID(ctx, id, id)
+			if err != nil {
+				return c.JSON(getStatusCode(err), ResponseError{Message: "Booking Exp Detail Not Found"})
+			}
+			return c.JSON(http.StatusOK, result)
+		}
+		return c.JSON(getStatusCode(err), ResponseError{Message: "Booking Trans Detail Not Found"})
+	} else {
+		return c.JSON(http.StatusOK, result)
 	}
-	return c.JSON(http.StatusOK, result)
 }
 
 // Store will store the booking_exp by given request body
@@ -165,10 +173,12 @@ func (a *booking_expHandler) CreateBooking(c echo.Context) error {
 	//filupload, image, _ := c.Request().FormFile("ticket_qr_code")
 
 	var bookingExpcommand models.NewBookingExpCommand
-	transReturnId := c.FormValue("trans_return_id")
 	user_id := c.FormValue("user_id")
 	exp_add_ons := c.FormValue("experience_add_on_id")
 	transId := c.FormValue("trans_id")
+	scheduleId := c.FormValue("schedule_id")
+	transReturnId := c.FormValue("trans_return_id")
+	scheduleReturnId := c.FormValue("schedule_return_id")
 	bookingExpcommand = models.NewBookingExpCommand{
 		Id:                c.FormValue("id"),
 		ExpId:             c.FormValue("exp_id"),
@@ -182,7 +192,7 @@ func (a *booking_expHandler) CreateBooking(c echo.Context) error {
 		TicketQRCode:      "#",
 		ExperienceAddOnId: &exp_add_ons,
 		TransId:           &transId,
-		PaymentUrl:        c.FormValue("payment_url"),
+		ScheduleId:        &scheduleId,
 	}
 
 	if ok, err := isRequestValid(&bookingExpcommand); !ok {
@@ -192,7 +202,7 @@ func (a *booking_expHandler) CreateBooking(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	res, err, errorValidation := a.booking_expUsecase.Insert(ctx, &bookingExpcommand, transReturnId, token)
+	res, err, errorValidation := a.booking_expUsecase.Insert(ctx, &bookingExpcommand, transReturnId, scheduleReturnId, token)
 	if errorValidation != nil {
 		return c.JSON(http.StatusBadRequest, ResponseError{Message: errorValidation.Error()})
 	}

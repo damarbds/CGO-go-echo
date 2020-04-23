@@ -19,13 +19,13 @@ func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 }
 
 func (t transactionRepository) UpdateStatus(ctx context.Context, status int, transactionId, bookingId string) error {
-	query := `UPDATE transactions SET status = ? WHERE (id = ? OR booking_exp_id = ?)`
+	query := `UPDATE transactions SET status = ? WHERE (id = ? OR booking_exp_id = ? OR order_id = ?)`
 
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, status, transactionId, bookingId)
+	_, err = stmt.ExecContext(ctx, status, transactionId, bookingId, bookingId)
 	if err != nil {
 		return err
 	}
@@ -216,7 +216,7 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 	}
 	rows, err := t.Conn.QueryContext(ctx, query)
 	var transactionStatus int
-	if status  != ""{
+	if status != "" {
 		if status == "pending" {
 			transactionStatus = 0
 		} else if status == "waitingApproval" {
@@ -245,7 +245,6 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 			return 0, err
 		}
 	}
-
 
 	count, err := checkCount(rows)
 	if err != nil {

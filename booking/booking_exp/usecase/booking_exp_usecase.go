@@ -45,6 +45,99 @@ func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.U
 	}
 }
 
+func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+
+	details, err := b.bookingExpRepo.GetDetailTransportBookingID(ctx, bookingId, bookingCode)
+	if err != nil {
+		return nil, err
+	}
+
+	transport := make([]models.BookingTransportationDetail, len(details))
+	for i, detail := range details {
+		var tripDuration string
+		if detail.DepartureTime != nil && detail.ArrivalTime != nil {
+			departureTime, _ := time.Parse("15:04", *detail.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04", *detail.ArrivalTime)
+
+			tripHour := arrivalTime.Hour() - departureTime.Hour()
+			tripMinute := arrivalTime.Minute() - departureTime.Minute()
+			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+		}
+		transport[i] = models.BookingTransportationDetail{
+			TransID:          *detail.TransId,
+			TransName:        *detail.TransName,
+			TransTitle:       *detail.TransTitle,
+			TransStatus:      *detail.TransStatus,
+			TransClass:       *detail.TransClass,
+			DepartureDate:    *detail.DepartureDate,
+			DepartureTime:    *detail.DepartureTime,
+			ArrivalTime:      *detail.ArrivalTime,
+			TripDuration:     tripDuration,
+			HarborSourceName: *detail.HarborSourceName,
+			HarborDestName:   *detail.HarborDestName,
+			MerchantName:     detail.MerchantName.String,
+			MerchantPhone:    detail.MerchantPhone.String,
+			MerchantPicture:  detail.MerchantPicture.String,
+		}
+	}
+
+	var bookedBy []models.BookedByObj
+	var guestDesc []models.GuestDescObj
+	var accountBank models.AccountDesc
+	if details[0].BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(details[0].BookedBy), &bookedBy); errUnmarshal != nil {
+			return nil, models.ErrInternalServerError
+		}
+	}
+	if details[0].GuestDesc != "" {
+		if errUnmarshal := json.Unmarshal([]byte(details[0].GuestDesc), &guestDesc); errUnmarshal != nil {
+			return nil, models.ErrInternalServerError
+		}
+	}
+	if details[0].AccountBank != "" {
+		if errUnmarshal := json.Unmarshal([]byte(details[0].AccountBank), &accountBank); errUnmarshal != nil {
+			return nil, models.ErrInternalServerError
+		}
+	}
+	var currency string
+	if details[0].Currency == 1 {
+		currency = "USD"
+	} else {
+		currency = "IDR"
+	}
+	transport[0].TotalGuest = len(guestDesc)
+	if len(transport) > 1 {
+		transport[1].TotalGuest = len(guestDesc)
+	}
+	results := &models.BookingExpDetailDto{
+		Id:                     details[0].Id,
+		GuestDesc:              guestDesc,
+		BookedBy:               bookedBy,
+		BookedByEmail:          details[0].BookedByEmail,
+		BookingDate:            details[0].BookingDate,
+		ExpiredDatePayment:     details[0].ExpiredDatePayment,
+		CreatedDateTransaction: details[0].CreatedDateTransaction,
+		UserId:                 details[0].UserId,
+		Status:                 details[0].Status,
+		TransactionStatus:      details[0].TransactionStatus,
+		OrderId:                details[0].OrderId,
+		TicketQRCode:           details[0].TicketQRCode,
+		ExperienceAddOnId:      details[0].ExperienceAddOnId,
+		TotalPrice:             details[0].TotalPrice,
+		Currency:               currency,
+		PaymentType:            details[0].PaymentType,
+		AccountNumber:          accountBank.AccNumber,
+		AccountHolder:          accountBank.AccHolder,
+		BankIcon:               details[0].Icon,
+		ExperiencePaymentId:    details[0].ExperiencePaymentId,
+		Transportation:         transport,
+	}
+
+	return results, nil
+}
+
 func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentType string) (map[string]interface{}, error) {
 	var data map[string]interface{}
 
@@ -185,10 +278,10 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 		}
 
 		myBooking[i] = &models.MyBooking{
-			ExpId:       b.ExpId,
-			ExpTitle:    b.ExpTitle,
+			ExpId:       *b.ExpId,
+			ExpTitle:    *b.ExpTitle,
 			BookingDate: b.BookingDate,
-			ExpDuration: b.ExpDuration,
+			ExpDuration: *b.ExpDuration,
 			TotalGuest:  len(guestDesc),
 			City:        b.City,
 			Province:    b.Province,
@@ -220,8 +313,8 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 			return nil, models.ErrInternalServerError
 		}
 	}
-	if getDetailBooking.ExpType != "" {
-		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.ExpType), &expType); errUnmarshal != nil {
+	if getDetailBooking.ExpType != nil {
+		if errUnmarshal := json.Unmarshal([]byte(*getDetailBooking.ExpType), &expType); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
 		}
 	}
@@ -236,9 +329,21 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	} else {
 		currency = "IDR"
 	}
+
+	expDetail := make([]models.BookingExpDetail, 1)
+	expDetail[0] = models.BookingExpDetail{
+		ExpId:           *getDetailBooking.ExpId,
+		ExpTitle:        *getDetailBooking.ExpTitle,
+		ExpType:         expType,
+		ExpPickupPlace:  *getDetailBooking.ExpPickupPlace,
+		ExpPickupTime:   *getDetailBooking.ExpPickupTime,
+		MerchantName:    getDetailBooking.MerchantName.String,
+		MerchantPhone:   getDetailBooking.MerchantPhone.String,
+		MerchantPicture: getDetailBooking.MerchantPicture.String,
+		TotalGuest:      len(guestDesc),
+	}
 	bookingExp := models.BookingExpDetailDto{
 		Id:                     getDetailBooking.Id,
-		ExpId:                  getDetailBooking.ExpId,
 		OrderId:                getDetailBooking.OrderId,
 		GuestDesc:              guestDesc,
 		BookedBy:               bookedBy,
@@ -252,10 +357,6 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		//TicketCode:        getDetailBooking.TicketCode,
 		TicketQRCode:        getDetailBooking.TicketQRCode,
 		ExperienceAddOnId:   getDetailBooking.ExperienceAddOnId,
-		ExpTitle:            getDetailBooking.ExpTitle,
-		ExpType:             expType,
-		ExpPickupPlace:      getDetailBooking.ExpPickupPlace,
-		ExpPickupTime:       getDetailBooking.ExpPickupTime,
 		TotalPrice:          getDetailBooking.TotalPrice,
 		Currency:            currency,
 		PaymentType:         getDetailBooking.PaymentType,
@@ -263,20 +364,18 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		AccountHolder:       accountBank.AccHolder,
 		BankIcon:            getDetailBooking.Icon,
 		ExperiencePaymentId: getDetailBooking.ExperiencePaymentId,
-		MerchantName:        getDetailBooking.MerchantName.String,
-		MerchantPhone:       getDetailBooking.MerchantPhone.String,
-		MerchantPicture:     getDetailBooking.MerchantPicture.String,
+		Experience:          expDetail,
 	}
 	return &bookingExp, nil
 
 }
 
-func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand, transReturnId, token string) ([]*models.NewBookingExpCommand, error, error) {
+func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingExpCommand, transReturnId, scheduleReturnId, token string) ([]*models.NewBookingExpCommand, error, error) {
 
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 
-	if booking.ExpId == "" && booking.TransId == nil {
+	if booking.ExpId == "" && booking.TransId == nil && booking.ScheduleId != nil {
 		return nil, models.ValidationExpId, nil
 	}
 	if booking.BookingDate == "" {
@@ -298,9 +397,12 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		return nil, models.ErrInternalServerError, nil
 	}
 
-	// check duplicate order id or booking code
+	// re-generate if duplicate order id
 	if b.bookingExpRepo.CheckBookingCode(ctx, orderId) {
-		return nil, models.ErrConflict, nil
+		orderId, err = generateRandomString(12)
+		if err != nil {
+			return nil, models.ErrInternalServerError, nil
+		}
 	}
 
 	ticketCode, err := generateRandomString(12)
@@ -355,7 +457,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		TicketQRCode:      imagePath,
 		ExperienceAddOnId: booking.ExperienceAddOnId,
 		TransId:           booking.TransId,
-		PaymentUrl:        &booking.PaymentUrl,
+		ScheduleId:        booking.ScheduleId,
 	}
 	if *bookingExp.ExperienceAddOnId == "" {
 		bookingExp.ExperienceAddOnId = nil
@@ -369,12 +471,13 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	if *bookingExp.ExpId == "" {
 		bookingExp.ExpId = nil
 	}
-	if *bookingExp.PaymentUrl == "" {
-		bookingExp.PaymentUrl = nil
+	if *bookingExp.ScheduleId == "" {
+		bookingExp.ScheduleId = nil
 	}
+
 	reqBooking = append(reqBooking, &bookingExp)
 
-	if transReturnId != "" {
+	if transReturnId != "" && scheduleReturnId != "" {
 		bookingReturn := models.BookingExp{
 			Id:                "",
 			CreatedBy:         createdBy,
@@ -397,7 +500,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 			TicketQRCode:      imagePath,
 			ExperienceAddOnId: booking.ExperienceAddOnId,
 			TransId:           &transReturnId,
-			PaymentUrl:        &booking.PaymentUrl,
+			ScheduleId:        &scheduleReturnId,
 		}
 		if *bookingReturn.ExperienceAddOnId == "" {
 			bookingReturn.ExperienceAddOnId = nil
@@ -411,8 +514,8 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 		if *bookingReturn.ExpId == "" {
 			bookingReturn.ExpId = nil
 		}
-		if *bookingReturn.PaymentUrl == "" {
-			bookingReturn.PaymentUrl = nil
+		if *bookingExp.ScheduleId == "" {
+			bookingExp.ScheduleId = nil
 		}
 
 		reqBooking = append(reqBooking, &bookingReturn)
@@ -439,7 +542,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 			TicketQRCode:      res.TicketQRCode,
 			ExperienceAddOnId: res.ExperienceAddOnId,
 			TransId:           res.TransId,
-			PaymentUrl:        booking.PaymentUrl,
+			ScheduleId:        res.ScheduleId,
 		}
 	}
 

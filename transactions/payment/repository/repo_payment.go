@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/transactions/payment"
@@ -22,7 +23,7 @@ func (p paymentRepository) Insert(ctx context.Context, pay *models.Transaction) 
 	pay.Id = id.String()
 	q := `INSERT transactions SET id = ?, created_by = ?, created_date = ?, modified_by = ?, 
 	modified_date = ?, deleted_by = ?, deleted_date = ?, is_deleted = ?, is_active = ?, booking_type = ?, 
-	booking_exp_id = ?, promo_id = ?, payment_method_id = ?, experience_payment_id = ?, status = ?, total_price = ?, currency = ?`
+	booking_exp_id = ?, promo_id = ?, payment_method_id = ?, experience_payment_id = ?, status = ?, total_price = ?, currency = ?, order_id = ?`
 
 	stmt, err := p.Conn.PrepareContext(ctx, q)
 	if err != nil {
@@ -48,6 +49,7 @@ func (p paymentRepository) Insert(ctx context.Context, pay *models.Transaction) 
 		pay.Status,
 		pay.TotalPrice,
 		pay.Currency,
+		pay.OrderId,
 	)
 	if err != nil {
 		return nil, err

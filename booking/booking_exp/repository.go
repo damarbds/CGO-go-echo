@@ -20,4 +20,5 @@ type Repository interface {
 	UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error
 	GetByID(ctx context.Context, bookingId string) (*models.BookingTransactionExp, error)
 	CheckBookingCode(ctx context.Context, bookingCode string) bool
+	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) ([]*models.BookingExpJoin, error)
 }
