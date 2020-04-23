@@ -100,6 +100,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			Message: msg,
 			From:    "CGO Indonesia",
 			To:      bookedBy[0].Email,
+			FileName:"Ticket.pdf",
 		}
 		if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 			return nil
