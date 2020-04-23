@@ -90,7 +90,7 @@ type BookingExpJoin struct {
 	DeletedDate            *time.Time     `json:"deleted_date"`
 	IsDeleted              int            `json:"is_deleted" validate:"required"`
 	IsActive               int            `json:"is_active" validate:"required"`
-	ExpId                  string         `json:"exp_id"`
+	ExpId                  *string        `json:"exp_id"`
 	OrderId                string         `json:"order_id"`
 	GuestDesc              string         `json:"guest_desc"`
 	BookedBy               string         `json:"booked_by"`
@@ -106,11 +106,11 @@ type BookingExpJoin struct {
 	TransId                *string        `json:"trans_id"`
 	PaymentUrl             *string        `json:"payment_url"`
 	ScheduleId             *string        `json:"schedule_id"`
-	ExpTitle               string         `json:"exp_title"`
-	ExpType                string         `json:"exp_type"`
-	ExpPickupPlace         string         `json:"exp_pickup_place"`
-	ExpPickupTime          string         `json:"exp_pickup_time"`
-	ExpDuration            int            `json:"exp_duration"`
+	ExpTitle               *string        `json:"exp_title"`
+	ExpType                *string        `json:"exp_type"`
+	ExpPickupPlace         *string        `json:"exp_pickup_place"`
+	ExpPickupTime          *string        `json:"exp_pickup_time"`
+	ExpDuration            *int           `json:"exp_duration"`
 	TotalPrice             float64        `json:"total_price"`
 	PaymentType            string         `json:"payment_type"`
 	City                   string         `json:"city"`
@@ -124,37 +124,70 @@ type BookingExpJoin struct {
 	MerchantName           sql.NullString `json:"merchant_name"`
 	MerchantPhone          sql.NullString `json:"merchant_phone"`
 	MerchantPicture        sql.NullString `json:"merchant_picture"`
+	TransName              *string        `json:"trans_name"`
+	TransTitle             *string        `json:"trans_title"`
+	TransStatus            *string        `json:"trans_status"`
+	TransClass             *string        `json:"trans_class"`
+	DepartureDate          *time.Time     `json:"departure_date"`
+	DepartureTime          *string        `json:"departure_time"`
+	ArrivalTime            *string        `json:"arrival_time"`
+	HarborSourceName       *string        `json:"harbor_source_name"`
+	HarborDestName         *string        `json:"harbor_dest_name"`
 }
+
+type BookingTransportationDetail struct {
+	TransID          string    `json:"trans_id"`
+	TransName        string    `json:"trans_name"`
+	TransTitle       string    `json:"trans_title"`
+	TransStatus      string    `json:"trans_status"`
+	TransClass       string    `json:"trans_class"`
+	DepartureDate    time.Time `json:"departure_date"`
+	DepartureTime    string    `json:"departure_time"`
+	ArrivalTime      string    `json:"arrival_time"`
+	TripDuration     string    `json:"trip_duration"`
+	HarborSourceName string    `json:"harbor_source_name"`
+	HarborDestName   string    `json:"harbor_dest_name"`
+	MerchantName     string    `json:"merchant_name"`
+	MerchantPhone    string    `json:"merchant_phone"`
+	MerchantPicture  string    `json:"merchant_picture"`
+	TotalGuest       int       `json:"total_guest"`
+}
+
+type BookingExpDetail struct {
+	ExpId           string   `json:"exp_id"`
+	ExpTitle        string   `json:"exp_title"`
+	ExpType         []string `json:"exp_type"`
+	ExpPickupPlace  string   `json:"exp_pickup_place"`
+	ExpPickupTime   string   `json:"exp_pickup_time"`
+	MerchantName    string   `json:"merchant_name"`
+	MerchantPhone   string   `json:"merchant_phone"`
+	MerchantPicture string   `json:"merchant_picture"`
+	TotalGuest      int      `json:"total_guest"`
+}
+
 type BookingExpDetailDto struct {
-	Id                     string         `json:"id" validate:"required"`
-	GuestDesc              []GuestDescObj `json:"guest_desc"`
-	BookedBy               []BookedByObj  `json:"booked_by"`
-	BookedByEmail          string         `json:"booked_by_email"`
-	BookingDate            time.Time      `json:"booking_date"`
-	ExpiredDatePayment     *time.Time     `json:"expired_date_payment"`
-	CreatedDateTransaction time.Time      `json:"created_date_transaction"`
-	UserId                 *string        `json:"user_id"`
-	Status                 int            `json:"status"`
-	TransactionStatus      int            `json:"transaction_status"`
-	//TicketCode			string		`json:"ticket_code"`
-	OrderId             string   `json:"order_id"`
-	TicketQRCode        string   `json:"ticket_qr_code"`
-	ExperienceAddOnId   *string  `json:"experience_add_on_id"`
-	ExpId               string   `json:"exp_id"`
-	ExpTitle            string   `json:"exp_title"`
-	ExpType             []string `json:"exp_type"`
-	ExpPickupPlace      string   `json:"exp_pickup_place"`
-	ExpPickupTime       string   `json:"exp_pickup_time"`
-	TotalPrice          float64  `json:"total_price"`
-	Currency            string   `json:"currency"`
-	PaymentType         string   `json:"payment_type"`
-	AccountNumber       string   `json:"account_number"`
-	AccountHolder       string   `json:"account_holder"`
-	BankIcon            string   `json:"bank_icon"`
-	ExperiencePaymentId string   `json:"experience_payment_id"`
-	MerchantName        string   `json:"merchant_name"`
-	MerchantPhone       string   `json:"merchant_phone"`
-	MerchantPicture     string   `json:"merchant_picture"`
+	Id                     string                        `json:"id" validate:"required"`
+	GuestDesc              []GuestDescObj                `json:"guest_desc"`
+	BookedBy               []BookedByObj                 `json:"booked_by"`
+	BookedByEmail          string                        `json:"booked_by_email"`
+	BookingDate            time.Time                     `json:"booking_date"`
+	ExpiredDatePayment     *time.Time                    `json:"expired_date_payment"`
+	CreatedDateTransaction time.Time                     `json:"created_date_transaction"`
+	UserId                 *string                       `json:"user_id"`
+	Status                 int                           `json:"status"`
+	TransactionStatus      int                           `json:"transaction_status"`
+	OrderId                string                        `json:"order_id"`
+	TicketQRCode           string                        `json:"ticket_qr_code"`
+	ExperienceAddOnId      *string                       `json:"experience_add_on_id"`
+	TotalPrice             float64                       `json:"total_price"`
+	Currency               string                        `json:"currency"`
+	PaymentType            string                        `json:"payment_type"`
+	AccountNumber          string                        `json:"account_number"`
+	AccountHolder          string                        `json:"account_holder"`
+	BankIcon               string                        `json:"bank_icon"`
+	ExperiencePaymentId    string                        `json:"experience_payment_id"`
+	Experience             []BookingExpDetail            `json:"experience,omitempty"`
+	Transportation         []BookingTransportationDetail `json:"transportation,omitempty"`
 }
 type AccountDesc struct {
 	AccNumber string `json:"acc_number"`

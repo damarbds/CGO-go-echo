@@ -152,9 +152,17 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 
 	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id, id)
 	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		if err == models.ErrNotFound {
+			result, err = a.booking_expUsecase.GetDetailTransportBookingID(ctx, id, id)
+			if err != nil {
+				return c.JSON(getStatusCode(err), ResponseError{Message: "Booking Exp Detail Not Found"})
+			}
+			return c.JSON(http.StatusOK, result)
+		}
+		return c.JSON(getStatusCode(err), ResponseError{Message: "Booking Trans Detail Not Found"})
+	} else {
+		return c.JSON(http.StatusOK, result)
 	}
-	return c.JSON(http.StatusOK, result)
 }
 
 // Store will store the booking_exp by given request body
