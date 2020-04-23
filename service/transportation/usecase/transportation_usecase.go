@@ -59,7 +59,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	var query string
 	var queryCount string
 
-	if isMerchant == true && qStatus == "draft"{
+	if isMerchant == true && qStatus == "draft" {
 		query = `
 	SELECT 
 		(SELECT id FROM schedules where trans_id = t.id LIMIT 0,1) as schedule_id,
@@ -94,7 +94,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	WHERE
 		t.is_deleted = 0
 		AND t.is_active = 1`
-	}else if isMerchant == true {
+	} else if isMerchant == true {
 		query = `
 	SELECT 
 		(SELECT id FROM schedules where trans_id = t.id LIMIT 0,1) as schedule_id,
@@ -134,7 +134,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	WHERE
 		s.is_deleted = 0
 		AND s.is_active = 1`
-	}else {
+	} else {
 		query = `
 	SELECT
 		s.id as schedule_id,
@@ -205,11 +205,10 @@ func (t transportationUsecase) FilterSearchTrans(
 			status = 4
 		}
 
-
 		if qStatus == "inService" {
 			query = query + ` AND t.trans_status IN (2,3,4)`
 			queryCount = queryCount + ` AND t.trans_status IN (2,3,4)`
-		}else {
+		} else {
 			query = query + ` AND t.trans_status =` + strconv.Itoa(status)
 			queryCount = queryCount + ` AND t.trans_status =` + strconv.Itoa(status)
 		}
@@ -281,16 +280,15 @@ func (t transportationUsecase) FilterSearchTrans(
 			}
 		}
 
-		 var tripDuration string
-		if t.DepartureDate != nil && t.ArrivalTime != nil{
-			departureTime, _ := time.Parse("15:04:05", *t.DepartureTime)
-			arrivalTime, _ := time.Parse("15:04:05", *t.ArrivalTime)
+		var tripDuration string
+		if t.DepartureTime != nil && t.ArrivalTime != nil {
+			departureTime, _ := time.Parse("15:04", *t.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04", *t.ArrivalTime)
 
 			tripHour := arrivalTime.Hour() - departureTime.Hour()
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()
 			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 		}
-
 
 		var transStatus string
 		if t.TransStatus == 0 {
@@ -320,9 +318,9 @@ func (t transportationUsecase) FilterSearchTrans(
 			HarborDestinationId:   t.HarborDestId,
 			HarborDestinationName: t.HarborDestName,
 			Price:                 transPrice,
-			MerchantName:t.MerchantName,
-			MerchantPicture:t.MerchantPicture,
-			Class:t.Class,
+			MerchantName:          t.MerchantName,
+			MerchantPicture:       t.MerchantPicture,
+			Class:                 t.Class,
 		}
 	}
 	if sortBy != "" {
@@ -434,7 +432,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		Transcoverphoto: newCommandTransportation.Transcoverphoto,
 		Class:           newCommandTransportation.Class,
 	}
-	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil{
+	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
 		transportationReturn := models.Transportation{

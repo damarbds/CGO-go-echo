@@ -110,9 +110,24 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		expPaymentId = nil
 	}
 
+	var orderId *string
+	if t.OrderId != "" {
+		orderId = &t.OrderId
+	} else {
+		orderId = nil
+	}
+
+	var bookingId *string
+	if t.BookingId != "" {
+		bookingId = &t.BookingId
+	} else {
+		bookingId = nil
+	}
+
 	tr := &models.Transaction{
 		BookingType:         t.BookingType,
-		BookingExpId:        t.BookingId,
+		BookingExpId:        bookingId,
+		OrderId:             orderId,
 		PromoId:             promoId,
 		PaymentMethodId:     t.PaymentMethodId,
 		ExperiencePaymentId: expPaymentId,
@@ -131,16 +146,21 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
-	data, err := p.bookingUsecase.SendCharge(ctx, tr.BookingExpId, *pm.MidtransPaymentCode)
+	bookingCode := t.OrderId
+	if tr.BookingExpId != nil {
+		bookingCode = t.BookingId
+	}
+	data, err := p.bookingUsecase.SendCharge(ctx, bookingCode, *pm.MidtransPaymentCode)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
-	if err := p.bookingRepo.UpdatePaymentUrl(ctx, tr.BookingExpId, data["redirect_url"].(string)); err != nil {
+	if err := p.bookingRepo.UpdatePaymentUrl(ctx, bookingCode, data["redirect_url"].(string)); err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, data)
+
 }
 
 func getStatusCode(err error) int {

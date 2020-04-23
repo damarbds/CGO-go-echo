@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/service/filter_activity_type"
 	"math"
 	"strconv"
 	"time"
+
+	"github.com/service/filter_activity_type"
 
 	"github.com/product/experience_add_ons"
 
@@ -58,7 +59,7 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
-		filterATRepo:fac,
+		filterATRepo:     fac,
 		adOnsRepo:        adOns,
 		exp_availablitiy: ea,
 		experienceRepo:   a,
@@ -399,18 +400,18 @@ func (m experienceUsecase) FilterSearchExp(
 	JOIN cities ci ON ha.city_id = ci.id
 	JOIN provinces p ON ci.province_id = p.id`
 
-	if bottomPrice != "" && upPrice != "" && qStatus != "draft"{
+	if bottomPrice != "" && upPrice != "" && qStatus != "draft" {
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
 		qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
 	}
-	if startDate != "" && endDate != "" && qStatus != "draft"{
+	if startDate != "" && endDate != "" && qStatus != "draft" {
 		query = query + ` join exp_availabilities ead on ead.exp_id = e.id`
 	}
 	//if len(activityTypeArray) != 0 {
 	//	query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
 	//	qCount = qCount + ` join filter_activity_types fat on fat.exp_id = e.id`
 	//}
-	if cityID != "" && qStatus != "draft"{
+	if cityID != "" && qStatus != "draft" {
 		query = query + ` join harbors h on h.id = e.harbors_id`
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
@@ -461,7 +462,7 @@ func (m experienceUsecase) FilterSearchExp(
 		if qStatus == "inService" {
 			query = query + ` AND e.status IN (2,3,4)`
 			qCount = qCount + ` AND e.status IN (2,3,4)`
-		}else {
+		} else {
 			query = query + ` AND e.status =` + strconv.Itoa(status)
 			qCount = qCount + ` AND e.status =` + strconv.Itoa(status)
 		}
@@ -504,7 +505,7 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 
 	}
-	if bottomPrice != "" && upPrice != "" && qStatus != "draft"{
+	if bottomPrice != "" && upPrice != "" && qStatus != "draft" {
 		bottomprices, _ := strconv.ParseFloat(bottomPrice, 64)
 		upprices, _ := strconv.ParseFloat(upPrice, 64)
 
@@ -566,7 +567,6 @@ func (m experienceUsecase) FilterSearchExp(
 			}
 		}
 	}
-	fmt.Println(query)
 	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -879,10 +879,10 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	}
 	insertToExperience, err := m.experienceRepo.Insert(ctx, &experiences)
 
-	for _,element := range commandExperience.ExpType{
-		getExpType ,err := m.typesRepo.GetByName(ctx,element)
+	for _, element := range commandExperience.ExpType {
+		getExpType, err := m.typesRepo.GetByName(ctx, element)
 		if err != nil {
-			return nil ,err
+			return nil, err
 		}
 		filterActivityT := models.FilterActivityType{
 			Id:           0,
@@ -897,9 +897,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 			ExpTypeId:    getExpType.ExpTypeID,
 			ExpId:        insertToExperience,
 		}
-		insertToFilterAT := m.filterATRepo.Insert(ctx,&filterActivityT)
+		insertToFilterAT := m.filterATRepo.Insert(ctx, &filterActivityT)
 		if insertToFilterAT != nil {
-			return nil,insertToFilterAT
+			return nil, insertToFilterAT
 		}
 	}
 
@@ -1091,13 +1091,12 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	}
 	insertToExperience, err := m.experienceRepo.Update(ctx, &experiences)
 
+	err = m.filterATRepo.DeleteByExpId(ctx, experiences.Id)
 
-	err = m.filterATRepo.DeleteByExpId(ctx,experiences.Id)
-	
-	for _,element := range commandExperience.ExpType{
-		getExpType ,err := m.typesRepo.GetByName(ctx,element)
+	for _, element := range commandExperience.ExpType {
+		getExpType, err := m.typesRepo.GetByName(ctx, element)
 		if err != nil {
-			return nil ,err
+			return nil, err
 		}
 		filterActivityT := models.FilterActivityType{
 			Id:           0,
@@ -1112,9 +1111,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			ExpTypeId:    getExpType.ExpTypeID,
 			ExpId:        insertToExperience,
 		}
-		insertToFilterAT := m.filterATRepo.Insert(ctx,&filterActivityT)
+		insertToFilterAT := m.filterATRepo.Insert(ctx, &filterActivityT)
 		if insertToFilterAT != nil {
-			return nil,insertToFilterAT
+			return nil, insertToFilterAT
 		}
 	}
 	var photoIds []string
