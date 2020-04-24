@@ -118,6 +118,7 @@ func (t *transportationRepository) fetch(ctx context.Context, query string, args
 			&t.BoatDetails     ,
 			&t.Transcoverphoto,
 			&t.Class       ,
+			&t.TransFacilities,
 		)
 
 		if err != nil {

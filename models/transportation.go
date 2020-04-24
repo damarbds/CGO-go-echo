@@ -24,6 +24,7 @@ type Transportation struct {
 	BoatDetails     string     `json:"boat_details"`
 	Transcoverphoto string     `json:"transcoverphoto"`
 	Class           string     `json:"class"`
+	TransFacilities *string  `json:"trans_facilities"`
 }
 
 type NewCommandTransportation struct {

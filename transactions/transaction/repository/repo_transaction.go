@@ -75,7 +75,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		e.exp_type,
 		e.exp_title,
 		booking_exp_id,
-		order_id as booking_code,
+		b.order_id as booking_code,
 		b.created_date as booking_date,
 		b.booking_date as check_in_date,
 		b.booked_by,
