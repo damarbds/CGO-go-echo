@@ -189,7 +189,7 @@ func (m *userRepository) GetByUserEmail(ctx context.Context, userEmail string) (
 	if len(list) > 0 {
 		res = list[0]
 	} else {
-		return nil, models.ErrNotFound
+		return nil, nil
 	}
 	return
 }

@@ -30,6 +30,77 @@ func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Useca
 	}
 }
 
+func (m userUsecase) LoginByGoogle(c context.Context, code string) (*models.GetToken, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+	var requestToken *models.GetToken
+
+	getInfoUserGoogle ,err := m.identityServerUc.CallBackGoogle(code)
+	if err != nil {
+		return nil,err
+	}
+	checkUser ,err := m.userRepo.GetByUserEmail(ctx,getInfoUserGoogle.Email)
+	if err != nil {
+		return nil,err
+	}
+	if checkUser == nil{
+		password ,_ := generateRandomString(11)
+		registerUser := models.RegisterAndUpdateUser{
+			Id:            "",
+			Username:      getInfoUserGoogle.Email,
+			Password:      password,
+			Name:          getInfoUserGoogle.Email,
+			GivenName:     "",
+			FamilyName:    "",
+			Email:         getInfoUserGoogle.Email,
+			EmailVerified: false,
+			Website:       "",
+			Address:       "",
+			OTP:           "",
+			UserType:      1,
+			PhoneNumber:   "",
+			UserRoles: nil,
+		}
+		isUser, _ := m.identityServerUc.CreateUser(&registerUser)
+		referralCode, _ := generateRandomString(9)
+		userModel := models.User{}
+		userModel.Id = isUser.Id
+		userModel.CreatedBy = getInfoUserGoogle.Email
+		userModel.UserEmail = getInfoUserGoogle.Email
+		userModel.FullName = getInfoUserGoogle.Email
+		userModel.PhoneNumber = ""
+		userModel.VerificationSendDate = time.Now()
+		userModel.VerificationCode = isUser.OTP
+		userModel.ProfilePictUrl = ""
+		userModel.Address = ""
+		userModel.Dob = time.Time{}
+		userModel.Gender = 0
+		userModel.IdType = 0
+		userModel.IdNumber = ""
+		userModel.ReferralCode = referralCode
+		userModel.Points = 0
+		err := m.userRepo.Insert(ctx, &userModel)
+		if err != nil {
+			return nil,err
+		}
+		getToken, err := m.identityServerUc.GetToken(registerUser.Email, registerUser.Password,"")
+		if err != nil {
+			return nil, err
+		}
+		requestToken = getToken
+	}else {
+		getDetailUser ,err := m.identityServerUc.GetDetailUserById(checkUser.Id,"","true")
+		if err != nil {
+			return nil,err
+		}
+		getToken, err := m.identityServerUc.GetToken(getDetailUser.Email, getDetailUser.Password,"")
+		if err != nil {
+			return nil, err
+		}
+		requestToken = getToken
+	}
+	return requestToken,nil
+}
 func (m userUsecase) Delete(c context.Context, userId string, token string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()

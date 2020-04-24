@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -21,6 +23,9 @@ import (
 )
 
 type identityserverUsecase struct {
+	redirectUrlGoogle string
+	clientIDGoogle		string
+	clientSecretGoogle string
 	baseUrl          string
 	basicAuth        string
 	accountStorage   string
@@ -29,8 +34,11 @@ type identityserverUsecase struct {
 
 
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
-func NewidentityserverUsecase(baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
+func NewidentityserverUsecase(redirectUrlGoogle string, clientIDGoogle string, clientSecretGoogle string,baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
 	return &identityserverUsecase{
+		redirectUrlGoogle:redirectUrlGoogle,
+		clientIDGoogle:clientIDGoogle,
+		clientSecretGoogle:clientSecretGoogle,
 		baseUrl:          baseUrl,
 		basicAuth:        basicAuth,
 		accountStorage:   accountStorage,
@@ -38,6 +46,32 @@ func NewidentityserverUsecase(baseUrl string, basicAuth string, accountStorage s
 	}
 }
 
+func (m identityserverUsecase) CallBackGoogle(code string) (*models.GetInfoUserGoogle, error) {
+	conf := &oauth2.Config{
+		ClientID:     m.clientIDGoogle,
+		ClientSecret: m.clientSecretGoogle,
+		RedirectURL:  m.redirectUrlGoogle,
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
+		},
+		Endpoint: google.Endpoint,
+	}
+	tok, err := conf.Exchange(oauth2.NoContext, code)
+	if err != nil {
+		return nil, err
+	}
+
+	client := conf.Client(oauth2.NoContext, tok)
+	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
+	if err != nil {
+		return nil,err
+	}
+	defer email.Body.Close()
+	//data, _ := ioutil.ReadAll(email.Body)
+	var userInfo models.GetInfoUserGoogle
+	json.NewDecoder(email.Body).Decode(&userInfo)
+	return &userInfo,nil
+}
 func randomString() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return strconv.Itoa(r.Int())

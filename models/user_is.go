@@ -1,5 +1,11 @@
 package models
 
+type GetInfoUserGoogle struct {
+	Sub 		string 		`json:"sub"`
+	Picture		string		`json:"picture"`
+	Email 		string		`json:"email"`
+	EmailVerified bool		`json:"email_verified"`
+}
 type GetToken struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`

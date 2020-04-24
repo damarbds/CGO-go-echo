@@ -150,6 +150,9 @@ func main() {
 	basicAuth := "cm9jbGllbnQ6c2VjcmV0"
 	accountStorage := "cgostorage"
 	accessKeyStorage := "OwvEOlzf6e7QwVoV0H75GuSZHpqHxwhYnYL9QbpVPgBRJn+26K26aRJxtZn7Ip5AhaiIkw9kH11xrZSscavXfQ=="
+	redirectUrlGoogle := "http://cgo-web-api.azurewebsites.net/account/callback"
+	clientIDGoogle := "422978617473-acff67dn9cgbomorrbvhqh2i1b6icm84.apps.googleusercontent.com"
+	clientSecretGoogle := "z_XfHM4DtamjRmJdpu8q0gQf"
 	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
 	val := url.Values{}
 	val.Add("parseTime", "1")
@@ -222,12 +225,12 @@ func main() {
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
-	isUsecase := _isUcase.NewidentityserverUsecase(baseUrlis, basicAuth, accountStorage, accessKeyStorage)
+	isUsecase := _isUcase.NewidentityserverUsecase(redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
 
-	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, adminUsecase,timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		filterActivityTypeRepo,
 		experienceAddOnRepo,
@@ -246,7 +249,7 @@ func main() {
 	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
-	paymentUsecase := _paymentUcase.NewPaymentUsecase(transactionRepo,notifRepo,paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
+	paymentUsecase := _paymentUcase.NewPaymentUsecase(transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
 	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, merchantUsecase, isUsecase, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
@@ -272,7 +275,7 @@ func main() {
 	_userHttpDeliver.NewuserHandler(e, userUsecase, isUsecase)
 	_merchantHttpDeliver.NewmerchantHandler(e, merchantUsecase, isUsecase)
 	_articleHttpDeliver.NewArticleHandler(e, au)
-	_promoHttpDeliver.NewpromoHandler(e, promoUsecase,isUsecase)
+	_promoHttpDeliver.NewpromoHandler(e, promoUsecase, isUsecase)
 	_paymentMethodHttpDeliver.NewPaymentMethodHandler(e, pmUsecase)
 	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase, bookingExpUcase, bookingExpRepo, paymentMethodRepo)
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)

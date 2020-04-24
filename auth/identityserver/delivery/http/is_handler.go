@@ -6,10 +6,9 @@ import (
 	"github.com/auth/identityserver"
 	"github.com/auth/merchant"
 	"github.com/auth/user"
-	"net/http"
-
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
+	"net/http"
 
 	"github.com/models"
 )
@@ -40,6 +39,7 @@ func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usec
 	e.POST("/account/request-otp", handler.RequestOTP)
 	e.POST("/account/request-otp-tmp", handler.RequestOTPTmp)
 	e.GET("/account/verified-email", handler.VerifiedEmail)
+	e.GET("/account/callback", handler.CallBack)
 }
 
 func (a *isHandler) RequestOTP(c echo.Context) error {
@@ -158,6 +158,19 @@ func (a *isHandler) VerifiedEmail(c echo.Context) error {
 	//}
 
 	return c.JSON(http.StatusBadRequest, "Bad Request")
+}
+func (a *isHandler) CallBack(c echo.Context) error {
+	code := c.QueryParam("code")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	token, err := a.userUsecase.LoginByGoogle(ctx, code)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusBadRequest, token)
 }
 
 func (a *isHandler) GetInfo(c echo.Context) error {

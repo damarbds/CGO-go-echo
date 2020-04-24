@@ -5,6 +5,7 @@ import (
 )
 
 type Usecase interface {
+	CallBackGoogle(code string)(*models.GetInfoUserGoogle,error)
 	DeleteUser(userId string)error
 	GetListOfRole(roleType int)([]*models.RolesPermissionIs,error)
 	UpdateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error)
