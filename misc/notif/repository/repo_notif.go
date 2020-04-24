@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	guuid "github.com/google/uuid"
+	"time"
 
 	"github.com/misc/notif"
 	"github.com/models"
@@ -12,6 +14,7 @@ import (
 type notifRepository struct {
 	Conn *sql.DB
 }
+
 
 func NewNotifRepository(Conn *sql.DB) notif.Repository {
 	return &notifRepository{Conn: Conn}
@@ -77,4 +80,26 @@ func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string)
 		return nil, err
 	}
 	return res, nil
+}
+
+func (m notifRepository) Insert(ctx context.Context, a models.Notification) error {
+	a.Id = guuid.New().String()
+	query := `INSERT notifications SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , merchant_id=?,type=? , title=? ,notifications.desc=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.MerchantId,a.Type,a.Title,a.Desc)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
 }
