@@ -15,6 +15,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/service/experience"
+	"github.com/transactions/transaction"
+
+	"github.com/third-party/paypal"
+
 	"github.com/third-party/midtrans"
 
 	"github.com/auth/identityserver"
@@ -31,18 +36,101 @@ type bookingExpUsecase struct {
 	userUsecase     user.Usecase
 	merchantUsecase merchant.Usecase
 	isUsecase       identityserver.Usecase
+	expRepo         experience.Repository
+	transactionRepo transaction.Repository
 	contextTimeout  time.Duration
 }
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
 		bookingExpRepo:  a,
 		userUsecase:     u,
 		merchantUsecase: m,
 		isUsecase:       is,
+		expRepo:         er,
+		transactionRepo: tr,
 		contextTimeout:  timeout,
 	}
+}
+
+func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode string) (map[string]interface{}, error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+
+	var result map[string]interface{}
+
+	cfg := paypal.PaypalConfig{
+		OAuthUrl: paypal.PaypalOauthUrl,
+		OrderUrl: paypal.PaypalOrderUrl,
+	}
+
+	res, err := paypal.PaypalSetup(cfg, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	if orderId != res.ID {
+		return nil, errors.New("Incorrect Paypal Order ID")
+	}
+
+	booking, err := b.bookingExpRepo.GetByID(ctx, bookingCode)
+	if err != nil {
+		return nil, err
+	}
+
+	var bookedBy []models.BookedByObj
+	if booking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+	}
+
+	var transactionStatus int
+	if res.Status == "COMPLETED" {
+		if booking.ExpId != nil {
+			exp, err := b.expRepo.GetByID(ctx, *booking.ExpId)
+			if err != nil {
+				return nil, err
+			}
+			if exp.ExpBookingType == "No Instant Booking" {
+				transactionStatus = 1
+			} else {
+				transactionStatus = 2
+			}
+			if err := b.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
+				return nil, err
+			}
+		} else {
+			transactionStatus = 2
+			if err := b.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
+				return nil, err
+			}
+		}
+		msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
+		pushEmail := &models.SendingEmail{
+			Subject:  "E-Ticket cGO",
+			Message:  msg,
+			From:     "CGO Indonesia",
+			To:       bookedBy[0].Email,
+			FileName: "Ticket.pdf",
+		}
+		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+			return nil, nil
+		}
+	}
+
+	if res.Status == "VOIDED" {
+		transactionStatus = 3
+		if err := b.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
+			return nil, err
+		}
+	}
+
+	data, _ := json.Marshal(res)
+	json.Unmarshal(data, &result)
+
+	return result, nil
 }
 
 func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error) {
