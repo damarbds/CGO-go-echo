@@ -58,6 +58,7 @@ type TransactionIn struct {
 	BookingType         int     `json:"booking_type,omitempty"`
 	BookingId           string  `json:"booking_id"`
 	OrderId             string  `json:"order_id"`
+	PaypalOrderId       string  `json:"paypal_order_id"`
 	PromoId             string  `json:"promo_id"`
 	PaymentMethodId     string  `json:"payment_method_id"`
 	ExperiencePaymentId string  `json:"experience_payment_id"`
