@@ -150,17 +150,25 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	if tr.BookingExpId != nil {
 		bookingCode = t.BookingId
 	}
-	data, err := p.bookingUsecase.SendCharge(ctx, bookingCode, *pm.MidtransPaymentCode)
-	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-	}
 
-	if err := p.bookingRepo.UpdatePaymentUrl(ctx, bookingCode, data["redirect_url"].(string)); err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	var data map[string]interface{}
+	if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" {
+		data, err = p.bookingUsecase.Verify(ctx, t.PaypalOrderId, bookingCode)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+	} else {
+		data, err = p.bookingUsecase.SendCharge(ctx, bookingCode, *pm.MidtransPaymentCode)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+
+		if err := p.bookingRepo.UpdatePaymentUrl(ctx, bookingCode, data["redirect_url"].(string)); err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
 	}
 
 	return c.JSON(http.StatusOK, data)
-
 }
 
 func getStatusCode(err error) int {

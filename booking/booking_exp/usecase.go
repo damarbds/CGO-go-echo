@@ -14,4 +14,5 @@ type Usecase interface {
 	GetGrowthByMerchantID(ctx context.Context, token string) ([]*models.BookingGrowthDto, error)
 	CountThisMonth(ctx context.Context) (*models.Count, error)
 	SendCharge(ctx context.Context, bookingCode, paymentType string) (map[string]interface{}, error)
+	Verify(ctx context.Context, orderId, bookingCode string) (map[string]interface{}, error)
 }

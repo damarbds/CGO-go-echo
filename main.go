@@ -119,6 +119,9 @@ import (
 	_midtransHttpHandler "github.com/third-party/midtrans/delivery/http"
 
 	_filterActivityTypeRepo "github.com/service/filter_activity_type/repository"
+
+	_currencyHttpHandler "github.com/misc/currency/delivery/http"
+	_currencyUsecase "github.com/misc/currency/usecase"
 )
 
 // func init() {
@@ -250,7 +253,7 @@ func main() {
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, merchantUsecase, isUsecase, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
@@ -259,6 +262,7 @@ func main() {
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(balanceHistoryRepo, merchantUsecase, timeoutContext)
 	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)
+	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 
 	_userMerchantHttpDeliver.NewuserMerchantHandler(e, userMerchantUcase)
 	_scheduleHttpHandler.NewScheduleHandler(e, promoUsecase, scheduleUcase)
@@ -285,5 +289,7 @@ func main() {
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
 	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e, balanceHistoryUcase)
 	_midtransHttpHandler.NewMidtransHandler(e, bookingExpRepo, experienceRepo, transactionRepo, isUsecase)
+	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
+
 	log.Fatal(e.Start(":9090"))
 }
