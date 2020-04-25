@@ -7,6 +7,7 @@ import (
 )
 
 type Repository interface {
+	GetById(ctx context.Context,id string)(*models.TransactionWMerchant,error)
 	CountSuccess(ctx context.Context) (int, error)
 	Count(ctx context.Context, startDate, endDate, search, status string) (int, error)
 	List(ctx context.Context, startDate, endDate, search, status string, limit, offset int) ([]*models.TransactionOut, error)

@@ -24,6 +24,7 @@ type Transportation struct {
 	BoatDetails     string     `json:"boat_details"`
 	Transcoverphoto string     `json:"transcoverphoto"`
 	Class           string     `json:"class"`
+	TransFacilities *string  `json:"trans_facilities"`
 }
 
 type NewCommandTransportation struct {
@@ -35,7 +36,7 @@ type NewCommandTransportation struct {
 	BoatDetails     BoatDetailsObj   `json:"boat_details"`
 	Transcoverphoto string           `json:"transcoverphoto"`
 	Class           string           `json:"class"`
-	Facilities      []string         `json:"facilities"`
+	Facilities      []ExpFacilitiesObject         `json:"facilities"`
 	TransImages     []CoverPhotosObj `json:"trans_photos"`
 	DepartureRoute  RouteObj         `json:"departure_route"`
 	ReturnRoute     *RouteObj        `json:"return_route"`
@@ -89,6 +90,7 @@ type TransSearch struct {
 	MerchantName 		  string		`json:"merchant_name"`
 	MerchantPicture 	 *string		`json:"merchant_picture"`
 	Class				  *string 		`json:"class"`
+	TransFacilities		*string		`json:"trans_facilities"`
 }
 type TransPriceObj struct {
 	AdultPrice    float64 `json:"adult_price"`
@@ -115,6 +117,7 @@ type TransportationSearchObj struct {
 	MerchantName 		  string		`json:"merchant_name"`
 	MerchantPicture 	 *string		`json:"merchant_picture"`
 	Class				  *string 		`json:"class"`
+	TransFacilities 	[]ExpFacilitiesObject `json:"trans_facilities"`
 }
 type FilterSearchTransWithPagination struct {
 	Data []*TransportationSearchObj `json:"data"`

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-
 	"github.com/models"
 
 	"github.com/sirupsen/logrus"
@@ -13,6 +12,7 @@ import (
 type transactionRepository struct {
 	Conn *sql.DB
 }
+
 
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
@@ -75,7 +75,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		e.exp_type,
 		e.exp_title,
 		booking_exp_id,
-		order_id as booking_code,
+		b.order_id as booking_code,
 		b.created_date as booking_date,
 		b.booking_date as check_in_date,
 		b.booked_by,
@@ -101,7 +101,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 	}
 	queryWithoutStatus := query + ` ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
-	list, err := t.fetch(ctx, queryWithoutStatus, limit, offset)
+	list, err := t.fetchWithJoin(ctx, queryWithoutStatus, limit, offset)
 	if status != "" {
 		if status == "pending" {
 			transactionStatus = 0
@@ -111,20 +111,20 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			transactionStatus = 2
 		}
 		queryWithStatus := query + ` AND t.status = ? ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
-		list, err = t.fetch(ctx, queryWithStatus, transactionStatus, limit, offset)
+		list, err = t.fetchWithJoin(ctx, queryWithStatus, transactionStatus, limit, offset)
 
 		if status == "failed" {
 			transactionStatus = 3
 			cancelledStatus := 4
 			queryWithStatus = query + ` AND t.status IN (?,?) ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
-			list, err = t.fetch(ctx, queryWithStatus, transactionStatus, cancelledStatus, limit, offset)
+			list, err = t.fetchWithJoin(ctx, queryWithStatus, transactionStatus, cancelledStatus, limit, offset)
 		}
 
 		if status == "boarded" {
 			transactionStatus = 1
 			bookingStatus = 3
 			queryWithStatus = query + ` AND t.status = ? AND b.status = ? ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
-			list, err = t.fetch(ctx, queryWithStatus, transactionStatus, bookingStatus, limit, offset)
+			list, err = t.fetchWithJoin(ctx, queryWithStatus, transactionStatus, bookingStatus, limit, offset)
 		}
 	}
 	if err != nil {
@@ -134,7 +134,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 	return list, nil
 }
 
-func (t transactionRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.TransactionOut, error) {
+func (t transactionRepository) fetchWithJoin(ctx context.Context, query string, args ...interface{}) ([]*models.TransactionOut, error) {
 	rows, err := t.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -166,6 +166,57 @@ func (t transactionRepository) fetch(ctx context.Context, query string, args ...
 			&t.TransactionStatus,
 			&t.BookingStatus,
 			&t.TotalPrice,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+func (t transactionRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.TransactionWMerchant, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.TransactionWMerchant, 0)
+	for rows.Next() {
+		t := new(models.TransactionWMerchant)
+		err = rows.Scan(
+			&t.Id       ,
+			&t.CreatedBy       ,
+			&t.CreatedDate     ,
+			&t.ModifiedBy   ,
+			&t.ModifiedDate     ,
+			&t.DeletedBy        ,
+			&t.DeletedDate        ,
+			&t.IsDeleted           ,
+			&t.IsActive         ,
+			&t.BookingType       ,
+			&t.BookingExpId       ,
+			&t.PromoId          ,
+			&t.PaymentMethodId   ,
+			&t.ExperiencePaymentId ,
+			&t.Status           ,
+			&t.TotalPrice       ,
+			&t.Currency          ,
+			&t.	OrderId           ,
+			&t.MerchantId,
+			&t.OrderIdBook,
+			&t.BookedBy,
+			&t.ExpTitle,
 		)
 
 		if err != nil {
@@ -253,6 +304,26 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 	}
 
 	return count, nil
+}
+
+
+func (m transactionRepository) GetById(ctx context.Context, id string) (*models.TransactionWMerchant, error) {
+	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title FROM transactions t
+				join booking_exps b on t.booking_exp_id = b.id
+				join experiences e on b.exp_id = e.id WHERE t.id = ?`
+
+	list, err := m.fetch(ctx, query, id)
+	if err != nil {
+		return nil,err
+	}
+
+	if len(list) > 0 {
+		res := list[0]
+		return res,nil
+	} else {
+		return nil, models.ErrNotFound
+	}
+	return nil,nil
 }
 
 func checkCount(rows *sql.Rows) (count int, err error) {

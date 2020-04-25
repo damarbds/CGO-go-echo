@@ -77,7 +77,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		(SELECT harbors_name FROM harbors where id = t.harbors_dest_id LIMIT 0,1) as harbor_dest_name,
 		m.merchant_name,
 		m.merchant_picture,
-		t.class
+		t.class,
+		t.trans_facilities
 	FROM
 		transportations t
 		JOIN merchants m on t.merchant_id = m.id
@@ -112,7 +113,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		hdest.harbors_name as harbor_dest_name,
 		m.merchant_name,
 		m.merchant_picture,
-		t.class
+		t.class,
+		t.trans_facilities
 	FROM
 		transportations t
 		JOIN harbors h ON t.harbors_source_id = h.id
@@ -152,7 +154,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		hdest.harbors_name as harbor_dest_name,
 		m.merchant_name,
 		m.merchant_picture,
-		t.class
+		t.class,
+		t.trans_facilities
 	FROM
 		schedules s
 		JOIN transportations t ON s.trans_id = t.id
@@ -302,7 +305,12 @@ func (t transportationUsecase) FilterSearchTrans(
 		} else if t.TransStatus == 4 {
 			transStatus = "Archived"
 		}
-
+		 transFacilities := make([]models.ExpFacilitiesObject,0)
+		if t.TransFacilities != nil{
+			if errUnmarshal := json.Unmarshal([]byte(*t.TransFacilities), &transFacilities); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
 		trans[i] = &models.TransportationSearchObj{
 			ScheduleId:            t.ScheduleId,
 			DepartureDate:         t.DepartureDate,
@@ -321,6 +329,7 @@ func (t transportationUsecase) FilterSearchTrans(
 			MerchantName:          t.MerchantName,
 			MerchantPicture:       t.MerchantPicture,
 			Class:                 t.Class,
+			TransFacilities:transFacilities,
 		}
 	}
 	if sortBy != "" {
@@ -406,9 +415,11 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		transImages = string(transImagesConvert)
 	}
 	boatDetails, _ := json.Marshal(newCommandTransportation.BoatDetails)
+	facilites, _ := json.Marshal(newCommandTransportation.Facilities)
 	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdFrom
 	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
-
+	var transFacilities string
+	transFacilities = string(facilites)
 	transportation := models.Transportation{
 		Id:              guuid.New().String(),
 		CreatedBy:       currentUserMerchant.MerchantEmail,
@@ -431,6 +442,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		BoatDetails:     string(boatDetails),
 		Transcoverphoto: newCommandTransportation.Transcoverphoto,
 		Class:           newCommandTransportation.Class,
+		TransFacilities:&transFacilities,
 	}
 	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
@@ -457,6 +469,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 			BoatDetails:     string(boatDetails),
 			Transcoverphoto: newCommandTransportation.Transcoverphoto,
 			Class:           newCommandTransportation.Class,
+			TransFacilities:&transFacilities,
 		}
 		insertTransportationReturn, err := t.transportationRepo.Insert(ctx, transportationReturn)
 		if err != nil {
@@ -605,10 +618,12 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		transImagesConvert, _ := json.Marshal(newCommandTransportation.TransImages)
 		transImages = string(transImagesConvert)
 	}
+	facilites, _ := json.Marshal(newCommandTransportation.Facilities)
 	boatDetails, _ := json.Marshal(newCommandTransportation.BoatDetails)
 	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdFrom
 	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
-
+	var transFacilities string
+	transFacilities = string(facilites)
 	transportation := models.Transportation{
 		Id:              newCommandTransportation.Id,
 		CreatedBy:       "",
@@ -631,6 +646,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		BoatDetails:     string(boatDetails),
 		Transcoverphoto: newCommandTransportation.Transcoverphoto,
 		Class:           newCommandTransportation.Class,
+		TransFacilities:&transFacilities,
 	}
 	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
@@ -657,6 +673,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 			BoatDetails:     string(boatDetails),
 			Transcoverphoto: newCommandTransportation.Transcoverphoto,
 			Class:           newCommandTransportation.Class,
+			TransFacilities:&transFacilities,
 		}
 		insertTransportationReturn, err := t.transportationRepo.Update(ctx, transportationReturn)
 		if err != nil {

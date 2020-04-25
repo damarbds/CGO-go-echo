@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/misc/notif"
+	"github.com/transactions/transaction"
 	"time"
 
 	"github.com/auth/user"
@@ -11,6 +13,8 @@ import (
 )
 
 type paymentUsecase struct {
+	transactionRepo transaction.Repository
+	notificationRepo notif.Repository
 	paymentRepo    payment.Repository
 	userUsercase   user.Usecase
 	bookingRepo    booking_exp.Repository
@@ -18,8 +22,10 @@ type paymentUsecase struct {
 }
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(p payment.Repository, u user.Usecase, b booking_exp.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(t transaction.Repository,n notif.Repository,p payment.Repository, u user.Usecase, b booking_exp.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
+		transactionRepo:t,
+		notificationRepo:n,
 		paymentRepo:    p,
 		userUsercase:   u,
 		bookingRepo:    b,
@@ -97,6 +103,28 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 	if err != nil {
 		return err
 	}
-
+	getTransaction ,err := p.transactionRepo.GetById(ctx,confirmIn.TransactionID)
+	if err != nil{
+		return err
+	}
+	notif := models.Notification{
+		Id:           "",
+		CreatedBy:    getTransaction.CreatedBy,
+		CreatedDate:  time.Now(),
+		ModifiedBy:   nil,
+		ModifiedDate: nil,
+		DeletedBy:    nil,
+		DeletedDate:  nil,
+		IsDeleted:    0,
+		IsActive:     0,
+		MerchantId:   getTransaction.MerchantId,
+		Type:         0,
+		Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+		Desc:         "You got a booking for "+ getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+	}
+	pushNotifErr := p.notificationRepo.Insert(ctx,notif)
+	if pushNotifErr != nil {
+		return nil
+	}
 	return nil
 }
