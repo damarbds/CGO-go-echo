@@ -267,8 +267,10 @@ func (t transportationUsecase) FilterSearchTrans(
 	trans := make([]*models.TransportationSearchObj, len(transList))
 	for i, t := range transList {
 		var transImages []models.CoverPhotosObj
-		if errUnmarshal := json.Unmarshal([]byte(t.TransImages), &transImages); errUnmarshal != nil {
-			return nil, errUnmarshal
+		if t.TransImages != ""{
+			if errUnmarshal := json.Unmarshal([]byte(t.TransImages), &transImages); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
 		}
 		var transPrice models.TransPriceObj
 		if t.Price != nil {
