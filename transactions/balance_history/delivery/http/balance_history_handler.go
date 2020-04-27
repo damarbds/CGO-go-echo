@@ -73,21 +73,29 @@ func (p *balanceHistoryHandler) CreateBalanceHistory(c echo.Context) error {
 	if token == "" {
 		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
 	}
-	t := new(models.NewBalanceHistoryCommand)
-	if err := c.Bind(t); err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
-	}
-
-	if ok, err := isRequestValid(t); !ok {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
+	//t := new(models.NewBalanceHistoryCommand)
+	//if err := c.Bind(t); err != nil {
+	//	return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	//}
+	//
+	//if ok, err := isRequestValid(t); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
-	res, err := p.balanceHistoryUsecase.Create(ctx,*t,token)
+	status , _ := strconv.Atoi(c.FormValue("status"))
+	amount, _ := strconv.ParseFloat(c.FormValue("amount"),64)
+	t := models.NewBalanceHistoryCommand{
+		Id:            c.FormValue("id"),
+		Status:        status,
+		Amount:        amount,
+		DateOfPayment: c.FormValue("date_of_payment"),
+		Remarks:       c.FormValue("remarks"),
+	}
+	res, err := p.balanceHistoryUsecase.Create(ctx,t,token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

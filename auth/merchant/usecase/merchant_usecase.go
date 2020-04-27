@@ -165,12 +165,13 @@ func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string
 	if existedMerchant == nil {
 		return nil, models.ErrNotFound
 	}
+	getMerchant,_ := m.merchantRepo.GetByID(ctx,existedMerchant.MerchantId)
 	merchantInfo := models.MerchantInfoDto{
 		Id:            existedMerchant.MerchantId,
 		MerchantName:  existedMerchant.FullName,
-		MerchantDesc:  "",
+		MerchantDesc:  getMerchant.MerchantDesc,
 		MerchantEmail: existedMerchant.Email,
-		Balance:       0,
+		Balance:       getMerchant.Balance,
 	}
 
 	return &merchantInfo, nil
@@ -188,12 +189,13 @@ func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*mo
 	if existedMerchant == nil {
 		return nil, models.ErrNotFound
 	}
+	getMerchant,_ := m.merchantRepo.GetByID(ctx,existedMerchant.MerchantId)
 	merchantInfo := models.MerchantInfoDto{
 		Id:            existedMerchant.MerchantId,
 		MerchantName:  existedMerchant.FullName,
-		MerchantDesc:  "",
+		MerchantDesc:  getMerchant.MerchantDesc,
 		MerchantEmail: existedMerchant.Email,
-		Balance:       0,
+		Balance:       getMerchant.Balance,
 	}
 
 	return &merchantInfo, nil

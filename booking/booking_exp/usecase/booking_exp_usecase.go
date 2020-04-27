@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/service/exp_payment"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -32,6 +33,7 @@ import (
 )
 
 type bookingExpUsecase struct {
+	experiencePaymentTypeRepo exp_payment.Repository
 	bookingExpRepo  booking_exp.Repository
 	userUsecase     user.Usecase
 	merchantUsecase merchant.Usecase
@@ -42,8 +44,9 @@ type bookingExpUsecase struct {
 }
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(ept exp_payment.Repository,a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
+		experiencePaymentTypeRepo:ept,
 		bookingExpRepo:  a,
 		userUsecase:     u,
 		merchantUsecase: m,
@@ -417,7 +420,23 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	} else {
 		currency = "IDR"
 	}
+	var experiencePaymentType *models.ExperiencePaymentTypeDto
+	if getDetailBooking.ExperiencePaymentId != ""{
+		query , err := b.experiencePaymentTypeRepo.GetByExpID(ctx,*getDetailBooking.ExpId)
+		if err != nil {
 
+		}
+		for _,element := range query {
+			if element.Id == getDetailBooking.ExperiencePaymentId {
+				paymentType := models.ExperiencePaymentTypeDto{
+					Id:   element.ExpPaymentTypeId,
+					Name: element.ExpPaymentTypeName,
+					Desc: element.ExpPaymentTypeDesc,
+				}
+				experiencePaymentType = &paymentType
+			}
+		}
+	}
 	expDetail := make([]models.BookingExpDetail, 1)
 	expDetail[0] = models.BookingExpDetail{
 		ExpId:           *getDetailBooking.ExpId,
@@ -429,6 +448,8 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		MerchantPhone:   getDetailBooking.MerchantPhone.String,
 		MerchantPicture: getDetailBooking.MerchantPicture.String,
 		TotalGuest:      len(guestDesc),
+		City:getDetailBooking.City,
+		ProvinceName:getDetailBooking.Province,
 	}
 	bookingExp := models.BookingExpDetailDto{
 		Id:                     getDetailBooking.Id,
@@ -453,6 +474,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		BankIcon:            getDetailBooking.Icon,
 		ExperiencePaymentId: getDetailBooking.ExperiencePaymentId,
 		Experience:          expDetail,
+		ExperiencePaymentType:experiencePaymentType,
 	}
 	return &bookingExp, nil
 

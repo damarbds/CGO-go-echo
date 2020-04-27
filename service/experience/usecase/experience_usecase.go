@@ -42,6 +42,7 @@ type experienceUsecase struct {
 	exp_availablitiy exp_availability.Repository
 }
 
+
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
 	fac filter_activity_type.Repository,
@@ -75,6 +76,26 @@ func NewexperienceUsecase(
 	}
 }
 
+func (m experienceUsecase) UpdateStatus(ctx context.Context, status int, id string,token string) (*models.NewCommandChangeStatus, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentMerchant, err := m.mUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	errorUpdate := m.experienceRepo.UpdateStatus(ctx,status,id,currentMerchant.MerchantEmail)
+	if errorUpdate != nil {
+		return nil,errorUpdate
+	}
+	result := models.NewCommandChangeStatus{
+		ExpId:   id,
+		TransId: "",
+		Status:  status,
+	}
+	return &result,nil
+}
 func (m experienceUsecase) GetExpPendingTransactionCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()

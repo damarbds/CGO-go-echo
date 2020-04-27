@@ -163,6 +163,8 @@ type BookingExpDetail struct {
 	MerchantPhone   string   `json:"merchant_phone"`
 	MerchantPicture string   `json:"merchant_picture"`
 	TotalGuest      int      `json:"total_guest"`
+	City 			string	`json:"city"`
+	ProvinceName 	string	`json:"province_name"`
 }
 
 type BookingExpDetailDto struct {
@@ -188,6 +190,7 @@ type BookingExpDetailDto struct {
 	ExperiencePaymentId    string                        `json:"experience_payment_id"`
 	Experience             []BookingExpDetail            `json:"experience,omitempty"`
 	Transportation         []BookingTransportationDetail `json:"transportation,omitempty"`
+	ExperiencePaymentType  *ExperiencePaymentTypeDto  	`json:"experience_payment_type"`
 }
 type AccountDesc struct {
 	AccNumber string `json:"acc_number"`

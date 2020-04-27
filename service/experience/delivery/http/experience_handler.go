@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"github.com/service/transportation"
 	"io"
 	"net/http"
 	"os"
@@ -24,18 +25,20 @@ type ResponseError struct {
 
 // experienceHandler  represent the httphandler for experience
 type experienceHandler struct {
+	transportationsUsecase transportation.Usecase
 	experienceUsecase experience.Usecase
 	isUsecase         identityserver.Usecase
 }
 
 // NewexperienceHandler will initialize the experiences/ resources endpoint
-func NewexperienceHandler(e *echo.Echo, us experience.Usecase, is identityserver.Usecase) {
+func NewexperienceHandler(e *echo.Echo, t transportation.Usecase,us experience.Usecase, is identityserver.Usecase) {
 	handler := &experienceHandler{
 		isUsecase:         is,
 		experienceUsecase: us,
+		transportationsUsecase:t,
 	}
 	//e.POST("/experiences", handler.Createexperience)
-	//e.PUT("/experiences/:id", handler.Updateexperience)
+	e.PUT("service/change-status", handler.UpdateStatusExpORTrans)
 	e.POST("media/upload", handler.UploadFile)
 	e.POST("service/experience/create", handler.CreateExperiences)
 	e.GET("service/experience/:id", handler.GetByID)
@@ -121,7 +124,44 @@ func (a *experienceHandler) UploadFile(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, imagePath)
 }
+func (a *experienceHandler) UpdateStatusExpORTrans(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
 
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	var experienceCommand models.NewCommandChangeStatus
+	err := c.Bind(&experienceCommand)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	//if ok, err := isRequestValid(&experienceCommand); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if experienceCommand.ExpId != ""{
+
+		response, error := a.experienceUsecase.UpdateStatus(ctx, experienceCommand.Status,experienceCommand.ExpId, token)
+
+		if error != nil {
+			return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+		}
+		return c.JSON(http.StatusOK, response)
+	}else if experienceCommand.TransId != ""{
+		response, error := a.transportationsUsecase.UpdateStatus(ctx, experienceCommand.Status,experienceCommand.TransId, token)
+
+		if error != nil {
+			return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+		}
+		return c.JSON(http.StatusOK, response)
+	}
+	return nil
+}
 func (a *experienceHandler) CreateExperiences(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

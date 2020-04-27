@@ -22,6 +22,7 @@ type experienceRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewexperienceRepository will create an object that represent the article.Repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
@@ -678,6 +679,28 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 
 	//a.Id = lastID
 	return &a.Id, nil
+}
+
+func (m *experienceRepository) UpdateStatus(ctx context.Context, status int,id string,user string) error {
+	query := `UPDATE experiences SET modified_by=?, modified_date=? , deleted_by=? , 
+				deleted_date=? , is_deleted=? , is_active=? , status=?
+				WHERE id=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, user, time.Now(), nil, nil, 0, 1, status, id)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+
+	//a.Id = lastID
+	return nil
 }
 func (m *experienceRepository) Update(ctx context.Context, a *models.Experience) (*string, error) {
 	query := `UPDATE experiences SET modified_by=?, modified_date=? , deleted_by=? , 

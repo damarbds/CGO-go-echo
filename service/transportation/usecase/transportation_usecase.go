@@ -24,6 +24,7 @@ type transportationUsecase struct {
 	contextTimeout     time.Duration
 }
 
+
 func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
 	return &transportationUsecase{
 		transportationRepo: tr,
@@ -34,6 +35,27 @@ func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase,
 	}
 }
 
+func (t transportationUsecase) UpdateStatus(ctx context.Context, status int, id string,token string) (*models.NewCommandChangeStatus, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+
+
+	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	errorUpdate := t.transportationRepo.UpdateStatus(ctx,status,id,currentMerchant.MerchantEmail)
+	if errorUpdate != nil {
+		return nil,errorUpdate
+	}
+	result := models.NewCommandChangeStatus{
+		ExpId:   "",
+		TransId: id,
+		Status:  status,
+	}
+	return &result,nil
+}
 func (t transportationUsecase) FilterSearchTrans(
 	ctx context.Context,
 	isMerchant bool,

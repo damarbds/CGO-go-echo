@@ -6,6 +6,7 @@ import (
 )
 
 type Usecase interface {
+	UpdateStatus(ctx context.Context,status int ,id string,token string)(*models.NewCommandChangeStatus,error)
 	PublishExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
 	CreateExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
 	UpdateExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)

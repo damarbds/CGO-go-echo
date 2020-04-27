@@ -115,6 +115,11 @@ type ResponseCreateExperience struct {
 	Id      string `json:"id"`
 	Message string `json:"message"`
 }
+type NewCommandChangeStatus struct {
+	ExpId		string		`json:"exp_id"`
+	TransId 	string		`json:"trans_id"`
+	Status 		int		`json:"status"`
+}
 type NewCommandExperience struct {
 	Id                      string                `json:"id"`
 	ExpTitle                string                `json:"exp_title"`
