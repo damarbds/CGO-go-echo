@@ -42,10 +42,10 @@ type TransactionWMerchant struct {
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
 	OrderId             *string    `json:"order_id"`
-	MerchantId 			string		`json:"merchant_id"`
-	OrderIdBook			string 		`json:"order_id_book"`
-	BookedBy 			string		`json:"booked_by"`
-	ExpTitle 			string		`json:"exp_title"`
+	MerchantId          string     `json:"merchant_id"`
+	OrderIdBook         string     `json:"order_id_book"`
+	BookedBy            string     `json:"booked_by"`
+	ExpTitle            string     `json:"exp_title"`
 }
 
 type PaymentTransaction struct {
@@ -74,36 +74,38 @@ type ConfirmPaymentIn struct {
 }
 
 type TransactionOut struct {
-	TransactionId     string    `json:"transaction_id"`
-	ExpId             string    `json:"exp_id"`
-	ExpType           string    `json:"exp_type"`
-	ExpTitle          string    `json:"exp_title"`
-	BookingExpId      string    `json:"booking_exp_id"`
-	BookingCode       string    `json:"booking_code"`
-	BookingDate       time.Time `json:"booking_date"`
-	CheckInDate       time.Time `json:"check_in_date"`
-	BookedBy          string    `json:"booked_by"`
-	GuestDesc         string    `json:"guest_desc"`
-	Email             string    `json:"email"`
-	TransactionStatus int       `json:"transaction_status"`
-	BookingStatus     int       `json:"booking_status"`
-	TotalPrice        float64   `json:"total_price"`
+	TransactionId       string    `json:"transaction_id"`
+	ExpId               string    `json:"exp_id"`
+	ExpType             string    `json:"exp_type"`
+	ExpTitle            string    `json:"exp_title"`
+	BookingExpId        string    `json:"booking_exp_id"`
+	BookingCode         string    `json:"booking_code"`
+	BookingDate         time.Time `json:"booking_date"`
+	CheckInDate         time.Time `json:"check_in_date"`
+	BookedBy            string    `json:"booked_by"`
+	GuestDesc           string    `json:"guest_desc"`
+	Email               string    `json:"email"`
+	TransactionStatus   int       `json:"transaction_status"`
+	BookingStatus       int       `json:"booking_status"`
+	TotalPrice          float64   `json:"total_price"`
+	ExperiencePaymentId string    `json:"experience_payment_id"`
 }
 
 type TransactionDto struct {
-	TransactionId string        `json:"transaction_id"`
-	ExpId         string        `json:"exp_id"`
-	ExpTitle      string        `json:"exp_title"`
-	ExpType       []string      `json:"exp_type"`
-	BookingExpId  string        `json:"booking_exp_id"`
-	BookingCode   string        `json:"booking_code"`
-	BookingDate   time.Time     `json:"booking_date"`
-	CheckInDate   time.Time     `json:"check_in_date"`
-	BookedBy      []BookedByObj `json:"booked_by"`
-	Guest         int           `json:"guest"`
-	Email         string        `json:"email"`
-	Status        string        `json:"status"`
-	TotalPrice    float64       `json:"total_price"`
+	TransactionId         string                    `json:"transaction_id"`
+	ExpId                 string                    `json:"exp_id"`
+	ExpTitle              string                    `json:"exp_title"`
+	ExpType               []string                  `json:"exp_type"`
+	BookingExpId          string                    `json:"booking_exp_id"`
+	BookingCode           string                    `json:"booking_code"`
+	BookingDate           time.Time                 `json:"booking_date"`
+	CheckInDate           time.Time                 `json:"check_in_date"`
+	BookedBy              []BookedByObj             `json:"booked_by"`
+	Guest                 int                       `json:"guest"`
+	Email                 string                    `json:"email"`
+	Status                string                    `json:"status"`
+	TotalPrice            float64                   `json:"total_price"`
+	ExperiencePaymentType *ExperiencePaymentTypeDto `json:"experience_payment_type"`
 }
 
 type TransactionWithPagination struct {

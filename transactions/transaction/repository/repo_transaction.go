@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/models"
 
 	"github.com/sirupsen/logrus"
@@ -12,7 +13,6 @@ import (
 type transactionRepository struct {
 	Conn *sql.DB
 }
-
 
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
@@ -71,7 +71,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 	query := `
 	SELECT
 		t.id as transaction_id,
-		exp_id,
+		e.id as exp_id,
 		e.exp_type,
 		e.exp_title,
 		booking_exp_id,
@@ -83,11 +83,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		b.booked_by_email as email,
 		t.status as transaction_status,
 		b.status as booking_status,
-		t.total_price
+		t.total_price,
+		ep.id as experience_payment_id
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
+		JOIN experience_payments ep ON e.id = ep.exp_id
 	WHERE 
 		t.is_deleted = 0
 		AND t.is_active = 1
@@ -166,6 +168,7 @@ func (t transactionRepository) fetchWithJoin(ctx context.Context, query string, 
 			&t.TransactionStatus,
 			&t.BookingStatus,
 			&t.TotalPrice,
+			&t.ExperiencePaymentId,
 		)
 
 		if err != nil {
@@ -195,24 +198,24 @@ func (t transactionRepository) fetch(ctx context.Context, query string, args ...
 	for rows.Next() {
 		t := new(models.TransactionWMerchant)
 		err = rows.Scan(
-			&t.Id       ,
-			&t.CreatedBy       ,
-			&t.CreatedDate     ,
-			&t.ModifiedBy   ,
-			&t.ModifiedDate     ,
-			&t.DeletedBy        ,
-			&t.DeletedDate        ,
-			&t.IsDeleted           ,
-			&t.IsActive         ,
-			&t.BookingType       ,
-			&t.BookingExpId       ,
-			&t.PromoId          ,
-			&t.PaymentMethodId   ,
-			&t.ExperiencePaymentId ,
-			&t.Status           ,
-			&t.TotalPrice       ,
-			&t.Currency          ,
-			&t.	OrderId           ,
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.BookingType,
+			&t.BookingExpId,
+			&t.PromoId,
+			&t.PaymentMethodId,
+			&t.ExperiencePaymentId,
+			&t.Status,
+			&t.TotalPrice,
+			&t.Currency,
+			&t.OrderId,
 			&t.MerchantId,
 			&t.OrderIdBook,
 			&t.BookedBy,
@@ -306,7 +309,6 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 	return count, nil
 }
 
-
 func (m transactionRepository) GetById(ctx context.Context, id string) (*models.TransactionWMerchant, error) {
 	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title FROM transactions t
 				join booking_exps b on t.booking_exp_id = b.id
@@ -314,16 +316,16 @@ func (m transactionRepository) GetById(ctx context.Context, id string) (*models.
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	if len(list) > 0 {
 		res := list[0]
-		return res,nil
+		return res, nil
 	} else {
 		return nil, models.ErrNotFound
 	}
-	return nil,nil
+	return nil, nil
 }
 
 func checkCount(rows *sql.Rows) (count int, err error) {

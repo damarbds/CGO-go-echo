@@ -7,18 +7,21 @@ import (
 	"time"
 
 	"github.com/models"
+	"github.com/service/exp_payment"
 	"github.com/transactions/transaction"
 )
 
 type transactionUsecase struct {
-	transactionRepo transaction.Repository
-	contextTimeout  time.Duration
+	experiencePaymentTypeRepo exp_payment.Repository
+	transactionRepo           transaction.Repository
+	contextTimeout            time.Duration
 }
 
-func NewTransactionUsecase(t transaction.Repository, timeout time.Duration) transaction.Usecase {
+func NewTransactionUsecase(ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
 	return &transactionUsecase{
-		transactionRepo: t,
-		contextTimeout:  timeout,
+		experiencePaymentTypeRepo: ep,
+		transactionRepo:           t,
+		contextTimeout:            timeout,
 	}
 }
 
@@ -51,7 +54,23 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 				return nil, errUnmarshal
 			}
 		}
+		var experiencePaymentType *models.ExperiencePaymentTypeDto
+		if item.ExperiencePaymentId != "" {
+			query, err := t.experiencePaymentTypeRepo.GetByExpID(ctx, item.ExpId)
+			if err != nil {
 
+			}
+			for _, element := range query {
+				if element.Id == item.ExperiencePaymentId {
+					paymentType := models.ExperiencePaymentTypeDto{
+						Id:   element.ExpPaymentTypeId,
+						Name: element.ExpPaymentTypeName,
+						Desc: element.ExpPaymentTypeDesc,
+					}
+					experiencePaymentType = &paymentType
+				}
+			}
+		}
 		var guestDesc []models.GuestDescObj
 		if item.GuestDesc != "" {
 			if errUnmarshal := json.Unmarshal([]byte(item.GuestDesc), &guestDesc); errUnmarshal != nil {
@@ -80,19 +99,20 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 
 		transactions[i] = &models.TransactionDto{
-			TransactionId: item.TransactionId,
-			ExpId:         item.ExpId,
-			ExpTitle:      item.ExpTitle,
-			ExpType:       expType,
-			BookingExpId:  item.BookingExpId,
-			BookingCode:   item.BookingCode,
-			BookingDate:   item.BookingDate,
-			CheckInDate:   item.CheckInDate,
-			BookedBy:      bookedBy,
-			Guest:         len(guestDesc),
-			Email:         item.Email,
-			Status:        status,
-			TotalPrice:item.TotalPrice,
+			TransactionId:         item.TransactionId,
+			ExpId:                 item.ExpId,
+			ExpTitle:              item.ExpTitle,
+			ExpType:               expType,
+			BookingExpId:          item.BookingExpId,
+			BookingCode:           item.BookingCode,
+			BookingDate:           item.BookingDate,
+			CheckInDate:           item.CheckInDate,
+			BookedBy:              bookedBy,
+			Guest:                 len(guestDesc),
+			Email:                 item.Email,
+			Status:                status,
+			TotalPrice:            item.TotalPrice,
+			ExperiencePaymentType: experiencePaymentType,
 		}
 	}
 	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status)
