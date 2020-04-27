@@ -1418,6 +1418,29 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 			expPhotos = append(expPhotos, expPhoto)
 		}
 	}
+	if err != nil {
+		return nil, err
+	}
+	var expAddOns []models.ExperienceAddOnObj
+	expAddOnsQuery, errorQuery := m.adOnsRepo.GetByExpId(ctx, res.Id)
+	if expAddOnsQuery != nil {
+		for _, element := range expAddOnsQuery {
+			var currency string
+			if element.Currency == 1 {
+				currency = "USD"
+			} else {
+				currency = "IDR"
+			}
+			addOns := models.ExperienceAddOnObj{
+				Id:       element.Id,
+				Name:     element.Name,
+				Desc:     element.Desc,
+				Currency: currency,
+				Amount:   element.Amount,
+			}
+			expAddOns = append(expAddOns,addOns)
+		}
+	}
 	var expPayment []models.ExpPaymentObj
 	expPaymentQuery, errorQuery := m.paymentRepo.GetByExpID(ctx, res.Id)
 	for _, elementPayment := range expPaymentQuery {
@@ -1528,6 +1551,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		ExpAvailability:         expAvailability,
 		ExpPayment:              expPayment,
 		ExpPhotos:               expPhotos,
+		ExperienceAddOn:expAddOns,
 		Status:                  res.Status,
 		Rating:                  res.Rating,
 		CountRating:             countRating,

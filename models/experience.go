@@ -96,6 +96,7 @@ type ExperienceDto struct {
 	ExpAvailability         []ExpAvailablitityObj `json:"exp_availability"`
 	ExpPayment              []ExpPaymentObj       `json:"exp_payment"`
 	ExpPhotos               []ExpPhotosObj        `json:"exp_photos"`
+	ExperienceAddOn         []ExperienceAddOnObj  `json:"experience_add_on"`
 	Status                  int                   `json:"status"`
 	Rating                  float64               `json:"rating"`
 	CountRating             int                   `json:"count_rating"`
