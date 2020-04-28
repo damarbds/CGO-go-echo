@@ -2,39 +2,38 @@ package usecase
 
 import (
 	"context"
-	"github.com/auth/merchant"
-	"github.com/transactions/balance_history"
 	"math"
 	"time"
+
+	"github.com/auth/merchant"
+	"github.com/transactions/balance_history"
 
 	"github.com/models"
 )
 
 type balanceHistoryUsecase struct {
-	merchantUsecase 		merchant.Usecase
+	merchantUsecase    merchant.Usecase
 	balanceHistoryRepo balance_history.Repository
-	contextTimeout  time.Duration
+	contextTimeout     time.Duration
 }
 
-
-
-func NewBalanceHistoryUsecase(bh balance_history.Repository, mu merchant.Usecase,timeout time.Duration) balance_history.Usecase {
+func NewBalanceHistoryUsecase(bh balance_history.Repository, mu merchant.Usecase, timeout time.Duration) balance_history.Usecase {
 	return &balanceHistoryUsecase{
 		balanceHistoryRepo: bh,
-		merchantUsecase:mu,
-		contextTimeout:  timeout,
+		merchantUsecase:    mu,
+		contextTimeout:     timeout,
 	}
 }
-func (b balanceHistoryUsecase) List(c context.Context, merchantId, status string, page int, limit, offset *int) (*models.BalanceHistoryDtoWithPagination, error) {
+func (b balanceHistoryUsecase) List(c context.Context, merchantId, status string, page int, limit, offset *int, month, year string) (*models.BalanceHistoryDtoWithPagination, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 
-	getBhistory ,err := b.balanceHistoryRepo.GetAll(ctx,merchantId,status,limit,offset)
+	getBhistory, err := b.balanceHistoryRepo.GetAll(ctx, merchantId, status, limit, offset, month, year)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	var result models.BalanceHistoryDtoWithPagination
-	for _,element := range getBhistory{
+	for _, element := range getBhistory {
 		dto := models.BalanceHistoryDto{
 			Id:            element.Id,
 			MerchantId:    element.MerchantId,
@@ -44,14 +43,14 @@ func (b balanceHistoryUsecase) List(c context.Context, merchantId, status string
 			DateOfPayment: element.DateOfPayment,
 			Remarks:       element.Remarks,
 		}
-		result.Data = append(result.Data,&dto)
+		result.Data = append(result.Data, &dto)
 	}
 
-	totalRecords, _ := b.balanceHistoryRepo.Count(ctx,merchantId,status)
+	totalRecords, _ := b.balanceHistoryRepo.Count(ctx, merchantId, status)
 	var totalPage int
 	var prev int
 	var next int
-	if limit != nil{
+	if limit != nil {
 		totalPage = int(math.Ceil(float64(totalRecords) / float64(*limit)))
 		prev = page
 		next = page
@@ -74,15 +73,15 @@ func (b balanceHistoryUsecase) List(c context.Context, merchantId, status string
 	}
 	result.Meta = meta
 
-	return &result,nil
+	return &result, nil
 }
-func (b balanceHistoryUsecase) Create(c context.Context, bHistory models.NewBalanceHistoryCommand,token string) (*models.NewBalanceHistoryCommand, error) {
+func (b balanceHistoryUsecase) Create(c context.Context, bHistory models.NewBalanceHistoryCommand, token string) (*models.NewBalanceHistoryCommand, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 
-	currentMerchant ,err := b.merchantUsecase.ValidateTokenMerchant(ctx,token)
+	currentMerchant, err := b.merchantUsecase.ValidateTokenMerchant(ctx, token)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	layoutFormat := "2006-01-02 15:04:05"
 
@@ -104,10 +103,10 @@ func (b balanceHistoryUsecase) Create(c context.Context, bHistory models.NewBala
 		DateOfPayment: dateOfPayment,
 		Remarks:       bHistory.Remarks,
 	}
-	create, err := b.balanceHistoryRepo.Insert(ctx,balance)
+	create, err := b.balanceHistoryRepo.Insert(ctx, balance)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	bHistory.Id = *create
-	return &bHistory,nil
+	return &bHistory, nil
 }
