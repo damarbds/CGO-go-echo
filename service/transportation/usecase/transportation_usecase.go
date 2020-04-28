@@ -2,11 +2,6 @@ package usecase
 
 import (
 	"encoding/json"
-	"math"
-	"sort"
-	"strconv"
-	"time"
-
 	"github.com/auth/merchant"
 	guuid "github.com/google/uuid"
 	"github.com/models"
@@ -14,6 +9,10 @@ import (
 	"github.com/service/time_options"
 	"github.com/service/transportation"
 	"golang.org/x/net/context"
+	"math"
+	"sort"
+	"strconv"
+	"time"
 )
 
 type transportationUsecase struct {
@@ -35,6 +34,199 @@ func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase,
 	}
 }
 
+func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*models.TransportationDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+
+
+	getDetailTrans, err := t.transportationRepo.GetById(ctx,id)
+	if err != nil {
+		return nil,err
+	}
+	var transObj models.RouteObj
+	var returnTransObj models.RouteObj
+	if getDetailTrans.ReturnTransId != nil {
+		getreturnTrans , err := t.transportationRepo.GetById(ctx,*getDetailTrans.ReturnTransId)
+		schedules := make([]models.YearObj,0)
+		times := make([]models.TimeObj,0)
+		if err != nil{
+			return nil,err
+		}
+		returnTrans := models.RouteObj{
+			Id:            getreturnTrans.Id,
+			HarborsIdFrom: getreturnTrans.HarborsDestId,
+			HarborsIdTo:   getDetailTrans.HarborsSourceId,
+			Time:          times,
+			Schedule:      schedules,
+		}
+		getScheduleTimeReturn , err := t.scheduleRepo.GetTimeByTransId(ctx,getreturnTrans.Id)
+		for _,element := range getScheduleTimeReturn{
+			timeObj := models.TimeObj{
+				DepartureTime: element.DepartureTime,
+				ArrivalTime:   element.ArrivalTime,
+			}
+			getScheduleYearReturn, err := t.scheduleRepo.GetYearByTransId(ctx,getreturnTrans.Id)
+			if err != nil {
+				return nil,err
+			}
+			for _,year := range getScheduleYearReturn{
+				month := make([]models.MonthObj,0)
+				schedule := models.YearObj{
+					Year:  year.Year,
+					Month: month,
+				}
+				getScheduleMonthReturn, err := t.scheduleRepo.GetMonthByTransId(ctx,getreturnTrans.Id,schedule.Year)
+				if err != nil {
+					return nil,err
+				}
+				for _,monthElement := range getScheduleMonthReturn {
+					day := make([]models.DayPriceObj,0)
+					monthMap := models.MonthObj{
+						Month:    monthElement.Month,
+						DayPrice: day,
+					}
+					getScheduleDayReturn, err := t.scheduleRepo.GetDayByTransId(ctx,getreturnTrans.Id,schedule.Year,monthMap.Month)
+					if err != nil {
+						return nil,err
+					}
+					for _,dayElement := range getScheduleDayReturn{
+						var price models.PriceObj
+						var currency string
+						if dayElement.Price != ""{
+							if errUnmarshal := json.Unmarshal([]byte(dayElement.Price), &price); errUnmarshal != nil {
+								return nil, errUnmarshal
+							}
+						}
+						if price.Currency == 1 {
+							currency = "USD"
+						} else {
+							currency = "IDR"
+						}
+						dayMap := models.DayPriceObj{
+							DepartureDate: dayElement.DepartureDate.Format("2006-01-02"),
+							Day:           dayElement.Day,
+							AdultPrice:    price.AdultPrice,
+							ChildrenPrice: price.ChildrenPrice,
+							Currency:      currency,
+						}
+						monthMap.DayPrice = append(monthMap.DayPrice, dayMap)
+					}
+					schedule.Month = append(schedule.Month,monthMap)
+				}
+				returnTrans.Schedule = append(returnTrans.Schedule,schedule)
+			}
+			returnTrans.Time = append(returnTrans.Time,timeObj)
+		}
+		returnTransObj = returnTrans
+	}
+
+	schedules := make([]models.YearObj,0)
+	times := make([]models.TimeObj,0)
+	if err != nil{
+		return nil,err
+	}
+	trans := models.RouteObj{
+		Id:            getDetailTrans.Id,
+		HarborsIdFrom: getDetailTrans.HarborsDestId,
+		HarborsIdTo:   getDetailTrans.HarborsSourceId,
+		Time:          times,
+		Schedule:      schedules,
+	}
+	getScheduleTime , err := t.scheduleRepo.GetTimeByTransId(ctx,getDetailTrans.Id)
+	for _,element := range getScheduleTime{
+		timeObj := models.TimeObj{
+			DepartureTime: element.DepartureTime,
+			ArrivalTime:   element.ArrivalTime,
+		}
+		getScheduleYear, err := t.scheduleRepo.GetYearByTransId(ctx,getDetailTrans.Id)
+		if err != nil {
+			return nil,err
+		}
+		for _,year := range getScheduleYear{
+			month := make([]models.MonthObj,0)
+			schedule := models.YearObj{
+				Year:  year.Year,
+				Month: month,
+			}
+			getScheduleMonth, err := t.scheduleRepo.GetMonthByTransId(ctx,getDetailTrans.Id,schedule.Year)
+			if err != nil {
+				return nil,err
+			}
+			for _,monthElement := range getScheduleMonth {
+				day := make([]models.DayPriceObj,0)
+				monthMap := models.MonthObj{
+					Month:    monthElement.Month,
+					DayPrice: day,
+				}
+				getScheduleDay, err := t.scheduleRepo.GetDayByTransId(ctx,getDetailTrans.Id,schedule.Year,monthMap.Month)
+				if err != nil {
+					return nil,err
+				}
+				for _,dayElement := range getScheduleDay{
+					var price models.PriceObj
+					var currency string
+					if dayElement.Price != ""{
+						if errUnmarshal := json.Unmarshal([]byte(dayElement.Price), &price); errUnmarshal != nil {
+							return nil, errUnmarshal
+						}
+					}
+					if price.Currency == 1 {
+						currency = "USD"
+					} else {
+						currency = "IDR"
+					}
+
+
+					dayMap := models.DayPriceObj{
+						DepartureDate: dayElement.DepartureDate.Format("2006-01-02"),
+						Day:           dayElement.Day,
+						AdultPrice:    price.AdultPrice,
+						ChildrenPrice: price.ChildrenPrice,
+						Currency:      currency,
+					}
+					monthMap.DayPrice = append(monthMap.DayPrice, dayMap)
+				}
+				schedule.Month = append(schedule.Month,monthMap)
+			}
+			trans.Schedule = append(trans.Schedule,schedule)
+		}
+		trans.Time = append(trans.Time,timeObj)
+	}
+	transObj = trans
+	var boatDetails models.BoatDetailsObj
+	if getDetailTrans.BoatDetails != ""{
+		if errUnmarshal := json.Unmarshal([]byte(getDetailTrans.BoatDetails), &boatDetails); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+	}
+	var facilities []models.ExpFacilitiesObject
+	if getDetailTrans.TransFacilities != nil{
+		if errUnmarshal := json.Unmarshal([]byte(*getDetailTrans.TransFacilities), &facilities); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+	}
+	var transImage []models.CoverPhotosObj
+	if getDetailTrans.Transcoverphoto != ""{
+		if errUnmarshal := json.Unmarshal([]byte(getDetailTrans.Transcoverphoto), &transImage); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+	}
+	result := models.TransportationDto{
+		Id:              getDetailTrans.Id,
+		TransName:       getDetailTrans.TransName,
+		TransCapacity:   getDetailTrans.TransCapacity,
+		TransTitle:      getDetailTrans.TransTitle,
+		Status:          getDetailTrans.TransStatus,
+		BoatDetails:     boatDetails,
+		Transcoverphoto: getDetailTrans.Transcoverphoto,
+		Class:           getDetailTrans.Class,
+		Facilities:      facilities,
+		TransImages:     transImage,
+		DepartureRoute:  transObj,
+		ReturnRoute:     &returnTransObj,
+	}
+	return &result,nil
+}
 func (t transportationUsecase) UpdateStatus(ctx context.Context, status int, id string,token string) (*models.NewCommandChangeStatus, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()

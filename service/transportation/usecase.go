@@ -7,6 +7,7 @@ import (
 )
 
 type Usecase interface {
+	GetDetail(ctx context.Context,id string)(*models.TransportationDto, error)
 	UpdateStatus(ctx context.Context,status int,id string,token string)(*models.NewCommandChangeStatus,error)
 	CreateTransportation(ctx context.Context, newCommandTransportation models.NewCommandTransportation, token string) (*models.ResponseCreateExperience, error)
 	UpdateTransportation(ctx context.Context, newCommandTransportation models.NewCommandTransportation, token string) (*models.ResponseCreateExperience, error)

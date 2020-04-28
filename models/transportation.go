@@ -41,6 +41,21 @@ type NewCommandTransportation struct {
 	DepartureRoute  RouteObj         `json:"departure_route"`
 	ReturnRoute     *RouteObj        `json:"return_route"`
 }
+
+type TransportationDto struct {
+	Id              string           `json:"id"`
+	TransName       string           `json:"trans_name"`
+	TransCapacity   int              `json:"trans_capacity"`
+	TransTitle      string           `json:"trans_title"`
+	Status          int              `json:"status"`
+	BoatDetails     BoatDetailsObj   `json:"boat_details"`
+	Transcoverphoto string           `json:"transcoverphoto"`
+	Class           string           `json:"class"`
+	Facilities      []ExpFacilitiesObject         `json:"facilities"`
+	TransImages     []CoverPhotosObj `json:"trans_photos"`
+	DepartureRoute  RouteObj         `json:"departure_route"`
+	ReturnRoute     *RouteObj        `json:"return_route"`
+}
 type RouteObj struct {
 	Id            string    `json:"id"`
 	HarborsIdFrom *string    `json:"harbors_id_from"`

@@ -30,12 +30,29 @@ func NewtransportationHandler(e *echo.Echo, us transportation.Usecase) {
 	e.POST("service/transportation/create", handler.CreateTransportation)
 	e.GET("/service/transportation/time-options", handler.TimeOptions)
 	e.GET("/service/transportation/filter-search", handler.FilterSearchTrans)
+	e.GET("/service/transportation/:id", handler.GetByID)
 	//e.PUT("/transportations/:id", handler.Updatetransportation)
 	//e.GET("service/special-transportation", handler.GetAlltransportation)
 	//e.GET("service/special-transportation/:code", handler.GettransportationByCode)
 	//e.DELETE("/transportations/:id", handler.Delete)
 }
+func (a *transportationHandler) GetByID(c echo.Context) error {
+	id := c.Param("id")
+	//if err != nil {
+	//	return c.JSON(http.StatusNotFound, models.ErrNotFound.Error())
+	//}
 
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	art, err := a.transportationUsecase.GetDetail(ctx, id)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, art)
+}
 func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

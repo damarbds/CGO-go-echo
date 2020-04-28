@@ -22,12 +22,59 @@ type scheduleRepository struct {
 }
 
 
-
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewScheduleRepository(Conn *sql.DB) schedule.Repository {
 	return &scheduleRepository{Conn}
 }
-func (t scheduleRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.ScheduleDtos, error) {
+func (t scheduleRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Schedule, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.Schedule, 0)
+	for rows.Next() {
+		t := new(models.Schedule)
+		err = rows.Scan(
+			&t.Id     ,
+			&t.CreatedBy   ,
+			&t.CreatedDate  ,
+			&t.ModifiedBy  ,
+			&t.ModifiedDate ,
+			&t.DeletedBy   ,
+			&t.DeletedDate ,
+			&t.IsDeleted   ,
+			&t.IsActive    ,
+			&t.TransId      ,
+			&t.DepartureTime ,
+			&t.ArrivalTime  ,
+			&t.Day       ,
+			&t.Month      ,
+			&t.Year        ,
+			&t.	DepartureDate ,
+			&t.	Price       ,
+			&t.	DepartureTimeoptionId ,
+			&t.	ArrivalTimeoptionId ,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+func (t scheduleRepository) fetchDtos(ctx context.Context, query string, args ...interface{}) ([]*models.ScheduleDtos, error) {
 	rows, err := t.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -107,7 +154,7 @@ func (s scheduleRepository) DeleteByTransId(ctx context.Context, transId *string
 	return nil
 }
 
-func (t scheduleRepository) GetScheduleByTransId(ctx context.Context, transId []*string) ([]*models.ScheduleDtos, error) {
+func (t scheduleRepository) GetScheduleByTransIds(ctx context.Context, transId []*string) ([]*models.ScheduleDtos, error) {
 	query := `SELECT distinct departure_date FROM schedules WHERE `
 	for index, id := range transId {
 		if index == 0 && index != (len(transId)-1) {
@@ -120,7 +167,7 @@ func (t scheduleRepository) GetScheduleByTransId(ctx context.Context, transId []
 			query = query + ` OR  trans_id LIKE '%` + *id + `%' `
 		}
 	}
-	res, err := t.fetch(ctx, query)
+	res, err := t.fetchDtos(ctx, query)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrNotFound
@@ -130,6 +177,143 @@ func (t scheduleRepository) GetScheduleByTransId(ctx context.Context, transId []
 	return res, nil
 }
 
+func (t scheduleRepository) GetTimeByTransId(ctx context.Context, transId string) ([]*models.ScheduleTime, error) {
+	query := `SELECT DISTINCT departure_time,arrival_time FROM schedules WHERE trans_id = ?`
+
+	rows, err := t.Conn.QueryContext(ctx, query, transId)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ScheduleTime, 0)
+	for rows.Next() {
+		t := new(models.ScheduleTime)
+		err = rows.Scan(
+			&t.	DepartureTime ,
+			&t.	ArrivalTime ,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (t scheduleRepository) GetYearByTransId(ctx context.Context, transId string) ([]*models.ScheduleYear, error) {
+	query := `SELECT DISTINCT year FROM schedules WHERE trans_id = ?`
+
+	rows, err := t.Conn.QueryContext(ctx, query, transId)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ScheduleYear, 0)
+	for rows.Next() {
+		t := new(models.ScheduleYear)
+		err = rows.Scan(
+			&t.	Year ,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (t scheduleRepository) GetMonthByTransId(ctx context.Context, transId string,year int) ([]*models.ScheduleMonth, error) {
+	query := `SELECT DISTINCT year,month FROM schedules WHERE trans_id = ? AND year =?`
+
+	rows, err := t.Conn.QueryContext(ctx, query, transId,year)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ScheduleMonth, 0)
+	for rows.Next() {
+		t := new(models.ScheduleMonth)
+		err = rows.Scan(
+			&t.	Year ,
+			&t.Month,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (t scheduleRepository) GetDayByTransId(ctx context.Context, transId string, year int, month string) ([]*models.ScheduleDay, error) {
+	query := `SELECT DISTINCT year,month,day,departure_date,price FROM schedules WHERE trans_id = ? AND year =? AND month=?`
+
+	rows, err := t.Conn.QueryContext(ctx, query, transId,year,month)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ScheduleDay, 0)
+	for rows.Next() {
+		t := new(models.ScheduleDay)
+		err = rows.Scan(
+			&t.	Year ,
+			&t.Month,
+			&t.Day,
+			&t.DepartureDate,
+			&t.Price,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {
 		err = rows.Scan(&count)

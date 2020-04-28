@@ -24,7 +24,24 @@ type Schedule struct {
 	DepartureTimeoptionId *int `json:"departure_timeoption_id"`
 	ArrivalTimeoptionId   *int `json:"arrival_timeoption_id"`
 }
-
+type ScheduleTime struct {
+	DepartureTime string     `json:"departure_time"`
+	ArrivalTime   string     `json:"arrival_time"`
+}
+type ScheduleYear struct {
+	Year          int        `json:"year"`
+}
+type ScheduleMonth struct {
+	Year          int        `json:"year"`
+	Month         string     `json:"month"`
+}
+type ScheduleDay struct {
+	Year          int        `json:"year"`
+	Month         string     `json:"month"`
+	Day 			string	`json:"day"`
+	DepartureDate time.Time	`json:"departure_date"`
+	Price 			string	`json:"price"`
+}
 type PriceObj struct {
 	AdultPrice    float64 `json:"adult_price"`
 	ChildrenPrice float64 `json:"children_price"`

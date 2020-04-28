@@ -46,7 +46,7 @@ func (s scheduleUsecase) GetScheduleByMerchantId(c context.Context, merchantId s
 	}
 	var scheduleDtos models.ScheduleDto
 	scheduleDtos.MerchantId = merchantId
-		getScheduleByTransId ,err := s.scheduleRepo.GetScheduleByTransId(ctx,getTransportationByMerchantId)
+		getScheduleByTransId ,err := s.scheduleRepo.GetScheduleByTransIds(ctx,getTransportationByMerchantId)
 		if err != nil {
 			return nil,err
 		}

@@ -85,6 +85,7 @@ func (b balanceHistoryRepository) GetAll(ctx context.Context, merchantId string,
 	if limit != nil && offset != nil {
 		query = query + ` LIMIT ` + strconv.Itoa(*offset) + ` , ` + strconv.Itoa(*limit)
 	}
+	query = query + ` order by created_date desc`
 	res, err := b.fetch(ctx, query)
 	if err != nil {
 		if err == sql.ErrNoRows {

@@ -23,6 +23,22 @@ func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
 }
 
+func (m transportationRepository) GetById(ctx context.Context, id string) (res *models.Transportation, err error) {
+	query := `SELECT * FROM transportations WHERE id = ?`
+
+	list, err := m.fetch(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return
+}
 func (t transportationRepository) GetTransCount(ctx context.Context, merchantId string) (int, error) {
 	query := `SELECT count(*) as count FROM transportations WHERE merchant_id = ?`
 
