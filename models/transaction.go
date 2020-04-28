@@ -65,6 +65,7 @@ type TransactionIn struct {
 	Status              int     `json:"status,omitempty"`
 	TotalPrice          float64 `json:"total_price,omitempty"`
 	Currency            string  `json:"currency"`
+	Points              float64 `json:"points"`
 }
 
 type ConfirmPaymentIn struct {

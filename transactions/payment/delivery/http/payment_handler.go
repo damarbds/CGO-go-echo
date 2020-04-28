@@ -136,7 +136,7 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		Currency:            t.Currency,
 	}
 
-	_, err := p.paymentUsecase.Insert(ctx, tr, token)
+	_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
