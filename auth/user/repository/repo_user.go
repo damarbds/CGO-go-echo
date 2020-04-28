@@ -27,6 +27,31 @@ func NewuserRepository(Conn *sql.DB) user.Repository {
 	return &userRepository{Conn}
 }
 
+func (m *userRepository) UpdatePointByID(ctx context.Context, point float64, id string) error {
+	query := `UPDATE users SET points = points - ? WHERE id = ?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil
+	}
+
+	res, err := stmt.ExecContext(ctx, point, id)
+	if err != nil {
+		return err
+	}
+	affect, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affect != 1 {
+		err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+
+		return err
+	}
+
+	return nil
+}
+
 func (m *userRepository) Count(ctx context.Context) (int, error) {
 	query := `SELECT count(*) AS count FROM users WHERE is_deleted = 0 and is_active = 1`
 
@@ -55,15 +80,15 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	return count, nil
 }
 
-func (m *userRepository) List(ctx context.Context, limit, offset int,search string) ([]*models.User, error) {
+func (m *userRepository) List(ctx context.Context, limit, offset int, search string) ([]*models.User, error) {
 	query := `SELECT * FROM users WHERE is_deleted = 0 and is_active = 1 `
 	if search != "" {
 		query = query + ` AND ( user_email LIKE '%` + search + `%' ` +
-						`OR full_name LIKE '%` + search + `%' ` +
-						`OR phone_number LIKE '%` + search + `%' ` +
-						`OR address LIKE '%` + search + `%' ` +
-						`OR dob LIKE '%` + search + `%' ` +
-						`OR points LIKE '%` + search + `%' )`
+			`OR full_name LIKE '%` + search + `%' ` +
+			`OR phone_number LIKE '%` + search + `%' ` +
+			`OR address LIKE '%` + search + `%' ` +
+			`OR dob LIKE '%` + search + `%' ` +
+			`OR points LIKE '%` + search + `%' )`
 	}
 	query = query + ` LIMIT ? OFFSET ?`
 	list, err := m.fetch(ctx, query, limit, offset)
@@ -195,12 +220,12 @@ func (m *userRepository) GetByUserEmail(ctx context.Context, userEmail string) (
 }
 
 func (m *userRepository) GetByUserNumberOTP(ctx context.Context, phoneNumber string, otp string) (res *models.User, err error) {
-	if otp == ""{
+	if otp == "" {
 		query := `SELECT * FROM users WHERE phone_number = ?`
 
 		list, err := m.fetch(ctx, query, phoneNumber)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
 		if len(list) > 0 {
@@ -208,12 +233,12 @@ func (m *userRepository) GetByUserNumberOTP(ctx context.Context, phoneNumber str
 		} else {
 			return nil, models.ErrNotFound
 		}
-	}else {
+	} else {
 		query := `SELECT * FROM users WHERE phone_number = ? AND verification_code =?`
 
-		list, err := m.fetch(ctx, query, phoneNumber,otp)
+		list, err := m.fetch(ctx, query, phoneNumber, otp)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
 		if len(list) > 0 {
@@ -253,7 +278,7 @@ func (m *userRepository) Delete(ctx context.Context, id string, deleted_by strin
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}

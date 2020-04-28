@@ -2,13 +2,14 @@ package http
 
 import (
 	"context"
+	"net/http"
+	"strconv"
+
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"github.com/transactions/balance_history"
 	"gopkg.in/go-playground/validator.v9"
-	"net/http"
-	"strconv"
 )
 
 // ResponseError represent the response error struct
@@ -42,10 +43,13 @@ func (p *balanceHistoryHandler) GetBalanceHistory(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
 
+	month := c.QueryParam("month")
+	year := c.QueryParam("year")
+
 	var limit *int
 	var page = 1
 	var offset *int
-	if qpage != "" && qperPage != ""{
+	if qpage != "" && qperPage != "" {
 		page, _ = strconv.Atoi(qpage)
 		limits, _ := strconv.Atoi(qperPage)
 		limit = &limits
@@ -58,7 +62,7 @@ func (p *balanceHistoryHandler) GetBalanceHistory(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res,err := p.balanceHistoryUsecase.List(ctx,merchantId,status,page,limit,offset)
+	res, err := p.balanceHistoryUsecase.List(ctx, merchantId, status, page, limit, offset, month, year)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -86,8 +90,8 @@ func (p *balanceHistoryHandler) CreateBalanceHistory(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	status , _ := strconv.Atoi(c.FormValue("status"))
-	amount, _ := strconv.ParseFloat(c.FormValue("amount"),64)
+	status, _ := strconv.Atoi(c.FormValue("status"))
+	amount, _ := strconv.ParseFloat(c.FormValue("amount"), 64)
 	t := models.NewBalanceHistoryCommand{
 		Id:            c.FormValue("id"),
 		Status:        status,
@@ -95,11 +99,10 @@ func (p *balanceHistoryHandler) CreateBalanceHistory(c echo.Context) error {
 		DateOfPayment: c.FormValue("date_of_payment"),
 		Remarks:       c.FormValue("remarks"),
 	}
-	res, err := p.balanceHistoryUsecase.Create(ctx,t,token)
+	res, err := p.balanceHistoryUsecase.Create(ctx, t, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-
 
 	return c.JSON(http.StatusOK, res)
 }

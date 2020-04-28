@@ -2,13 +2,14 @@ package repository
 
 import (
 	"database/sql"
+	"strconv"
+	"time"
+
 	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"github.com/transactions/balance_history"
 	"golang.org/x/net/context"
-	"strconv"
-	"time"
 )
 
 const (
@@ -18,8 +19,6 @@ const (
 type balanceHistoryRepository struct {
 	Conn *sql.DB
 }
-
-
 
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewbalanceHistoryRepository(Conn *sql.DB) balance_history.Repository {
@@ -52,12 +51,12 @@ func (m *balanceHistoryRepository) fetch(ctx context.Context, query string, args
 			&t.DeletedDate,
 			&t.IsDeleted,
 			&t.IsActive,
-			&t.Status  ,
-			&t.MerchantId  ,
-			&t.Amount      ,
-			&t.DateOfRequest ,
-			&t.DateOfPayment ,
-			&t.Remarks       ,
+			&t.Status,
+			&t.MerchantId,
+			&t.Amount,
+			&t.DateOfRequest,
+			&t.DateOfPayment,
+			&t.Remarks,
 		)
 
 		if err != nil {
@@ -69,15 +68,21 @@ func (m *balanceHistoryRepository) fetch(ctx context.Context, query string, args
 
 	return result, nil
 }
-func (b balanceHistoryRepository) GetAll(ctx context.Context, merchantId string,status string, limit, offset *int) ([]*models.BalanceHistory, error) {
+func (b balanceHistoryRepository) GetAll(ctx context.Context, merchantId string, status string, limit, offset *int, month, year string) ([]*models.BalanceHistory, error) {
 	query := `SELECT * FROM balance_histories WHERE is_deleted = 0 AND is_active = 1`
-	if merchantId != ""{
+	if merchantId != "" {
 		query = query + ` AND merchant_id = '` + merchantId + `'`
 	}
-	if status != ""{
+	if status != "" {
 		query = query + ` AND status = '` + status + `'`
 	}
-	if limit != nil && offset != nil{
+	if month != "" {
+		query = query + ` AND MONTH(DATE(date_of_request)) = '` + month + `'`
+	}
+	if year != "" {
+		query = query + ` AND YEAR(DATE(date_of_request)) = '` + year + `'`
+	}
+	if limit != nil && offset != nil {
 		query = query + ` LIMIT ` + strconv.Itoa(*offset) + ` , ` + strconv.Itoa(*limit)
 	}
 	res, err := b.fetch(ctx, query)
@@ -92,10 +97,10 @@ func (b balanceHistoryRepository) GetAll(ctx context.Context, merchantId string,
 }
 func (m *balanceHistoryRepository) Count(ctx context.Context, merchantId string, status string) (int, error) {
 	query := `SELECT COUNT(*) as count FROM balance_histories WHERE is_deleted = 0 AND is_active = 1`
-	if merchantId != ""{
+	if merchantId != "" {
 		query = query + ` AND merchant_id = '` + merchantId + `'`
 	}
-	if status != ""{
+	if status != "" {
 		query = query + ` AND status = '` + status + `'`
 	}
 	//if limit != nil && offset != nil{
@@ -119,8 +124,8 @@ func (b balanceHistoryRepository) Insert(ctx context.Context, a models.BalanceHi
 	if err != nil {
 		return nil, err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1,a.Status,a.MerchantId,a.Amount,
-							a.DateOfRequest,a.DateOfPayment,a.Remarks)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Status, a.MerchantId, a.Amount,
+		a.DateOfRequest, a.DateOfPayment, a.Remarks)
 	if err != nil {
 		return nil, err
 	}

@@ -2,9 +2,10 @@ package usecase
 
 import (
 	"context"
+	"time"
+
 	"github.com/misc/notif"
 	"github.com/transactions/transaction"
-	"time"
 
 	"github.com/auth/user"
 	"github.com/booking/booking_exp"
@@ -13,29 +14,33 @@ import (
 )
 
 type paymentUsecase struct {
-	transactionRepo transaction.Repository
+	transactionRepo  transaction.Repository
 	notificationRepo notif.Repository
-	paymentRepo    payment.Repository
-	userUsercase   user.Usecase
-	bookingRepo    booking_exp.Repository
-	contextTimeout time.Duration
+	paymentRepo      payment.Repository
+	userUsercase     user.Usecase
+	bookingRepo      booking_exp.Repository
+	userRepo         user.Repository
+	contextTimeout   time.Duration
 }
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(t transaction.Repository,n notif.Repository,p payment.Repository, u user.Usecase, b booking_exp.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
-		transactionRepo:t,
-		notificationRepo:n,
-		paymentRepo:    p,
-		userUsercase:   u,
-		bookingRepo:    b,
-		contextTimeout: timeout,
+		transactionRepo:  t,
+		notificationRepo: n,
+		paymentRepo:      p,
+		userUsercase:     u,
+		bookingRepo:      b,
+		userRepo:         ur,
+		contextTimeout:   timeout,
 	}
 }
 
-func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction, token string) (string, error) {
+func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction, token string, points float64) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
+
+	var userId string
 
 	if payment.PaymentMethodId == "" {
 		return "", models.PaymentMethodIdRequired
@@ -58,6 +63,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 			return "", err
 		}
 		createdBy = currentUser.UserEmail
+		userId = currentUser.Id
 	}
 
 	newData := &models.Transaction{
@@ -92,6 +98,13 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		return "", err
 	}
 
+	if points != 0 {
+		err = p.userRepo.UpdatePointByID(ctx, points, userId)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	return res.Id, nil
 }
 
@@ -103,8 +116,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 	if err != nil {
 		return err
 	}
-	getTransaction ,err := p.transactionRepo.GetById(ctx,confirmIn.TransactionID)
-	if err != nil{
+	getTransaction, err := p.transactionRepo.GetById(ctx, confirmIn.TransactionID)
+	if err != nil {
 		return err
 	}
 	notif := models.Notification{
@@ -120,9 +133,9 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		MerchantId:   getTransaction.MerchantId,
 		Type:         0,
 		Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
-		Desc:         "You got a booking for "+ getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+		Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
 	}
-	pushNotifErr := p.notificationRepo.Insert(ctx,notif)
+	pushNotifErr := p.notificationRepo.Insert(ctx, notif)
 	if pushNotifErr != nil {
 		return nil
 	}

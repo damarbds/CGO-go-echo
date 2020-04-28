@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	Count(ctx context.Context, merchantId string,status string) (int, error)
-	GetAll(ctx context.Context, merchantId string,status string, limit, offset *int) ([]*models.BalanceHistory, error)
-	Insert(ctx context.Context,balanceH models.BalanceHistory)(*string,error)
+	Count(ctx context.Context, merchantId string, status string) (int, error)
+	GetAll(ctx context.Context, merchantId string, status string, limit, offset *int, month, year string) ([]*models.BalanceHistory, error)
+	Insert(ctx context.Context, balanceH models.BalanceHistory) (*string, error)
 }
