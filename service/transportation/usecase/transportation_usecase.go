@@ -8,6 +8,7 @@ import (
 	"github.com/service/schedule"
 	"github.com/service/time_options"
 	"github.com/service/transportation"
+	"github.com/transactions/transaction"
 	"golang.org/x/net/context"
 	"math"
 	"sort"
@@ -16,6 +17,7 @@ import (
 )
 
 type transportationUsecase struct {
+	transactionRepo 	transaction.Repository
 	transportationRepo transportation.Repository
 	merchantUsecase    merchant.Usecase
 	scheduleRepo       schedule.Repository
@@ -24,8 +26,9 @@ type transportationUsecase struct {
 }
 
 
-func NewTransportationUsecase(tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
+func NewTransportationUsecase(transr transaction.Repository,tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
 	return &transportationUsecase{
+		transactionRepo:transr,
 		transportationRepo: tr,
 		merchantUsecase:    mr,
 		scheduleRepo:       s,
@@ -292,7 +295,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		m.merchant_name,
 		m.merchant_picture,
 		t.class,
-		t.trans_facilities
+		t.trans_facilities,
+		t.trans_capacity
 	FROM
 		transportations t
 		JOIN merchants m on t.merchant_id = m.id
@@ -328,7 +332,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		m.merchant_name,
 		m.merchant_picture,
 		t.class,
-		t.trans_facilities
+		t.trans_facilities,
+		t.trans_capacity
 	FROM
 		transportations t
 		JOIN harbors h ON t.harbors_source_id = h.id
@@ -369,7 +374,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		m.merchant_name,
 		m.merchant_picture,
 		t.class,
-		t.trans_facilities
+		t.trans_facilities,
+		t.trans_capacity
 	FROM
 		schedules s
 		JOIN transportations t ON s.trans_id = t.id
@@ -452,10 +458,10 @@ func (t transportationUsecase) FilterSearchTrans(
 			queryCount = queryCount + ` AND t.harbors_dest_id = '` + harborSourceId + `'`
 		}
 	}
-	if guest != 0 {
-		query = query + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
-		queryCount = queryCount + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
-	}
+	//if guest != 0 {
+	//	query = query + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
+	//	queryCount = queryCount + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
+	//}
 	if depDate != "" {
 		query = query + ` AND s.departure_date = '` + depDate + `'`
 		queryCount = queryCount + ` AND s.departure_date = '` + depDate + `'`
@@ -478,17 +484,17 @@ func (t transportationUsecase) FilterSearchTrans(
 		return nil, err
 	}
 
-	trans := make([]*models.TransportationSearchObj, len(transList))
-	for i, t := range transList {
+	trans := make([]*models.TransportationSearchObj, 0)
+	for _, element := range transList {
 		var transImages []models.CoverPhotosObj
-		if t.TransImages != ""{
-			if errUnmarshal := json.Unmarshal([]byte(t.TransImages), &transImages); errUnmarshal != nil {
+		if element.TransImages != ""{
+			if errUnmarshal := json.Unmarshal([]byte(element.TransImages), &transImages); errUnmarshal != nil {
 				return nil, errUnmarshal
 			}
 		}
 		var transPrice models.TransPriceObj
-		if t.Price != nil {
-			if errUnmarshal := json.Unmarshal([]byte(*t.Price), &transPrice); errUnmarshal != nil {
+		if element.Price != nil {
+			if errUnmarshal := json.Unmarshal([]byte(*element.Price), &transPrice); errUnmarshal != nil {
 				return nil, errUnmarshal
 			}
 			transPrice.PriceType = "pax"
@@ -500,9 +506,9 @@ func (t transportationUsecase) FilterSearchTrans(
 		}
 
 		var tripDuration string
-		if t.DepartureTime != nil && t.ArrivalTime != nil {
-			departureTime, _ := time.Parse("15:04", *t.DepartureTime)
-			arrivalTime, _ := time.Parse("15:04", *t.ArrivalTime)
+		if element.DepartureTime != nil && element.ArrivalTime != nil {
+			departureTime, _ := time.Parse("15:04", *element.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04", *element.ArrivalTime)
 
 			tripHour := arrivalTime.Hour() - departureTime.Hour()
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()
@@ -510,42 +516,53 @@ func (t transportationUsecase) FilterSearchTrans(
 		}
 
 		var transStatus string
-		if t.TransStatus == 0 {
+		if element.TransStatus == 0 {
 			transStatus = "Preview"
-		} else if t.TransStatus == 1 {
+		} else if element.TransStatus == 1 {
 			transStatus = "Draft"
-		} else if t.TransStatus == 2 {
+		} else if element.TransStatus == 2 {
 			transStatus = "Published"
-		} else if t.TransStatus == 3 {
+		} else if element.TransStatus == 3 {
 			transStatus = "Unpublished"
-		} else if t.TransStatus == 4 {
+		} else if element.TransStatus == 4 {
 			transStatus = "Archived"
 		}
 		 transFacilities := make([]models.ExpFacilitiesObject,0)
-		if t.TransFacilities != nil{
-			if errUnmarshal := json.Unmarshal([]byte(*t.TransFacilities), &transFacilities); errUnmarshal != nil {
+		if element.TransFacilities != nil{
+			if errUnmarshal := json.Unmarshal([]byte(*element.TransFacilities), &transFacilities); errUnmarshal != nil {
 				return nil, errUnmarshal
 			}
 		}
-		trans[i] = &models.TransportationSearchObj{
-			ScheduleId:            t.ScheduleId,
-			DepartureDate:         t.DepartureDate,
-			DepartureTime:         t.DepartureTime,
-			ArrivalTime:           t.ArrivalTime,
+		transDto := &models.TransportationSearchObj{
+			ScheduleId:            element.ScheduleId,
+			DepartureDate:         element.DepartureDate,
+			DepartureTime:         element.DepartureTime,
+			ArrivalTime:           element.ArrivalTime,
 			TripDuration:          &tripDuration,
-			TransportationId:      t.TransId,
-			TransportationName:    t.TransName,
+			TransportationId:      element.TransId,
+			TransportationName:    element.TransName,
 			TransportationImages:  transImages,
 			TransportationStatus:  transStatus,
-			HarborSourceId:        t.HarborSourceId,
-			HarborSourceName:      t.HarborSourceName,
-			HarborDestinationId:   t.HarborDestId,
-			HarborDestinationName: t.HarborDestName,
+			HarborSourceId:        element.HarborSourceId,
+			HarborSourceName:      element.HarborSourceName,
+			HarborDestinationId:   element.HarborDestId,
+			HarborDestinationName: element.HarborDestName,
 			Price:                 transPrice,
-			MerchantName:          t.MerchantName,
-			MerchantPicture:       t.MerchantPicture,
-			Class:                 t.Class,
+			MerchantName:          element.MerchantName,
+			MerchantPicture:       element.MerchantPicture,
+			Class:                 element.Class,
 			TransFacilities:transFacilities,
+		}
+		if guest != 0 {
+			getbookingCount ,_ := t.transactionRepo.GetCountByTransId(ctx,element.TransId)
+			getCapacity := element.TransCapacity
+			remainingSeat := getCapacity - getbookingCount
+
+			if  guest <= remainingSeat  {
+				trans = append(trans,transDto)
+			}
+		}else {
+			trans = append(trans,transDto)
 		}
 	}
 	if sortBy != "" {

@@ -106,6 +106,7 @@ type TransSearch struct {
 	MerchantPicture 	 *string		`json:"merchant_picture"`
 	Class				  *string 		`json:"class"`
 	TransFacilities		*string		`json:"trans_facilities"`
+	TransCapacity 		int			`json:"trans_capacity"`
 }
 type TransPriceObj struct {
 	AdultPrice    float64 `json:"adult_price"`

@@ -14,10 +14,32 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
+func (t transactionRepository) GetCountByTransId(ctx context.Context, transId string) (int, error) {
+	query := `select count(*) from transactions a
+											join booking_exps b on a.order_id = b.order_id 
+											join transportations c on c.id = b.trans_id 
+											join schedules d on b.schedule_id = d.id
+											where a.status < 3 and b.trans_id = ?`
+
+	rows, err := t.Conn.QueryContext(ctx, query,transId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
 func (t transactionRepository) UpdateStatus(ctx context.Context, status int, transactionId, bookingId string) error {
 	query := `UPDATE transactions SET status = ? WHERE (id = ? OR booking_exp_id = ? OR order_id = ?)`
 

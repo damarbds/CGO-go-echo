@@ -2,8 +2,9 @@ package repository
 
 import (
 	"database/sql"
-	"github.com/sirupsen/logrus"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/models"
 	"github.com/service/transportation"
@@ -17,7 +18,6 @@ const (
 type transportationRepository struct {
 	Conn *sql.DB
 }
-
 
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
@@ -112,27 +112,27 @@ func (t *transportationRepository) fetch(ctx context.Context, query string, args
 	for rows.Next() {
 		t := new(models.Transportation)
 		err = rows.Scan(
-			&t.Id   ,
-			&t.CreatedBy   ,
-			&t.CreatedDate  ,
-			&t.ModifiedBy     ,
-			&t.ModifiedDate  ,
-			&t.DeletedBy     ,
-			&t.DeletedDate    ,
-			&t.IsDeleted     ,
-			&t.IsActive     ,
-			&t.TransName    ,
-			&t.HarborsSourceId ,
-			&t.HarborsDestId ,
-			&t.MerchantId  ,
-			&t.TransCapacity ,
-			&t.TransTitle ,
-			&t.TransStatus   ,
-			&t.TransImages   ,
-			&t.ReturnTransId  ,
-			&t.BoatDetails     ,
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.TransName,
+			&t.HarborsSourceId,
+			&t.HarborsDestId,
+			&t.MerchantId,
+			&t.TransCapacity,
+			&t.TransTitle,
+			&t.TransStatus,
+			&t.TransImages,
+			&t.ReturnTransId,
+			&t.BoatDetails,
 			&t.Transcoverphoto,
-			&t.Class       ,
+			&t.Class,
 			&t.TransFacilities,
 		)
 
@@ -180,6 +180,7 @@ func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query s
 			&t.MerchantPicture,
 			&t.Class,
 			&t.TransFacilities,
+			&t.TransCapacity,
 		)
 
 		if err != nil {
@@ -203,7 +204,7 @@ func (t transportationRepository) Insert(ctx context.Context, a models.Transport
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
 		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
-		a.BoatDetails, a.Transcoverphoto, a.Class,a.TransFacilities)
+		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities)
 	if err != nil {
 		return nil, err
 	}
@@ -217,16 +218,16 @@ func (t transportationRepository) Insert(ctx context.Context, a models.Transport
 	return &a.Id, nil
 }
 
-func (t transportationRepository) UpdateStatus(ctx context.Context, status int, id string,user string) error {
+func (t transportationRepository) UpdateStatus(ctx context.Context, status int, id string, user string) error {
 	query := `UPDATE transportations SET modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? ,status=? WHERE id=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return  err
+		return err
 	}
-	_, err = stmt.ExecContext(ctx, user, time.Now(), nil, nil, 0, 1, status,id)
+	_, err = stmt.ExecContext(ctx, user, time.Now(), nil, nil, 0, 1, status, id)
 	if err != nil {
-		return  err
+		return err
 	}
 
 	//lastID, err := res.RowsAffected()
@@ -248,7 +249,7 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	}
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
 		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
-		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities,a.Id)
+		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities, a.Id)
 	if err != nil {
 		return nil, err
 	}

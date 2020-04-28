@@ -257,7 +257,7 @@ func main() {
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
-	transportationUcase := _transportationUcase.NewTransportationUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
+	transportationUcase := _transportationUcase.NewTransportationUsecase(transactionRepo,transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(balanceHistoryRepo, merchantUsecase, timeoutContext)
