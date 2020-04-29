@@ -284,11 +284,15 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 		city_name AS city,
 		province_name AS province,
 		country_name AS country,
-		c.id as experience_payment_id,
+		c.id AS experience_payment_id,
 		c.currency,
-		pm.desc as account_bank,
+		pm.desc AS account_bank,
 		pm.icon,
-		t.created_date as created_date_transaction 
+		t.status AS transaction_status,
+		t.created_date AS created_date_transaction,
+		m.merchant_name,
+		m.phone_number as merchant_phone,
+		m.merchant_picture
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id
@@ -299,6 +303,7 @@ func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus
 		JOIN cities ci ON h.city_id = ci.id
 		JOIN provinces p ON ci.province_id = p.id
 		JOIN countries co ON p.country_id = co.id
+		JOIN merchants m ON b.merchant_id = m.id
 	WHERE
 		a.status = ?
 		AND a.is_active = 1

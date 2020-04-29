@@ -187,8 +187,8 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 			return nil, models.ErrInternalServerError
 		}
 	}
-	if details[0].AccountBank != "" {
-		if errUnmarshal := json.Unmarshal([]byte(details[0].AccountBank), &accountBank); errUnmarshal != nil {
+	if details[0].AccountBank != nil {
+		if errUnmarshal := json.Unmarshal([]byte(*details[0].AccountBank), &accountBank); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
 		}
 	}
@@ -409,8 +409,8 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 			return nil, models.ErrInternalServerError
 		}
 	}
-	if getDetailBooking.AccountBank != "" {
-		if errUnmarshal := json.Unmarshal([]byte(getDetailBooking.AccountBank), &accountBank); errUnmarshal != nil {
+	if getDetailBooking.AccountBank != nil {
+		if errUnmarshal := json.Unmarshal([]byte(*getDetailBooking.AccountBank), &accountBank); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
 		}
 	}

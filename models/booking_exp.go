@@ -118,7 +118,7 @@ type BookingExpJoin struct {
 	Country                string         `json:"country"`
 	ExperiencePaymentId    string         `json:"experience_payment_id"`
 	Currency               int            `json:"currency"`
-	AccountBank            string         `json:"account_bank"`
+	AccountBank            *string         `json:"account_bank"`
 	Icon                   string         `json:"icon"`
 	CreatedDateTransaction time.Time      `json:"created_date_transaction"`
 	MerchantName           sql.NullString `json:"merchant_name"`
