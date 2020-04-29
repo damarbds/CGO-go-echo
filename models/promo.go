@@ -20,9 +20,11 @@ type Promo struct {
 	PromoImage   string     `json:"promo_image"`
 	StartDate 	 *string		`json:"start_date"`
 	EndDate 	*string		`json:"end_date"`
-	Currency 	*int 		`json:"currency"`
+	//Currency 	*int 		`json:"currency"`
 	MaxUsage   	*int 		`json:"max_usage"`
-	VoucherValueOptionType *string 	`json:"voucher_value_option_type"`
+	ProductionCapacity	*int `json:"production_capacity"`
+	CurrencyId *int 	`json:"currency_id"`
+	//VoucherValueOptionType *string 	`json:"voucher_value_option_type"`
 }
 type PromoDto struct {
 	Id         string  `json:"id" validate:"required"`

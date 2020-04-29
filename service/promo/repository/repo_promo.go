@@ -79,9 +79,9 @@ func (m *promoRepository) fetch(ctx context.Context, query string, args ...inter
 			&t.PromoImage,
 			&t.StartDate ,
 			&t.EndDate ,
-			&t.Currency ,
 			&t.MaxUsage   ,
-			&t.VoucherValueOptionType ,
+			&t.ProductionCapacity ,
+			&t.CurrencyId ,
 		)
 
 		if err != nil {
@@ -126,7 +126,7 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string,e
 		return"", err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.PromoCode,a.PromoName,
-		a.PromoDesc,a.PromoValue, a.PromoType,a.PromoImage,a.StartDate,a.EndDate,a.Currency,a.MaxUsage,a.VoucherValueOptionType)
+		a.PromoDesc,a.PromoValue, a.PromoType,a.PromoImage,a.StartDate,a.EndDate,a.CurrencyId,a.MaxUsage,a.ProductionCapacity)
 	if err != nil {
 		return "",err
 	}
@@ -150,7 +150,7 @@ func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 	}
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.PromoCode,a.PromoName, a.PromoDesc,a.PromoValue,
-					a.PromoType,a.PromoImage,a.StartDate,a.EndDate,a.Currency,a.MaxUsage,a.VoucherValueOptionType,a.Id)
+					a.PromoType,a.PromoImage,a.StartDate,a.EndDate,a.CurrencyId,a.MaxUsage,a.ProductionCapacity,a.Id)
 	if err != nil {
 		return err
 	}

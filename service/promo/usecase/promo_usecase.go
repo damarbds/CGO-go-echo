@@ -50,9 +50,9 @@ func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search 
 			PromoImage:             item.PromoImage,
 			StartDate:              item.StartDate,
 			EndDate:                item.EndDate,
-			Currency:               item.Currency,
+			Currency:               item.CurrencyId,
 			MaxUsage:               item.MaxUsage,
-			VoucherValueOptionType: item.VoucherValueOptionType,
+			//VoucherValueOptionType: item.VoucherValueOptionType,
 		}
 	}
 	totalRecords, _ := m.promoRepo.GetCount(ctx)
@@ -108,9 +108,9 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 		PromoImage:             command.PromoImage,
 		StartDate:              &command.StartDate,
 		EndDate:                &command.EndDate,
-		Currency:               &command.Currency,
+		CurrencyId:               &command.Currency,
 		MaxUsage:               &command.MaxUsage,
-		VoucherValueOptionType: &command.VoucherValueOptionType,
+		//VoucherValueOptionType: &command.VoucherValueOptionType,
 	}
 	err = p.promoRepo.Update(ctx,&promo)
 	if err != nil {
@@ -145,9 +145,9 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 		PromoImage:             command.PromoImage,
 		StartDate:              &command.StartDate,
 		EndDate:                &command.EndDate,
-		Currency:               &command.Currency,
+		CurrencyId:               &command.Currency,
 		MaxUsage:               &command.MaxUsage,
-		VoucherValueOptionType: &command.VoucherValueOptionType,
+		//VoucherValueOptionType: &command.VoucherValueOptionType,
 	}
 	id,err := p.promoRepo.Insert(ctx,&promo)
 	if err != nil {
@@ -199,9 +199,9 @@ func (p promoUsecase) GetDetail(ctx context.Context, id string, token string) (*
 		PromoImage:             getPromoDetail.PromoImage,
 		StartDate:              getPromoDetail.StartDate,
 		EndDate:                getPromoDetail.EndDate,
-		Currency:               getPromoDetail.Currency,
+		Currency:               getPromoDetail.CurrencyId,
 		MaxUsage:               getPromoDetail.MaxUsage,
-		VoucherValueOptionType: getPromoDetail.VoucherValueOptionType,
+		//VoucherValueOptionType: getPromoDetail.VoucherValueOptionType,
 	}
 
 	return &result,nil
