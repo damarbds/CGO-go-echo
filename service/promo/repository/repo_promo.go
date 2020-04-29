@@ -119,8 +119,8 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string,e
 	a.Id = guuid.New().String()
 	query := `INSERT promos SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , promo_code=?,promo_name=? , 
-				promo_desc=? ,promo_value=?,promo_type=?,promo_image=?,start_date=?,end_date=?,currency=?,
-				max_usage=?,voucher_value_option_type=?`
+				promo_desc=? ,promo_value=?,promo_type=?,promo_image=?,start_date=?,end_date=?,currency_id	=?,
+				max_usage=?,production_capacity=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return"", err
@@ -142,7 +142,7 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string,e
 
 func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 	query := `UPDATE promos set modified_by=?, modified_date=? , promo_code=?,promo_name=? , promo_desc=? ,promo_value=?,
-				promo_type=?,promo_image=?,start_date=?,end_date=?,currency=?,max_usage=?,voucher_value_option_type=? WHERE id = ?`
+				promo_type=?,promo_image=?,start_date=?,end_date=?,currency_id=?,max_usage=?,production_capacity=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {

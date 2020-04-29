@@ -20,6 +20,7 @@ type balanceHistoryRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewpromoRepository will create an object that represent the article.Repository interface
 func NewbalanceHistoryRepository(Conn *sql.DB) balance_history.Repository {
 	return &balanceHistoryRepository{Conn}
@@ -82,10 +83,12 @@ func (b balanceHistoryRepository) GetAll(ctx context.Context, merchantId string,
 	if year != "" {
 		query = query + ` AND YEAR(DATE(date_of_request)) = '` + year + `'`
 	}
+
+	query = query + ` order by created_date desc `
+
 	if limit != nil && offset != nil {
 		query = query + ` LIMIT ` + strconv.Itoa(*offset) + ` , ` + strconv.Itoa(*limit)
 	}
-	query = query + ` order by created_date desc`
 	res, err := b.fetch(ctx, query)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -95,6 +98,19 @@ func (b balanceHistoryRepository) GetAll(ctx context.Context, merchantId string,
 	}
 
 	return res, nil
+}
+
+func (b *balanceHistoryRepository) GetById(ctx context.Context, id string) (*models.BalanceHistory, error) {
+	query := `SELECT * FROM balance_histories WHERE is_deleted = 0 AND is_active = 1 AND id = ?`
+	res, err := b.fetch(ctx, query,id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return res[0], nil
 }
 func (m *balanceHistoryRepository) Count(ctx context.Context, merchantId string, status string) (int, error) {
 	query := `SELECT COUNT(*) as count FROM balance_histories WHERE is_deleted = 0 AND is_active = 1`
@@ -138,6 +154,32 @@ func (b balanceHistoryRepository) Insert(ctx context.Context, a models.BalanceHi
 
 	//a.Id = lastID
 	return &a.Id, nil
+}
+func (m *balanceHistoryRepository) Update(ctx context.Context, a models.BalanceHistory) (*string, error) {
+	query := `UPDATE balance_histories set modified_by=?, modified_date=? ,status=?,merchant_id=?,amount=?,
+				date_of_request=?,date_of_payment=?,remarks=? WHERE id = ?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil,err
+	}
+
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.Status,a.MerchantId, a.Amount,a.DateOfRequest,
+		a.DateOfPayment,a.Remarks,a.Id)
+	if err != nil {
+		return nil,err
+	}
+	//affect, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//if affect != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+	//
+	//	return err
+	//}
+
+	return &a.Id,nil
 }
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {

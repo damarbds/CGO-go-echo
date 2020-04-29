@@ -53,6 +53,7 @@ import (
 	_promoHttpDeliver "github.com/service/promo/delivery/http"
 	_promoRepo "github.com/service/promo/repository"
 	_promoUcase "github.com/service/promo/usecase"
+	_promoMerchantRepo "github.com/service/promo_merchant/repository"
 
 	_experienceAddOnHttpDeliver "github.com/product/experience_add_ons/delivery/http"
 	_experienceAddOnRepo "github.com/product/experience_add_ons/repository"
@@ -188,6 +189,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	promoMerchantRepo := _promoMerchantRepo.NewpromoMerchantRepository(dbConn)
 	filterActivityTypeRepo := _filterActivityTypeRepo.NewFilterActivityTypeRepository(dbConn)
 	expAvailabilityRepo := _expAvailabilityRepo.NewExpavailabilityRepository(dbConn)
 	bookingExpRepo := _bookingExpRepo.NewbookingExpRepository(dbConn)
@@ -233,7 +235,7 @@ func main() {
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
 
-	promoUsecase := _promoUcase.NewPromoUsecase(promoRepo, adminUsecase, timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo,promoRepo, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		filterActivityTypeRepo,
 		experienceAddOnRepo,
@@ -260,7 +262,7 @@ func main() {
 	transportationUcase := _transportationUcase.NewTransportationUsecase(transactionRepo,transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
-	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(balanceHistoryRepo, merchantUsecase, timeoutContext)
+	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo,adminUsecase,balanceHistoryRepo, merchantUsecase, timeoutContext)
 	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)
 	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"github.com/auth/identityserver"
 	"io"
 	"net/http"
@@ -136,6 +137,14 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 	currency, _ := strconv.Atoi(c.FormValue("currency"))
 	promoValue, _ := strconv.ParseFloat(c.FormValue("promo_value"),64)
 	promoType, _ := strconv.Atoi(c.FormValue("promo_type"))
+	productionCapacity , _ := strconv.Atoi(c.FormValue("production_capacity"))
+	merchants := c.FormValue("merchant_id")
+	merchantId := make([]string,0)
+	if merchants != ""{
+		if errUnmarshal := json.Unmarshal([]byte(merchants), &merchantId); errUnmarshal != nil {
+			return models.ErrInternalServerError
+		}
+	}
 	promoCommand := models.NewCommandPromo{
 		Id:                     "",
 		PromoCode:              c.FormValue("promo_code"),
@@ -148,7 +157,8 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 		EndDate:                c.FormValue("end_date"),
 		Currency:               currency,
 		MaxUsage:               maxUsage,
-		VoucherValueOptionType: c.FormValue("voucher_value_option_type"),
+		ProductionCapacity: productionCapacity,
+		MerchantId:merchantId,
 	}
 	if ok, err := isRequestValid(&promoCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -206,6 +216,14 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 	currency, _ := strconv.Atoi(c.FormValue("currency"))
 	promoValue, _ := strconv.ParseFloat(c.FormValue("promo_value"),64)
 	promoType, _ := strconv.Atoi(c.FormValue("promo_type"))
+	productionCapacity , _ := strconv.Atoi(c.FormValue("production_capacity"))
+	merchants := c.FormValue("merchant_id")
+	merchantId := make([]string,0)
+	if merchants != ""{
+		if errUnmarshal := json.Unmarshal([]byte(merchants), &merchantId); errUnmarshal != nil {
+			return models.ErrInternalServerError
+		}
+	}
 	promoCommand := models.NewCommandPromo{
 		Id:                     c.FormValue("id"),
 		PromoCode:              c.FormValue("promo_code"),
@@ -218,7 +236,8 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 		EndDate:                c.FormValue("end_date"),
 		Currency:               currency,
 		MaxUsage:               maxUsage,
-		VoucherValueOptionType: c.FormValue("voucher_value_option_type"),
+		ProductionCapacity: productionCapacity,
+		MerchantId:merchantId,
 	}
 	if ok, err := isRequestValid(&promoCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())

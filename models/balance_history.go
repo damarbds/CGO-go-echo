@@ -26,6 +26,16 @@ type NewBalanceHistoryCommand struct {
 	DateOfPayment string	`json:"date_of_payment"`
 	Remarks 	string	`json:"remarks"`
 }
+type NewBalanceHistoryAmountCommand struct {
+	Id 			string 		`json:"id"`
+	Amount 		float64		`json:"amount"`
+}
+type NewBalanceHistoryConfirmCommand struct {
+	Id 			string 		`json:"id"`
+	MerchantId 	string		`json:"merchant_id"`
+	Amount 		float64		`json:"amount"`
+	Action 		string		`json:"action"`
+}
 type BalanceHistoryDto struct {
 	Id 			string 		`json:"id"`
 	MerchantId 	string		`json:"merchant_id"`

@@ -4,12 +4,14 @@ import (
 	"github.com/auth/admin"
 	"github.com/models"
 	"github.com/service/promo"
+	"github.com/service/promo_merchant"
 	"golang.org/x/net/context"
 	"math"
 	"time"
 )
 
 type promoUsecase struct {
+	promoMerchant 	promo_merchant.Repository
 	adminUsecase 	admin.Usecase
 	promoRepo      promo.Repository
 	contextTimeout time.Duration
@@ -17,8 +19,9 @@ type promoUsecase struct {
 
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPromoUsecase(p promo.Repository, au admin.Usecase,timeout time.Duration) promo.Usecase {
+func NewPromoUsecase(pm promo_merchant.Repository,p promo.Repository, au admin.Usecase,timeout time.Duration) promo.Usecase {
 	return &promoUsecase{
+		promoMerchant:pm,
 		promoRepo:      p,
 		adminUsecase:au,
 		contextTimeout: timeout,
@@ -54,6 +57,15 @@ func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search 
 			MaxUsage:               item.MaxUsage,
 			//VoucherValueOptionType: item.VoucherValueOptionType,
 		}
+		merchantIds := make([]string,0)
+		getPromoMerchant ,err := m.promoMerchant.GetByMerchantId(ctx,"",item.Id)
+		if err != nil {
+			return nil ,err
+		}
+		for _,element := range getPromoMerchant{
+			merchantIds = append(merchantIds,element.MerchantId)
+		}
+		promos[i].MerchantId = merchantIds
 	}
 	totalRecords, _ := m.promoRepo.GetCount(ctx)
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
@@ -110,9 +122,23 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 		EndDate:                &command.EndDate,
 		CurrencyId:               &command.Currency,
 		MaxUsage:               &command.MaxUsage,
+		ProductionCapacity:&command.ProductionCapacity,
 		//VoucherValueOptionType: &command.VoucherValueOptionType,
 	}
 	err = p.promoRepo.Update(ctx,&promo)
+	for _,element := range command.MerchantId{
+
+		err = p.promoMerchant.DeleteByMerchantId(ctx,element,command.Id)
+		promoMerchant := models.PromoMerchant{
+			Id:         0,
+			PromoId:    command.Id,
+			MerchantId: element,
+		}
+		err := p.promoMerchant.Insert(ctx,promoMerchant)
+		if err != nil {
+			return nil,err
+		}
+	}
 	if err != nil {
 		return nil,err
 	}
@@ -147,9 +173,21 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 		EndDate:                &command.EndDate,
 		CurrencyId:               &command.Currency,
 		MaxUsage:               &command.MaxUsage,
-		//VoucherValueOptionType: &command.VoucherValueOptionType,
+		ProductionCapacity:	&command.ProductionCapacity,
 	}
 	id,err := p.promoRepo.Insert(ctx,&promo)
+
+	for _,element := range command.MerchantId{
+		promoMerchant := models.PromoMerchant{
+			Id:         0,
+			PromoId:    id,
+			MerchantId: element,
+		}
+		err := p.promoMerchant.Insert(ctx,promoMerchant)
+		if err != nil {
+			return nil,err
+		}
+	}
 	if err != nil {
 		return nil,err
 	}
@@ -201,8 +239,16 @@ func (p promoUsecase) GetDetail(ctx context.Context, id string, token string) (*
 		EndDate:                getPromoDetail.EndDate,
 		Currency:               getPromoDetail.CurrencyId,
 		MaxUsage:               getPromoDetail.MaxUsage,
+		ProductionCapacity:getPromoDetail.ProductionCapacity,
+
 		//VoucherValueOptionType: getPromoDetail.VoucherValueOptionType,
 	}
+	merchantIds := make([]string,0)
+	getPromoMerchant ,err := p.promoMerchant.GetByMerchantId(ctx,"",getPromoDetail.Id)
+	for _,element := range getPromoMerchant{
+		merchantIds = append(merchantIds,element.MerchantId)
+	}
+	result.MerchantId = merchantIds
 
 	return &result,nil
 }
@@ -224,7 +270,21 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 			PromoValue: element.PromoValue,
 			PromoType:  element.PromoType,
 			PromoImage: element.PromoImage,
+			StartDate:  element.StartDate,
+			EndDate:                element.EndDate,
+			Currency:               element.CurrencyId,
+			MaxUsage:               element.MaxUsage,
+			ProductionCapacity:element.ProductionCapacity,
 		}
+		merchantIds := make([]string,0)
+		getPromoMerchant ,err := p.promoMerchant.GetByMerchantId(ctx,"",element.Id)
+		if err != nil {
+			return nil ,err
+		}
+		for _,element := range getPromoMerchant{
+			merchantIds = append(merchantIds,element.MerchantId)
+		}
+		resPromo.MerchantId = merchantIds
 		promoDto = append(promoDto, &resPromo)
 	}
 

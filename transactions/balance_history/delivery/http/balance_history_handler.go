@@ -25,6 +25,9 @@ func NewBalanceHistoryHandler(e *echo.Echo, bh balance_history.Usecase) {
 	handler := &balanceHistoryHandler{
 		balanceHistoryUsecase: bh,
 	}
+
+	e.PUT("/transaction/withdraw-accept-decline", handler.Confirm)
+	e.PUT("/transaction/withdraw-amount", handler.UpdateAmount)
 	e.POST("/transaction/withdraw", handler.CreateBalanceHistory)
 	e.GET("/transaction/withdraw-history", handler.GetBalanceHistory)
 }
@@ -38,6 +41,12 @@ func isRequestValid(m *models.NewBalanceHistoryCommand) (bool, error) {
 	return true, nil
 }
 func (p *balanceHistoryHandler) GetBalanceHistory(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
 	merchantId := c.QueryParam("merchant_id")
 	status := c.QueryParam("status")
 	qpage := c.QueryParam("page")
@@ -45,7 +54,13 @@ func (p *balanceHistoryHandler) GetBalanceHistory(c echo.Context) error {
 
 	month := c.QueryParam("month")
 	year := c.QueryParam("year")
-
+	isAdmin := c.QueryParam("isAdmin")
+	var admin bool
+	if isAdmin != ""{
+		admin = true
+	}else {
+		admin = false
+	}
 	var limit *int
 	var page = 1
 	var offset *int
@@ -62,14 +77,13 @@ func (p *balanceHistoryHandler) GetBalanceHistory(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := p.balanceHistoryUsecase.List(ctx, merchantId, status, page, limit, offset, month, year)
+	res, err := p.balanceHistoryUsecase.List(ctx, merchantId, status, page, limit, offset, month, year,token,admin)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, res)
 }
-
 func (p *balanceHistoryHandler) CreateBalanceHistory(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -100,6 +114,61 @@ func (p *balanceHistoryHandler) CreateBalanceHistory(c echo.Context) error {
 		Remarks:       c.FormValue("remarks"),
 	}
 	res, err := p.balanceHistoryUsecase.Create(ctx, t, token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+func (p *balanceHistoryHandler) Confirm(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	t := new(models.NewBalanceHistoryConfirmCommand)
+	if err := c.Bind(t); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	}
+	//
+	//if ok, err := isRequestValid(t); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	res, err := p.balanceHistoryUsecase.ConfirmWithdraw(ctx, *t, token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+func (p *balanceHistoryHandler) UpdateAmount(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	t := new(models.NewBalanceHistoryAmountCommand)
+	if err := c.Bind(t); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	}
+
+	//if ok, err := isRequestValid(t); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	res, err := p.balanceHistoryUsecase.UpdateAmount(ctx, *t, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
