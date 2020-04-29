@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strconv"
 
 	"github.com/models"
 
@@ -117,14 +119,43 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		AND t.is_active = 1
 	`
 
+	queryT := `
+	SELECT
+		t.id AS transaction_id,
+		trans_id,
+		trans_name,
+		trans_title,
+		booking_exp_id,
+		b.order_id AS booking_code,
+		b.created_date AS booking_date,
+		b.booking_date AS check_in_date,
+		b.booked_by,
+		guest_desc,
+		b.booked_by_email AS email,
+		t.status AS transaction_status,
+		b.status AS booking_status,
+		t.total_price,
+		tr.class as trans_class
+	FROM
+		transactions t
+		JOIN booking_exps b ON t.booking_exp_id = b.id
+		JOIN transportations tr ON b.trans_id = tr.id
+	WHERE
+		t.is_deleted = 0
+		AND t.is_active = 1`
+
 	if search != "" {
 		keyword := `'%` + search + `%'`
-		query = query + ` AND (LOWER(e.exp_title) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
+		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
+		queryT = queryT + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
 	}
 	if startDate != "" && endDate != "" {
 		query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+		queryT = queryT + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 	}
-	queryWithoutStatus := query + ` ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
+	unionQuery := query + ` UNION ` + queryT
+	queryWithoutStatus := unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
+
 	list, err := t.fetchWithJoin(ctx, queryWithoutStatus, limit, offset)
 	if status != "" {
 		if status == "pending" {
@@ -134,24 +165,35 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		} else if status == "confirm" {
 			transactionStatus = 2
 		}
-		queryWithStatus := query + ` AND t.status = ? ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
-		list, err = t.fetchWithJoin(ctx, queryWithStatus, transactionStatus, limit, offset)
+		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		unionQuery = querySt + ` UNION ` + queryTSt
+		queryWithStatus := unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
+		list, err = t.fetchWithJoin(ctx, queryWithStatus, limit, offset)
 
 		if status == "failed" {
 			transactionStatus = 3
 			cancelledStatus := 4
-			queryWithStatus = query + ` AND t.status IN (?,?) ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
-			list, err = t.fetchWithJoin(ctx, queryWithStatus, transactionStatus, cancelledStatus, limit, offset)
+			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
+			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
+			unionQuery = querySt + ` UNION ` + queryTSt
+			fmt.Println(unionQuery)
+			queryWithStatus = unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
+			list, err = t.fetchWithJoin(ctx, queryWithStatus, limit, offset)
 		}
 
 		if status == "boarded" {
 			transactionStatus = 1
 			bookingStatus = 3
-			queryWithStatus = query + ` AND t.status = ? AND b.status = ? ORDER BY t.created_date DESC LIMIT ? OFFSET ?`
-			list, err = t.fetchWithJoin(ctx, queryWithStatus, transactionStatus, bookingStatus, limit, offset)
+			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
+			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
+			unionQuery = querySt + ` UNION ` + queryTSt
+			queryWithStatus = unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
+			list, err = t.fetchWithJoin(ctx, queryWithStatus, limit, offset)
 		}
 	}
 	if err != nil {
+		fmt.Println("err1", err.Error())
 		return nil, err
 	}
 
@@ -276,21 +318,37 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 	query := `
 	SELECT
 		count(*) as count
-	FROM transactions t
+	FROM 
+		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
+		JOIN experience_payments ep ON e.id = ep.exp_id
+	WHERE
+		t.is_deleted = 0
+		AND t.is_active = 1`
+
+	queryT := `
+	SELECT
+		count(*) as count
+	FROM
+		transactions t
+		JOIN booking_exps b ON t.booking_exp_id = b.id
+		JOIN transportations tr ON b.trans_id = tr.id
 	WHERE
 		t.is_deleted = 0
 		AND t.is_active = 1`
 
 	if search != "" {
 		keyword := `'%` + search + `%'`
-		query = query + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
+		queryT = queryT + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
 	}
 	if startDate != "" && endDate != "" {
 		query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+		queryT = queryT + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 	}
-	rows, err := t.Conn.QueryContext(ctx, query)
+	unionQuery := query + ` UNION` + queryT
+	rows, err := t.Conn.QueryContext(ctx, unionQuery)
 	var transactionStatus int
 	if status != "" {
 		if status == "pending" {
@@ -300,21 +358,27 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		} else if status == "confirm" {
 			transactionStatus = 2
 		}
-		queryWithStatus := query + ` AND t.status = ?`
-		rows, err = t.Conn.QueryContext(ctx, queryWithStatus, transactionStatus)
+		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		unionQuery = querySt + ` UNION ` + queryTSt
+		rows, err = t.Conn.QueryContext(ctx, unionQuery)
 
 		if status == "failed" {
 			transactionStatus = 3
 			cancelledStatus := 4
-			queryWithStatus = query + ` AND t.status IN (?,?)`
-			rows, err = t.Conn.QueryContext(ctx, query, transactionStatus, cancelledStatus)
+			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
+			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
+			unionQuery = querySt + ` UNION ` + queryTSt
+			rows, err = t.Conn.QueryContext(ctx, unionQuery)
 		}
 
 		if status == "boarded" {
 			transactionStatus = 1
 			bookingStatus := 3
-			queryWithStatus = query + ` AND t.status = ? AND b.status = ?`
-			rows, err = t.Conn.QueryContext(ctx, queryWithStatus, transactionStatus, bookingStatus)
+			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
+			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
+			unionQuery = querySt + ` UNION ` + queryTSt
+			rows, err = t.Conn.QueryContext(ctx, unionQuery)
 		}
 		if err != nil {
 			logrus.Error(err)
@@ -322,7 +386,7 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		}
 	}
 
-	count, err := checkCount(rows)
+	count, err := checkCountUnion(rows)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
@@ -358,4 +422,23 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 		}
 	}
 	return count, nil
+}
+
+func checkCountUnion(rows *sql.Rows) (result int, err error) {
+	var count int
+	results := make([]int, 2)
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+		results = append(results, count)
+	}
+
+	if len(results) > 0 {
+		for _, r := range results {
+			result += r
+		}
+	}
+	return result, nil
 }
