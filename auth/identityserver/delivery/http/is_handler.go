@@ -75,6 +75,12 @@ func (a *isHandler) RequestOTPTmp(c echo.Context) error {
 
 	requestOTP.PhoneNumber = c.Request().Form.Get("phone_number")
 	requestOTP.Email = c.Request().Form.Get("email")
+	if requestOTP.Email != ""{
+		checkEmail , _ := a.userUsecase.GetUserByEmail(ctx,requestOTP.Email)
+		if checkEmail != nil {
+			return c.JSON(getStatusCode(models.ErrConflict), ResponseError{Message: models.ErrConflict.Error()})
+		}
+	}
 	responseOTP , err:= a.isUsecase.RequestOTPTmp(requestOTP.PhoneNumber,requestOTP.Email)
 	if err != nil {
 		return err

@@ -30,6 +30,36 @@ func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Useca
 	}
 }
 
+func (m userUsecase) GetUserByEmail(ctx context.Context, email string) (*models.UserDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	getUser,_ := m.userRepo.GetByUserEmail(ctx,email)
+	var result *models.UserDto
+	if getUser != nil {
+		result = &models.UserDto{
+			Id:             getUser.Id,
+			CreatedDate:    getUser.CreatedDate,
+			UpdatedDate:    getUser.ModifiedDate,
+			IsActive:       getUser.IsActive,
+			UserEmail:      getUser.UserEmail,
+			Password:       "",
+			FullName:       getUser.FullName,
+			PhoneNumber:    getUser.PhoneNumber,
+			ProfilePictUrl: getUser.ProfilePictUrl,
+			Address:        getUser.Address,
+			Dob:            getUser.Dob,
+			Gender:         getUser.Gender,
+			IdType:         getUser.IdType,
+			IdNumber:       getUser.IdNumber,
+			ReferralCode:   getUser.ReferralCode,
+			Points:         getUser.Points,
+		}
+	}
+
+
+	return result,nil
+}
 func (m userUsecase) LoginByGoogle(c context.Context, code string) (*models.GetToken, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
@@ -415,10 +445,10 @@ func generateRandomBytes(n int) ([]byte, error) {
 func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, isAdmin bool,token string) (*models.NewCommandUser, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
-	//existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
-	//if existeduser != nil {
-	//	return models.ErrConflict
-	//}
+	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
+	if existeduser != nil {
+		return nil,models.ErrConflict
+	}
 	//var roles []string
 
 	var createdBy string

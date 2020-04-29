@@ -43,6 +43,7 @@ type MerchantInfoDto struct {
 	MerchantEmail string     `json:"merchant_email" validate:"required"`
 	Balance       float64    `json:"balance"`
 	PhoneNumber   *string    `json:"phone_number"`
+	MerchantPicture *string 	`json:"merchant_picture"`
 }
 
 type MerchantDto struct {
