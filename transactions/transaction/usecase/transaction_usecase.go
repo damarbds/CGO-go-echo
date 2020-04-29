@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/models"
@@ -50,24 +51,38 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 	for i, item := range list {
 		var expType []string
 		if item.ExpType != "" {
-			if errUnmarshal := json.Unmarshal([]byte(item.ExpType), &expType); errUnmarshal != nil {
-				return nil, errUnmarshal
+			if !strings.Contains(item.ExpType, "]") {
+				// Default type for Transportation
+				expType = []string{"Transportation"}
+			} else {
+				if errUnmarshal := json.Unmarshal([]byte(item.ExpType), &expType); errUnmarshal != nil {
+					return nil, errUnmarshal
+				}
 			}
 		}
 		var experiencePaymentType *models.ExperiencePaymentTypeDto
 		if item.ExperiencePaymentId != "" {
-			query, err := t.experiencePaymentTypeRepo.GetByExpID(ctx, item.ExpId)
-			if err != nil {
-
-			}
-			for _, element := range query {
-				if element.Id == item.ExperiencePaymentId {
-					paymentType := models.ExperiencePaymentTypeDto{
-						Id:   element.ExpPaymentTypeId,
-						Name: element.ExpPaymentTypeName,
-						Desc: element.ExpPaymentTypeDesc,
+			if item.ExperiencePaymentId == "Economy" || item.ExperiencePaymentId == "Executive" {
+				// Default Payment Type for Transportation
+				experiencePaymentType = &models.ExperiencePaymentTypeDto{
+					Id:   "8a5e3eef-a6db-4584-a280-af5ab18a979b",
+					Name: "Full Payment",
+					Desc: "Full Payment",
+				}
+			} else {
+				query, err := t.experiencePaymentTypeRepo.GetByExpID(ctx, item.ExpId)
+				if err != nil {
+					return nil, err
+				}
+				for _, element := range query {
+					if element.Id == item.ExperiencePaymentId {
+						paymentType := models.ExperiencePaymentTypeDto{
+							Id:   element.ExpPaymentTypeId,
+							Name: element.ExpPaymentTypeName,
+							Desc: element.ExpPaymentTypeDesc,
+						}
+						experiencePaymentType = &paymentType
 					}
-					experiencePaymentType = &paymentType
 				}
 			}
 		}
