@@ -19,6 +19,7 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewMysqlArticleRepository will create an object that represent the article.Repository interface
 func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
@@ -270,7 +271,56 @@ func (b bookingExpRepository) GetGrowthByMerchantID(ctx context.Context, merchan
 	return res, nil
 }
 
-func (b bookingExpRepository) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
+func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
+	query := `
+	
+	SELECT
+		a.*,
+		b.trans_name,
+		b.trans_title,
+		b.trans_status,
+		b.class AS trans_class,
+		s.departure_date,
+		s.departure_time,
+		s.arrival_time,
+		t.total_price,
+		pm.name AS payment_type,
+		pm.desc AS account_bank,
+		pm.icon,
+		t.status AS transaction_status,
+		t.created_date AS created_date_transaction,
+		m.merchant_name,
+		m.phone_number AS merchant_phone,
+		m.merchant_picture,
+		hs.harbors_name AS harbor_source_name,
+		h.harbors_name AS harbor_dest_name
+	FROM
+		booking_exps a
+		LEFT JOIN transactions t ON t.booking_exp_id = a.id
+			OR t.order_id = a.order_id
+		LEFT JOIN payment_methods pm ON t.payment_method_id = pm.id
+		JOIN transportations b ON a.trans_id = b.id
+		LEFT JOIN schedules s ON b.id = s.trans_id
+			AND a.schedule_id = s.id
+		JOIN harbors h ON b.harbors_dest_id = h.id
+		JOIN harbors hs ON b.harbors_source_id = hs.id
+		JOIN merchants m ON b.merchant_id = m.id
+	WHERE
+		a.status = ?
+		AND a.is_active = 1
+		AND a.is_deleted = 0
+		AND (t.status = ? OR t.status IS NULL)
+		AND a.user_id = ?
+	`
+
+	list, err := b.fetchDetailTransport(ctx, query, bookingStatus, transactionStatus, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
 	query := `
 	SELECT
 		a.*,
@@ -570,7 +620,7 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId,
 
 	return booking, err
 }
-func (b bookingExpRepository) fetchQueryHistory(ctx context.Context, query string, args ...interface{}) ([]*models.BookingExpHistory, error) {
+func (b bookingExpRepository) fetchQueryExpHistory(ctx context.Context, query string, args ...interface{}) ([]*models.BookingExpHistory, error) {
 	rows, err := b.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -630,19 +680,29 @@ func (b bookingExpRepository) fetchQueryHistory(ctx context.Context, query strin
 
 	return result, nil
 }
-
-func (b bookingExpRepository) QueryHistoryPer30DaysByUserId(ctx context.Context, userId string) ([]*models.BookingExpHistory, error) {
-	query := `select a.*, b.exp_title,b.exp_type,b.exp_duration,d.city_name,e.province_name,f.country_name,g.status as status_transaction from booking_exps a
+func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Context, userId string) ([]*models.BookingExpHistory, error) {
+	query := `
+		select a.*, 
+				b.exp_title,
+				b.exp_type,
+				b.exp_duration,
+				d.city_name,
+				e.province_name,
+				f.country_name,
+				g.status as status_transaction 
+				from 
+					booking_exps a
 					join experiences b on a.exp_id = b.id
 					join harbors c on b.harbors_id = c.id
 					join cities d on c.city_id = d.id
 					join provinces e on d.province_id = e.id
 					join countries f on e.country_id = f.id
 					join transactions g on g.booking_exp_id = a.id
-					where a.user_id = ?
+				where 
+					a.user_id = ?
 					and (g.created_date >= (NOW() - INTERVAL 1 MONTH) or g.modified_date >= (NOW() - INTERVAL 1 MONTH))`
 
-	list, err := b.fetchQueryHistory(ctx, query, userId)
+	list, err := b.fetchQueryExpHistory(ctx, query, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -651,10 +711,9 @@ func (b bookingExpRepository) QueryHistoryPer30DaysByUserId(ctx context.Context,
 	return result, err
 }
 
-func (b bookingExpRepository) QueryHistoryPerMonthByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error) {
-	//dtstr1 := "2010-01-23 11:44:20"
+func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error) {
+
 	date := yearMonth + "-" + "01" + " 00:00:00"
-	//dt,_ := time.Parse(date, dtstr1)
 	query := `select a.*, b.exp_title,b.exp_type,b.exp_duration,d.city_name,e.province_name,f.country_name,g.status as status_transaction from booking_exps a
 					join experiences b on a.exp_id = b.id 
 					join harbors c on b.harbors_id = c.id
@@ -666,7 +725,100 @@ func (b bookingExpRepository) QueryHistoryPerMonthByUserId(ctx context.Context, 
 					and (g.created_date >= ? or g.modified_date >= ?)
 `
 
-	list, err := b.fetchQueryHistory(ctx, query, userId, date, date)
+	list, err := b.fetchQueryExpHistory(ctx, query, userId, date, date)
+	if err != nil {
+		return nil, err
+	}
+
+	result := list
+	return result, err
+}
+
+func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Context, userId string) ([]*models.BookingExpJoin, error) {
+	query := `
+		
+	SELECT
+		a.*,
+		b.trans_name,
+		b.trans_title,
+		b.trans_status,
+		b.class AS trans_class,
+		s.departure_date,
+		s.departure_time,
+		s.arrival_time,
+		t.total_price,
+		pm.name AS payment_type,
+		pm.desc AS account_bank,
+		pm.icon,
+		t.status AS transaction_status,
+		t.created_date AS created_date_transaction,
+		m.merchant_name,
+		m.phone_number AS merchant_phone,
+		m.merchant_picture,
+		hs.harbors_name AS harbor_source_name,
+		h.harbors_name AS harbor_dest_name
+	FROM
+		booking_exps a
+		LEFT JOIN transactions t ON t.booking_exp_id = a.id
+			OR t.order_id = a.order_id
+		LEFT JOIN payment_methods pm ON t.payment_method_id = pm.id
+		JOIN transportations b ON a.trans_id = b.id
+		LEFT JOIN schedules s ON b.id = s.trans_id
+			AND a.schedule_id = s.id
+		JOIN harbors h ON b.harbors_dest_id = h.id
+		JOIN harbors hs ON b.harbors_source_id = hs.id
+		JOIN merchants m ON b.merchant_id = m.id		
+					where 
+					a.user_id = ?
+					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))`
+
+	list, err := b.fetchDetailTransport(ctx, query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	result := list
+	return result, err
+}
+
+func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpJoin, error) {
+	date := yearMonth + "-" + "01" + " 00:00:00"
+	query := `SELECT
+		a.*,
+		b.trans_name,
+		b.trans_title,
+		b.trans_status,
+		b.class AS trans_class,
+		s.departure_date,
+		s.departure_time,
+		s.arrival_time,
+		t.total_price,
+		pm.name AS payment_type,
+		pm.desc AS account_bank,
+		pm.icon,
+		t.status AS transaction_status,
+		t.created_date AS created_date_transaction,
+		m.merchant_name,
+		m.phone_number AS merchant_phone,
+		m.merchant_picture,
+		hs.harbors_name AS harbor_source_name,
+		h.harbors_name AS harbor_dest_name
+	FROM
+		booking_exps a
+		LEFT JOIN transactions t ON t.booking_exp_id = a.id
+			OR t.order_id = a.order_id
+		LEFT JOIN payment_methods pm ON t.payment_method_id = pm.id
+		JOIN transportations b ON a.trans_id = b.id
+		LEFT JOIN schedules s ON b.id = s.trans_id
+			AND a.schedule_id = s.id
+		JOIN harbors h ON b.harbors_dest_id = h.id
+		JOIN harbors hs ON b.harbors_source_id = hs.id
+		JOIN merchants m ON b.merchant_id = m.id
+					where a.user_id = ?
+					and (t.created_date >= ? or t.modified_date >= ?)
+`
+
+	list, err := b.fetchDetailTransport(ctx, query, userId, date, date)
 	if err != nil {
 		return nil, err
 	}

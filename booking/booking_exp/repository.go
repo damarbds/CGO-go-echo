@@ -12,9 +12,12 @@ type Repository interface {
 	GetEmailByID(ctx context.Context, bookingId string) (string, error)
 	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error)
 	UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error
-	GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error)
-	QueryHistoryPer30DaysByUserId(ctx context.Context, userId string) ([]*models.BookingExpHistory, error)
-	QueryHistoryPerMonthByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error)
+	GetBookingExpByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error)
+	GetBookingTransByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error)
+	QueryHistoryPer30DaysExpByUserId(ctx context.Context, userId string) ([]*models.BookingExpHistory, error)
+	QueryHistoryPerMonthExpByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error)
+	QueryHistoryPer30DaysTransByUserId(ctx context.Context, userId string) ([]*models.BookingExpJoin, error)
+	QueryHistoryPerMonthTransByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpJoin, error)
 	GetGrowthByMerchantID(ctx context.Context, merchantId string) ([]*models.BookingGrowth, error)
 	CountThisMonth(ctx context.Context) (int, error)
 	UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error

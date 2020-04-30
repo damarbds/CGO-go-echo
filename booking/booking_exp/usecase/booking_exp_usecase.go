@@ -354,21 +354,28 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 		return nil, err
 	}
 
-	bList, err := b.bookingExpRepo.GetByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id)
+	expList, err := b.bookingExpRepo.GetBookingExpByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	myBooking := make([]*models.MyBooking, len(bList))
-	for i, b := range bList {
+	myBooking := make([]*models.MyBooking, len(expList))
+	for i, b := range expList {
 		var guestDesc []models.GuestDescObj
 		if b.GuestDesc != "" {
 			if errUnmarshal := json.Unmarshal([]byte(b.GuestDesc), &guestDesc); errUnmarshal != nil {
 				return nil, err
 			}
 		}
-
+		 expType := make([]string,0)
+		if b.ExpType != nil {
+			if errUnmarshal := json.Unmarshal([]byte(*b.ExpType), &expType); errUnmarshal != nil {
+				return nil, err
+			}
+		}
 		myBooking[i] = &models.MyBooking{
+			OrderId:b.OrderId,
+			ExpType:expType,
 			ExpId:       *b.ExpId,
 			ExpTitle:    *b.ExpTitle,
 			BookingDate: b.BookingDate,
@@ -378,6 +385,50 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 			Province:    b.Province,
 			Country:     b.Country,
 		}
+	}
+
+	transList, err := b.bookingExpRepo.GetBookingTransByUserID(ctx,transactionStatus,bookingStatus,currentUser.Id)
+	if err != nil {
+		return nil,err
+	}
+	for _, b := range transList {
+		var guestDesc []models.GuestDescObj
+		if b.GuestDesc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(b.GuestDesc), &guestDesc); errUnmarshal != nil {
+				return nil, err
+			}
+		}
+		var transGuest models.TotalGuestTransportation
+		if len(guestDesc) > 0 {
+			for _,guest := range guestDesc {
+				if guest.Type == "Adult"{
+					transGuest.Adult = transGuest.Adult + 1
+				}else if guest.Type == "Children"{
+					transGuest.Children = transGuest.Children + 1
+				}
+			}
+		}
+		booking := models.MyBooking{
+			OrderId:b.OrderId,
+			ExpId:              "",
+			ExpTitle:           "",
+			TransId:            *b.TransId,
+			TransName:          *b.TransName,
+			TransFrom:          *b.HarborDestName,
+			TransTo:            *b.HarborSourceName,
+			TransDepartureTime: b.DepartureTime,
+			TransArrivalTime:   b.ArrivalTime,
+			TransClass:         *b.TransClass,
+			TransGuest:transGuest,
+			BookingDate:        b.BookingDate,
+			ExpDuration:        0,
+			TotalGuest:         len(guestDesc),
+			City:               b.City,
+			Province:           b.Province,
+			Country:            b.Country,
+		}
+
+		myBooking = append(myBooking,&booking)
 	}
 
 	return myBooking, nil
@@ -673,7 +724,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 	var guestDesc []models.GuestDescObj
 	var result []*models.BookingHistoryDto
 	if monthType == "past-30-days" {
-		query, err := b.bookingExpRepo.QueryHistoryPer30DaysByUserId(ctx, currentUserId)
+		query, err := b.bookingExpRepo.QueryHistoryPer30DaysExpByUserId(ctx, currentUserId)
 		if err != nil {
 			return nil, err
 		}
@@ -704,16 +755,64 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
-				Status:         element.StatusTransaction,
+				//Status:         element.StatusTransaction,
+			}
+			historyDto.Items = append(historyDto.Items, itemDto)
+		}
+
+		queryTrans, err := b.bookingExpRepo.QueryHistoryPer30DaysTransByUserId(ctx, currentUserId)
+		if err != nil {
+			return nil, err
+		}
+		for _, element := range queryTrans {
+			var expType []string
+			if element.ExpType != nil {
+				if errUnmarshal := json.Unmarshal([]byte(*element.ExpType), &expType); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+			if element.GuestDesc != "" {
+				if errUnmarshal := json.Unmarshal([]byte(element.GuestDesc), &guestDesc); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+			var transGuest models.TotalGuestTransportation
+			if len(guestDesc) > 0 {
+				for _,guest := range guestDesc {
+					if guest.Type == "Adult"{
+						transGuest.Adult = transGuest.Adult + 1
+					}else if guest.Type == "Children"{
+						transGuest.Children = transGuest.Children + 1
+					}
+				}
+			}
+			//totalGuest := len(guestDesc)
+			itemDto := models.ItemsHistoryDto{
+				OrderId:            element.OrderId,
+				ExpId:              "",
+				ExpTitle:           "",
+				ExpType:            nil,
+				TransId:            *element.TransId,
+				TransName:          *element.TransName,
+				TransFrom:          *element.HarborDestName,
+				TransTo:            *element.HarborSourceName,
+				TransDepartureTime: element.DepartureTime,
+				TransArrivalTime:   element.ArrivalTime,
+				TransClass:         *element.TransClass,
+				TransGuest:         transGuest,
+				ExpBookingDate:     element.BookingDate,
+				ExpDuration:        0,
+				TotalGuest:         0,
+				City:               element.City,
+				Province:           element.Province,
+				Country:            element.Country,
+				//Status:             element.Status,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
 		result = append(result, &historyDto)
 	} else {
-		//test := "2006-05"
-		//year := string(monthType[0] + monthType[1] + monthType[2] + monthType[3])
-		//month := string (monthType[5] + monthType[6])
-		query, err := b.bookingExpRepo.QueryHistoryPerMonthByUserId(ctx, currentUserId, monthType)
+		queryExp, err := b.bookingExpRepo.QueryHistoryPerMonthExpByUserId(ctx, currentUserId, monthType)
 		if err != nil {
 			return nil, err
 		}
@@ -725,7 +824,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			Category: dtstr2,
 			Items:    nil,
 		}
-		for _, element := range query {
+		for _, element := range queryExp {
 			var expType []string
 			if element.ExpType != nil {
 				if errUnmarshal := json.Unmarshal([]byte(*element.ExpType), &expType); errUnmarshal != nil {
@@ -739,6 +838,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			totalGuest := len(guestDesc)
 			itemDto := models.ItemsHistoryDto{
+				OrderId:element.OrderId,
 				ExpId:          element.ExpId,
 				ExpTitle:       element.ExpTitle,
 				ExpType:        expType,
@@ -748,7 +848,57 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
-				Status:         element.StatusTransaction,
+				//Status:         element.StatusTransaction,
+			}
+			historyDto.Items = append(historyDto.Items, itemDto)
+		}
+		queryTrans, err := b.bookingExpRepo.QueryHistoryPerMonthTransByUserId(ctx, currentUserId, monthType)
+		if err != nil {
+			return nil, err
+		}
+		for _, element := range queryTrans {
+			var expType []string
+			if element.ExpType != nil {
+				if errUnmarshal := json.Unmarshal([]byte(*element.ExpType), &expType); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+			if element.GuestDesc != "" {
+				if errUnmarshal := json.Unmarshal([]byte(element.GuestDesc), &guestDesc); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+			var transGuest models.TotalGuestTransportation
+			if len(guestDesc) > 0 {
+				for _,guest := range guestDesc {
+					if guest.Type == "Adult"{
+						transGuest.Adult = transGuest.Adult + 1
+					}else if guest.Type == "Children"{
+						transGuest.Children = transGuest.Children + 1
+					}
+				}
+			}
+			//totalGuest := len(guestDesc)
+			itemDto := models.ItemsHistoryDto{
+				OrderId:            element.OrderId,
+				ExpId:              "",
+				ExpTitle:           "",
+				ExpType:            nil,
+				TransId:            *element.TransId,
+				TransName:          *element.TransName,
+				TransFrom:          *element.HarborDestName,
+				TransTo:            *element.HarborSourceName,
+				TransDepartureTime: element.DepartureTime,
+				TransArrivalTime:   element.ArrivalTime,
+				TransClass:         *element.TransClass,
+				TransGuest:         transGuest,
+				ExpBookingDate:     element.BookingDate,
+				ExpDuration:        0,
+				TotalGuest:         0,
+				City:               element.City,
+				Province:           element.Province,
+				Country:            element.Country,
+				//Status:             element.Status,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
