@@ -109,7 +109,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			status = "Confirm"
 		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
 			status = "Failed"
-		} else if item.TransactionStatus == 1 && item.BookingStatus == 3 {
+		} else if item.TransactionStatus == 2 && item.BookingStatus == 3 {
 			status = "Boarded"
 		}
 

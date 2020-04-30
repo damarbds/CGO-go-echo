@@ -186,7 +186,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		}
 
 		if status == "boarded" {
-			transactionStatus = 1
+			transactionStatus = 2
 			bookingStatus = 3
 			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
