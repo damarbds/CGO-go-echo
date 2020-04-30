@@ -220,7 +220,7 @@ func (t transportationRepository) Insert(ctx context.Context, a models.Transport
 
 func (t transportationRepository) UpdateStatus(ctx context.Context, status int, id string, user string) error {
 	query := `UPDATE transportations SET modified_by=?, modified_date=? , deleted_by=? , 
-				deleted_date=? , is_deleted=? , is_active=? ,status=? WHERE id=?`
+				deleted_date=? , is_deleted=? , is_active=? ,trans_status=? WHERE id=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
