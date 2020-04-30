@@ -90,6 +90,7 @@ type TransactionOut struct {
 	BookingStatus       int       `json:"booking_status"`
 	TotalPrice          float64   `json:"total_price"`
 	ExperiencePaymentId string    `json:"experience_payment_id"`
+	MerchantName        string    `json:"merchant_name"`
 }
 
 type TransactionDto struct {
@@ -107,6 +108,7 @@ type TransactionDto struct {
 	Status                string                    `json:"status"`
 	TotalPrice            float64                   `json:"total_price"`
 	ExperiencePaymentType *ExperiencePaymentTypeDto `json:"experience_payment_type"`
+	Merchant              string                    `json:"merchant"`
 }
 
 type TransactionWithPagination struct {
