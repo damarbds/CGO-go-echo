@@ -128,6 +128,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			Status:                status,
 			TotalPrice:            item.TotalPrice,
 			ExperiencePaymentType: experiencePaymentType,
+			Merchant:              item.MerchantName,
 		}
 	}
 	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status)

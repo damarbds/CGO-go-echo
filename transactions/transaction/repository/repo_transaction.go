@@ -16,7 +16,6 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
-
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
@@ -28,7 +27,7 @@ func (t transactionRepository) GetCountByTransId(ctx context.Context, transId st
 											join schedules d on b.schedule_id = d.id
 											where a.status < 3 and b.trans_id = ?`
 
-	rows, err := t.Conn.QueryContext(ctx, query,transId)
+	rows, err := t.Conn.QueryContext(ctx, query, transId)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
@@ -108,12 +107,14 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		t.status as transaction_status,
 		b.status as booking_status,
 		t.total_price,
-		ep.id as experience_payment_id
+		ep.id as experience_payment_id,
+		merchant_name
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
 		JOIN experience_payments ep ON e.id = ep.exp_id
+		JOIN merchants m ON e.merchant_id = m.id
 	WHERE 
 		t.is_deleted = 0
 		AND t.is_active = 1
@@ -135,11 +136,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		t.status AS transaction_status,
 		b.status AS booking_status,
 		t.total_price,
-		tr.class as trans_class
+		tr.class as trans_class,
+		merchant_name
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN transportations tr ON b.trans_id = tr.id
+		JOIN merchants m ON tr.merchant_id = m.id
 	WHERE
 		t.is_deleted = 0
 		AND t.is_active = 1`
@@ -233,6 +236,7 @@ func (t transactionRepository) fetchWithJoin(ctx context.Context, query string, 
 			&t.BookingStatus,
 			&t.TotalPrice,
 			&t.ExperiencePaymentId,
+			&t.MerchantName,
 		)
 
 		if err != nil {
