@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/service/temp_user_preferences"
 	"math"
 	"strconv"
 	"time"
@@ -27,6 +28,7 @@ import (
 )
 
 type experienceUsecase struct {
+	tempUserPreRepo temp_user_preferences.Repository
 	filterATRepo     filter_activity_type.Repository
 	adOnsRepo        experience_add_ons.Repository
 	experienceRepo   experience.Repository
@@ -45,6 +47,7 @@ type experienceUsecase struct {
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
+	tup temp_user_preferences.Repository,
 	fac filter_activity_type.Repository,
 	adOns experience_add_ons.Repository,
 	ea exp_availability.Repository,
@@ -60,6 +63,7 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
+		tempUserPreRepo:tup,
 		filterATRepo:     fac,
 		adOnsRepo:        adOns,
 		exp_availablitiy: ea,
@@ -223,109 +227,86 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	expList, err := m.experienceRepo.GetUserDiscoverPreference(ctx, page, size)
+	tempUserPreference, err := m.tempUserPreRepo.GetAll(ctx, page, size)
 	if err != nil {
 		return nil, err
 	}
 	var expListDto []*models.ExpUserDiscoverPreferenceDto
-
-	for _, element := range expList {
-
-		var expType []string
-		if errUnmarshal := json.Unmarshal([]byte(element.ExpType), &expType); errUnmarshal != nil {
-			return nil, models.ErrInternalServerError
-		}
-		countRating, err := m.reviewsRepo.CountRating(ctx, 0, element.Id)
+	for _,tup := range tempUserPreference{
+		expList,err := m.experienceRepo.GetUserDiscoverPreferenceByHarborsIdOrProvince(ctx,tup.HarborsId,tup.ProvinceId)
 		if err != nil {
-			return nil, err
+			return nil,err
 		}
-		//expPhotos, err := m.expPhotos.GetByExperienceID(ctx,element.Id)
-		//if err != nil {
-		//	return nil, models.ErrInternalServerError
-		//}
+		for _, element := range expList {
 
-		var coverPhotos models.CoverPhotosObj
-		var cityPhotos []models.CoverPhotosObj
-		if element.ExpCoverPhoto != nil {
-			covertPhoto := models.CoverPhotosObj{
-				Original:  *element.ExpCoverPhoto,
-				Thumbnail: "",
-			}
-			coverPhotos = covertPhoto
-			//if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
-			//	return nil,models.ErrInternalServerError
-			//}
-		}
-		if element.CityPhotos != nil {
-			if errUnmarshal := json.Unmarshal([]byte(*element.CityPhotos), &cityPhotos); errUnmarshal != nil {
+			var expType []string
+			if errUnmarshal := json.Unmarshal([]byte(element.ExpType), &expType); errUnmarshal != nil {
 				return nil, models.ErrInternalServerError
 			}
-		}
-
-		expPayment, err := m.paymentRepo.GetByExpID(ctx, element.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		var priceItemType string
-		var currency string
-		if expPayment != nil {
-			if expPayment[0].Currency == 1 {
-				currency = "USD"
-			} else {
-				currency = "IDR"
+			countRating, err := m.reviewsRepo.CountRating(ctx, 0, element.Id)
+			if err != nil {
+				return nil, err
 			}
+			//expPhotos, err := m.expPhotos.GetByExperienceID(ctx,element.Id)
+			//if err != nil {
+			//	return nil, models.ErrInternalServerError
+			//}
 
-			if expPayment[0].PriceItemType == 1 {
-				priceItemType = "Per Pax"
-			} else {
-				priceItemType = "Per Trip"
+			var coverPhotos models.CoverPhotosObj
+			cityPhotos := make([]models.CoverPhotosObj,0)
+			if element.ExpCoverPhoto != nil {
+				covertPhoto := models.CoverPhotosObj{
+					Original:  *element.ExpCoverPhoto,
+					Thumbnail: "",
+				}
+				coverPhotos = covertPhoto
+				//if errUnmarshal := json.Unmarshal([]byte(expPhotos[0].ExpPhotoImage), &coverPhotos); errUnmarshal != nil {
+				//	return nil,models.ErrInternalServerError
+				//}
 			}
-		} else {
-			priceItemType = ""
-			currency = ""
-		}
-
-		//expDto := models.ExperienceUserDiscoverPreferenceDto{}
-
-		if len(expListDto) == 0 {
-			cityDto := models.ExpUserDiscoverPreferenceDto{
-				CityId:     element.CityId,
-				City:       element.CityName,
-				CityDesc:   element.CityDesc,
-				Item:       nil,
-				CityPhotos: cityPhotos,
-			}
-			expDto := models.ExperienceUserDiscoverPreferenceDto{
-				Id:          element.Id,
-				ExpTitle:    element.ExpTitle,
-				ExpType:     expType,
-				Rating:      element.Rating,
-				CountRating: countRating,
-				Currency:    currency,
-				//Price:        expPayment[0].Price,
-				Payment_type: priceItemType,
-				Cover_Photo:  coverPhotos,
-			}
-			if expPayment != nil {
-				expDto.Price = expPayment[0].Price
-			}
-			cityDto.Item = append(cityDto.Item, expDto)
-			expListDto = append(expListDto, &cityDto)
-		} else if len(expListDto) != 0 {
-			var searchDto *models.ExpUserDiscoverPreferenceDto
-			for _, dto := range expListDto {
-				if dto.CityId == element.CityId {
-					searchDto = dto
+			if element.CityPhotos != nil {
+				if errUnmarshal := json.Unmarshal([]byte(*element.CityPhotos), &cityPhotos); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
 				}
 			}
-			if searchDto == nil {
+
+			expPayment, err := m.paymentRepo.GetByExpID(ctx, element.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			var priceItemType string
+			var currency string
+			if expPayment != nil {
+				if expPayment[0].Currency == 1 {
+					currency = "USD"
+				} else {
+					currency = "IDR"
+				}
+
+				if expPayment[0].PriceItemType == 1 {
+					priceItemType = "Per Pax"
+				} else {
+					priceItemType = "Per Trip"
+				}
+			} else {
+				priceItemType = ""
+				currency = ""
+			}
+
+			//expDto := models.ExperienceUserDiscoverPreferenceDto{}
+
+			if len(expListDto) == 0 {
 				cityDto := models.ExpUserDiscoverPreferenceDto{
+					ProvinceId:element.ProvinceId,
+					ProvinceName:element.ProvinceName,
 					CityId:     element.CityId,
 					City:       element.CityName,
 					CityDesc:   element.CityDesc,
-					CityPhotos: cityPhotos,
 					Item:       nil,
+					CityPhotos: cityPhotos,
+					HarborsId:element.IdHarbors,
+					HarborsName:element.HarborsName,
 				}
 				expDto := models.ExperienceUserDiscoverPreferenceDto{
 					Id:          element.Id,
@@ -343,29 +324,66 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				}
 				cityDto.Item = append(cityDto.Item, expDto)
 				expListDto = append(expListDto, &cityDto)
-			} else {
+			} else if len(expListDto) != 0 {
+				var searchDto *models.ExpUserDiscoverPreferenceDto
 				for _, dto := range expListDto {
 					if dto.CityId == element.CityId {
-						expDto := models.ExperienceUserDiscoverPreferenceDto{
-							Id:          element.Id,
-							ExpTitle:    element.ExpTitle,
-							ExpType:     expType,
-							Rating:      element.Rating,
-							CountRating: countRating,
-							Currency:    currency,
-							//Price:        expPayment[0].Price,
-							Payment_type: priceItemType,
-							Cover_Photo:  coverPhotos,
+						searchDto = dto
+					}
+				}
+				if searchDto == nil {
+					cityDto := models.ExpUserDiscoverPreferenceDto{
+						ProvinceId:element.ProvinceId,
+						ProvinceName:element.ProvinceName,
+						CityId:     element.CityId,
+						City:       element.CityName,
+						CityDesc:   element.CityDesc,
+						Item:       nil,
+						CityPhotos: cityPhotos,
+						HarborsId:element.IdHarbors,
+						HarborsName:element.HarborsName,
+					}
+					expDto := models.ExperienceUserDiscoverPreferenceDto{
+						Id:          element.Id,
+						ExpTitle:    element.ExpTitle,
+						ExpType:     expType,
+						Rating:      element.Rating,
+						CountRating: countRating,
+						Currency:    currency,
+						//Price:        expPayment[0].Price,
+						Payment_type: priceItemType,
+						Cover_Photo:  coverPhotos,
+					}
+					if expPayment != nil {
+						expDto.Price = expPayment[0].Price
+					}
+					cityDto.Item = append(cityDto.Item, expDto)
+					expListDto = append(expListDto, &cityDto)
+				} else {
+					for _, dto := range expListDto {
+						if dto.CityId == element.CityId {
+							expDto := models.ExperienceUserDiscoverPreferenceDto{
+								Id:          element.Id,
+								ExpTitle:    element.ExpTitle,
+								ExpType:     expType,
+								Rating:      element.Rating,
+								CountRating: countRating,
+								Currency:    currency,
+								//Price:        expPayment[0].Price,
+								Payment_type: priceItemType,
+								Cover_Photo:  coverPhotos,
+							}
+							if expPayment != nil {
+								expDto.Price = expPayment[0].Price
+							}
+							dto.Item = append(dto.Item, expDto)
 						}
-						if expPayment != nil {
-							expDto.Price = expPayment[0].Price
-						}
-						dto.Item = append(dto.Item, expDto)
 					}
 				}
 			}
 		}
 	}
+
 	return expListDto, nil
 }
 

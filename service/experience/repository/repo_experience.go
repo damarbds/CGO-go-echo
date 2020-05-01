@@ -278,10 +278,79 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 	for rows.Next() {
 		t := new(models.ExpUserDiscoverPreference)
 		err = rows.Scan(
+			&t.ProvinceId,
+			&t.ProvinceName,
 			&t.CityId,
 			&t.CityName,
 			&t.CityDesc,
 			&t.CityPhotos,
+			&t.IdHarbors,
+			&t.HarborsName,
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.ExpTitle,
+			&t.ExpType,
+			&t.ExpTripType,
+			&t.ExpBookingType,
+			&t.ExpDesc,
+			&t.ExpMaxGuest,
+			&t.ExpPickupPlace,
+			&t.ExpPickupTime,
+			&t.ExpPickupPlaceLongitude,
+			&t.ExpPickupPlaceLatitude,
+			&t.ExpPickupPlaceMapsName,
+			&t.ExpInternary,
+			&t.ExpFacilities,
+			&t.ExpInclusion,
+			&t.ExpRules,
+			&t.Status,
+			&t.Rating,
+			&t.ExpLocationLatitude,
+			&t.ExpLocationLongitude,
+			&t.ExpLocationName,
+			&t.ExpCoverPhoto,
+			&t.ExpDuration,
+			&t.MinimumBookingId,
+			&t.MerchantId,
+			&t.HarborsId,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.Context, query string, args ...interface{}) ([]*models.ExpUserDiscoverPreference, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ExpUserDiscoverPreference, 0)
+	for rows.Next() {
+		t := new(models.ExpUserDiscoverPreference)
+		err = rows.Scan(
+			&t.ProvinceId,
+			&t.ProvinceName,
 			&t.Id,
 			&t.CreatedBy,
 			&t.CreatedDate,
@@ -547,7 +616,7 @@ func (m *experienceRepository) GetIdByCityId(ctx context.Context, cityId string)
 
 	return result, err
 }
-func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreference, error) {
+func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, page *int, size *int,) ([]*models.ExpUserDiscoverPreference, error) {
 
 	if page != nil && size != nil {
 		query := `select c.city_id, c.city_name, city.city_desc,city_photos,a.* from cgo_indonesia.experiences a
@@ -587,6 +656,67 @@ func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, pa
 		return res, err
 	}
 
+}
+
+func (m *experienceRepository) GetUserDiscoverPreferenceByHarborsIdOrProvince(ctx context.Context, harborsId *string, provinceId *int) ([]*models.ExpUserDiscoverPreference, error) {
+
+	if harborsId != nil {
+		query := `select 
+					province.id as province_id ,
+					province.province_name,
+					c.city_id, 
+					c.city_name, 
+					city.city_desc,
+					city_photos,	
+					b.id as id_harbors,
+					b.harbors_name ,
+					a.*
+			from 
+				experiences a
+			join harbors b on b.id = a.harbors_id
+			join 
+			(
+				select c.id as city_id, c.city_name as city_name,p.id as province_id from temp_user_preferences upe
+				join harbors h on h.id = upe.harbors_id
+				join cities c on c.id = h.city_id
+				join provinces p on p.id = c.province_id
+				where h.id = ?
+			) c on c.city_id = b.city_id
+            join cities city on city.id = c.city_id
+			join provinces province on province.id = c.province_id
+			WHERE a.harbors_id = ?`
+
+		res, err := m.fetchUserDiscoverPreference(ctx, query, harborsId,harborsId)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	} else if provinceId != nil{
+		query := `select 
+					province.id as province_id ,
+					province.province_name,
+					a.*
+			from 
+				experiences a
+			join harbors b on b.id = a.harbors_id
+			join 
+			(
+				select c.id as city_id, c.city_name as city_name ,p.id as province_id from harbors h
+				join cities c on c.id = h.city_id
+				join provinces p on p.id = c.province_id
+				where p.id = ?
+			) c on c.city_id = b.city_id
+            join cities city on city.id = c.city_id
+			join provinces province on province.id = c.province_id
+			WHERE province.id = ?`
+
+		res, err := m.fetchUserDiscoverPreferenceProvince(ctx, query, provinceId,provinceId)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	}
+	return nil,nil
 }
 func (m *experienceRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Experience, string, error) {
 	query := `SELECT * FROM experiences WHERE created_at > ? ORDER BY created_at LIMIT ? `

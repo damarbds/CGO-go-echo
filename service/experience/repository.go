@@ -11,6 +11,7 @@ type Repository interface {
 	GetByID(ctx context.Context, id string) (*models.ExperienceJoinForegnKey, error)
 	SelectIdGetByMerchantId(ctx context.Context, merchantId string) ([]*string, error)
 	GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreference, error)
+	GetUserDiscoverPreferenceByHarborsIdOrProvince(ctx context.Context, harborsId *string,provinceId *int) ([]*models.ExpUserDiscoverPreference, error)
 	GetIdByHarborsId(ctx context.Context, harborsId string) ([]*string, error)
 	GetIdByCityId(ctx context.Context, cityId string) ([]*string, error)
 	QueryFilterSearch(ctx context.Context, query string, limit, offset int) ([]*models.ExpSearch, error)

@@ -253,10 +253,14 @@ type CoverPhotosObj struct {
 	Thumbnail string `json:"thumbnail"`
 }
 type ExpUserDiscoverPreference struct {
+	ProvinceId				int 	`json:"province_id"`
+	ProvinceName			string	`json:"province_name"`
 	CityId                  int        `json:"city_id"`
 	CityName                string     `json:"city_name"`
 	CityDesc                string     `json:"city_desc"`
 	CityPhotos              *string    `json:"city_photos"`
+	IdHarbors				string		`json:"id_harbors"`
+	HarborsName				string		`json:"harbors_name"`
 	Id                      string     `json:"id" validate:"required"`
 	CreatedBy               string     `json:"created_by":"required"`
 	CreatedDate             time.Time  `json:"created_date" validate:"required"`
@@ -294,10 +298,14 @@ type ExpUserDiscoverPreference struct {
 }
 
 type ExpUserDiscoverPreferenceDto struct {
+	ProvinceId int 									`json:"province_id"`
+	ProvinceName string	`json:"province_name"`
 	CityId     int                                   `json:"city_id"`
 	City       string                                `json:"city"`
 	CityDesc   string                                `json:"city_desc"`
 	CityPhotos []CoverPhotosObj                      `json:"city_photos"`
+	HarborsId	string							`json:"harbors_id"`
+	HarborsName	string	`json:"harbors_name"`
 	Item       []ExperienceUserDiscoverPreferenceDto `json:"item"`
 }
 

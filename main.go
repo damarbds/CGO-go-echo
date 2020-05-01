@@ -29,6 +29,8 @@ import (
 	_experienceRepo "github.com/service/experience/repository"
 	_experienceUcase "github.com/service/experience/usecase"
 
+	_tempUserPreferenceRepo "github.com/service/temp_user_preferences/repository"
+
 	_harborsHttpDeliver "github.com/service/harbors/delivery/http"
 	_harborsRepo "github.com/service/harbors/repository"
 	_harborsUcase "github.com/service/harbors/usecase"
@@ -189,6 +191,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	tempUserPreferenceRepo := _tempUserPreferenceRepo.NewtempUserPreferencesRepository(dbConn)
 	promoMerchantRepo := _promoMerchantRepo.NewpromoMerchantRepository(dbConn)
 	filterActivityTypeRepo := _filterActivityTypeRepo.NewFilterActivityTypeRepository(dbConn)
 	expAvailabilityRepo := _expAvailabilityRepo.NewExpavailabilityRepository(dbConn)
@@ -237,6 +240,7 @@ func main() {
 
 	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo,promoRepo, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		tempUserPreferenceRepo,
 		filterActivityTypeRepo,
 		experienceAddOnRepo,
 		expAvailabilityRepo,
