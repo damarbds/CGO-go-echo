@@ -175,8 +175,8 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 	for i, detail := range details {
 		var tripDuration string
 		if detail.DepartureTime != nil && detail.ArrivalTime != nil {
-			departureTime, _ := time.Parse("15:04", *detail.DepartureTime)
-			arrivalTime, _ := time.Parse("15:04", *detail.ArrivalTime)
+			departureTime, _ := time.Parse("15:04:00", *detail.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04:00", *detail.ArrivalTime)
 
 			tripHour := arrivalTime.Hour() - departureTime.Hour()
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()
@@ -399,6 +399,16 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 				return nil, err
 			}
 		}
+		var expGuest models.TotalGuestTransportation
+		if len(guestDesc) > 0 {
+			for _,guest := range guestDesc {
+				if guest.Type == "Adult"{
+					expGuest.Adult = expGuest.Adult + 1
+				}else if guest.Type == "Children"{
+					expGuest.Children = expGuest.Children + 1
+				}
+			}
+		}
 		myBooking[i] = &models.MyBooking{
 			OrderId:b.OrderId,
 			ExpType:expType,
@@ -407,6 +417,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 			BookingDate: b.BookingDate,
 			ExpDuration: *b.ExpDuration,
 			TotalGuest:  len(guestDesc),
+			ExpGuest:expGuest,
 			City:        b.City,
 			Province:    b.Province,
 			Country:     b.Country,
@@ -434,6 +445,15 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 				}
 			}
 		}
+		var tripDuration string
+		if b.DepartureTime != nil && b.ArrivalTime != nil {
+			departureTime, _ := time.Parse("15:04:00", *b.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04:00", *b.ArrivalTime)
+
+			tripHour := arrivalTime.Hour() - departureTime.Hour()
+			tripMinute := arrivalTime.Minute() - departureTime.Minute()
+			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+		}
 		booking := models.MyBooking{
 			OrderId:b.OrderId,
 			ExpId:              "",
@@ -444,6 +464,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 			TransTo:            *b.HarborSourceName,
 			TransDepartureTime: b.DepartureTime,
 			TransArrivalTime:   b.ArrivalTime,
+			TripDuration:tripDuration,
 			TransClass:         *b.TransClass,
 			TransGuest:transGuest,
 			BookingDate:        b.BookingDate,
@@ -770,6 +791,17 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 					return nil, models.ErrInternalServerError
 				}
 			}
+
+			var expGuest models.TotalGuestTransportation
+			if len(guestDesc) > 0 {
+				for _,guest := range guestDesc {
+					if guest.Type == "Adult"{
+						expGuest.Adult = expGuest.Adult + 1
+					}else if guest.Type == "Children"{
+						expGuest.Children = expGuest.Children + 1
+					}
+				}
+			}
 			totalGuest := len(guestDesc)
 			var status string
 			if element.StatusTransaction == 0 {
@@ -791,6 +823,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				ExpBookingDate: element.BookingDate,
 				ExpDuration:    element.ExpDuration,
 				TotalGuest:     totalGuest,
+				ExpGuest:expGuest,
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
@@ -838,6 +871,15 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			} else if *element.TransactionStatus == 2 && element.Status == 3 {
 				status = "Boarded"
 			}
+			var tripDuration string
+			if element.DepartureTime != nil && element.ArrivalTime != nil {
+				departureTime, _ := time.Parse("15:04:00", *element.DepartureTime)
+				arrivalTime, _ := time.Parse("15:04:00", *element.ArrivalTime)
+
+				tripHour := arrivalTime.Hour() - departureTime.Hour()
+				tripMinute := arrivalTime.Minute() - departureTime.Minute()
+				tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+			}
 			itemDto := models.ItemsHistoryDto{
 				OrderId:            element.OrderId,
 				ExpId:              "",
@@ -849,6 +891,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				TransTo:            *element.HarborSourceName,
 				TransDepartureTime: element.DepartureTime,
 				TransArrivalTime:   element.ArrivalTime,
+				TripDuration:tripDuration,
 				TransClass:         *element.TransClass,
 				TransGuest:         transGuest,
 				ExpBookingDate:     element.BookingDate,
@@ -887,6 +930,16 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 					return nil, models.ErrInternalServerError
 				}
 			}
+			var expGuest models.TotalGuestTransportation
+			if len(guestDesc) > 0 {
+				for _,guest := range guestDesc {
+					if guest.Type == "Adult"{
+						expGuest.Adult = expGuest.Adult + 1
+					}else if guest.Type == "Children"{
+						expGuest.Children = expGuest.Children + 1
+					}
+				}
+			}
 			totalGuest := len(guestDesc)
 
 			var status string
@@ -910,6 +963,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				ExpBookingDate: element.BookingDate,
 				ExpDuration:    element.ExpDuration,
 				TotalGuest:     totalGuest,
+				ExpGuest:expGuest,
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
@@ -956,6 +1010,15 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			} else if *element.TransactionStatus == 2 && element.Status == 3 {
 				status = "Boarded"
 			}
+			var tripDuration string
+			if element.DepartureTime != nil && element.ArrivalTime != nil {
+				departureTime, _ := time.Parse("15:04:00", *element.DepartureTime)
+				arrivalTime, _ := time.Parse("15:04:00", *element.ArrivalTime)
+
+				tripHour := arrivalTime.Hour() - departureTime.Hour()
+				tripMinute := arrivalTime.Minute() - departureTime.Minute()
+				tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+			}
 			itemDto := models.ItemsHistoryDto{
 				OrderId:            element.OrderId,
 				ExpId:              "",
@@ -967,6 +1030,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				TransTo:            *element.HarborSourceName,
 				TransDepartureTime: element.DepartureTime,
 				TransArrivalTime:   element.ArrivalTime,
+				TripDuration:tripDuration,
 				TransClass:         *element.TransClass,
 				TransGuest:         transGuest,
 				ExpBookingDate:     element.BookingDate,

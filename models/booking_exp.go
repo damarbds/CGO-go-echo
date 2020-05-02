@@ -62,11 +62,13 @@ type ItemsHistoryDto struct {
 	TransTo 	string		`json:"trans_to"`
 	TransDepartureTime *string	`json:"trans_departure_time"`
 	TransArrivalTime   *string	`json:"trans_arrival_time"`
+	TripDuration string		`json:"trip_duration"`
 	TransClass	string		`json:"trans_class"`
 	TransGuest  TotalGuestTransportation `json:"trans_guest"`
 	ExpBookingDate time.Time `json:"exp_booking_date"`
 	ExpDuration    int       `json:"exp_duration"`
 	TotalGuest     int       `json:"total_guest"`
+	ExpGuest TotalGuestTransportation `json:"exp_guest"`
 	City           string    `json:"city"`
 	Province       string    `json:"province"`
 	Country        string    `json:"country"`
@@ -255,10 +257,12 @@ type MyBooking struct {
 	TransTo 	string		`json:"trans_to"`
 	TransDepartureTime *string	`json:"trans_departure_time"`
 	TransArrivalTime   *string	`json:"trans_arrival_time"`
+	TripDuration string		`json:"trip_duration"`
 	TransClass	string		`json:"trans_class"`
 	TransGuest  TotalGuestTransportation `json:"trans_guest"`
 	BookingDate time.Time `json:"booking_date"`
 	ExpDuration int       `json:"exp_duration"`
+	ExpGuest  TotalGuestTransportation `json:"exp_guest"`
 	TotalGuest  int       `json:"total_guest"`
 	City        string    `json:"city"`
 	Province    string    `json:"province"`
