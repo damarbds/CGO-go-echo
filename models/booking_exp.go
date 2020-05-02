@@ -70,7 +70,7 @@ type ItemsHistoryDto struct {
 	City           string    `json:"city"`
 	Province       string    `json:"province"`
 	Country        string    `json:"country"`
-	//Status         int       `json:"status"`
+	Status         string       `json:"status"`
 }
 type BookingExp struct {
 	Id                 string     `json:"id" validate:"required"`

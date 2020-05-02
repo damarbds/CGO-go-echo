@@ -741,7 +741,16 @@ func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Conte
 func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error) {
 
 	date := yearMonth + "-" + "01" + " 00:00:00"
-	query := `select a.*, b.exp_title,b.exp_type,b.exp_duration,d.city_name,e.province_name,f.country_name,g.status as status_transaction from booking_exps a
+	query := `select a.*, 
+				b.exp_title,
+				b.exp_type,
+				b.exp_duration,
+				d.city_name,
+				e.province_name,
+				f.country_name,
+				g.status as status_transaction 
+			from 
+					booking_exps a
 					join experiences b on a.exp_id = b.id 
 					join harbors c on b.harbors_id = c.id
 					join cities d on c.city_id = d.id 

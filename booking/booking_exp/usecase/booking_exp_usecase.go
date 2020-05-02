@@ -771,7 +771,20 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				}
 			}
 			totalGuest := len(guestDesc)
+			var status string
+			if element.StatusTransaction == 0 {
+				status = "Pending"
+			} else if element.StatusTransaction == 1 {
+				status = "Waiting approval"
+			} else if element.StatusTransaction == 2 {
+				status = "Confirm"
+			} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+				status = "Failed"
+			} else if element.StatusTransaction == 2 && element.Status == 3 {
+				status = "Boarded"
+			}
 			itemDto := models.ItemsHistoryDto{
+				OrderId:element.OrderId,
 				ExpId:          element.ExpId,
 				ExpTitle:       element.ExpTitle,
 				ExpType:        expType,
@@ -781,7 +794,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
-				//Status:         element.StatusTransaction,
+				Status:         status,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -813,6 +826,18 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				}
 			}
 			//totalGuest := len(guestDesc)
+			var status string
+			if *element.TransactionStatus == 0 {
+				status = "Pending"
+			} else if *element.TransactionStatus == 1 {
+				status = "Waiting approval"
+			} else if *element.TransactionStatus == 2 {
+				status = "Confirm"
+			} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+				status = "Failed"
+			} else if *element.TransactionStatus == 2 && element.Status == 3 {
+				status = "Boarded"
+			}
 			itemDto := models.ItemsHistoryDto{
 				OrderId:            element.OrderId,
 				ExpId:              "",
@@ -832,7 +857,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				City:               element.City,
 				Province:           element.Province,
 				Country:            element.Country,
-				//Status:             element.Status,
+				Status:             status,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -863,6 +888,20 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				}
 			}
 			totalGuest := len(guestDesc)
+
+			var status string
+			if element.StatusTransaction == 0 {
+				status = "Pending"
+			} else if element.StatusTransaction == 1 {
+				status = "Waiting approval"
+			} else if element.StatusTransaction == 2 {
+				status = "Confirm"
+			} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+				status = "Failed"
+			} else if element.StatusTransaction == 2 && element.Status == 3 {
+				status = "Boarded"
+			}
+
 			itemDto := models.ItemsHistoryDto{
 				OrderId:element.OrderId,
 				ExpId:          element.ExpId,
@@ -874,7 +913,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
-				//Status:         element.StatusTransaction,
+				Status:         status,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -905,6 +944,18 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				}
 			}
 			//totalGuest := len(guestDesc)
+			var status string
+			if *element.TransactionStatus == 0 {
+				status = "Pending"
+			} else if *element.TransactionStatus == 1 {
+				status = "Waiting approval"
+			} else if *element.TransactionStatus == 2 {
+				status = "Confirm"
+			} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+				status = "Failed"
+			} else if *element.TransactionStatus == 2 && element.Status == 3 {
+				status = "Boarded"
+			}
 			itemDto := models.ItemsHistoryDto{
 				OrderId:            element.OrderId,
 				ExpId:              "",
@@ -924,7 +975,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				City:               element.City,
 				Province:           element.Province,
 				Country:            element.Country,
-				//Status:             element.Status,
+				Status:             status,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
