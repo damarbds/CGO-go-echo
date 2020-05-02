@@ -87,7 +87,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset int) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int,merchantId string) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int
 
@@ -108,7 +108,8 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		b.status as booking_status,
 		t.total_price,
 		ep.id as experience_payment_id,
-		merchant_name
+		merchant_name,
+		b.order_id
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
@@ -137,7 +138,8 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		b.status AS booking_status,
 		t.total_price,
 		tr.class as trans_class,
-		merchant_name
+		merchant_name,
+		b.order_id
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
@@ -146,6 +148,11 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 	WHERE
 		t.is_deleted = 0
 		AND t.is_active = 1`
+
+	if merchantId != ""{
+		query = query + ` AND e.merchant_id = '` + merchantId + `' `
+		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
+	}
 
 	if search != "" {
 		keyword := `'%` + search + `%'`
@@ -157,9 +164,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		queryT = queryT + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 	}
 	unionQuery := query + ` UNION ` + queryT
-	queryWithoutStatus := unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
+	if limit != nil && offset != nil {
+		unionQuery = unionQuery +
+			` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
+			` OFFSET ` + strconv.Itoa(*offset) + ` `
 
-	list, err := t.fetchWithJoin(ctx, queryWithoutStatus, limit, offset)
+	}
+	list, err := t.fetchWithJoin(ctx, unionQuery)
 	if status != "" {
 		if status == "pending" {
 			transactionStatus = 0
@@ -171,8 +182,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		unionQuery = querySt + ` UNION ` + queryTSt
-		queryWithStatus := unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
-		list, err = t.fetchWithJoin(ctx, queryWithStatus, limit, offset)
+		if limit != nil && offset != nil {
+			unionQuery = unionQuery +
+				` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
+				` OFFSET ` + strconv.Itoa(*offset) + ` `
+
+		}
+		list, err = t.fetchWithJoin(ctx, unionQuery)
 
 		if status == "failed" {
 			transactionStatus = 3
@@ -181,8 +197,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
 			unionQuery = querySt + ` UNION ` + queryTSt
 			fmt.Println(unionQuery)
-			queryWithStatus = unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
-			list, err = t.fetchWithJoin(ctx, queryWithStatus, limit, offset)
+			if limit != nil && offset != nil {
+				unionQuery = unionQuery +
+					` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
+					` OFFSET ` + strconv.Itoa(*offset) + ` `
+
+			}
+			list, err = t.fetchWithJoin(ctx, unionQuery)
 		}
 
 		if status == "boarded" {
@@ -191,8 +212,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			unionQuery = querySt + ` UNION ` + queryTSt
-			queryWithStatus = unionQuery + ` ORDER BY booking_date DESC LIMIT ? OFFSET ?`
-			list, err = t.fetchWithJoin(ctx, queryWithStatus, limit, offset)
+			if limit != nil && offset != nil {
+				unionQuery = unionQuery +
+					` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
+					` OFFSET ` + strconv.Itoa(*offset) + ` `
+
+			}
+			list, err = t.fetchWithJoin(ctx, unionQuery)
 		}
 	}
 	if err != nil {
@@ -237,6 +263,7 @@ func (t transactionRepository) fetchWithJoin(ctx context.Context, query string, 
 			&t.TotalPrice,
 			&t.ExperiencePaymentId,
 			&t.MerchantName,
+			&t.OrderId,
 		)
 
 		if err != nil {
@@ -318,7 +345,7 @@ func (t transactionRepository) CountSuccess(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string) (int, error) {
+func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string,merchantId string) (int, error) {
 	query := `
 	SELECT
 		count(*) as count
@@ -342,6 +369,10 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		t.is_deleted = 0
 		AND t.is_active = 1`
 
+	if merchantId != ""{
+		query = query + ` AND e.merchant_id = '` + merchantId + `' `
+		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
+	}
 	if search != "" {
 		keyword := `'%` + search + `%'`
 		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`

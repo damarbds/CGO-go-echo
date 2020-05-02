@@ -3,13 +3,13 @@ module github.com
 go 1.14
 
 require (
+	github.com/360EntSecGroup-Skylar/excelize/v2 v2.1.0
 	github.com/Azure/azure-pipeline-go v0.2.2 // indirect
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest/adal v0.8.2 // indirect
 	github.com/bxcodec/faker v2.0.1+incompatible
 	github.com/bxcodec/go-clean-arch v2.0.1+incompatible
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
-	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
@@ -23,11 +23,9 @@ require (
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.0.5
 	github.com/skip2/go-qrcode v0.0.0-20191027152451-9434209cb086
-	github.com/stretchr/objx v0.1.0 // indirect
-	github.com/stretchr/testify v1.2.1
+	github.com/stretchr/testify v1.3.0
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/veritrans/go-midtrans v0.0.0-20200303064216-54da2d269748

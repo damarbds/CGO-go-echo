@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"github.com/auth/merchant"
 	"math"
 	"strings"
 	"time"
@@ -13,13 +14,15 @@ import (
 )
 
 type transactionUsecase struct {
+	merchantUsecase 		 merchant.Usecase
 	experiencePaymentTypeRepo exp_payment.Repository
 	transactionRepo           transaction.Repository
 	contextTimeout            time.Duration
 }
 
-func NewTransactionUsecase(ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
+func NewTransactionUsecase(mu merchant.Usecase,ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
 	return &transactionUsecase{
+		merchantUsecase:mu,
 		experiencePaymentTypeRepo: ep,
 		transactionRepo:           t,
 		contextTimeout:            timeout,
@@ -38,11 +41,18 @@ func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTr
 	return total, nil
 }
 
-func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset int) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int,token string) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
-
-	list, err := t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset)
+	var merchantId string
+	if token != ""{
+		currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx,token)
+		if err != nil {
+			return nil,models.ErrUnAuthorize
+		}
+		merchantId = currentMerchant.Id
+	}
+	list, err := t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,merchantId)
 	if err != nil {
 		return nil, err
 	}
@@ -129,25 +139,34 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			TotalPrice:            item.TotalPrice,
 			ExperiencePaymentType: experiencePaymentType,
 			Merchant:              item.MerchantName,
+			OrderId:			   item.OrderId,
 		}
 	}
-	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status)
-	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status,merchantId)
+	if limit == nil{
+		limit = &totalRecords
+	}
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(*limit)))
+	if page == nil {
+		var number = 1
+		page = &number
+	}
 	prev := page
 	next := page
-	if page != 1 {
-		prev = page - 1
+
+	if *page != 1 {
+		*prev = *page - 1
 	}
 
-	if page != totalPage {
-		next = page + 1
+	if *page != totalPage {
+		*next = *page + 1
 	}
 	meta := &models.MetaPagination{
-		Page:          page,
+		Page:          *page,
 		Total:         totalPage,
 		TotalRecords:  totalRecords,
-		Prev:          prev,
-		Next:          next,
+		Prev:          *prev,
+		Next:          *next,
 		RecordPerPage: len(list),
 	}
 

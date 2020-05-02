@@ -91,6 +91,7 @@ type TransactionOut struct {
 	TotalPrice          float64   `json:"total_price"`
 	ExperiencePaymentId string    `json:"experience_payment_id"`
 	MerchantName        string    `json:"merchant_name"`
+	OrderId				*string		`json:"order_id"`
 }
 
 type TransactionDto struct {
@@ -109,6 +110,7 @@ type TransactionDto struct {
 	TotalPrice            float64                   `json:"total_price"`
 	ExperiencePaymentType *ExperiencePaymentTypeDto `json:"experience_payment_type"`
 	Merchant              string                    `json:"merchant"`
+	OrderId				  *string					`json:"order_id"`
 }
 
 type TransactionWithPagination struct {
