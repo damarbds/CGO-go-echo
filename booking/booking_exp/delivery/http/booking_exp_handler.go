@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
@@ -33,6 +34,7 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	e.GET("booking/history-user", handler.GetHistoryBookingByUser)
 	e.GET("booking/growth", handler.GetGrowth)
 	e.GET("booking/count-month", handler.CountThisMonth)
+	e.GET("booking/check-experience", handler.CheckBookingCountGuest)
 }
 
 func (a *booking_expHandler) CountThisMonth(c echo.Context) error {
@@ -122,6 +124,22 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func (a *booking_expHandler) CheckBookingCountGuest(c echo.Context) error {
+
+	expId := c.QueryParam("exp_id")
+	date := c.QueryParam("date")
+	qguest := c.QueryParam("guest")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	guest ,_:= strconv.Atoi(qguest)
+	result, err := a.booking_expUsecase.GetByGuestCount(ctx, expId, date,guest)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
 func (a *booking_expHandler) GetHistoryBookingByUser(c echo.Context) error {
 
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

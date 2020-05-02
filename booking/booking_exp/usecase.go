@@ -6,6 +6,7 @@ import (
 )
 
 type Usecase interface {
+	GetByGuestCount(ctx context.Context,expId string,date string,guest int)(bool,error)
 	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)
 	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)
 	GetHistoryBookingByUserId(ctx context.Context, token string, monthType string) ([]*models.BookingHistoryDto, error)

@@ -16,10 +16,35 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
+func (t transactionRepository) GetCountByExpId(ctx context.Context, date string, expId string) (*string, error) {
+	query := `
+	select b.guest_desc from transactions a
+										join booking_exps b on a.order_id = b.order_id 
+										join experiences c on c.id = b.exp_id 
+										where a.status < 3 and (b.status = 1 or b.status = 3)
+										and date(b.booking_date) = ? and exp_id = ?`
+
+	rows, err := t.Conn.QueryContext(ctx, query,date,expId)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	var bookingDesc string
+	for rows.Next() {
+		err = rows.Scan(&bookingDesc)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &bookingDesc, nil
+}
 func (t transactionRepository) GetCountByTransId(ctx context.Context, transId string) (int, error) {
 	query := `select count(*) from transactions a
 											join booking_exps b on a.order_id = b.order_id 

@@ -203,6 +203,33 @@ func (b bookingExpRepository) CountThisMonth(ctx context.Context) (int, error) {
 	return count, nil
 }
 
+func (b bookingExpRepository) GetCountByBookingDateExp(ctx context.Context, bookingDate string,expId string) (int, error) {
+	query := `
+	SELECT
+		count(*) as count
+	FROM
+		booking_exps
+	WHERE
+		is_deleted = 0
+		AND is_active = 1
+		AND (status = 1 OR status = 3)
+		AND date(booking_date) = ?
+		AND exp_id =?`
+
+	rows, err := b.Conn.QueryContext(ctx, query,bookingDate,expId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {
 		err = rows.Scan(&count)

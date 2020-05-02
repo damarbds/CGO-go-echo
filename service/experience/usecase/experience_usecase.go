@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/booking/booking_exp"
 	"github.com/service/temp_user_preferences"
 	"math"
 	"strconv"
@@ -28,6 +29,7 @@ import (
 )
 
 type experienceUsecase struct {
+	bookingRepo 	booking_exp.Repository
 	tempUserPreRepo temp_user_preferences.Repository
 	filterATRepo     filter_activity_type.Repository
 	adOnsRepo        experience_add_ons.Repository
@@ -47,6 +49,7 @@ type experienceUsecase struct {
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
+	b booking_exp.Repository,
 	tup temp_user_preferences.Repository,
 	fac filter_activity_type.Repository,
 	adOns experience_add_ons.Repository,
@@ -63,6 +66,7 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
+		bookingRepo:b,
 		tempUserPreRepo:tup,
 		filterATRepo:     fac,
 		adOnsRepo:        adOns,
@@ -1521,13 +1525,24 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 				Month: element.ExpAvailabilityMonth,
 				Date:  nil,
 			}
-			var date []string
-			errObject := json.Unmarshal([]byte(element.ExpAvailabilityDate), &date)
+			var dates []string
+			errObject := json.Unmarshal([]byte(element.ExpAvailabilityDate), &dates)
 			if errObject != nil {
-				//fmt.Println("Error : ",err.Error())
 				return nil, models.ErrInternalServerError
 			}
-			expA.Date = date
+			if res.ExpTripType == "Private Trip"{
+				for _,date := range dates{
+					checkBookingCount , err := m.bookingRepo.GetCountByBookingDateExp(ctx,date,element.ExpId)
+					if err != nil {
+						return nil,err
+					}
+					if checkBookingCount == 0 {
+						expA.Date = append(expA.Date,date)
+					}
+				}
+			}else {
+				expA.Date = dates
+			}
 			expAvailability = append(expAvailability, expA)
 		}
 	}

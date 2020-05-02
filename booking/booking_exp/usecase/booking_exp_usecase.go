@@ -43,6 +43,7 @@ type bookingExpUsecase struct {
 	contextTimeout  time.Duration
 }
 
+
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(ept exp_payment.Repository,a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -57,6 +58,31 @@ func NewbookingExpUsecase(ept exp_payment.Repository,a booking_exp.Repository, u
 	}
 }
 
+func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool,error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+	getExperience, err := b.expRepo.GetByID(ctx,expId)
+	if err != nil {
+		return false,err
+	}
+	getBooking , err := b.transactionRepo.GetCountByExpId(ctx,date,expId)
+	if err != nil {
+		return false,err
+	}
+	guestDesc := make ([]models.GuestDescObj,0)
+	if getBooking != nil && *getBooking != ""{
+		if errUnmarshal := json.Unmarshal([]byte(*getBooking), &guestDesc); errUnmarshal != nil {
+			return false, models.ErrInternalServerError
+		}
+	}
+	var result = false
+	currentAmountBooking := len(guestDesc)
+	remainingSeat := getExperience.ExpMaxGuest - currentAmountBooking
+	if guest > remainingSeat {
+		result = true
+	}
+	return result,nil
+}
 func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode string) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()

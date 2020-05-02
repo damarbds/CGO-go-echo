@@ -8,6 +8,7 @@ import (
 )
 
 type Repository interface {
+	GetCountByBookingDateExp(ctx context.Context,bookingDate string,expId string)(int,error)
 	Insert(ctx context.Context, booking *models.BookingExp) (*models.BookingExp, error)
 	GetEmailByID(ctx context.Context, bookingId string) (string, error)
 	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error)

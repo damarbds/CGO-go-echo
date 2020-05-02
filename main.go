@@ -240,6 +240,7 @@ func main() {
 
 	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo,promoRepo, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		bookingExpRepo,
 		tempUserPreferenceRepo,
 		filterActivityTypeRepo,
 		experienceAddOnRepo,
