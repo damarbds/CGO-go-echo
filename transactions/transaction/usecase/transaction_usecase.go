@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"github.com/auth/admin"
 	"github.com/auth/merchant"
 	"math"
 	"strings"
@@ -14,14 +15,16 @@ import (
 )
 
 type transactionUsecase struct {
+	adminUsecase 			admin.Usecase
 	merchantUsecase 		 merchant.Usecase
 	experiencePaymentTypeRepo exp_payment.Repository
 	transactionRepo           transaction.Repository
 	contextTimeout            time.Duration
 }
 
-func NewTransactionUsecase(mu merchant.Usecase,ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
+func NewTransactionUsecase(au admin.Usecase,mu merchant.Usecase,ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
 	return &transactionUsecase{
+		adminUsecase:au,
 		merchantUsecase:mu,
 		experiencePaymentTypeRepo: ep,
 		transactionRepo:           t,
@@ -41,20 +44,38 @@ func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTr
 	return total, nil
 }
 
-func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int,token string) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int,token string,isAdmin bool) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	var merchantId string
-	if token != ""{
+
+	list := make([]*models.TransactionOut,0)
+
+
+	if token != "" && isAdmin == true{
+		currentMerchant, err := t.adminUsecase.ValidateTokenAdmin(ctx,token)
+		if err != nil {
+			return nil,models.ErrUnAuthorize
+		}
+		merchantId = currentMerchant.Id
+
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,"")
+
+		if err != nil {
+			return nil, err
+		}
+	}else if token != ""{
 		currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx,token)
 		if err != nil {
 			return nil,models.ErrUnAuthorize
 		}
 		merchantId = currentMerchant.Id
-	}
-	list, err := t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,merchantId)
-	if err != nil {
-		return nil, err
+
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,merchantId)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	transactions := make([]*models.TransactionDto, len(list))

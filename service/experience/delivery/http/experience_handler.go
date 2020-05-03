@@ -314,6 +314,7 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	token := c.Request().Header.Get("Authorization")
 	isMerchant := c.QueryParam("isMerchant")
 
+	provinceID := c.QueryParam("province_id")
 	harborID := c.QueryParam("harbor_id")
 	cityID := c.QueryParam("city_id")
 	qtype := c.QueryParam("type")
@@ -348,7 +349,7 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	}
 
 	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, needMerchantAuth, search, token, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
-		bottomprice, upprice, sortby, page, limit, offset)
+		bottomprice, upprice, sortby, page, limit, offset,provinceID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

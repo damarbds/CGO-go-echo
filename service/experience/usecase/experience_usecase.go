@@ -410,6 +410,7 @@ func (m experienceUsecase) FilterSearchExp(
 	page int,
 	limit int,
 	offset int,
+	provinceId string,
 ) (*models.FilterSearchWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -480,6 +481,10 @@ func (m experienceUsecase) FilterSearchExp(
 		keyword := `'%` + search + `%'`
 		query = query + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
 		qCount = qCount + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+	}
+	if provinceId != ""{
+		query = query + ` AND ci.province_id = '` + provinceId + `'`
+		qCount = qCount + ` AND ci.province_id = '` + provinceId + `'`
 	}
 	if cityID != "" {
 		city_id, _ := strconv.Atoi(cityID)

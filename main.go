@@ -265,7 +265,7 @@ func main() {
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
 	transportationUcase := _transportationUcase.NewTransportationUsecase(transactionRepo,transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
-	transactionUcase := _transactionUcase.NewTransactionUsecase(merchantUsecase,paymentRepo, transactionRepo, timeoutContext)
+	transactionUcase := _transactionUcase.NewTransactionUsecase(adminUsecase,merchantUsecase,paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo,adminUsecase,balanceHistoryRepo, merchantUsecase, timeoutContext)
 	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)

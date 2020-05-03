@@ -356,6 +356,7 @@ func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.C
 		err = rows.Scan(
 			&t.ProvinceId,
 			&t.ProvinceName,
+			&t.CityDesc,
 			&t.Id,
 			&t.CreatedBy,
 			&t.CreatedDate,
@@ -715,6 +716,7 @@ func (m *experienceRepository) GetUserDiscoverPreferenceByHarborsIdOrProvince(ct
 		query := `select 
 					province.id as province_id ,
 					province.province_name,
+					city.city_desc,
 					a.*
 			from 
 				experiences a
