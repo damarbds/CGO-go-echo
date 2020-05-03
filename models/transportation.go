@@ -107,6 +107,14 @@ type TransSearch struct {
 	Class				  *string 		`json:"class"`
 	TransFacilities		*string		`json:"trans_facilities"`
 	TransCapacity 		int			`json:"trans_capacity"`
+	CitySourceId 				*int		`json:"city_source_id"`
+	CitySourceName			*string		`json:"city_source_name"`
+	CityDestId			*int 		`json:"city_dest_id"`
+	CityDestName		*string		`json:"city_dest_name"`
+	ProvinceSourceId	*int 		`json:"province_source_id"`
+	ProvinceSourceName *string		`json:"province_source_name"`
+	ProvinceDestId		*int 		`json:"province_dest_id"`
+	ProvinceDestName  	*string		`json:"province_dest_name"`
 }
 type TransPriceObj struct {
 	AdultPrice    float64 `json:"adult_price"`
@@ -134,6 +142,14 @@ type TransportationSearchObj struct {
 	MerchantPicture 	 *string		`json:"merchant_picture"`
 	Class				  *string 		`json:"class"`
 	TransFacilities 	[]ExpFacilitiesObject `json:"trans_facilities"`
+	CitySourceId 				*int		`json:"city_source_id"`
+	CitySourceName			*string		`json:"city_source_name"`
+	CityDestId			*int 		`json:"city_dest_id"`
+	CityDestName		*string		`json:"city_dest_name"`
+	ProvinceSourceId	*int 		`json:"province_source_id"`
+	ProvinceSourceName *string		`json:"province_source_name"`
+	ProvinceDestId		*int 		`json:"province_dest_id"`
+	ProvinceDestName  	*string		`json:"province_dest_name"`
 }
 type FilterSearchTransWithPagination struct {
 	Data []*TransportationSearchObj `json:"data"`

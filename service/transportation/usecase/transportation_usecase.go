@@ -333,11 +333,24 @@ func (t transportationUsecase) FilterSearchTrans(
 		m.merchant_picture,
 		t.class,
 		t.trans_facilities,
-		t.trans_capacity
+		t.trans_capacity,
+		csource.id as city_source_id,
+		csource.city_name as city_source_name,
+		cdest.id as city_dest_id,
+		cdest.city_name as city_dest_name,
+		psource.id as province_source_id,
+		psource.province_name as province_source_name,
+		pdest.id as province_dest_id,
+		pdest.province_name as province_dest_name
 	FROM
-		transportations t
+				schedules s
+		JOIN transportations t ON s.trans_id = t.id
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN cities csource ON h.city_id = csource.id
+		JOIN cities cdest ON hdest.city_id = cdest.id
+		JOIN provinces psource ON csource.province_id = psource.id
+		JOIN provinces pdest ON cdest.province_id = pdest.id
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		t.is_deleted = 0
@@ -351,6 +364,10 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN transportations t ON s.trans_id = t.id
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN cities csource ON h.city_id = csource.id
+		JOIN cities cdest ON hdest.city_id = cdest.id
+		JOIN provinces psource ON csource.province_id = psource.id
+		JOIN provinces pdest ON cdest.province_id = pdest.id
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		s.is_deleted = 0
@@ -375,12 +392,24 @@ func (t transportationUsecase) FilterSearchTrans(
 		m.merchant_picture,
 		t.class,
 		t.trans_facilities,
-		t.trans_capacity
+		t.trans_capacity,
+		csource.id as city_source_id,
+		csource.city_name as city_source_name,
+		cdest.id as city_dest_id,
+		cdest.city_name as city_dest_name,
+		psource.id as province_source_id,
+		psource.province_name as province_source_name,
+		pdest.id as province_dest_id,
+		pdest.province_name as province_dest_name
 	FROM
 		schedules s
 		JOIN transportations t ON s.trans_id = t.id
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN cities csource ON h.city_id = csource.id
+		JOIN cities cdest ON hdest.city_id = cdest.id
+		JOIN provinces psource ON csource.province_id = psource.id
+		JOIN provinces pdest ON cdest.province_id = pdest.id
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		s.is_deleted = 0
@@ -394,6 +423,10 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN transportations t ON s.trans_id = t.id
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
+		JOIN cities csource ON h.city_id = csource.id
+		JOIN cities cdest ON hdest.city_id = cdest.id
+		JOIN provinces psource ON csource.province_id = psource.id
+		JOIN provinces pdest ON cdest.province_id = pdest.id
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		s.is_deleted = 0
@@ -479,7 +512,7 @@ func (t transportationUsecase) FilterSearchTrans(
 		queryCount = queryCount + ` AND s.departure_timeoption_id =` + strconv.Itoa(arrTimeOptions)
 	}
 
-	transList, err := t.transportationRepo.FilterSearch(ctx, query, limit, offset)
+	transList, err := t.transportationRepo.FilterSearch(ctx, query, limit, offset,isMerchant,qStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -552,6 +585,14 @@ func (t transportationUsecase) FilterSearchTrans(
 			MerchantPicture:       element.MerchantPicture,
 			Class:                 element.Class,
 			TransFacilities:transFacilities,
+			CitySourceId 		: element.CitySourceId,
+			CitySourceName		: element.CitySourceName,
+			CityDestId			: element.CityDestId,
+			CityDestName		: element.CityDestName,
+			ProvinceSourceId	: element.ProvinceSourceId,
+			ProvinceSourceName : element.ProvinceSourceName,
+			ProvinceDestId		: element.ProvinceDestId,
+			ProvinceDestName  	: element.ProvinceDestName,
 		}
 		if guest != 0 {
 			getbookingCount ,_ := t.transactionRepo.GetCountByTransId(ctx,element.TransId)

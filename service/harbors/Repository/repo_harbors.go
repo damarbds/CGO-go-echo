@@ -96,6 +96,7 @@ func (m *harborsRepository) fetchWithJoinCPC(ctx context.Context, query string, 
 			&t.HarborsImage,
 			&t.CityId,
 			&t.CityName,
+			&t.ProvinceId,
 			&t.ProvinceName,
 			&t.CountryName,
 		)
@@ -135,7 +136,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , si
 
 	search = "%" + search + "%"
 	if page != nil && size != nil && search != ""{
-		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.province_name,co.country_name from cgo_indonesia.harbors h
+		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
@@ -150,7 +151,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , si
 		return res, err
 
 	} else if page == nil && size == nil && search != ""{
-		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.province_name,co.country_name from cgo_indonesia.harbors h
+		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
@@ -164,7 +165,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , si
 		return res, err
 
 	}else {
-		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.province_name,co.country_name from cgo_indonesia.harbors h
+		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id

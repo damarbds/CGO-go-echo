@@ -39,6 +39,7 @@ func (m harborsUsecase) GetAllWithJoinCPC(c context.Context, page *int, size *in
 			HarborsImage:     element.HarborsImage,
 			CityId:           element.CityId,
 			City:             element.CityName,
+			ProvinceId:element.ProvinceId,
 			Province:         element.ProvinceName,
 			Country:          element.CountryName,
 		}

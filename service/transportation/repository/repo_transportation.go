@@ -83,15 +83,29 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	return count, nil
 }
 
-func (t transportationRepository) FilterSearch(ctx context.Context, query string, limit, offset int) ([]*models.TransSearch, error) {
+func (t transportationRepository) FilterSearch(ctx context.Context, query string, limit, offset int,isMerchant bool,qstatus string) ([]*models.TransSearch, error) {
 	query = query + ` LIMIT ? OFFSET ?`
-	res, err := t.fetchSearchTrans(ctx, query, limit, offset)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, models.ErrNotFound
+	var res []*models.TransSearch
+	if isMerchant == true && qstatus != "" && qstatus == "draft"{
+		response, err := t.fetchSearchTransForMerchant(ctx, query, limit, offset)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
 		}
-		return nil, err
+		res = response
+	}else {
+		response, err := t.fetchSearchTrans(ctx, query, limit, offset)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
+		}
+		res = response
 	}
+
 	return res, nil
 }
 func (t *transportationRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Transportation, error) {
@@ -146,6 +160,61 @@ func (t *transportationRepository) fetch(ctx context.Context, query string, args
 	return result, nil
 }
 func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query string, args ...interface{}) ([]*models.TransSearch, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.TransSearch, 0)
+	for rows.Next() {
+		t := new(models.TransSearch)
+		err = rows.Scan(
+			&t.ScheduleId,
+			&t.DepartureDate,
+			&t.DepartureTime,
+			&t.ArrivalTime,
+			&t.Price,
+			&t.TransId,
+			&t.TransName,
+			&t.TransImages,
+			&t.TransStatus,
+			&t.HarborSourceId,
+			&t.HarborSourceName,
+			&t.HarborDestId,
+			&t.HarborDestName,
+			&t.MerchantName,
+			&t.MerchantPicture,
+			&t.Class,
+			&t.TransFacilities,
+			&t.TransCapacity,
+			&t.CitySourceId ,
+			&t.CitySourceName		,
+			&t.CityDestId		,
+			&t.CityDestName		,
+			&t.ProvinceSourceId	,
+			&t.ProvinceSourceName ,
+			&t.ProvinceDestId		,
+			&t.ProvinceDestName  	,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+func (t *transportationRepository) fetchSearchTransForMerchant(ctx context.Context, query string, args ...interface{}) ([]*models.TransSearch, error) {
 	rows, err := t.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)

@@ -26,6 +26,7 @@ type HarborsWCPC struct {
 	HarborsImage     string  `json:"harbors_image"`
 	CityId           int     `json:"city_id"`
 	CityName         string  `json:"city_name"`
+	ProvinceId		int 	`json:"province_id"`
 	ProvinceName     string  `json:"province_name"`
 	CountryName      string  `json:"country_name"`
 }
@@ -37,6 +38,7 @@ type HarborsWCPCDto struct {
 	HarborsImage     string  `json:"harbors_image"`
 	CityId           int     `json:"city_id"`
 	City             string  `json:"city"`
+	ProvinceId 		 int 	`json:"province_id"`
 	Province         string  `json:"province"`
 	Country          string  `json:"country"`
 }
