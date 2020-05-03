@@ -48,6 +48,13 @@ func (m *reviewRepository) fetch(ctx context.Context, query string, args ...inte
 			&t.Values,
 			&t.Desc,
 			&t.ExpId,
+			&t.Name ,
+			&t.UserId  ,
+			&t.GuideReview ,
+			&t.ActivitiesReview ,
+			&t.ServiceReview ,
+			&t.CleanlinessReview ,
+			&t.ValueReview ,
 		)
 
 		if err != nil {

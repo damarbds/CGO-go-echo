@@ -37,6 +37,11 @@ type Experience struct {
 	MinimumBookingId        *string     `json:"minimum_booking_id"`
 	MerchantId              string     `json:"merchant_id"`
 	HarborsId               *string     `json:"harbors_id"`
+	GuideReview *float64		`json:"guide_review"`
+	ActivitiesReview *float64	`json:"activities_review"`
+	ServiceReview *float64		`json:"service_review"`
+	CleanlinessReview *float64	`json:"cleanliness_review"`
+	ValueReview *float64		`json:"value_review"`
 }
 type ExperienceJoinForegnKey struct {
 	Id                      string     `json:"id" validate:"required"`
@@ -73,6 +78,11 @@ type ExperienceJoinForegnKey struct {
 	MinimumBookingId        string     `json:"minimum_booking_id"`
 	MerchantId              string     `json:"merchant_id"`
 	HarborsId               string     `json:"harbors_id"`
+	GuideReview *float64		`json:"guide_review"`
+	ActivitiesReview *float64	`json:"activities_review"`
+	ServiceReview *float64		`json:"service_review"`
+	CleanlinessReview *float64	`json:"cleanliness_review"`
+	ValueReview *float64		`json:"value_review"`
 	MinimumBookingAmount    *int       `json:"minimum_booking_amount"`
 	MinimumBookingDesc      string     `json:"minimum_booking_desc"`
 }
@@ -295,6 +305,11 @@ type ExpUserDiscoverPreference struct {
 	MinimumBookingId        string     `json:"minimum_booking_id"`
 	MerchantId              string     `json:"merchant_id"`
 	HarborsId               string     `json:"harbors_id"`
+	GuideReview *float64		`json:"guide_review"`
+	ActivitiesReview *float64	`json:"activities_review"`
+	ServiceReview *float64		`json:"service_review"`
+	CleanlinessReview *float64	`json:"cleanliness_review"`
+	ValueReview *float64		`json:"value_review"`
 }
 
 type ExpUserDiscoverPreferenceDto struct {

@@ -320,6 +320,11 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
+			&t.GuideReview ,
+			&t.ActivitiesReview ,
+			&t.ServiceReview ,
+			&t.CleanlinessReview ,
+			&t.ValueReview,
 		)
 
 		if err != nil {
@@ -385,6 +390,11 @@ func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.C
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
+			&t.GuideReview ,
+			&t.ActivitiesReview ,
+			&t.ServiceReview ,
+			&t.CleanlinessReview ,
+			&t.ValueReview,
 		)
 
 		if err != nil {
@@ -487,6 +497,11 @@ func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query str
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
+			&t.GuideReview ,
+			&t.ActivitiesReview ,
+			&t.ServiceReview ,
+			&t.CleanlinessReview ,
+			&t.ValueReview,
 			&t.MinimumBookingAmount,
 			&t.MinimumBookingDesc,
 		)
@@ -553,6 +568,11 @@ func (m *experienceRepository) fetch(ctx context.Context, query string, args ...
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
+			&t.GuideReview ,
+			&t.ActivitiesReview ,
+			&t.ServiceReview ,
+			&t.CleanlinessReview ,
+			&t.ValueReview,
 		)
 
 		if err != nil {

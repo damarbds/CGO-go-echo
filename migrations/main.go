@@ -26,11 +26,11 @@ func main() {
 	//
 	//	db.Create(&migration)
 	//}
-	transportationdestid := model.Promo{}
-	errortransportationdestid := db.Model(&transportationdestid).AddForeignKey("currency_id", "currencies(id)", "RESTRICT", "RESTRICT")
+	transportationdestid := model.Review{}
+	errortransportationdestid := db.Model(&transportationdestid).AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
 	if errortransportationdestid != nil {
 		migration := model.MigrationHistory{
-			DescMigration: "Add_foregn_key_currency_id",
+			DescMigration: "Add_foregn_key_user_id_reviews",
 			Date:          time.Now(),
 		}
 
