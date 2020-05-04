@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	"github.com/service/experience"
 	"math"
 	"time"
 
@@ -12,17 +13,108 @@ import (
 )
 
 type reviewsUsecase struct {
+	experienceRepo experience.Repository
+	userUsecase 	user.Usecase
 	userRepo       user.Repository
 	reviewsRepo    reviews.Repository
 	contextTimeout time.Duration
 }
 
-func NewreviewsUsecase(a reviews.Repository, us user.Repository, timeout time.Duration) reviews.Usecase {
+func NewreviewsUsecase(exp experience.Repository,usu user.Usecase,a reviews.Repository, us user.Repository, timeout time.Duration) reviews.Usecase {
 	return &reviewsUsecase{
+		experienceRepo:exp,
+		userUsecase:usu,
 		userRepo:       us,
 		reviewsRepo:    a,
 		contextTimeout: timeout,
 	}
+}
+
+func (r reviewsUsecase) CreateReviews(c context.Context, command models.NewReviewCommand,token string) (*models.NewReviewCommand, error) {
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
+	defer cancel()
+
+	validateToken ,err := r.userUsecase.ValidateTokenUser(ctx,token)
+	if err != nil {
+		return nil,models.ErrUnAuthorize
+	}
+	 var name string
+	if validateToken.FullName != ""{
+		name = validateToken.FullName
+	}else {
+		name = validateToken.UserEmail
+	}
+	 desc :=  models.ReviewDtoObject{
+		 Name:   name,
+		 UserId: validateToken.Id ,
+		 Desc:   command.Desc,
+	 }
+	 descJson , _ := json.Marshal(desc)
+	 currentValue := (command.GuideReview + command.ActivitiesReview + command.ServiceReview + command.CleanlinessReview +
+	 	command.ValueReview)/5
+
+	 review := models.Review{
+		 Id:                "",
+		 CreatedBy:         validateToken.UserEmail,
+		 CreatedDate:       time.Now(),
+		 ModifiedBy:        nil,
+		 ModifiedDate:      nil,
+		 DeletedBy:         nil,
+		 DeletedDate:       nil,
+		 IsDeleted:         0,
+		 IsActive:          0,
+		 Values:            currentValue,
+		 Desc:              string(descJson),
+		 ExpId:             command.ExpId,
+		 UserId:            &validateToken.Id,
+		 GuideReview:       &command.GuideReview,
+		 ActivitiesReview:  &command.ActivitiesReview,
+		 ServiceReview:     &command.ServiceReview,
+		 CleanlinessReview: &command.CleanlinessReview,
+		 ValueReview:       &command.ValueReview,
+	 }
+	 insert,err := r.reviewsRepo.Insert(ctx,review)
+	 if err != nil {
+	 	return  nil,err
+	 }
+	 command.Id = insert
+	 countRating , err := r.reviewsRepo.CountRating(ctx,0,command.ExpId)
+
+	 getExperience, err := r.experienceRepo.GetByID(ctx,command.ExpId)
+	if getExperience.GuideReview == nil {
+		var initial float64 = 0
+		getExperience.GuideReview = &initial
+		getExperience.ActivitiesReview = &initial
+		getExperience.ServiceReview = &initial
+		getExperience.CleanlinessReview = &initial
+		getExperience.ValueReview = &initial
+	}
+	rating := (getExperience.Rating + currentValue)/float64(countRating)
+	guideReview := (*getExperience.GuideReview + command.GuideReview)/float64(countRating)
+	activitiesReview := (*getExperience.ActivitiesReview + command.ActivitiesReview)/float64(countRating)
+	serviceReview := (*getExperience.ServiceReview + command.ServiceReview)/float64(countRating)
+	cleanlinessReview := (*getExperience.CleanlinessReview + command.CleanlinessReview)/float64(countRating)
+	valueReview := (*getExperience.ValueReview + command.ValueReview)/float64(countRating)
+
+	experience := models.Experience{
+		Id:                      command.ExpId,
+		ModifiedBy:              &validateToken.UserEmail,
+		Rating:                  rating,
+		GuideReview:             &guideReview,
+		ActivitiesReview:        &activitiesReview,
+		ServiceReview:           &serviceReview,
+		CleanlinessReview:       &cleanlinessReview,
+		ValueReview:             &valueReview,
+	}
+
+	err = r.experienceRepo.UpdateRating(ctx,experience)
+	if err != nil {
+		return nil,err
+	}
+
+	command.Id = insert
+
+	return &command,nil
 }
 
 func (r reviewsUsecase) GetReviewsByExpIdWithPagination(

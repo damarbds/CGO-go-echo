@@ -227,17 +227,16 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	isUsecase := _isUcase.NewidentityserverUsecase(redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
+	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
+	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
+	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase, timeoutContext)
 	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
-	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(reviewsRepo, userRepo, timeoutContext)
+	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(experienceRepo,userUsecase,reviewsRepo, userRepo, timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
-	isUsecase := _isUcase.NewidentityserverUsecase(redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
-
-	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
-	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
-
 	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo,promoRepo, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		bookingExpRepo,
@@ -256,7 +255,6 @@ func main() {
 		merchantUsecase,
 		timeoutContext,
 	)
-	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase, timeoutContext)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)

@@ -28,6 +28,28 @@ func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
 
+func (m *experienceRepository) UpdateRating(ctx context.Context, exp models.Experience) error {
+	query := `UPDATE experiences SET modified_by=?, modified_date=? , deleted_by=? , 
+				deleted_date=? , is_deleted=? , is_active=? , rating=?,guide_review=?,activities_review=?,service_review =?,
+				cleanliness_review=?,value_review=? WHERE id=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, exp.ModifiedBy, time.Now(), nil, nil, 0, 1, exp.Rating,exp.GuideReview,exp.ActivitiesReview,
+		exp.ServiceReview,exp.CleanlinessReview,exp.ValueReview, exp.Id)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+
+	//a.Id = lastID
+	return nil
+}
 func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId string) (int, error) {
 	query := `
 	SELECT

@@ -3,21 +3,47 @@ package repository
 import (
 	"context"
 	"database/sql"
+	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/product/reviews"
 	"github.com/sirupsen/logrus"
 	"strconv"
+	"time"
 )
 
 type reviewRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewReviewRepository will create an object that represent the exp_payment.Repository interface
 func NewReviewRepository(Conn *sql.DB) reviews.Repository {
 	return &reviewRepository{Conn}
 }
 
+func (m *reviewRepository) Insert(ctx context.Context, a models.Review) (string, error) {
+	a.Id = guuid.New().String()
+	query := `INSERT reviews SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , reviews.values=?,reviews.desc=?,exp_id=?,user_id=?,
+				guide_review=?,activities_review=?,service_review=?,cleanliness_review=?,value_review=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return"", err
+	}
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Values,a.Desc,
+		a.ExpId,a.UserId,a.GuideReview, a.ActivitiesReview,a.ServiceReview,a.CleanlinessReview,a.ValueReview)
+	if err != nil {
+		return "",err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return"", err
+	}
+
+	//a.Id = lastID
+	return a.Id,nil
+}
 func (m *reviewRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Review, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
