@@ -203,6 +203,7 @@ func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query s
 			&t.ProvinceSourceName ,
 			&t.ProvinceDestId		,
 			&t.ProvinceDestName  	,
+			&t.BoatDetails,
 		)
 
 		if err != nil {

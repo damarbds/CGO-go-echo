@@ -348,6 +348,7 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, trans
 	return list, nil
 }
 func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
+
 	query := `
 	SELECT
 		a.*,
@@ -361,8 +362,8 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, transac
 		city_name AS city,
 		province_name AS province,
 		country_name AS country,
-		c.id AS experience_payment_id,
-		c.currency,
+		a.id AS experience_payment_id,
+		a.status as currency,
 		pm.desc AS account_bank,
 		pm.icon,
 		t.status AS transaction_status,
@@ -373,7 +374,6 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, transac
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id
-		JOIN experience_payments c ON b.id = c.exp_id
 		JOIN transactions t ON t.booking_exp_id = a.id
 		JOIN payment_methods pm ON pm.id = t.payment_method_id
 		JOIN harbors h ON b.harbors_id = h.id

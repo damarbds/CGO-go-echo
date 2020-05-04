@@ -115,6 +115,7 @@ type TransSearch struct {
 	ProvinceSourceName *string		`json:"province_source_name"`
 	ProvinceDestId		*int 		`json:"province_dest_id"`
 	ProvinceDestName  	*string		`json:"province_dest_name"`
+	BoatDetails 	string 			`json:"boat_details"`
 }
 type TransPriceObj struct {
 	AdultPrice    float64 `json:"adult_price"`
@@ -150,6 +151,7 @@ type TransportationSearchObj struct {
 	ProvinceSourceName *string		`json:"province_source_name"`
 	ProvinceDestId		*int 		`json:"province_dest_id"`
 	ProvinceDestName  	*string		`json:"province_dest_name"`
+	BoatSpecification   BoatDetailsObj `json:"boat_specification"`
 }
 type FilterSearchTransWithPagination struct {
 	Data []*TransportationSearchObj `json:"data"`

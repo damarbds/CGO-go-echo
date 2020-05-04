@@ -99,6 +99,12 @@ func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id, sortBy stri
 			Desc:   reviewDtoObject.Desc,
 			Values: element.Values,
 			Date:   element.CreatedDate,
+			UserId   : element.UserId,
+			GuideReview : element.GuideReview,
+			ActivitiesReview : element.ActivitiesReview,
+			ServiceReview : element.ServiceReview,
+			CleanlinessReview : element.CleanlinessReview,
+			ValueReview : element.ValueReview,
 		}
 		reviewDtos = append(reviewDtos, &reviewDto)
 	}

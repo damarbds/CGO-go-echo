@@ -15,7 +15,6 @@ type Review struct {
 	Values       int        `json:"values"`
 	Desc         string     `json:"desc"`
 	ExpId        string     `json:"exp_id"`
-	Name 		 *string 	`json:"name"`
 	UserId      *string 		`json:"user_id"`
 	GuideReview *float64		`json:"guide_review"`
 	ActivitiesReview *float64	`json:"activities_review"`
@@ -29,6 +28,12 @@ type ReviewDto struct {
 	Desc   string    `json:"desc"`
 	Values int       `json:"values"`
 	Date   time.Time `json:"date"`
+	UserId      *string 		`json:"user_id"`
+	GuideReview *float64		`json:"guide_review"`
+	ActivitiesReview *float64	`json:"activities_review"`
+	ServiceReview *float64		`json:"service_review"`
+	CleanlinessReview *float64	`json:"cleanliness_review"`
+	ValueReview *float64		`json:"value_review"`
 }
 type ReviewDtoObject struct {
 	Name   string `json:"name"`

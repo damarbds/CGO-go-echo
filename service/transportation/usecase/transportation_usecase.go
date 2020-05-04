@@ -341,10 +341,10 @@ func (t transportationUsecase) FilterSearchTrans(
 		psource.id as province_source_id,
 		psource.province_name as province_source_name,
 		pdest.id as province_dest_id,
-		pdest.province_name as province_dest_name
+		pdest.province_name as province_dest_name,
+		t.boat_details
 	FROM
-				schedules s
-		JOIN transportations t ON s.trans_id = t.id
+		transportations t 
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
 		JOIN cities csource ON h.city_id = csource.id
@@ -358,10 +358,9 @@ func (t transportationUsecase) FilterSearchTrans(
 
 		queryCount = `
 	SELECT
-		COUNT(distinct s.trans_id)
+		COUNT(t.id)
 	FROM
-		schedules s
-		JOIN transportations t ON s.trans_id = t.id
+		transportations t 
 		JOIN harbors h ON t.harbors_source_id = h.id
 		JOIN harbors hdest ON t.harbors_dest_id = hdest.id
 		JOIN cities csource ON h.city_id = csource.id
@@ -400,7 +399,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		psource.id as province_source_id,
 		psource.province_name as province_source_name,
 		pdest.id as province_dest_id,
-		pdest.province_name as province_dest_name
+		pdest.province_name as province_dest_name,
+		t.boat_details
 	FROM
 		schedules s
 		JOIN transportations t ON s.trans_id = t.id
@@ -519,6 +519,14 @@ func (t transportationUsecase) FilterSearchTrans(
 
 	trans := make([]*models.TransportationSearchObj, 0)
 	for _, element := range transList {
+
+		var boatDetails models.BoatDetailsObj
+		if element.TransImages != ""{
+			if errUnmarshal := json.Unmarshal([]byte(element.BoatDetails), &boatDetails); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+
 		var transImages []models.CoverPhotosObj
 		if element.TransImages != ""{
 			if errUnmarshal := json.Unmarshal([]byte(element.TransImages), &transImages); errUnmarshal != nil {
@@ -593,6 +601,7 @@ func (t transportationUsecase) FilterSearchTrans(
 			ProvinceSourceName : element.ProvinceSourceName,
 			ProvinceDestId		: element.ProvinceDestId,
 			ProvinceDestName  	: element.ProvinceDestName,
+			BoatSpecification:boatDetails,
 		}
 		if guest != 0 {
 			getbookingCount ,_ := t.transactionRepo.GetCountByTransId(ctx,element.TransId)

@@ -619,8 +619,8 @@ func (m experienceUsecase) FilterSearchExp(
 	if err != nil {
 		return nil, err
 	}
-	results := make([]*models.ExpSearchObject, len(expList))
-	for i, exp := range expList {
+	results := make([]*models.ExpSearchObject, 0)
+	for _, exp := range expList {
 		var expType []string
 		if errUnmarshal := json.Unmarshal([]byte(exp.ExpType), &expType); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
@@ -693,7 +693,7 @@ func (m experienceUsecase) FilterSearchExp(
 			transStatus = "Archived"
 		}
 
-		results[i] = &models.ExpSearchObject{
+		result := &models.ExpSearchObject{
 			Id:          exp.Id,
 			ExpTitle:    exp.ExpTitle,
 			ExpType:     expType,
@@ -708,6 +708,15 @@ func (m experienceUsecase) FilterSearchExp(
 			Province:    exp.Province,
 			CoverPhoto:  coverPhoto,
 			ListPhoto:   listPhotos,
+		}
+		var check models.ExpSearchObject
+		for _,checks := range results {
+			if checks.Id == exp.Id {
+				check = *checks
+			}
+		}
+		if check.Id == "" {
+			results = append(results,result)
 		}
 	}
 	totalRecords, _ := m.experienceRepo.CountFilterSearch(ctx, qCount)
