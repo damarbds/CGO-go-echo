@@ -51,6 +51,10 @@ type BookingHistoryDto struct {
 	Category string            `json:"category"`
 	Items    []ItemsHistoryDto `json:"items"`
 }
+type BookingHistoryDtoWithPagination struct {
+	Data []*BookingHistoryDto `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
+}
 type ItemsHistoryDto struct {
 	OrderId			string	`json:"order_id"`
 	ExpId          string    `json:"exp_id"`
@@ -246,6 +250,10 @@ type NewBookingExpCommand struct {
 	TransId           *string `json:"trans_id"`
 	ScheduleId        *string `json:"schedule_id"`
 }
+type MyBookingWithPagination struct {
+	Data []*MyBooking `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
+}
 type MyBooking struct {
 	OrderId 	string		`json:"order_id"`
 	ExpType     []string              `json:"exp_type"`
@@ -268,6 +276,7 @@ type MyBooking struct {
 	Province    string    `json:"province"`
 	Country     string    `json:"country"`
 }
+
 type TotalGuestTransportation struct {
 	Adult 		int `json:"adult"`
 	Children 	int `json:"children"`

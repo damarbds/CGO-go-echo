@@ -98,6 +98,16 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 	}
 
 	status := c.QueryParam("status")
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
+
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
 
 	var transactionStatus, bookingStatus int
 	if status == "confirm" {
@@ -116,7 +126,7 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := a.booking_expUsecase.GetByUserID(ctx, transactionStatus, bookingStatus, token)
+	res, err := a.booking_expUsecase.GetByUserID(ctx, transactionStatus, bookingStatus, token,page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -145,16 +155,28 @@ func (a *booking_expHandler) GetHistoryBookingByUser(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
-	monthType := c.QueryParam("month_type")
+
 	if token == "" {
 		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
 	}
+	monthType := c.QueryParam("month_type")
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
+
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
+
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	result, err := a.booking_expUsecase.GetHistoryBookingByUserId(ctx, token, monthType)
+	result, err := a.booking_expUsecase.GetHistoryBookingByUserId(ctx, token, monthType,page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

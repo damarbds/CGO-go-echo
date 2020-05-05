@@ -53,3 +53,7 @@ type WishlistOut struct {
 	PaymentType string   `json:"payment_type"`
 	CoverPhoto  string   `json:"cover_photo"`
 }
+type WishlistOutWithPagination struct {
+	Data []*WishlistOut `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
+}

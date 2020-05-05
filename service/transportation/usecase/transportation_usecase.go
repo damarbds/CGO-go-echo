@@ -210,7 +210,7 @@ func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*model
 	}
 	var transImage []models.CoverPhotosObj
 	if getDetailTrans.Transcoverphoto != ""{
-		if errUnmarshal := json.Unmarshal([]byte(getDetailTrans.Transcoverphoto), &transImage); errUnmarshal != nil {
+		if errUnmarshal := json.Unmarshal([]byte(getDetailTrans.TransImages), &transImage); errUnmarshal != nil {
 			return nil, errUnmarshal
 		}
 	}

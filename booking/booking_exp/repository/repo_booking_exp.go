@@ -19,7 +19,6 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewMysqlArticleRepository will create an object that represent the article.Repository interface
 func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
@@ -203,7 +202,7 @@ func (b bookingExpRepository) CountThisMonth(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (b bookingExpRepository) GetCountByBookingDateExp(ctx context.Context, bookingDate string,expId string) (int, error) {
+func (b bookingExpRepository) GetCountByBookingDateExp(ctx context.Context, bookingDate string, expId string) (int, error) {
 	query := `
 	SELECT
 		count(*) as count
@@ -216,7 +215,7 @@ func (b bookingExpRepository) GetCountByBookingDateExp(ctx context.Context, book
 		AND date(booking_date) = ?
 		AND exp_id =?`
 
-	rows, err := b.Conn.QueryContext(ctx, query,bookingDate,expId)
+	rows, err := b.Conn.QueryContext(ctx, query, bookingDate, expId)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
@@ -298,7 +297,7 @@ func (b bookingExpRepository) GetGrowthByMerchantID(ctx context.Context, merchan
 	return res, nil
 }
 
-func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
+func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error) {
 	query := `
 	
 	SELECT
@@ -331,23 +330,29 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, trans
 			AND a.schedule_id = s.id
 		JOIN harbors h ON b.harbors_dest_id = h.id
 		JOIN harbors hs ON b.harbors_source_id = hs.id
-		JOIN merchants m ON b.merchant_id = m.id
-	WHERE
-		a.status = ?
-		AND a.is_active = 1
-		AND a.is_deleted = 0
-		AND (t.status = ? OR t.status IS NULL)
-		AND a.user_id = ?
-	`
+		JOIN merchants m ON b.merchant_id = m.id`
 
-	list, err := b.fetchDetailTransport(ctx, query, bookingStatus, transactionStatus, userId)
+	for index, id := range bookingIds {
+		if index == 0 && index != (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' `
+		} else if index == 0 && index == (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' ) `
+		} else if index == (len(bookingIds) - 1) {
+			query = query + ` OR  a.id = '` + *id + `' ) `
+		} else {
+			query = query + ` OR  a.id = '` + *id + `' `
+		}
+	}
+
+	list, err := b.fetchDetailTransport(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
 	return list, nil
 }
-func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) ([]*models.BookingExpJoin, error) {
+
+func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error) {
 
 	query := `
 	SELECT
@@ -380,7 +385,36 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, transac
 		JOIN cities ci ON h.city_id = ci.id
 		JOIN provinces p ON ci.province_id = p.id
 		JOIN countries co ON p.country_id = co.id
-		JOIN merchants m ON b.merchant_id = m.id
+		JOIN merchants m ON b.merchant_id = m.id`
+
+	for index, id := range bookingIds {
+		if index == 0 && index != (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' `
+		} else if index == 0 && index == (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' ) `
+		} else if index == (len(bookingIds) - 1) {
+			query = query + ` OR  a.id = '` + *id + `' ) `
+		} else {
+			query = query + ` OR  a.id = '` + *id + `' `
+		}
+	}
+
+	list, err := b.fetch(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (b bookingExpRepository) GetBookingCountByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string) (int, error) {
+
+	query := `
+	SELECT COUNT(*) as count 
+	FROM
+		booking_exps a
+		JOIN experiences b ON a.exp_id = b.id
+		JOIN transactions t ON t.booking_exp_id = a.id
 	WHERE
 		a.status = ?
 		AND a.is_active = 1
@@ -389,14 +423,72 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, transac
 		AND a.user_id = ?
 	`
 
-	list, err := b.fetch(ctx, query, bookingStatus, transactionStatus, userId)
+	rows, err := b.Conn.QueryContext(ctx, query, bookingStatus, transactionStatus, userId)
 	if err != nil {
-		return nil, err
+		logrus.Error(err)
+		return 0, err
+	}
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
 	}
 
-	return list, nil
+	resultCount, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+	return resultCount, nil
 }
 
+func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, transactionStatus, bookingStatus int, userId string, limit, offset int) ([]*string, error) {
+	var bookingIds []*string
+	query := `SELECT DISTINCT a.id
+					FROM 
+						booking_exps a
+					JOIN experiences b ON a.exp_id = b.id
+					JOIN transactions t ON t.booking_exp_id = a.id
+					WHERE
+						a.status = ?
+					AND a.is_active = 1
+					AND a.is_deleted = 0
+					AND (t.status = ? OR t.status IS NULL)
+					AND a.user_id = ?`
+
+	if limit != 0 {
+		query = query + ` LIMIT ? OFFSET ?`
+		rows, err := b.Conn.QueryContext(ctx, query, bookingStatus, transactionStatus, userId, limit, offset)
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+
+		for rows.Next() {
+			var bookingId string
+			err = rows.Scan(&bookingId)
+			if err != nil {
+				return nil, err
+			}
+			bookingIds = append(bookingIds, &bookingId)
+		}
+	} else {
+		rows, err := b.Conn.QueryContext(ctx, query, bookingStatus, transactionStatus, userId)
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+
+		for rows.Next() {
+			var bookingId string
+			err = rows.Scan(&bookingId)
+			if err != nil {
+				return nil, err
+			}
+			bookingIds = append(bookingIds, &bookingId)
+		}
+	}
+	return bookingIds, nil
+}
 func (b bookingExpRepository) UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error {
 	query := `UPDATE booking_exps SET status = 1, expired_date_payment = ? WHERE (id = ? OR order_id = ?)`
 
@@ -707,7 +799,7 @@ func (b bookingExpRepository) fetchQueryExpHistory(ctx context.Context, query st
 
 	return result, nil
 }
-func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Context, userId string) ([]*models.BookingExpHistory, error) {
+func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Context, bookingIds []*string) ([]*models.BookingExpHistory, error) {
 	query := `
 		select a.*, 
 				b.exp_title,
@@ -724,12 +816,20 @@ func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Conte
 					join cities d on c.city_id = d.id
 					join provinces e on d.province_id = e.id
 					join countries f on e.country_id = f.id
-					join transactions g on g.booking_exp_id = a.id
-				where 
-					a.user_id = ?
-					and (g.created_date >= (NOW() - INTERVAL 1 MONTH) or g.modified_date >= (NOW() - INTERVAL 1 MONTH))`
+					join transactions g on g.booking_exp_id = a.id`
 
-	list, err := b.fetchQueryExpHistory(ctx, query, userId)
+	for index, id := range bookingIds {
+		if index == 0 && index != (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' `
+		} else if index == 0 && index == (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' ) `
+		} else if index == (len(bookingIds) - 1) {
+			query = query + ` OR  a.id = '` + *id + `' ) `
+		} else {
+			query = query + ` OR  a.id = '` + *id + `' `
+		}
+	}
+	list, err := b.fetchQueryExpHistory(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -738,9 +838,8 @@ func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Conte
 	return result, err
 }
 
-func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpHistory, error) {
+func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Context, bookingIds []*string) ([]*models.BookingExpHistory, error) {
 
-	date := yearMonth + "-" + "01" + " 00:00:00"
 	query := `select a.*, 
 				b.exp_title,
 				b.exp_type,
@@ -757,11 +856,21 @@ func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Contex
 					join provinces e on d.province_id = e.id 
 					join countries f on e.country_id = f.id
 					join transactions g on g.booking_exp_id = a.id
-					where a.user_id = ?
-					and (g.created_date >= ? or g.modified_date >= ?)
 `
 
-	list, err := b.fetchQueryExpHistory(ctx, query, userId, date, date)
+	for index, id := range bookingIds {
+		if index == 0 && index != (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' `
+		} else if index == 0 && index == (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' ) `
+		} else if index == (len(bookingIds) - 1) {
+			query = query + ` OR  a.id = '` + *id + `' ) `
+		} else {
+			query = query + ` OR  a.id = '` + *id + `' `
+		}
+	}
+
+	list, err := b.fetchQueryExpHistory(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -770,7 +879,7 @@ func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Contex
 	return result, err
 }
 
-func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Context, userId string) ([]*models.BookingExpJoin, error) {
+func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error) {
 	query := `
 		
 	SELECT
@@ -803,12 +912,21 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 			AND a.schedule_id = s.id
 		JOIN harbors h ON b.harbors_dest_id = h.id
 		JOIN harbors hs ON b.harbors_source_id = hs.id
-		JOIN merchants m ON b.merchant_id = m.id		
-					where 
-					a.user_id = ?
-					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))`
+		JOIN merchants m ON b.merchant_id = m.id`
 
-	list, err := b.fetchDetailTransport(ctx, query, userId)
+	for index, id := range bookingIds {
+		if index == 0 && index != (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' `
+		} else if index == 0 && index == (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' ) `
+		} else if index == (len(bookingIds) - 1) {
+			query = query + ` OR  a.id = '` + *id + `' ) `
+		} else {
+			query = query + ` OR  a.id = '` + *id + `' `
+		}
+	}
+
+	list, err := b.fetchDetailTransport(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -817,8 +935,8 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 	return result, err
 }
 
-func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Context, userId string, yearMonth string) ([]*models.BookingExpJoin, error) {
-	date := yearMonth + "-" + "01" + " 00:00:00"
+func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error) {
+
 	query := `SELECT
 		a.*,
 		b.trans_name,
@@ -849,16 +967,172 @@ func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Cont
 			AND a.schedule_id = s.id
 		JOIN harbors h ON b.harbors_dest_id = h.id
 		JOIN harbors hs ON b.harbors_source_id = hs.id
-		JOIN merchants m ON b.merchant_id = m.id
-					where a.user_id = ?
-					and (t.created_date >= ? or t.modified_date >= ?)
-`
+		JOIN merchants m ON b.merchant_id = m.id`
 
-	list, err := b.fetchDetailTransport(ctx, query, userId, date, date)
+	for index, id := range bookingIds {
+		if index == 0 && index != (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' `
+		} else if index == 0 && index == (len(bookingIds)-1) {
+			query = query + ` AND (a.id = '` + *id + `' ) `
+		} else if index == (len(bookingIds) - 1) {
+			query = query + ` OR  a.id = '` + *id + `' ) `
+		} else {
+			query = query + ` OR  a.id = '` + *id + `' `
+		}
+	}
+
+	list, err := b.fetchDetailTransport(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
 	result := list
 	return result, err
+}
+func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, userId string, yearMonth string) (int, error) {
+	var count int
+	if yearMonth != "" {
+		date := yearMonth + "-" + "01" + " 00:00:00"
+		query := `SELECT COUNT(*) as count 
+					FROM 
+						booking_exps a 
+					LEFT JOIN 
+						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					where a.user_id = ?
+					and (t.created_date >= ? or t.modified_date >= ?)`
+		rows, err := b.Conn.QueryContext(ctx, query, userId, date, date)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+
+		resultCount, err := checkCount(rows)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		count = resultCount
+	} else {
+		query := `SELECT COUNT(*) as count 
+					FROM 
+						booking_exps a 
+					LEFT JOIN 
+						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+					WHERE 
+					a.user_id = ?
+					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))`
+
+		rows, err := b.Conn.QueryContext(ctx, query, userId)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+
+		resultCount, err := checkCount(rows)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		count = resultCount
+	}
+
+	return count, nil
+}
+
+func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, userId string, yearMonth string, limit, offset int) ([]*string, error) {
+	var bookingIds []*string
+	if yearMonth != "" {
+		date := yearMonth + "-" + "01" + " 00:00:00"
+		query := `SELECT DISTINCT a.id
+					FROM 
+						booking_exps a 
+					LEFT JOIN 
+						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					where a.user_id = ?
+					and (t.created_date >= ? or t.modified_date >= ?)`
+		if limit != 0 {
+			query = query + ` LIMIT ? OFFSET ?`
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, limit, offset)
+			if err != nil {
+				logrus.Error(err)
+				return nil, err
+			}
+
+			for rows.Next() {
+				var bookingId string
+				err = rows.Scan(&bookingId)
+				if err != nil {
+					return nil, err
+				}
+				bookingIds = append(bookingIds, &bookingId)
+			}
+		} else {
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date)
+			if err != nil {
+				logrus.Error(err)
+				return nil, err
+			}
+
+			for rows.Next() {
+				var bookingId string
+				err = rows.Scan(&bookingId)
+				if err != nil {
+					return nil, err
+				}
+				bookingIds = append(bookingIds, &bookingId)
+			}
+		}
+
+	} else {
+		query := `SELECT DISTINCT a.id
+					FROM 
+						booking_exps a 
+					LEFT JOIN 
+						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+					WHERE 
+					a.user_id = ?
+					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))`
+		if limit != 0 {
+			query = query + ` LIMIT ? OFFSET ?`
+			rows, err := b.Conn.QueryContext(ctx, query, userId, limit, offset)
+			if err != nil {
+				logrus.Error(err)
+				return nil, err
+			}
+
+			for rows.Next() {
+				var bookingId string
+				err = rows.Scan(&bookingId)
+				if err != nil {
+					return nil, err
+				}
+				bookingIds = append(bookingIds, &bookingId)
+			}
+		} else {
+			rows, err := b.Conn.QueryContext(ctx, query, userId)
+			if err != nil {
+				logrus.Error(err)
+				return nil, err
+			}
+
+			for rows.Next() {
+				var bookingId string
+				err = rows.Scan(&bookingId)
+				if err != nil {
+					return nil, err
+				}
+				bookingIds = append(bookingIds, &bookingId)
+			}
+		}
+	}
+
+	return bookingIds, nil
 }

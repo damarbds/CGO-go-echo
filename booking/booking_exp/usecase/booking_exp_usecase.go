@@ -371,7 +371,7 @@ func (b bookingExpUsecase) GetGrowthByMerchantID(ctx context.Context, token stri
 	return results, nil
 }
 
-func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string) ([]*models.MyBooking, error) {
+func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string,page,limit,offset int) (*models.MyBookingWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 
@@ -379,8 +379,12 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 	if err != nil {
 		return nil, err
 	}
+	bookingIds ,err := b.bookingExpRepo.GetBookingIdByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id,limit,offset)
+	if err != nil {
+		return nil, err
+	}
 
-	expList, err := b.bookingExpRepo.GetBookingExpByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id)
+	expList, err := b.bookingExpRepo.GetBookingExpByUserID(ctx, bookingIds)
 	if err != nil {
 		return nil, err
 	}
@@ -424,7 +428,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 		}
 	}
 
-	transList, err := b.bookingExpRepo.GetBookingTransByUserID(ctx,transactionStatus,bookingStatus,currentUser.Id)
+	transList, err := b.bookingExpRepo.GetBookingTransByUserID(ctx,bookingIds)
 	if err != nil {
 		return nil,err
 	}
@@ -478,7 +482,33 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 		myBooking = append(myBooking,&booking)
 	}
 
-	return myBooking, nil
+	totalRecords, _ := b.bookingExpRepo.GetBookingCountByUserID(ctx,transactionStatus,bookingStatus,currentUser.Id)
+
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
+
+	if page != totalPage {
+		next = page + 1
+	}
+
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(myBooking),
+	}
+
+	response := &models.MyBookingWithPagination{
+		Data: myBooking,
+		Meta: meta,
+	}
+	return response, nil
 }
 
 func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error) {
@@ -757,7 +787,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	return resBooking, nil, nil
 }
 
-func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string, monthType string) ([]*models.BookingHistoryDto, error) {
+func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string, monthType string,page,limit,offset int) (*models.BookingHistoryDtoWithPagination, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 	var currentUserId string
@@ -771,7 +801,11 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 	var guestDesc []models.GuestDescObj
 	var result []*models.BookingHistoryDto
 	if monthType == "past-30-days" {
-		query, err := b.bookingExpRepo.QueryHistoryPer30DaysExpByUserId(ctx, currentUserId)
+		bookingIds ,err := b.bookingExpRepo.QuerySelectIdHistoryByUserId(ctx,currentUserId,"",limit,offset)
+		if err != nil {
+			return nil, err
+		}
+		query, err := b.bookingExpRepo.QueryHistoryPer30DaysExpByUserId(ctx, bookingIds)
 		if err != nil {
 			return nil, err
 		}
@@ -832,7 +866,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
 
-		queryTrans, err := b.bookingExpRepo.QueryHistoryPer30DaysTransByUserId(ctx, currentUserId)
+		queryTrans, err := b.bookingExpRepo.QueryHistoryPer30DaysTransByUserId(ctx, bookingIds)
 		if err != nil {
 			return nil, err
 		}
@@ -906,7 +940,11 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		}
 		result = append(result, &historyDto)
 	} else {
-		queryExp, err := b.bookingExpRepo.QueryHistoryPerMonthExpByUserId(ctx, currentUserId, monthType)
+		bookingIds ,err := b.bookingExpRepo.QuerySelectIdHistoryByUserId(ctx,currentUserId,monthType,limit,offset)
+		if err != nil {
+			return nil, err
+		}
+		queryExp, err := b.bookingExpRepo.QueryHistoryPerMonthExpByUserId(ctx, bookingIds)
 		if err != nil {
 			return nil, err
 		}
@@ -971,7 +1009,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
-		queryTrans, err := b.bookingExpRepo.QueryHistoryPerMonthTransByUserId(ctx, currentUserId, monthType)
+		queryTrans, err := b.bookingExpRepo.QueryHistoryPerMonthTransByUserId(ctx, bookingIds)
 		if err != nil {
 			return nil, err
 		}
@@ -1045,7 +1083,37 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		}
 		result = append(result, &historyDto)
 	}
-	return result, nil
+	var totalRecords int
+	if monthType == "past-30-days"{
+		totalRecords, _ = b.bookingExpRepo.QueryCountHistoryByUserId(ctx ,currentUserId,"")
+	}else {
+		totalRecords, _ = b.bookingExpRepo.QueryCountHistoryByUserId(ctx ,currentUserId,monthType)
+	}
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
+
+	if page != totalPage {
+		next = page + 1
+	}
+
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(result[0].Items),
+	}
+
+	response := &models.BookingHistoryDtoWithPagination{
+		Data: result,
+		Meta: meta,
+	}
+	return response, nil
 }
 
 func generateQRCode(content string) (*string, error) {

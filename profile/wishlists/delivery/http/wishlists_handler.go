@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
+	"strconv"
 )
 
 // ResponseError represent the response error struct
@@ -44,13 +45,22 @@ func (w *wishlistHandler) List(c echo.Context) error {
 	if token == "" {
 		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
 	}
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
 
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	res, err := w.wlUsecase.List(ctx, token)
+	res, err := w.wlUsecase.List(ctx, token,page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

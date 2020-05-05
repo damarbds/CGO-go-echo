@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/profile/wishlists"
@@ -59,15 +60,45 @@ func (m *wishListRepository) fetch(ctx context.Context, query string, args ...in
 	return result, nil
 }
 
-func (w wishListRepository) List(ctx context.Context, userID string) ([]*models.WishlistObj, error) {
-	query := `SELECT * FROM wishlists WHERE user_id = ? AND is_deleted = 0 AND is_active = 1`
-
-	res, err := w.fetch(ctx, query, userID)
+func (m *wishListRepository) Count(ctx context.Context, userID string) (int, error) {
+	query := `SELECT COUNT(*) as count FROM wishlists WHERE user_id = ? AND is_deleted = 0 AND is_active = 1`
+	rows, err := m.Conn.QueryContext(ctx, query, userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, models.ErrNotFound
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (w wishListRepository) List(ctx context.Context, userID string, limit, offset int) ([]*models.WishlistObj, error) {
+	res := make([]*models.WishlistObj, 0)
+	query := `SELECT * FROM wishlists WHERE user_id = ? AND is_deleted = 0 AND is_active = 1`
+	if limit != 0 {
+		query = query + ` LIMIT ? OFFSET ?`
+		result, err := w.fetch(ctx, query, userID, limit, offset)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
 		}
-		return nil, err
+		res = result
+	} else {
+		result, err := w.fetch(ctx, query, userID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
+		}
+		res = result
 	}
 
 	return res, nil
@@ -144,4 +175,14 @@ func (w wishListRepository) Insert(ctx context.Context, wl *models.Wishlist) (*m
 	}
 
 	return wl, nil
+}
+
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
 }

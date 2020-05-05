@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"time"
 
 	"github.com/auth/user"
@@ -40,7 +41,7 @@ func NewWishlistUsecase(
 	}
 }
 
-func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.WishlistOut, error) {
+func (w wishListUsecase) List(ctx context.Context, token string,page int, limit int, offset int) (*models.WishlistOutWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, w.ctxTimeout)
 	defer cancel()
 
@@ -49,7 +50,7 @@ func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.Wish
 		return nil, err
 	}
 
-	wLists, err := w.wlRepo.List(ctx, currentUser.Id)
+	wLists, err := w.wlRepo.List(ctx, currentUser.Id,limit,offset)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +110,32 @@ func (w wishListUsecase) List(ctx context.Context, token string) ([]*models.Wish
 			CoverPhoto:  *exp.ExpCoverPhoto,
 		}
 	}
+	totalRecords, _ := w.wlRepo.Count(ctx,currentUser.Id)
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
 
-	return results, nil
+	if page != totalPage {
+		next = page + 1
+	}
+
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(results),
+	}
+
+	response := &models.WishlistOutWithPagination{
+		Data: results,
+		Meta: meta,
+	}
+	return response, nil
 }
 
 func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, token string) (string, error) {
