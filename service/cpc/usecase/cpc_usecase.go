@@ -3,16 +3,8 @@ package usecase
 import (
 	"encoding/json"
 	"github.com/auth/admin"
-	"github.com/auth/identityserver"
-	"github.com/auth/merchant"
-	"github.com/auth/user"
-	"github.com/booking/booking_exp"
 	"github.com/models"
-	"github.com/product/experience_add_ons"
 	"github.com/service/cpc"
-	"github.com/service/exp_payment"
-	"github.com/service/experience"
-	"github.com/transactions/transaction"
 	"golang.org/x/net/context"
 	"math"
 	"strconv"
@@ -26,7 +18,7 @@ type cPCUsecase struct {
 }
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewCPCUsecase(adminUsecase admin.Usecase,cpcRepo cpc.Repository,timeout time.Duration) booking_exp.Usecase {
+func NewCPCUsecase(adminUsecase admin.Usecase,cpcRepo cpc.Repository,timeout time.Duration) cpc.Usecase {
 	return &cPCUsecase{
 		adminUsecase : adminUsecase,
 		cpcRepo:cpcRepo,

@@ -6,11 +6,11 @@ import (
 )
 
 type Repository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []*models.Harbors, nextCursor string, err error)
+	Fetch(ctx context.Context, limit,offset int) ([]*models.Harbors, error)
 	GetByID(ctx context.Context, id string) (*models.Harbors, error)
+	GetCount(ctx context.Context)(int,error)
 	GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string) ([]*models.HarborsWCPC, error)
-	//GetByMerchantEmail(ctx context.Context, merchantEmail string) (*models.Harbors, error)
-	//Update(ctx context.Context, ar *models.Harbors) error
-	//Insert(ctx context.Context, a *models.Harbors) error
-	//Delete(ctx context.Context, id string,deleted_by string) error
+	Update(ctx context.Context, ar *models.Harbors) error
+	Insert(ctx context.Context, a *models.Harbors) (*string,error)
+	Delete(ctx context.Context, id string,deletedBy string) error
 }

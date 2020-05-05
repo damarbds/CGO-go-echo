@@ -23,7 +23,7 @@ type HarborsDto struct {
 	HarborsName      string     `json:"harbors_name"`
 	HarborsLongitude float64    `json:"harbors_longitude"`
 	HarborsLatitude  float64    `json:"harbors_latitude"`
-	HarborsImage     string     `json:"harbors_image"`
+	HarborsImage     []CoverPhotosObj     `json:"harbors_image"`
 	CityId           int        `json:"city_id"`
 }
 type NewCommandHarbors struct {
@@ -31,8 +31,12 @@ type NewCommandHarbors struct {
 	HarborsName      string     `json:"harbors_name"`
 	HarborsLongitude float64    `json:"harbors_longitude"`
 	HarborsLatitude  float64    `json:"harbors_latitude"`
-	HarborsImage     string     `json:"harbors_image"`
+	HarborsImage     []CoverPhotosObj     `json:"harbors_image"`
 	CityId           int        `json:"city_id"`
+}
+type HarborsDtoWithPagination struct {
+	Data []*HarborsDto `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
 }
 type HarborsWCPC struct {
 	Id               string  `json:"id" validate:"required"`

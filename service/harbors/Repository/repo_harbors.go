@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"github.com/google/uuid"
 
 	"time"
 
@@ -111,25 +112,43 @@ func (m *harborsRepository) fetchWithJoinCPC(ctx context.Context, query string, 
 	return result, nil
 }
 
-func (m *harborsRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Harbors, string, error) {
-	query := `SELECT * FROM harbors WHERE created_at > ? ORDER BY created_at LIMIT ? `
+func (m *harborsRepository) Fetch(ctx context.Context, limit,offset int) ([]*models.Harbors, error) {
+	if limit != 0 {
+		query := `Select * FROM harbors where is_deleted = 0 AND is_active = 1 `
 
-	decodedCursor, err := DecodeCursor(cursor)
-	if err != nil && cursor != "" {
-		return nil, "", models.ErrBadParamInput
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
+		res, err := m.fetch(ctx, query, limit, offset)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+
+	} else {
+		query := `Select * FROM harbors where is_deleted = 0 AND is_active = 1 `
+
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc `
+		res, err := m.fetch(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
 	}
-
-	res, err := m.fetch(ctx, query, decodedCursor, num)
-	if err != nil {
-		return nil, "", err
-	}
-
-	nextCursor := ""
-	if len(res) == int(num) {
-		nextCursor = EncodeCursor(res[len(res)-1].CreatedDate)
-	}
-
-	return res, nextCursor, err
 }
 
 func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , size *int,search string) ([]*models.HarborsWCPC, error) {
@@ -197,50 +216,64 @@ func (m *harborsRepository) GetByID(ctx context.Context, id string) (res *models
 
 	return
 }
-//func (m *harborsRepository) GetByharborsEmail(ctx context.Context, harborsEmail string) (res *models.Harbors, err error) {
-//	query := `SELECT * FROM harborss WHERE harbors_email = ?`
-//
-//	list, err := m.fetch(ctx, query, harborsEmail)
-//	if err != nil {
-//		return
-//	}
-//
-//	if len(list) > 0 {
-//		res = list[0]
-//	} else {
-//		return nil, models.ErrNotFound
-//	}
-//	return
-//}
-//func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) error {
-//	query := `INSERT harborss SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , harbors_name=? , harbors_desc=? , harbors_email=? ,balance=?`
-//	stmt, err := m.Conn.PrepareContext(ctx, query)
-//	if err != nil {
-//		return err
-//	}
-//	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.harborsName, a.harborsDesc,
-//		a.harborsEmail, a.Balance)
-//	if err != nil {
-//		return err
-//	}
-//
-//	//lastID, err := res.RowsAffected()
-//	if err != nil {
-//		return err
-//	}
-//
-//	//a.Id = lastID
-//	return nil
-//}
+func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*string,error) {
+	a.Id = uuid.New().String()
+	query := `INSERT harbors SET id=?,created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
+				deleted_date=? , is_deleted=? , is_active=? , harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
+				harbors_image=?,city_id=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.HarborsName, a.HarborsLongitude,
+		a.HarborsLatitude, a.HarborsImage,a.CityId)
+	if err != nil {
+		return nil,err
+	}
 
-func (m *harborsRepository) Delete(ctx context.Context, id string, deleted_by string) error {
-	query := `UPDATE  harborss SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return nil,err
+	}
+
+	//a.Id = lastID
+	return &a.Id,nil
+}
+func (m *harborsRepository) Update(ctx context.Context, a *models.Harbors) error {
+	query := `UPDATE harbors set modified_by=?, modified_date=? ,  harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
+				harbors_image=?,city_id=? WHERE id = ?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil
+	}
+
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.HarborsName, a.HarborsLongitude,
+		a.HarborsLatitude, a.HarborsImage,a.CityId, a.Id)
+	if err != nil {
+		return err
+	}
+	//affect, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//if affect != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+	//
+	//	return err
+	//}
+
+	return nil
+}
+
+func (m *harborsRepository) Delete(ctx context.Context, id string, deletedBy string) error {
+	query := `UPDATE harbors SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? where id =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
 	if err != nil {
 		return err
 	}
@@ -253,33 +286,35 @@ func (m *harborsRepository) Delete(ctx context.Context, id string, deleted_by st
 	//a.Id = lastID
 	return nil
 }
-//func (m *harborsRepository) Update(ctx context.Context, ar *models.Harbors) error {
-//	query := `UPDATE harborss set modified_by=?, modified_date=? , harbors_name=? ,
-//				harbors_desc=? , harbors_email=? , balance=? WHERE id = ?`
-//
-//	stmt, err := m.Conn.PrepareContext(ctx, query)
-//	if err != nil {
-//		return nil
-//	}
-//
-//	res, err := stmt.ExecContext(ctx, ar.ModifiedBy, time.Now(), ar.harborsName, ar.harborsDesc, ar.harborsEmail,
-//		ar.Balance, ar.Id)
-//	if err != nil {
-//		return err
-//	}
-//	affect, err := res.RowsAffected()
-//	if err != nil {
-//		return err
-//	}
-//	if affect != 1 {
-//		err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
-//
-//		return err
-//	}
-//
-//	return nil
-//}
 
+func (m *harborsRepository) GetCount(ctx context.Context) (int, error) {
+	query := `SELECT count(*) AS count FROM harbors WHERE is_deleted = 0 and is_active = 1`
+
+	rows, err := m.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
 // DecodeCursor will decode cursor from user for mysql
 func DecodeCursor(encodedTime string) (time.Time, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedTime)

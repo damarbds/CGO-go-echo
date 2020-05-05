@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/auth/admin"
+	"math"
 	"time"
 
 	"github.com/service/harbors"
@@ -10,13 +13,16 @@ import (
 )
 
 type harborsUsecase struct {
+	adminUsecase 	admin.Usecase
 	harborsRepo    harbors.Repository
 	contextTimeout time.Duration
 }
 
+
 // NewharborsUsecase will create new an harborsUsecase object representation of harbors.Usecase interface
-func NewharborsUsecase(a harbors.Repository, timeout time.Duration) harbors.Usecase {
+func NewharborsUsecase(adminUsecase admin.Usecase,a harbors.Repository, timeout time.Duration) harbors.Usecase {
 	return &harborsUsecase{
+		adminUsecase:adminUsecase,
 		harborsRepo:    a,
 		contextTimeout: timeout,
 	}
@@ -49,6 +55,185 @@ func (m harborsUsecase) GetAllWithJoinCPC(c context.Context, page *int, size *in
 	return harborss, nil
 }
 
+func (m harborsUsecase) GetAll(c context.Context, page, limit, size int) (*models.HarborsDtoWithPagination, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	getAll ,err := m.harborsRepo.Fetch(ctx,limit,size)
+	if err != nil {
+		return nil,err
+	}
+
+	harborsDtos := make([]*models.HarborsDto,0)
+	for _,element := range getAll{
+		harborsPhotos := make([]models.CoverPhotosObj,0)
+		if element.HarborsImage != "" {
+			if errUnmarshal := json.Unmarshal([]byte(element.HarborsImage), &harborsPhotos); errUnmarshal != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
+		dto := models.HarborsDto{
+			Id:               element.Id,
+			HarborsName:      element.HarborsName,
+			HarborsLongitude: element.HarborsLongitude,
+			HarborsLatitude:  element.HarborsLatitude,
+			HarborsImage:     harborsPhotos,
+			CityId:           element.CityId,
+		}
+
+		harborsDtos = append(harborsDtos,&dto)
+	}
+	totalRecords, _ := m.harborsRepo.GetCount(ctx)
+
+	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
+	prev := page
+	next := page
+	if page != 1 {
+		prev = page - 1
+	}
+
+	if page != totalPage {
+		next = page + 1
+	}
+
+	meta := &models.MetaPagination{
+		Page:          page,
+		Total:         totalPage,
+		TotalRecords:  totalRecords,
+		Prev:          prev,
+		Next:          next,
+		RecordPerPage: len(harborsDtos),
+	}
+
+	response := &models.HarborsDtoWithPagination{
+		Data: harborsDtos,
+		Meta: meta,
+	}
+	return response, nil
+}
+
+func (m harborsUsecase) GetById(c context.Context, id string) (*models.HarborsDto, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	getById ,err := m.harborsRepo.GetByID(ctx,id)
+	if err != nil {
+		return nil,err
+	}
+
+	harborsPhotos := make([]models.CoverPhotosObj,0)
+	if getById.HarborsImage != "" {
+		if errUnmarshal := json.Unmarshal([]byte(getById.HarborsImage), &harborsPhotos); errUnmarshal != nil {
+			return nil, models.ErrInternalServerError
+		}
+	}
+
+	result := models.HarborsDto{
+		Id:               getById.Id,
+		HarborsName:      getById.HarborsName,
+		HarborsLongitude: getById.HarborsLongitude,
+		HarborsLatitude:  getById.HarborsLatitude,
+		HarborsImage:     harborsPhotos,
+		CityId:           getById.CityId,
+	}
+
+	return &result,nil
+}
+
+func (m harborsUsecase) Create(ctx context.Context, p *models.NewCommandHarbors, token string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentUser, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	harborsPhotos ,_:= json.Marshal(p.HarborsImage)
+	harborsPhotosJson := string(harborsPhotos)
+	harbors := models.Harbors{
+		Id:               "",
+		CreatedBy:        currentUser.Name,
+		CreatedDate:      time.Time{},
+		ModifiedBy:       nil,
+		ModifiedDate:     nil,
+		DeletedBy:        nil,
+		DeletedDate:      nil,
+		IsDeleted:        0,
+		IsActive:         0,
+		HarborsName:      p.HarborsName,
+		HarborsLongitude: p.HarborsLongitude,
+		HarborsLatitude:  p.HarborsLatitude,
+		HarborsImage:     harborsPhotosJson,
+		CityId:           p.CityId,
+	}
+	harborsId,err := m.harborsRepo.Insert(ctx,&harbors)
+	if err != nil {
+		return nil,err
+	}
+	result := models.ResponseDelete{
+		Id:      *harborsId,
+		Message: "Success Create Harbors",
+	}
+
+	return &result,nil
+}
+
+func (m harborsUsecase) Update(ctx context.Context, p *models.NewCommandHarbors, token string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	currentUser, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	harborsPhotos ,_:= json.Marshal(p.HarborsImage)
+	harborsPhotosJson := string(harborsPhotos)
+	harbors := models.Harbors{
+		Id:               p.Id,
+		CreatedBy:        "",
+		CreatedDate:      time.Time{},
+		ModifiedBy:       &currentUser.Name,
+		ModifiedDate:     nil,
+		DeletedBy:        nil,
+		DeletedDate:      nil,
+		IsDeleted:        0,
+		IsActive:         0,
+		HarborsName:      p.HarborsName,
+		HarborsLongitude: p.HarborsLongitude,
+		HarborsLatitude:  p.HarborsLatitude,
+		HarborsImage:     harborsPhotosJson,
+		CityId:           p.CityId,
+	}
+	err = m.harborsRepo.Update(ctx,&harbors)
+	if err != nil {
+		return nil,err
+	}
+	result := models.ResponseDelete{
+		Id:      p.Id,
+		Message: "Success Update Harbors",
+	}
+
+	return &result,nil
+}
+
+func (c harborsUsecase) Delete(ctx context.Context, id string, token string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+	defer cancel()
+	currentUser, err := c.adminUsecase.ValidateTokenAdmin(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	err = c.harborsRepo.Delete(ctx,id,currentUser.Name)
+	if err != nil {
+		return nil,err
+	}
+	result := models.ResponseDelete{
+		Id:      id,
+		Message: "Success Delete Harbors",
+	}
+
+	return &result,nil
+}
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation

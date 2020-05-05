@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/json"
 	"github.com/auth/identityserver"
 	"github.com/service/cpc"
 	"io"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/models"
-	"github.com/service/promo"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	validator "gopkg.in/go-playground/validator.v9"
@@ -135,7 +133,7 @@ func (a *cPCHandler) CreateCity(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Promo")
+		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/City")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -203,7 +201,7 @@ func (a *cPCHandler) UpdateCity(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Promo")
+		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/City")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
