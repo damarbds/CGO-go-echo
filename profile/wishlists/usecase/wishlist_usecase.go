@@ -150,7 +150,7 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 	if err != nil {
 		return "", err
 	}
-	if len(checkWhislist) != 0 || checkWhislist != nil {
+	if len(checkWhislist) != 0{
 		return "", models.ErrConflict
 	}
 	newData := &models.Wishlist{

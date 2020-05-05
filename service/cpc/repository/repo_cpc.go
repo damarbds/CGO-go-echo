@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
-
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -20,6 +19,7 @@ const (
 type cpcRepository struct {
 	Conn *sql.DB
 }
+
 
 // NewcpcRepository will create an object that represent the article.Repository interface
 func NewcpcRepository(Conn *sql.DB) cpc.Repository {
@@ -69,25 +69,43 @@ func (m *cpcRepository) fetchCity(ctx context.Context, query string, args ...int
 	return result, nil
 }
 
-func (m *cpcRepository) FetchCity(ctx context.Context, cursor string, num int64) ([]*models.City, string, error) {
-	query := `SELECT * FROM cities WHERE created_at > ? ORDER BY created_at LIMIT ? `
+func (m *cpcRepository) FetchCity(ctx context.Context, limit,offset int) ([]*models.City, error) {
+	if limit != 0 {
+		query := `Select * FROM cities where is_deleted = 0 AND is_active = 1 `
 
-	decodedCursor, err := DecodeCursor(cursor)
-	if err != nil && cursor != "" {
-		return nil, "", models.ErrBadParamInput
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
+		res, err := m.fetchCity(ctx, query, limit, offset)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+
+	} else {
+		query := `Select * FROM cities where is_deleted = 0 AND is_active = 1 `
+
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc `
+		res, err := m.fetchCity(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
 	}
-
-	res, err := m.fetchCity(ctx, query, decodedCursor, num)
-	if err != nil {
-		return nil, "", err
-	}
-
-	nextCursor := ""
-	if len(res) == int(num) {
-		nextCursor = EncodeCursor(res[len(res)-1].CreatedDate)
-	}
-
-	return res, nextCursor, err
 }
 func (m *cpcRepository) GetCityByID(ctx context.Context, id int) (res *models.City, err error) {
 	query := `SELECT * FROM cities WHERE id = ?`
@@ -106,6 +124,94 @@ func (m *cpcRepository) GetCityByID(ctx context.Context, id int) (res *models.Ci
 	return
 }
 
+func (m *cpcRepository) GetCountCity(ctx context.Context) (int, error) {
+	query := `SELECT count(*) AS count FROM cities WHERE is_deleted = 0 and is_active = 1`
+
+	rows, err := m.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (m *cpcRepository) InsertCity(ctx context.Context, a *models.City) (*int, error) {
+	query := `INSERT cities SET created_by=? , created_date=? , modified_by=?, modified_date=? ,
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , city_name=?,city_desc=? , 
+				city_photos=? ,province_id=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CityName,a.CityDesc,
+		a.CityPhotos,a.ProvinceId)
+	if err != nil {
+		return nil,err
+	}
+
+
+	lastID, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
+	a.Id = int(lastID)
+	return &a.Id,nil
+}
+
+func (m *cpcRepository) UpdateCity(ctx context.Context, a *models.City) error {
+	query := `UPDATE cities set modified_by=?, modified_date=? ,city_name=?,city_desc=? , 
+				city_photos=? ,province_id=? WHERE id = ?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil
+	}
+
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CityName,a.CityDesc, a.CityPhotos,a.ProvinceId,a.Id)
+	if err != nil {
+		return err
+	}
+	//affect, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//if affect != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+	//
+	//	return err
+	//}
+
+	return nil
+}
+
+func (m *cpcRepository) DeleteCity(ctx context.Context, id string, deletedBy string) error {
+	query := `UPDATE cities SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
 func (m *cpcRepository) fetchProvince(ctx context.Context, query string, args ...interface{}) ([]*models.Province, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -147,25 +253,43 @@ func (m *cpcRepository) fetchProvince(ctx context.Context, query string, args ..
 	return result, nil
 }
 
-func (m *cpcRepository) FetchProvince(ctx context.Context, cursor string, num int64) ([]*models.Province, string, error) {
-	query := `SELECT * FROM provinces WHERE created_at > ? ORDER BY created_at LIMIT ? `
+func (m *cpcRepository) FetchProvince(ctx context.Context, limit, offset int) ([]*models.Province, error) {
+	if limit != 0 {
+		query := `Select * FROM provinces where is_deleted = 0 AND is_active = 1 `
 
-	decodedCursor, err := DecodeCursor(cursor)
-	if err != nil && cursor != "" {
-		return nil, "", models.ErrBadParamInput
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
+		res, err := m.fetchProvince(ctx, query, limit, offset)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+
+	} else {
+		query := `Select * FROM provinces where is_deleted = 0 AND is_active = 1 `
+
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc `
+		res, err := m.fetchProvince(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
 	}
-
-	res, err := m.fetchProvince(ctx, query, decodedCursor, num)
-	if err != nil {
-		return nil, "", err
-	}
-
-	nextCursor := ""
-	if len(res) == int(num) {
-		nextCursor = EncodeCursor(res[len(res)-1].CreatedDate)
-	}
-
-	return res, nextCursor, err
 }
 func (m *cpcRepository) GetProvinceByID(ctx context.Context, id int) (res *models.Province, err error) {
 	query := `SELECT * FROM provinces WHERE id = ?`
@@ -184,41 +308,273 @@ func (m *cpcRepository) GetProvinceByID(ctx context.Context, id int) (res *model
 	return
 }
 
-//func (m *cpcRepository) GetBycpcEmail(ctx context.Context, cpcEmail string) (res *models.cpc, err error) {
-//	query := `SELECT * FROM cpcs WHERE cpc_email = ?`
-//
-//	list, err := m.fetch(ctx, query, cpcEmail)
-//	if err != nil {
-//		return
-//	}
-//
-//	if len(list) > 0 {
-//		res = list[0]
-//	} else {
-//		return nil, models.ErrNotFound
-//	}
-//	return
-//}
-//func (m *cpcRepository) Insert(ctx context.Context, a *models.cpc) error {
-//	query := `INSERT cpcs SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , cpc_name=? , cpc_desc=? , cpc_email=? ,balance=?`
-//	stmt, err := m.Conn.PrepareContext(ctx, query)
-//	if err != nil {
-//		return err
-//	}
-//	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.cpcName, a.cpcDesc,
-//		a.cpcEmail, a.Balance)
-//	if err != nil {
-//		return err
-//	}
-//
-//	//lastID, err := res.RowsAffected()
-//	if err != nil {
-//		return err
-//	}
-//
-//	//a.Id = lastID
-//	return nil
-//}
+func (m *cpcRepository) GetCountProvince(ctx context.Context) (int, error) {
+	query := `SELECT count(*) AS count FROM provinces WHERE is_deleted = 0 and is_active = 1`
+
+	rows, err := m.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (m *cpcRepository) InsertProvince(ctx context.Context, a *models.Province) (*int, error) {
+	query := `INSERT provinces SET created_by=? , created_date=? , modified_by=?, modified_date=? ,
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , province_name=?,country_id=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ProvinceName,a.CountryId)
+	if err != nil {
+		return nil,err
+	}
+
+	lastID, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
+	a.Id = int(lastID)
+	return &a.Id,nil
+}
+
+func (m *cpcRepository) UpdateProvince(ctx context.Context, a *models.Province) error {
+	query := `UPDATE provinces set modified_by=?, modified_date=? ,province_name=?,country_id=? WHERE id = ?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil
+	}
+
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.ProvinceName,a.CountryId, a.Id)
+	if err != nil {
+		return err
+	}
+	//affect, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//if affect != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+	//
+	//	return err
+	//}
+
+	return nil
+}
+
+func (m *cpcRepository) DeleteProvince(ctx context.Context, id string, deletedBy string) error {
+	query := `UPDATE provinces SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
+
+func (m *cpcRepository) fetchCountry(ctx context.Context, query string, args ...interface{}) ([]*models.Country, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.Country, 0)
+	for rows.Next() {
+		t := new(models.Country)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.CountryName,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+
+func (m *cpcRepository) FetchCountry(ctx context.Context, limit, offset int) ([]*models.Country, error) {
+	if limit != 0 {
+		query := `Select * FROM countries where is_deleted = 0 AND is_active = 1 `
+
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
+		res, err := m.fetchCountry(ctx, query, limit, offset)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+
+	} else {
+		query := `Select * FROM countries where is_deleted = 0 AND is_active = 1 `
+
+		//if search != ""{
+		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
+		//		`OR promo_desc LIKE '%` + search + `%' ` +
+		//		`OR start_date LIKE '%` + search + `%' ` +
+		//		`OR end_date LIKE '%` + search + `%' ` +
+		//		`OR promo_code LIKE '%` + search + `%' ` +
+		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
+		//}
+		query = query + ` ORDER BY created_date desc `
+		res, err := m.fetchCountry(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	}
+}
+
+func (m *cpcRepository) GetCountryByID(ctx context.Context, id int) (res *models.Country,err error) {
+	query := `SELECT * FROM countries WHERE id = ?`
+
+	list, err := m.fetchCountry(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return
+}
+
+func (m *cpcRepository) GetCountCountry(ctx context.Context) (int, error) {
+	query := `SELECT count(*) AS count FROM countries WHERE is_deleted = 0 and is_active = 1`
+
+	rows, err := m.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (m *cpcRepository) InsertCountry(ctx context.Context, a *models.Country) (*int, error) {
+	query := `INSERT countries SET created_by=? , created_date=? , modified_by=?, modified_date=? ,
+				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , country_name=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CountryName)
+	if err != nil {
+		return nil,err
+	}
+
+	lastID, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
+	a.Id = int(lastID)
+	return &a.Id,nil
+}
+
+func (m *cpcRepository) UpdateCountry(ctx context.Context, a *models.Country) error {
+	query := `UPDATE countries set modified_by=?, modified_date=? ,country_name=? WHERE id = ?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil
+	}
+
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CountryName,a.Id)
+	if err != nil {
+		return err
+	}
+	//affect, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//if affect != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+	//
+	//	return err
+	//}
+
+	return nil
+}
+
+func (m *cpcRepository) DeleteCountry(ctx context.Context, id string, deletedBy string) error {
+	query := `UPDATE countries SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
+
 
 func (m *cpcRepository) Delete(ctx context.Context, id string, deleted_by string) error {
 	query := `UPDATE  cpcs SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
@@ -241,33 +597,15 @@ func (m *cpcRepository) Delete(ctx context.Context, id string, deleted_by string
 	return nil
 }
 
-//func (m *cpcRepository) Update(ctx context.Context, ar *models.cpc) error {
-//	query := `UPDATE cpcs set modified_by=?, modified_date=? , cpc_name=? ,
-//				cpc_desc=? , cpc_email=? , balance=? WHERE id = ?`
-//
-//	stmt, err := m.Conn.PrepareContext(ctx, query)
-//	if err != nil {
-//		return nil
-//	}
-//
-//	res, err := stmt.ExecContext(ctx, ar.ModifiedBy, time.Now(), ar.cpcName, ar.cpcDesc, ar.cpcEmail,
-//		ar.Balance, ar.Id)
-//	if err != nil {
-//		return err
-//	}
-//	affect, err := res.RowsAffected()
-//	if err != nil {
-//		return err
-//	}
-//	if affect != 1 {
-//		err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
-//
-//		return err
-//	}
-//
-//	return nil
-//}
-
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
 // DecodeCursor will decode cursor from user for mysql
 func DecodeCursor(encodedTime string) (time.Time, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedTime)

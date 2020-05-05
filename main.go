@@ -258,7 +258,7 @@ func main() {
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(experienceAddOnRepo,paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/product/experience_add_ons"
 	"github.com/service/exp_payment"
 	"io/ioutil"
 	"math"
@@ -33,6 +34,7 @@ import (
 )
 
 type bookingExpUsecase struct {
+	adOnsRepo experience_add_ons.Repository
 	experiencePaymentTypeRepo exp_payment.Repository
 	bookingExpRepo  booking_exp.Repository
 	userUsecase     user.Usecase
@@ -45,8 +47,9 @@ type bookingExpUsecase struct {
 
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(ept exp_payment.Repository,a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(adOnsRepo experience_add_ons.Repository,ept exp_payment.Repository,a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
+		adOnsRepo:adOnsRepo,
 		experiencePaymentTypeRepo:ept,
 		bookingExpRepo:  a,
 		userUsecase:     u,
@@ -565,6 +568,29 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 			}
 		}
 	}
+	expAddOns := make([]models.ExperienceAddOnObj,0)
+	expAddOnsQuery, errorQuery := b.adOnsRepo.GetByExpId(ctx, *getDetailBooking.ExpId)
+	if errorQuery != nil {
+		return nil,err
+	}
+	if expAddOnsQuery != nil {
+		for _, element := range expAddOnsQuery {
+			var currency string
+			if element.Currency == 1 {
+				currency = "USD"
+			} else {
+				currency = "IDR"
+			}
+			addOns := models.ExperienceAddOnObj{
+				Id:       element.Id,
+				Name:     element.Name,
+				Desc:     element.Desc,
+				Currency: currency,
+				Amount:   element.Amount,
+			}
+			expAddOns = append(expAddOns,addOns)
+		}
+	}
 	expDetail := make([]models.BookingExpDetail, 1)
 	expDetail[0] = models.BookingExpDetail{
 		ExpId:           *getDetailBooking.ExpId,
@@ -578,6 +604,9 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		TotalGuest:      len(guestDesc),
 		City:getDetailBooking.City,
 		ProvinceName:getDetailBooking.Province,
+		ExpDuration:*getDetailBooking.ExpDuration,
+		HarborsName:*getDetailBooking.HarborsName,
+		ExperienceAddOn:expAddOns,
 	}
 	bookingExp := models.BookingExpDetailDto{
 		Id:                     getDetailBooking.Id,

@@ -14,3 +14,11 @@ type Country struct {
 	IsActive     int        `json:"is_active" validate:"required"`
 	CountryName  string     `json:"country_name"`
 }
+type CountryDto struct {
+	Id           int        `json:"id"`
+	CountryName  string     `json:"country_name"`
+}
+type NewCommandCountry struct {
+	Id           int        `json:"id"`
+	CountryName  string     `json:"country_name"`
+}

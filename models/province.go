@@ -15,3 +15,13 @@ type Province struct {
 	ProvinceName string     `json:"province_name"`
 	CountryId    int        `json:"country_id"`
 }
+type ProvinceDto struct {
+	Id           int        `json:"id"`
+	ProvinceName string     `json:"province_name"`
+	CountryId    int        `json:"country_id"`
+}
+type NewCommandProvince struct {
+	Id           int        `json:"id"`
+	ProvinceName string     `json:"province_name"`
+	CountryId    int        `json:"country_id"`
+}

@@ -137,6 +137,7 @@ type BookingExpJoin struct {
 	ExpDuration            *int           `json:"exp_duration"`
 	TotalPrice             *float64        `json:"total_price"`
 	PaymentType            *string         `json:"payment_type"`
+	HarborsName 			*string			`json:"harbors_name"`
 	City                   string         `json:"city"`
 	Province               string         `json:"province"`
 	Country                string         `json:"country"`
@@ -189,6 +190,9 @@ type BookingExpDetail struct {
 	TotalGuest      int      `json:"total_guest"`
 	City 			string	`json:"city"`
 	ProvinceName 	string	`json:"province_name"`
+	HarborsName 	string	`json:"harbors_name"`
+	ExperienceAddOn         []ExperienceAddOnObj  `json:"experience_add_on"`
+	ExpDuration             int                   `json:"exp_duration"`
 }
 
 type BookingExpDetailDto struct {
@@ -215,6 +219,7 @@ type BookingExpDetailDto struct {
 	Experience             []BookingExpDetail            `json:"experience,omitempty"`
 	Transportation         []BookingTransportationDetail `json:"transportation,omitempty"`
 	ExperiencePaymentType  *ExperiencePaymentTypeDto  	`json:"experience_payment_type"`
+
 }
 type AccountDesc struct {
 	AccNumber string `json:"acc_number"`
