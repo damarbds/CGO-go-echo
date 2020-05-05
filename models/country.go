@@ -22,3 +22,8 @@ type NewCommandCountry struct {
 	Id           int        `json:"id"`
 	CountryName  string     `json:"country_name"`
 }
+
+type CountryDtoWithPagination struct {
+	Data []*CountryDto `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
+}

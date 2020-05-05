@@ -22,7 +22,7 @@ type NewCommandCity struct {
 	Id           int        `json:"id"`
 	CityName     string     `json:"city_name"`
 	CityDesc     string     `json:"city_desc"`
-	CityPhotos   *string    `json:"city_photos"`
+	CityPhotos   []CoverPhotosObj    `json:"city_photos"`
 	ProvinceId   int        `json:"province_id"`
 }
 
@@ -30,6 +30,12 @@ type CityDto struct {
 	Id           int        `json:"id"`
 	CityName     string     `json:"city_name"`
 	CityDesc     string     `json:"city_desc"`
-	CityPhotos   *string    `json:"city_photos"`
+	CityPhotos   []CoverPhotosObj    `json:"city_photos"`
 	ProvinceId   int        `json:"province_id"`
+}
+
+
+type CityDtoWithPagination struct {
+	Data []*CityDto `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
 }

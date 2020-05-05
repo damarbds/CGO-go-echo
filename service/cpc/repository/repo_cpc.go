@@ -192,7 +192,7 @@ func (m *cpcRepository) UpdateCity(ctx context.Context, a *models.City) error {
 	return nil
 }
 
-func (m *cpcRepository) DeleteCity(ctx context.Context, id string, deletedBy string) error {
+func (m *cpcRepository) DeleteCity(ctx context.Context, id int, deletedBy string) error {
 	query := `UPDATE cities SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -372,7 +372,7 @@ func (m *cpcRepository) UpdateProvince(ctx context.Context, a *models.Province) 
 	return nil
 }
 
-func (m *cpcRepository) DeleteProvince(ctx context.Context, id string, deletedBy string) error {
+func (m *cpcRepository) DeleteProvince(ctx context.Context, id int, deletedBy string) error {
 	query := `UPDATE provinces SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -554,7 +554,7 @@ func (m *cpcRepository) UpdateCountry(ctx context.Context, a *models.Country) er
 	return nil
 }
 
-func (m *cpcRepository) DeleteCountry(ctx context.Context, id string, deletedBy string) error {
+func (m *cpcRepository) DeleteCountry(ctx context.Context, id int, deletedBy string) error {
 	query := `UPDATE countries SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
