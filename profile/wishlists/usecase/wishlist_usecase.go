@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"github.com/service/exp_photos"
 	"math"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 )
 
 type wishListUsecase struct {
+	expPhotos   exp_photos.Repository
 	wlRepo      wishlists.Repository
 	userUsecase user.Usecase
 	expRepo     experience.Repository
@@ -24,6 +26,7 @@ type wishListUsecase struct {
 }
 
 func NewWishlistUsecase(
+	expPhotos exp_photos.Repository,
 	w wishlists.Repository,
 	u user.Usecase,
 	e experience.Repository,
@@ -32,6 +35,7 @@ func NewWishlistUsecase(
 	timeout time.Duration,
 ) wishlists.Usecase {
 	return &wishListUsecase{
+		expPhotos:expPhotos,
 		wlRepo:      w,
 		userUsecase: u,
 		expRepo:     e,
@@ -95,7 +99,26 @@ func (w wishListUsecase) List(ctx context.Context, token string,page int, limit 
 		if wl.TransId.String != "" {
 			wtype = "TRANSPORTATION"
 		}
-
+		listPhotos := make([]models.ExpPhotosObj,0)
+		expPhotoQuery, errorQuery := w.expPhotos.GetByExperienceID(ctx, exp.Id)
+		if errorQuery != nil {
+			return nil, errorQuery
+		}
+		if expPhotoQuery != nil {
+			for _, element := range expPhotoQuery {
+				expPhoto := models.ExpPhotosObj{
+					Folder:        element.ExpPhotoFolder,
+					ExpPhotoImage: nil,
+				}
+				var expPhotoImage []models.CoverPhotosObj
+				errObject := json.Unmarshal([]byte(element.ExpPhotoImage), &expPhotoImage)
+				if errObject != nil {
+					return nil, models.ErrInternalServerError
+				}
+				expPhoto.ExpPhotoImage = expPhotoImage
+				listPhotos = append(listPhotos, expPhoto)
+			}
+		}
 		results[i] = &models.WishlistOut{
 			WishlistID:  wl.Id,
 			Type:        wtype,
@@ -108,6 +131,7 @@ func (w wishListUsecase) List(ctx context.Context, token string,page int, limit 
 			Price:       expPayment[0].Price,
 			PaymentType: priceItemType,
 			CoverPhoto:  *exp.ExpCoverPhoto,
+			ListPhoto:listPhotos,
 		}
 	}
 	totalRecords, _ := w.wlRepo.Count(ctx,currentUser.Id)

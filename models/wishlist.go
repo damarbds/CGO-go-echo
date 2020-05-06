@@ -52,6 +52,7 @@ type WishlistOut struct {
 	Price       float64  `json:"price"`
 	PaymentType string   `json:"payment_type"`
 	CoverPhoto  string   `json:"cover_photo"`
+	ListPhoto 	[]ExpPhotosObj	`json:"list_photo"`
 }
 type WishlistOutWithPagination struct {
 	Data []*WishlistOut `json:"data"`
