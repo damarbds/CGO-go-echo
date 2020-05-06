@@ -21,6 +21,7 @@ type Transaction struct {
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
 	OrderId             *string    `json:"order_id"`
+	VaNumber			*string 	`json:"va_number"`
 }
 
 type TransactionWMerchant struct {
@@ -42,6 +43,7 @@ type TransactionWMerchant struct {
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
 	OrderId             *string    `json:"order_id"`
+	VaNumber			*string 	`json:"va_number"`
 	MerchantId          string     `json:"merchant_id"`
 	OrderIdBook         string     `json:"order_id_book"`
 	BookedBy            string     `json:"booked_by"`

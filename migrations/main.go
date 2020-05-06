@@ -26,11 +26,11 @@ func main() {
 	//
 	//	db.Create(&migration)
 	//}
-	transportationdestid := model.Currency{}
+	transportationdestid := model.Transaction{}
 	errortransportationdestid := db.AutoMigrate(&transportationdestid)
 	if errortransportationdestid != nil {
 		migration := model.MigrationHistory{
-			DescMigration: "alter table currency",
+			DescMigration: "alter table currency add column va_number",
 			Date:          time.Now(),
 		}
 
