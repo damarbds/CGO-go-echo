@@ -142,7 +142,7 @@ func (a *facilityHandler) CreateFacilities(c echo.Context) error {
 	}
 
 	id, _ := strconv.Atoi(c.FormValue("id"))
-	isNumerable, _ := strconv.Atoi(c.FormValue("isNumerable"))
+	isNumerable, _ := strconv.Atoi(c.FormValue("is_numerable"))
 	facilitesCommand := models.NewCommandFacilities{
 		Id:           id,
 		FacilityName: c.FormValue("facilities_name"),
@@ -200,7 +200,7 @@ func (a *facilityHandler) UpdateFacilities(c echo.Context) error {
 	}
 
 	id, _ := strconv.Atoi(c.FormValue("id"))
-	isNumerable, _ := strconv.Atoi(c.FormValue("isNumerable"))
+	isNumerable, _ := strconv.Atoi(c.FormValue("is_numerable"))
 	facilitesCommand := models.NewCommandFacilities{
 		Id:           id,
 		FacilityName: c.FormValue("facilities_name"),
@@ -211,7 +211,7 @@ func (a *facilityHandler) UpdateFacilities(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	facilities,error := a.facilityUsecase.Create(ctx,&facilitesCommand,token)
+	facilities,error := a.facilityUsecase.Update(ctx,&facilitesCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})

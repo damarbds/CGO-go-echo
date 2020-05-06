@@ -144,7 +144,7 @@ func (a *cPCHandler) CreateCity(c echo.Context) error {
 
 	id, _ := strconv.Atoi(c.FormValue("id"))
 	provinceId, _ := strconv.Atoi(c.FormValue("province_id"))
-	coverPhotos := make([]models.CoverPhotosObj,0)
+	coverPhotos := make([]models.CoverPhotosObj,1)
 	if imagePath != ""{
 		coverPhoto := models.CoverPhotosObj{
 			Original:  imagePath,

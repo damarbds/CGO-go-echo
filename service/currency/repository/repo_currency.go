@@ -149,7 +149,7 @@ func (m *currencyRepository) Insert(ctx context.Context, a *models.Currency) (*i
 	}
 
 
-	lastID, err := res.RowsAffected()
+	lastID, err := res.LastInsertId()
 	if err != nil {
 		return nil, err
 	}

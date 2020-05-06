@@ -160,14 +160,6 @@ func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 		}
 	}
 
-	coverPhotos := make([]models.CoverPhotosObj,0)
-	if imagePath != ""{
-		coverPhoto := models.CoverPhotosObj{
-			Original:  imagePath,
-			Thumbnail: "",
-		}
-		coverPhotos[0] = coverPhoto
-	}
 
 	cityId, _ := strconv.Atoi(c.FormValue("city_id"))
 	harborsLongitude,_ := strconv.ParseFloat(c.FormValue("harbors_longitude"),64)
@@ -177,7 +169,7 @@ func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 		HarborsName:      c.FormValue("harbors_name"),
 		HarborsLongitude: harborsLongitude,
 		HarborsLatitude:  harborsLatitude,
-		HarborsImage:     coverPhotos,
+		HarborsImage:     imagePath,
 		CityId:           cityId,
 	}
 
@@ -231,14 +223,6 @@ func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
 		}
 	}
 
-	coverPhotos := make([]models.CoverPhotosObj,0)
-	if imagePath != ""{
-		coverPhoto := models.CoverPhotosObj{
-			Original:  imagePath,
-			Thumbnail: "",
-		}
-		coverPhotos[0] = coverPhoto
-	}
 
 	cityId, _ := strconv.Atoi(c.FormValue("city_id"))
 	harborsLongitude,_ := strconv.ParseFloat(c.FormValue("harbors_longitude"),64)
@@ -248,7 +232,7 @@ func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
 		HarborsName:      c.FormValue("harbors_name"),
 		HarborsLongitude: harborsLongitude,
 		HarborsLatitude:  harborsLatitude,
-		HarborsImage:     coverPhotos,
+		HarborsImage:     imagePath,
 		CityId:           cityId,
 	}
 

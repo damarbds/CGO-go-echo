@@ -157,7 +157,7 @@ func (m *cpcRepository) InsertCity(ctx context.Context, a *models.City) (*int, e
 	}
 
 
-	lastID, err := res.RowsAffected()
+	lastID, err := res.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +338,7 @@ func (m *cpcRepository) InsertProvince(ctx context.Context, a *models.Province) 
 		return nil,err
 	}
 
-	lastID, err := res.RowsAffected()
+	lastID, err := res.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
@@ -520,7 +520,7 @@ func (m *cpcRepository) InsertCountry(ctx context.Context, a *models.Country) (*
 		return nil,err
 	}
 
-	lastID, err := res.RowsAffected()
+	lastID, err := res.LastInsertId()
 	if err != nil {
 		return nil, err
 	}

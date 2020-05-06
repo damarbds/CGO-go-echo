@@ -299,7 +299,7 @@ func (c cPCUsecase) UpdateProvince(ctx context.Context, p *models.NewCommandProv
 		return nil, err
 	}
 	province := models.Province{
-		Id:           0,
+		Id:           p.Id,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
 		ModifiedBy:   &currentUser.Name,
@@ -443,7 +443,7 @@ func (c cPCUsecase) UpdateCountry(ctx context.Context, p *models.NewCommandCount
 		return nil, err
 	}
 	country := models.Country{
-		Id:           0,
+		Id:           p.Id,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
 		ModifiedBy:   &currentUser.Name,

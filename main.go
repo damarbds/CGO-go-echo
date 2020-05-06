@@ -19,7 +19,10 @@ import (
 	_articleUcase "github.com/bxcodec/go-clean-arch/article/usecase"
 	_authorRepo "github.com/bxcodec/go-clean-arch/author/repository"
 
+	_cpcHttpDeliver "github.com/service/cpc/delivery/http"
 	_cpcRepo "github.com/service/cpc/repository"
+	_cpcUsecase "github.com/service/cpc/usecase"
+
 	_expPhotosHttpDeliver "github.com/service/exp_photos/delivery/http"
 	_expPhotosRepo "github.com/service/exp_photos/repository"
 	_expPhotosUcase "github.com/service/exp_photos/usecase"
@@ -125,6 +128,10 @@ import (
 
 	_currencyHttpHandler "github.com/misc/currency/delivery/http"
 	_currencyUsecase "github.com/misc/currency/usecase"
+
+	_currencyMasterHttpHandler "github.com/service/currency/delivery/http"
+	_currencyMasterRepo "github.com/service/currency/repository"
+	_currencyMasterUsecase "github.com/service/currency/usecase"
 )
 
 // func init() {
@@ -224,6 +231,7 @@ func main() {
 	transactionRepo := _transactionRepo.NewTransactionRepository(dbConn)
 	balanceHistoryRepo := _balanceHistoryRepo.NewbalanceHistoryRepository(dbConn)
 	userMerchantRepo := _userMerchantRepo.NewuserMerchantRepository(dbConn)
+	currencyMasterRepo := _currencyMasterRepo.NewCurrencyRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -235,7 +243,7 @@ func main() {
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(experienceRepo,userUsecase,reviewsRepo, userRepo, timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
-	harborsUsecase := _harborsUcase.NewharborsUsecase(harborsRepo, timeoutContext)
+	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase,harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo,promoRepo, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
@@ -261,14 +269,18 @@ func main() {
 	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(experienceAddOnRepo,paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
-	facilityUcase := _facilityUcase.NewFacilityUsecase(facilityRepo, timeoutContext)
+	facilityUcase := _facilityUcase.NewFacilityUsecase(adminUsecase,facilityRepo, timeoutContext)
 	transportationUcase := _transportationUcase.NewTransportationUsecase(transactionRepo,transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(adminUsecase,merchantUsecase,paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo,adminUsecase,balanceHistoryRepo, merchantUsecase, timeoutContext)
 	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)
 	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
+	currencyMasterUcase := _currencyMasterUsecase.NewCurrencyUsecase(adminUsecase,currencyMasterRepo,timeoutContext)
+	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase,cpcRepo,timeoutContext)
 
+	_cpcHttpDeliver.NewCPCHandler(e,cpcUsecase,isUsecase)
+	_currencyMasterHttpHandler.NewCurrencyHandler(e,currencyMasterUcase)
 	_userMerchantHttpDeliver.NewuserMerchantHandler(e, userMerchantUcase)
 	_scheduleHttpHandler.NewScheduleHandler(e, promoUsecase, scheduleUcase)
 	_adminHttpDeliver.NewadminHandler(e, adminUsecase)
@@ -277,7 +289,7 @@ func main() {
 	_fAQHttpDeliver.NewfaqHandler(e, fAQUsecase)
 	_reviewsHttpDeliver.NewreviewsHandler(e, reivewsUsecase)
 	_experienceAddOnHttpDeliver.Newexperience_add_onsHandler(e, experienceAddOnUsecase)
-	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase)
+	_harborsHttpDeliver.NewharborsHandler(e, harborsUsecase,isUsecase)
 	_expPhotosHttpDeliver.Newexp_photosHandler(e, exp_photosUsecase)
 	_experienceHttpDeliver.NewexperienceHandler(e, transportationUcase, experienceUsecase, isUsecase)
 	_isHttpDeliver.NewisHandler(e, merchantUsecase, userUsecase, adminUsecase, isUsecase)
@@ -289,7 +301,7 @@ func main() {
 	_paymentHttpDeliver.NewPaymentHandler(e, paymentUsecase, bookingExpUcase, bookingExpRepo, paymentMethodRepo)
 	_wishlistHttpHandler.NewWishlistHandler(e, wlUcase)
 	_notifHttpHandler.NewNotifHandler(e, notifUcase)
-	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase)
+	_facilityHttpHandler.NewFacilityHandler(e, facilityUcase,isUsecase)
 	_transportationHttpHandler.NewtransportationHandler(e, transportationUcase)
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
 	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e, balanceHistoryUcase)

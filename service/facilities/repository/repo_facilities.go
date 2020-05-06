@@ -159,7 +159,7 @@ func (m *facilityRepository) Insert(ctx context.Context, a *models.Facilities) (
 	}
 
 
-	lastID, err := res.RowsAffected()
+	lastID, err := res.LastInsertId()
 	if err != nil {
 		return nil, err
 	}

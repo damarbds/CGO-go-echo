@@ -139,7 +139,7 @@ func (f currencyUsecase) Update(ctx context.Context, fac *models.NewCommandCurre
 	}
 
 	currencyMod := models.Currency{
-		Id:           0,
+		Id:           fac.Id,
 		CreatedBy:    currentUser.Name,
 		CreatedDate:  time.Time{},
 		ModifiedBy:   nil,

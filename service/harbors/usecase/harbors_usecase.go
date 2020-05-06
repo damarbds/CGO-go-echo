@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/auth/admin"
 	"math"
 	"time"
@@ -66,18 +65,13 @@ func (m harborsUsecase) GetAll(c context.Context, page, limit, size int) (*model
 
 	harborsDtos := make([]*models.HarborsDto,0)
 	for _,element := range getAll{
-		harborsPhotos := make([]models.CoverPhotosObj,0)
-		if element.HarborsImage != "" {
-			if errUnmarshal := json.Unmarshal([]byte(element.HarborsImage), &harborsPhotos); errUnmarshal != nil {
-				return nil, models.ErrInternalServerError
-			}
-		}
+
 		dto := models.HarborsDto{
 			Id:               element.Id,
 			HarborsName:      element.HarborsName,
 			HarborsLongitude: element.HarborsLongitude,
 			HarborsLatitude:  element.HarborsLatitude,
-			HarborsImage:     harborsPhotos,
+			HarborsImage:     element.HarborsImage,
 			CityId:           element.CityId,
 		}
 
@@ -121,19 +115,13 @@ func (m harborsUsecase) GetById(c context.Context, id string) (*models.HarborsDt
 		return nil,err
 	}
 
-	harborsPhotos := make([]models.CoverPhotosObj,0)
-	if getById.HarborsImage != "" {
-		if errUnmarshal := json.Unmarshal([]byte(getById.HarborsImage), &harborsPhotos); errUnmarshal != nil {
-			return nil, models.ErrInternalServerError
-		}
-	}
 
 	result := models.HarborsDto{
 		Id:               getById.Id,
 		HarborsName:      getById.HarborsName,
 		HarborsLongitude: getById.HarborsLongitude,
 		HarborsLatitude:  getById.HarborsLatitude,
-		HarborsImage:     harborsPhotos,
+		HarborsImage:     getById.HarborsImage,
 		CityId:           getById.CityId,
 	}
 
@@ -148,8 +136,7 @@ func (m harborsUsecase) Create(ctx context.Context, p *models.NewCommandHarbors,
 	if err != nil {
 		return nil, err
 	}
-	harborsPhotos ,_:= json.Marshal(p.HarborsImage)
-	harborsPhotosJson := string(harborsPhotos)
+
 	harbors := models.Harbors{
 		Id:               "",
 		CreatedBy:        currentUser.Name,
@@ -163,7 +150,7 @@ func (m harborsUsecase) Create(ctx context.Context, p *models.NewCommandHarbors,
 		HarborsName:      p.HarborsName,
 		HarborsLongitude: p.HarborsLongitude,
 		HarborsLatitude:  p.HarborsLatitude,
-		HarborsImage:     harborsPhotosJson,
+		HarborsImage:     p.HarborsImage,
 		CityId:           p.CityId,
 	}
 	harborsId,err := m.harborsRepo.Insert(ctx,&harbors)
@@ -186,8 +173,6 @@ func (m harborsUsecase) Update(ctx context.Context, p *models.NewCommandHarbors,
 	if err != nil {
 		return nil, err
 	}
-	harborsPhotos ,_:= json.Marshal(p.HarborsImage)
-	harborsPhotosJson := string(harborsPhotos)
 	harbors := models.Harbors{
 		Id:               p.Id,
 		CreatedBy:        "",
@@ -201,7 +186,7 @@ func (m harborsUsecase) Update(ctx context.Context, p *models.NewCommandHarbors,
 		HarborsName:      p.HarborsName,
 		HarborsLongitude: p.HarborsLongitude,
 		HarborsLatitude:  p.HarborsLatitude,
-		HarborsImage:     harborsPhotosJson,
+		HarborsImage:     p.HarborsImage,
 		CityId:           p.CityId,
 	}
 	err = m.harborsRepo.Update(ctx,&harbors)
