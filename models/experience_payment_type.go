@@ -20,4 +20,5 @@ type ExperiencePaymentTypeDto struct {
 	Id   string `json:"id" validate:"required"`
 	Name string `json:"name"`
 	Desc string `json:"desc"`
+	RemainingPayment float64	`json:"remaining_payment"`
 }
