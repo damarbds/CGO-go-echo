@@ -61,6 +61,7 @@ func (w wishListUsecase) List(ctx context.Context, token string,page int, limit 
 
 	results := make([]*models.WishlistOut, len(wLists))
 	for i, wl := range wLists {
+
 		exp, err := w.expRepo.GetByID(ctx, wl.ExpId.String)
 		if err != nil {
 			return nil, err
@@ -95,7 +96,7 @@ func (w wishListUsecase) List(ctx context.Context, token string,page int, limit 
 			return nil, err
 		}
 
-		wtype := "EXPERIENCE"
+			wtype := "EXPERIENCE"
 		if wl.TransId.String != "" {
 			wtype = "TRANSPORTATION"
 		}
@@ -170,12 +171,15 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 	if err != nil {
 		return "", err
 	}
-	checkWhislist, err := w.wlRepo.GetByUserAndExpId(ctx, currentUser.Id, wl.ExpID)
+	checkWhislist, err := w.wlRepo.GetByUserAndExpId(ctx, currentUser.Id, wl.ExpID,wl.TransID)
 	if err != nil {
 		return "", err
 	}
 	if len(checkWhislist) != 0{
-		return "", models.ErrConflict
+		errDelete := w.wlRepo.DeleteByUserIdAndExpIdORTransId(ctx, currentUser.Id, wl.ExpID,wl.TransID,currentUser.UserEmail)
+		if errDelete != nil {
+			return "", errDelete
+		}
 	}
 	newData := &models.Wishlist{
 		Id:           "",

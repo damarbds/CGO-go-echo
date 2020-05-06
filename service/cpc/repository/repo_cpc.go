@@ -576,27 +576,6 @@ func (m *cpcRepository) DeleteCountry(ctx context.Context, id int, deletedBy str
 }
 
 
-func (m *cpcRepository) Delete(ctx context.Context, id string, deleted_by string) error {
-	query := `UPDATE  cpcs SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=?`
-	stmt, err := m.Conn.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0)
-	if err != nil {
-		return err
-	}
-
-	//lastID, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	//a.Id = lastID
-	return nil
-}
-
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {
 		err = rows.Scan(&count)

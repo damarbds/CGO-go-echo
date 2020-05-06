@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	guuid "github.com/google/uuid"
 	"github.com/models"
@@ -13,6 +14,7 @@ import (
 type wishListRepository struct {
 	Conn *sql.DB
 }
+
 
 func NewWishListRepository(Conn *sql.DB) wishlists.Repository {
 	return &wishListRepository{Conn: Conn}
@@ -104,15 +106,30 @@ func (w wishListRepository) List(ctx context.Context, userID string, limit, offs
 	return res, nil
 }
 
-func (m *wishListRepository) GetByUserAndExpId(ctx context.Context, userID string, expId string) ([]*models.WishlistObj, error) {
-	query := `SELECT * FROM wishlists WHERE user_id = ? AND exp_id = ? AND is_deleted = 0 AND is_active = 1`
+func (m *wishListRepository) GetByUserAndExpId(ctx context.Context, userID string, expId string,transId string) ([]*models.WishlistObj, error) {
+	var res []*models.WishlistObj
+	if expId != ""{
+		query := `SELECT * FROM wishlists WHERE user_id = ? AND exp_id = ? AND is_deleted = 0 AND is_active = 1`
 
-	res, err := m.fetch(ctx, query, userID, expId)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, models.ErrNotFound
+		result, err := m.fetch(ctx, query, userID, expId)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
 		}
-		return nil, err
+		res = result
+	}else if transId != ""{
+		query := `SELECT * FROM wishlists WHERE user_id = ? AND trans_id = ? AND is_deleted = 0 AND is_active = 1`
+
+		result, err := m.fetch(ctx, query, userID, transId)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
+		}
+		res = result
 	}
 
 	return res, nil
@@ -175,6 +192,45 @@ func (w wishListRepository) Insert(ctx context.Context, wl *models.Wishlist) (*m
 	}
 
 	return wl, nil
+}
+func (m *wishListRepository) DeleteByUserIdAndExpIdORTransId(ctx context.Context, userId string, expId string, transId string,deletedBy string) error {
+	if expId != ""{
+		query := `UPDATE wishlists SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE user_id =? AND exp_id=?`
+		stmt, err := m.Conn.PrepareContext(ctx, query)
+		if err != nil {
+			return err
+		}
+
+		_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,userId,expId)
+		if err != nil {
+			return err
+		}
+
+		//lastID, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
+
+	}else if transId != ""{
+		query := `UPDATE wishlists SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE user_id =? AND trans_id =?`
+		stmt, err := m.Conn.PrepareContext(ctx, query)
+		if err != nil {
+			return err
+		}
+
+		_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,userId,transId)
+		if err != nil {
+			return err
+		}
+
+		//lastID, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
+	}
+
+	//a.Id = lastID
+	return nil
 }
 
 func checkCount(rows *sql.Rows) (count int, err error) {

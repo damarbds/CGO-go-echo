@@ -36,8 +36,8 @@ type WishlistObj struct {
 }
 
 type WishlistIn struct {
-	TransID string `json:"trans_id,omitempty"`
-	ExpID   string `json:"exp_id,omitempty"`
+	TransID string `json:"trans_id"`
+	ExpID   string `json:"exp_id"`
 }
 
 type WishlistOut struct {
