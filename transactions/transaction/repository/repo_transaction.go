@@ -16,7 +16,6 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
-
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
@@ -29,7 +28,7 @@ func (t transactionRepository) GetCountByExpId(ctx context.Context, date string,
 										where a.status < 3 and (b.status = 1 or b.status = 3)
 										and date(b.booking_date) = ? and exp_id = ?`
 
-	rows, err := t.Conn.QueryContext(ctx, query,date,expId)
+	rows, err := t.Conn.QueryContext(ctx, query, date, expId)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
@@ -66,14 +65,14 @@ func (t transactionRepository) GetCountByTransId(ctx context.Context, transId st
 
 	return count, nil
 }
-func (t transactionRepository) UpdateStatus(ctx context.Context, status int, transactionId, bookingId string) error {
-	query := `UPDATE transactions SET status = ? WHERE (id = ? OR booking_exp_id = ? OR order_id = ?)`
+func (t transactionRepository) UpdateAfterPayment(ctx context.Context, status int, vaNumber string, transactionId, bookingId string) error {
+	query := `UPDATE transactions SET status = ?, va_number = ? WHERE (id = ? OR booking_exp_id = ? OR order_id = ?)`
 
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, status, transactionId, bookingId, bookingId)
+	_, err = stmt.ExecContext(ctx, status, vaNumber, transactionId, bookingId, bookingId)
 	if err != nil {
 		return err
 	}
@@ -112,7 +111,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int,merchantId string) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int
 
@@ -174,7 +173,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		t.is_deleted = 0
 		AND t.is_active = 1`
 
-	if merchantId != ""{
+	if merchantId != "" {
 		query = query + ` AND e.merchant_id = '` + merchantId + `' `
 		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
 	}
@@ -371,7 +370,7 @@ func (t transactionRepository) CountSuccess(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string,merchantId string) (int, error) {
+func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string, merchantId string) (int, error) {
 	query := `
 	SELECT
 		count(*) as count
@@ -395,7 +394,7 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		t.is_deleted = 0
 		AND t.is_active = 1`
 
-	if merchantId != ""{
+	if merchantId != "" {
 		query = query + ` AND e.merchant_id = '` + merchantId + `' `
 		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
 	}
