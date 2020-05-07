@@ -297,7 +297,7 @@ func (m identityserverUsecase) GetToken(username string, password string, scope 
 	if scope == "phone_number" {
 		param.Set("scope", "phone_number")
 	} else {
-		param.Set("scope", "openid")
+		//param.Set("scope", "openid")
 	}
 
 	var payload = bytes.NewBufferString(param.Encode())
@@ -326,6 +326,41 @@ func (m identityserverUsecase) GetToken(username string, password string, scope 
 		return nil, models.ErrUsernamePassword
 	}
 	user := models.GetToken{}
+	json.NewDecoder(resp.Body).Decode(&user)
+	return &user, nil
+}
+func (m identityserverUsecase) RefreshToken(refreshToken string) (*models.RefreshToken, error) {
+
+	var param = url.Values{}
+	param.Set("grant_type", "refresh_token")
+	param.Set("refresh_token", refreshToken)
+
+	var payload = bytes.NewBufferString(param.Encode())
+
+	req, err := http.NewRequest("POST", m.baseUrl+"/connect/token", payload)
+	//os.Exit(1)
+	req.Header.Set("Authorization", "Basic "+m.basicAuth)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil, models.ErrUsernamePassword
+	}
+	user := models.RefreshToken{}
 	json.NewDecoder(resp.Body).Decode(&user)
 	return &user, nil
 }

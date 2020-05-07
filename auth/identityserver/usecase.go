@@ -14,6 +14,7 @@ type Usecase interface {
 	VerifiedEmail(r *models.VerifiedEmail) (*models.VerifiedEmail, error)
 	GetUserInfo(token string) (*models.GetUserInfo, error)
 	GetToken(username string, password string,scope string) (*models.GetToken, error)
+	RefreshToken(refreshToken string) (*models.RefreshToken, error)
 	UploadFileToBlob(image string, folder string) (string, error)
 	RequestOTP(phoneNumber string)(*models.RequestOTP,error)
 	RequestOTPTmp(phoneNumber string,email string)(*models.RequestOTP,error)

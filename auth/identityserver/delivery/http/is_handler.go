@@ -36,6 +36,7 @@ func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usec
 	}
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
+	e.POST("/account/refresh-token", handler.RefreshToken)
 	e.POST("/account/request-otp", handler.RequestOTP)
 	e.POST("/account/request-otp-tmp", handler.RequestOTPTmp)
 	e.GET("/account/verified-email", handler.VerifiedEmail)
@@ -134,7 +135,22 @@ func (a *isHandler) Login(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, responseToken)
 }
+func (a *isHandler) RefreshToken(c echo.Context) error {
+	var isLogin models.RefreshTokenLogin
+	err := c.Bind(&isLogin)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
 
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	isLogin.RefreshToken = c.Request().Form.Get("refresh_token")
+	responseToken ,err := a.isUsecase.RefreshToken(isLogin.RefreshToken)
+	return c.JSON(http.StatusOK, responseToken)
+}
 func (a *isHandler) VerifiedEmail(c echo.Context) error {
 	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	//c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

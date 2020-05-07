@@ -10,6 +10,14 @@ type GetToken struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 	TokenType   string `json:"token_type"`
+	RefreshToken string	`json:"refresh_token"`
+}
+type RefreshToken struct {
+	IdToken 	string	`json:"id_token"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+	RefreshToken string	`json:"refresh_token"`
 }
 type RolesPermissionIs struct {
 	Id          string         `json:"Id"`
@@ -102,7 +110,9 @@ type Login struct {
 	Type     string `json:"type"`
 	Scope    string `json:"scope"`
 }
-
+type RefreshTokenLogin struct {
+	RefreshToken string	`json:"refresh_token"`
+}
 type RequestOTPNumber struct {
 	PhoneNumber string `json:"phone_number"`
 }
