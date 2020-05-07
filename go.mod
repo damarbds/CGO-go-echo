@@ -27,7 +27,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/veritrans/go-midtrans v0.0.0-20200303064216-54da2d269748
-	github.com/xendit/xendit-go v0.2.1 // indirect
+	github.com/xendit/xendit-go v0.2.1
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4

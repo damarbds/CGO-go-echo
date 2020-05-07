@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/product/experience_add_ons"
-	"github.com/service/exp_payment"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -16,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/product/experience_add_ons"
+	"github.com/service/exp_payment"
 
 	"github.com/service/experience"
 	"github.com/transactions/transaction"
@@ -34,46 +35,45 @@ import (
 )
 
 type bookingExpUsecase struct {
-	adOnsRepo experience_add_ons.Repository
+	adOnsRepo                 experience_add_ons.Repository
 	experiencePaymentTypeRepo exp_payment.Repository
-	bookingExpRepo  booking_exp.Repository
-	userUsecase     user.Usecase
-	merchantUsecase merchant.Usecase
-	isUsecase       identityserver.Usecase
-	expRepo         experience.Repository
-	transactionRepo transaction.Repository
-	contextTimeout  time.Duration
+	bookingExpRepo            booking_exp.Repository
+	userUsecase               user.Usecase
+	merchantUsecase           merchant.Usecase
+	isUsecase                 identityserver.Usecase
+	expRepo                   experience.Repository
+	transactionRepo           transaction.Repository
+	contextTimeout            time.Duration
 }
-
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(adOnsRepo experience_add_ons.Repository,ept exp_payment.Repository,a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
-		adOnsRepo:adOnsRepo,
-		experiencePaymentTypeRepo:ept,
-		bookingExpRepo:  a,
-		userUsecase:     u,
-		merchantUsecase: m,
-		isUsecase:       is,
-		expRepo:         er,
-		transactionRepo: tr,
-		contextTimeout:  timeout,
+		adOnsRepo:                 adOnsRepo,
+		experiencePaymentTypeRepo: ept,
+		bookingExpRepo:            a,
+		userUsecase:               u,
+		merchantUsecase:           m,
+		isUsecase:                 is,
+		expRepo:                   er,
+		transactionRepo:           tr,
+		contextTimeout:            timeout,
 	}
 }
 
-func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool,error) {
+func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
-	getExperience, err := b.expRepo.GetByID(ctx,expId)
+	getExperience, err := b.expRepo.GetByID(ctx, expId)
 	if err != nil {
-		return false,err
+		return false, err
 	}
-	getBooking , err := b.transactionRepo.GetCountByExpId(ctx,date,expId)
+	getBooking, err := b.transactionRepo.GetCountByExpId(ctx, date, expId)
 	if err != nil {
-		return false,err
+		return false, err
 	}
-	guestDesc := make ([]models.GuestDescObj,0)
-	if getBooking != nil && *getBooking != ""{
+	guestDesc := make([]models.GuestDescObj, 0)
+	if getBooking != nil && *getBooking != "" {
 		if errUnmarshal := json.Unmarshal([]byte(*getBooking), &guestDesc); errUnmarshal != nil {
 			return false, models.ErrInternalServerError
 		}
@@ -84,7 +84,7 @@ func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, da
 	if guest > remainingSeat {
 		result = true
 	}
-	return result,nil
+	return result, nil
 }
 func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode string) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
@@ -125,17 +125,23 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			if err != nil {
 				return nil, err
 			}
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "")
+			if err != nil {
+				return nil, err
+			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
-			} else {
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				transactionStatus = 5
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
 			}
-			if err := b.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.OrderId); err != nil {
 				return nil, err
 			}
 		} else {
 			transactionStatus = 2
-			if err := b.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.OrderId); err != nil {
 				return nil, err
 			}
 		}
@@ -154,7 +160,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 	if res.Status == "VOIDED" {
 		transactionStatus = 3
-		if err := b.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.Id); err != nil {
 			return nil, err
 		}
 	}
@@ -374,7 +380,7 @@ func (b bookingExpUsecase) GetGrowthByMerchantID(ctx context.Context, token stri
 	return results, nil
 }
 
-func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string,page,limit,offset int) (*models.MyBookingWithPagination, error) {
+func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string, page, limit, offset int) (*models.MyBookingWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 
@@ -382,7 +388,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 	if err != nil {
 		return nil, err
 	}
-	bookingIds ,err := b.bookingExpRepo.GetBookingIdByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id,limit,offset)
+	bookingIds, err := b.bookingExpRepo.GetBookingIdByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -400,7 +406,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 				return nil, err
 			}
 		}
-		 expType := make([]string,0)
+		expType := make([]string, 0)
 		if b.ExpType != nil {
 			if errUnmarshal := json.Unmarshal([]byte(*b.ExpType), &expType); errUnmarshal != nil {
 				return nil, err
@@ -408,32 +414,32 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 		}
 		var expGuest models.TotalGuestTransportation
 		if len(guestDesc) > 0 {
-			for _,guest := range guestDesc {
-				if guest.Type == "Adult"{
+			for _, guest := range guestDesc {
+				if guest.Type == "Adult" {
 					expGuest.Adult = expGuest.Adult + 1
-				}else if guest.Type == "Children"{
+				} else if guest.Type == "Children" {
 					expGuest.Children = expGuest.Children + 1
 				}
 			}
 		}
 		myBooking[i] = &models.MyBooking{
-			OrderId:b.OrderId,
-			ExpType:expType,
+			OrderId:     b.OrderId,
+			ExpType:     expType,
 			ExpId:       *b.ExpId,
 			ExpTitle:    *b.ExpTitle,
 			BookingDate: b.BookingDate,
 			ExpDuration: *b.ExpDuration,
 			TotalGuest:  len(guestDesc),
-			ExpGuest:expGuest,
+			ExpGuest:    expGuest,
 			City:        b.City,
 			Province:    b.Province,
 			Country:     b.Country,
 		}
 	}
 
-	transList, err := b.bookingExpRepo.GetBookingTransByUserID(ctx,bookingIds)
+	transList, err := b.bookingExpRepo.GetBookingTransByUserID(ctx, bookingIds)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	for _, b := range transList {
 		var guestDesc []models.GuestDescObj
@@ -444,10 +450,10 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 		}
 		var transGuest models.TotalGuestTransportation
 		if len(guestDesc) > 0 {
-			for _,guest := range guestDesc {
-				if guest.Type == "Adult"{
+			for _, guest := range guestDesc {
+				if guest.Type == "Adult" {
 					transGuest.Adult = transGuest.Adult + 1
-				}else if guest.Type == "Children"{
+				} else if guest.Type == "Children" {
 					transGuest.Children = transGuest.Children + 1
 				}
 			}
@@ -462,7 +468,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 		}
 		booking := models.MyBooking{
-			OrderId:b.OrderId,
+			OrderId:            b.OrderId,
 			ExpId:              "",
 			ExpTitle:           "",
 			TransId:            *b.TransId,
@@ -471,9 +477,9 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 			TransTo:            *b.HarborSourceName,
 			TransDepartureTime: b.DepartureTime,
 			TransArrivalTime:   b.ArrivalTime,
-			TripDuration:tripDuration,
+			TripDuration:       tripDuration,
 			TransClass:         *b.TransClass,
-			TransGuest:transGuest,
+			TransGuest:         transGuest,
 			BookingDate:        b.BookingDate,
 			ExpDuration:        0,
 			TotalGuest:         len(guestDesc),
@@ -482,10 +488,10 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, transactionStatus, b
 			Country:            b.Country,
 		}
 
-		myBooking = append(myBooking,&booking)
+		myBooking = append(myBooking, &booking)
 	}
 
-	totalRecords, _ := b.bookingExpRepo.GetBookingCountByUserID(ctx,transactionStatus,bookingStatus,currentUser.Id)
+	totalRecords, _ := b.bookingExpRepo.GetBookingCountByUserID(ctx, transactionStatus, bookingStatus, currentUser.Id)
 
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
 	prev := page
@@ -552,12 +558,12 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		currency = "IDR"
 	}
 	var experiencePaymentType *models.ExperiencePaymentTypeDto
-	if getDetailBooking.ExperiencePaymentId != ""{
-		query , err := b.experiencePaymentTypeRepo.GetByExpID(ctx,*getDetailBooking.ExpId)
+	if getDetailBooking.ExperiencePaymentId != "" {
+		query, err := b.experiencePaymentTypeRepo.GetByExpID(ctx, *getDetailBooking.ExpId)
 		if err != nil {
 
 		}
-		for _,element := range query {
+		for _, element := range query {
 			if element.Id == getDetailBooking.ExperiencePaymentId {
 				paymentType := models.ExperiencePaymentTypeDto{
 					Id:   element.ExpPaymentTypeId,
@@ -568,10 +574,10 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 			}
 		}
 	}
-	expAddOns := make([]models.ExperienceAddOnObj,0)
+	expAddOns := make([]models.ExperienceAddOnObj, 0)
 	expAddOnsQuery, errorQuery := b.adOnsRepo.GetByExpId(ctx, *getDetailBooking.ExpId)
 	if errorQuery != nil {
-		return nil,err
+		return nil, err
 	}
 	if expAddOnsQuery != nil {
 		for _, element := range expAddOnsQuery {
@@ -588,7 +594,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 				Currency: currency,
 				Amount:   element.Amount,
 			}
-			expAddOns = append(expAddOns,addOns)
+			expAddOns = append(expAddOns, addOns)
 		}
 	}
 	expDetail := make([]models.BookingExpDetail, 1)
@@ -602,11 +608,11 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		MerchantPhone:   getDetailBooking.MerchantPhone.String,
 		MerchantPicture: getDetailBooking.MerchantPicture.String,
 		TotalGuest:      len(guestDesc),
-		City:getDetailBooking.City,
-		ProvinceName:getDetailBooking.Province,
-		ExpDuration:*getDetailBooking.ExpDuration,
-		HarborsName:*getDetailBooking.HarborsName,
-		ExperienceAddOn:expAddOns,
+		City:            getDetailBooking.City,
+		ProvinceName:    getDetailBooking.Province,
+		ExpDuration:     *getDetailBooking.ExpDuration,
+		HarborsName:     *getDetailBooking.HarborsName,
+		ExperienceAddOn: expAddOns,
 	}
 	bookingExp := models.BookingExpDetailDto{
 		Id:                     getDetailBooking.Id,
@@ -621,17 +627,17 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		Status:                 getDetailBooking.Status,
 		TransactionStatus:      getDetailBooking.TransactionStatus,
 		//TicketCode:        getDetailBooking.TicketCode,
-		TicketQRCode:        getDetailBooking.TicketQRCode,
-		ExperienceAddOnId:   getDetailBooking.ExperienceAddOnId,
-		TotalPrice:          getDetailBooking.TotalPrice,
-		Currency:            currency,
-		PaymentType:         getDetailBooking.PaymentType,
-		AccountNumber:       accountBank.AccNumber,
-		AccountHolder:       accountBank.AccHolder,
-		BankIcon:            getDetailBooking.Icon,
-		ExperiencePaymentId: getDetailBooking.ExperiencePaymentId,
-		Experience:          expDetail,
-		ExperiencePaymentType:experiencePaymentType,
+		TicketQRCode:          getDetailBooking.TicketQRCode,
+		ExperienceAddOnId:     getDetailBooking.ExperienceAddOnId,
+		TotalPrice:            getDetailBooking.TotalPrice,
+		Currency:              currency,
+		PaymentType:           getDetailBooking.PaymentType,
+		AccountNumber:         accountBank.AccNumber,
+		AccountHolder:         accountBank.AccHolder,
+		BankIcon:              getDetailBooking.Icon,
+		ExperiencePaymentId:   getDetailBooking.ExperiencePaymentId,
+		Experience:            expDetail,
+		ExperiencePaymentType: experiencePaymentType,
 	}
 	return &bookingExp, nil
 
@@ -816,7 +822,7 @@ func (b bookingExpUsecase) Insert(c context.Context, booking *models.NewBookingE
 	return resBooking, nil, nil
 }
 
-func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string, monthType string,page,limit,offset int) (*models.BookingHistoryDtoWithPagination, error) {
+func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token string, monthType string, page, limit, offset int) (*models.BookingHistoryDtoWithPagination, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 	var currentUserId string
@@ -830,7 +836,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 	var guestDesc []models.GuestDescObj
 	var result []*models.BookingHistoryDto
 	if monthType == "past-30-days" {
-		bookingIds ,err := b.bookingExpRepo.QuerySelectIdHistoryByUserId(ctx,currentUserId,"",limit,offset)
+		bookingIds, err := b.bookingExpRepo.QuerySelectIdHistoryByUserId(ctx, currentUserId, "", limit, offset)
 		if err != nil {
 			return nil, err
 		}
@@ -857,10 +863,10 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 
 			var expGuest models.TotalGuestTransportation
 			if len(guestDesc) > 0 {
-				for _,guest := range guestDesc {
-					if guest.Type == "Adult"{
+				for _, guest := range guestDesc {
+					if guest.Type == "Adult" {
 						expGuest.Adult = expGuest.Adult + 1
-					}else if guest.Type == "Children"{
+					} else if guest.Type == "Children" {
 						expGuest.Children = expGuest.Children + 1
 					}
 				}
@@ -879,14 +885,14 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				status = "Boarded"
 			}
 			itemDto := models.ItemsHistoryDto{
-				OrderId:element.OrderId,
+				OrderId:        element.OrderId,
 				ExpId:          element.ExpId,
 				ExpTitle:       element.ExpTitle,
 				ExpType:        expType,
 				ExpBookingDate: element.BookingDate,
 				ExpDuration:    element.ExpDuration,
 				TotalGuest:     totalGuest,
-				ExpGuest:expGuest,
+				ExpGuest:       expGuest,
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
@@ -913,10 +919,10 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			var transGuest models.TotalGuestTransportation
 			if len(guestDesc) > 0 {
-				for _,guest := range guestDesc {
-					if guest.Type == "Adult"{
+				for _, guest := range guestDesc {
+					if guest.Type == "Adult" {
 						transGuest.Adult = transGuest.Adult + 1
-					}else if guest.Type == "Children"{
+					} else if guest.Type == "Children" {
 						transGuest.Children = transGuest.Children + 1
 					}
 				}
@@ -954,7 +960,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				TransTo:            *element.HarborSourceName,
 				TransDepartureTime: element.DepartureTime,
 				TransArrivalTime:   element.ArrivalTime,
-				TripDuration:tripDuration,
+				TripDuration:       tripDuration,
 				TransClass:         *element.TransClass,
 				TransGuest:         transGuest,
 				ExpBookingDate:     element.BookingDate,
@@ -969,7 +975,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		}
 		result = append(result, &historyDto)
 	} else {
-		bookingIds ,err := b.bookingExpRepo.QuerySelectIdHistoryByUserId(ctx,currentUserId,monthType,limit,offset)
+		bookingIds, err := b.bookingExpRepo.QuerySelectIdHistoryByUserId(ctx, currentUserId, monthType, limit, offset)
 		if err != nil {
 			return nil, err
 		}
@@ -999,10 +1005,10 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			var expGuest models.TotalGuestTransportation
 			if len(guestDesc) > 0 {
-				for _,guest := range guestDesc {
-					if guest.Type == "Adult"{
+				for _, guest := range guestDesc {
+					if guest.Type == "Adult" {
 						expGuest.Adult = expGuest.Adult + 1
-					}else if guest.Type == "Children"{
+					} else if guest.Type == "Children" {
 						expGuest.Children = expGuest.Children + 1
 					}
 				}
@@ -1023,14 +1029,14 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 
 			itemDto := models.ItemsHistoryDto{
-				OrderId:element.OrderId,
+				OrderId:        element.OrderId,
 				ExpId:          element.ExpId,
 				ExpTitle:       element.ExpTitle,
 				ExpType:        expType,
 				ExpBookingDate: element.BookingDate,
 				ExpDuration:    element.ExpDuration,
 				TotalGuest:     totalGuest,
-				ExpGuest:expGuest,
+				ExpGuest:       expGuest,
 				City:           element.CityName,
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
@@ -1056,10 +1062,10 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			var transGuest models.TotalGuestTransportation
 			if len(guestDesc) > 0 {
-				for _,guest := range guestDesc {
-					if guest.Type == "Adult"{
+				for _, guest := range guestDesc {
+					if guest.Type == "Adult" {
 						transGuest.Adult = transGuest.Adult + 1
-					}else if guest.Type == "Children"{
+					} else if guest.Type == "Children" {
 						transGuest.Children = transGuest.Children + 1
 					}
 				}
@@ -1097,7 +1103,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				TransTo:            *element.HarborSourceName,
 				TransDepartureTime: element.DepartureTime,
 				TransArrivalTime:   element.ArrivalTime,
-				TripDuration:tripDuration,
+				TripDuration:       tripDuration,
 				TransClass:         *element.TransClass,
 				TransGuest:         transGuest,
 				ExpBookingDate:     element.BookingDate,
@@ -1113,10 +1119,10 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		result = append(result, &historyDto)
 	}
 	var totalRecords int
-	if monthType == "past-30-days"{
-		totalRecords, _ = b.bookingExpRepo.QueryCountHistoryByUserId(ctx ,currentUserId,"")
-	}else {
-		totalRecords, _ = b.bookingExpRepo.QueryCountHistoryByUserId(ctx ,currentUserId,monthType)
+	if monthType == "past-30-days" {
+		totalRecords, _ = b.bookingExpRepo.QueryCountHistoryByUserId(ctx, currentUserId, "")
+	} else {
+		totalRecords, _ = b.bookingExpRepo.QueryCountHistoryByUserId(ctx, currentUserId, monthType)
 	}
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
 	prev := page
