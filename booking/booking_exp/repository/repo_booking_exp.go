@@ -40,6 +40,7 @@ func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, b
 		pm.desc AS account_bank,
 		pm.icon,
 		t.status AS transaction_status,
+		t.va_number,
 		t.created_date AS created_date_transaction,
 		m.merchant_name,
 		m.phone_number AS merchant_phone,
@@ -332,7 +333,7 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, booki
 		JOIN harbors hs ON b.harbors_source_id = hs.id
 		JOIN merchants m ON b.merchant_id = m.id`
 
-	result := make([]*models.BookingExpJoin,0)
+	result := make([]*models.BookingExpJoin, 0)
 	if len(bookingIds) != 0 {
 		for index, id := range bookingIds {
 			if index == 0 && index != (len(bookingIds)-1) {
@@ -391,7 +392,7 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 		JOIN countries co ON p.country_id = co.id
 		JOIN merchants m ON b.merchant_id = m.id`
 
-	result := make([]*models.BookingExpJoin,0)
+	result := make([]*models.BookingExpJoin, 0)
 
 	if len(bookingIds) != 0 {
 		for index, id := range bookingIds {
@@ -412,7 +413,6 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 		}
 		result = list
 	}
-
 
 	return result, nil
 }
@@ -589,6 +589,7 @@ func (b bookingExpRepository) fetchDetailTransport(ctx context.Context, query st
 			&t.AccountBank,
 			&t.Icon,
 			&t.TransactionStatus,
+			&t.VaNumber,
 			&t.CreatedDateTransaction,
 			&t.MerchantName,
 			&t.MerchantPhone,
@@ -665,6 +666,7 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.AccountBank,
 			&t.Icon,
 			&t.TransactionStatus,
+			&t.VaNumber,
 			&t.CreatedDateTransaction,
 			&t.MerchantName,
 			&t.MerchantPhone,
@@ -717,6 +719,7 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId,
 		pm.desc AS account_bank,
 		pm.icon,
 		t.status AS transaction_status,
+		t.va_number,
 		t.created_date AS created_date_transaction,
 		m.merchant_name,
 		m.phone_number as merchant_phone,
@@ -830,7 +833,7 @@ func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Conte
 					join countries f on e.country_id = f.id
 					join transactions g on g.booking_exp_id = a.id`
 
-	result := make([]*models.BookingExpHistory,0)
+	result := make([]*models.BookingExpHistory, 0)
 
 	if len(bookingIds) != 0 {
 		for index, id := range bookingIds {
@@ -873,7 +876,7 @@ func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Contex
 					join countries f on e.country_id = f.id
 					join transactions g on g.booking_exp_id = a.id
 `
-	result := make([]*models.BookingExpHistory,0)
+	result := make([]*models.BookingExpHistory, 0)
 	if len(bookingIds) != 0 {
 		for index, id := range bookingIds {
 			if index == 0 && index != (len(bookingIds)-1) {
@@ -931,7 +934,7 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 		JOIN harbors hs ON b.harbors_source_id = hs.id
 		JOIN merchants m ON b.merchant_id = m.id`
 
-	result := make([]*models.BookingExpJoin,0)
+	result := make([]*models.BookingExpJoin, 0)
 	if len(bookingIds) != 0 {
 		for index, id := range bookingIds {
 			if index == 0 && index != (len(bookingIds)-1) {
@@ -988,7 +991,7 @@ func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Cont
 		JOIN harbors hs ON b.harbors_source_id = hs.id
 		JOIN merchants m ON b.merchant_id = m.id`
 
-	result := make([]*models.BookingExpJoin,0)
+	result := make([]*models.BookingExpJoin, 0)
 	if len(bookingIds) != 0 {
 		for index, id := range bookingIds {
 			if index == 0 && index != (len(bookingIds)-1) {

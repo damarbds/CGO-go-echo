@@ -126,7 +126,7 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := a.booking_expUsecase.GetByUserID(ctx, transactionStatus, bookingStatus, token,page,limit,offset)
+	res, err := a.booking_expUsecase.GetByUserID(ctx, transactionStatus, bookingStatus, token, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -143,8 +143,8 @@ func (a *booking_expHandler) CheckBookingCountGuest(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	guest ,_:= strconv.Atoi(qguest)
-	result, err := a.booking_expUsecase.GetByGuestCount(ctx, expId, date,guest)
+	guest, _ := strconv.Atoi(qguest)
+	result, err := a.booking_expUsecase.GetByGuestCount(ctx, expId, date, guest)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -176,12 +176,13 @@ func (a *booking_expHandler) GetHistoryBookingByUser(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.booking_expUsecase.GetHistoryBookingByUserId(ctx, token, monthType,page,limit,offset)
+	result, err := a.booking_expUsecase.GetHistoryBookingByUserId(ctx, token, monthType, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, result)
 }
+
 func (a *booking_expHandler) GetDetail(c echo.Context) error {
 	id := c.Param("id")
 
@@ -195,11 +196,11 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 		if err == models.ErrNotFound {
 			result, err = a.booking_expUsecase.GetDetailTransportBookingID(ctx, id, id)
 			if err != nil {
-				return c.JSON(getStatusCode(err), ResponseError{Message: "Booking Exp Detail Not Found"})
+				return c.JSON(getStatusCode(err), ResponseError{Message: "Get Booking Trans Detail Failed"})
 			}
 			return c.JSON(http.StatusOK, result)
 		}
-		return c.JSON(getStatusCode(err), ResponseError{Message: "Booking Trans Detail Not Found"})
+		return c.JSON(getStatusCode(err), ResponseError{Message: "Get Booking Exp Detail Failed"})
 	} else {
 		return c.JSON(http.StatusOK, result)
 	}

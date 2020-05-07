@@ -254,7 +254,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 		TotalPrice:             details[0].TotalPrice,
 		Currency:               currency,
 		PaymentType:            details[0].PaymentType,
-		AccountNumber:          accountBank.AccNumber,
+		AccountNumber:          *details[0].VaNumber,
 		AccountHolder:          accountBank.AccHolder,
 		BankIcon:               details[0].Icon,
 		ExperiencePaymentId:    details[0].ExperiencePaymentId,
@@ -597,6 +597,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 			expAddOns = append(expAddOns, addOns)
 		}
 	}
+
 	expDetail := make([]models.BookingExpDetail, 1)
 	expDetail[0] = models.BookingExpDetail{
 		ExpId:           *getDetailBooking.ExpId,
@@ -632,7 +633,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		TotalPrice:            getDetailBooking.TotalPrice,
 		Currency:              currency,
 		PaymentType:           getDetailBooking.PaymentType,
-		AccountNumber:         accountBank.AccNumber,
+		AccountNumber:         *getDetailBooking.VaNumber,
 		AccountHolder:         accountBank.AccHolder,
 		BankIcon:              getDetailBooking.Icon,
 		ExperiencePaymentId:   getDetailBooking.ExperiencePaymentId,
