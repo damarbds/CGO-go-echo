@@ -111,7 +111,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string,isTransportation bool,isExperience bool) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int
 
@@ -186,6 +186,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 	if startDate != "" && endDate != "" {
 		query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 		queryT = queryT + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+	}
+	if isTransportation == true  && isExperience == false{
+		query = query + ` AND b.trans_id != '' `
+		queryT = queryT + ` AND b.trans_id != '' `
+	}else if isExperience == true && isTransportation == false{
+		query = query + ` AND b.exp_id != '' `
+		queryT = queryT + ` AND b.exp_id != '' `
 	}
 	unionQuery := query + ` UNION ` + queryT
 	if limit != nil && offset != nil {

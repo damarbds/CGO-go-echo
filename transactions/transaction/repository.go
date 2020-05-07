@@ -12,7 +12,7 @@ type Repository interface {
 	GetById(ctx context.Context, id string) (*models.TransactionWMerchant, error)
 	CountSuccess(ctx context.Context) (int, error)
 	Count(ctx context.Context, startDate, endDate, search, status string, merchantId string) (int, error)
-	List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string) ([]*models.TransactionOut, error)
+	List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string,isTransportation bool,isExperience bool) ([]*models.TransactionOut, error)
 	CountThisMonth(ctx context.Context) (*models.TotalTransaction, error)
 	UpdateAfterPayment(ctx context.Context, status int, vaNumber string, transactionId, bookingId string) error
 }
