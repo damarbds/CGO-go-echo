@@ -91,6 +91,14 @@ func (t *transactionHandler) List(c echo.Context) error {
 	}else {
 		exp = false
 	}
+
+	isSchedule := c.QueryParam("isSchedule")
+	var schedule bool
+	if isSchedule != ""{
+		schedule = true
+	}else {
+		schedule = false
+	}
 	var limit = 20
 	var page = 1
 	var offset = 0
@@ -104,13 +112,13 @@ func (t *transactionHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 	if qpage != "" && qperPage != ""{
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp,schedule)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, result)
 	}else {
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp,schedule)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -197,7 +205,7 @@ func (t *transactionHandler) ExportExcel(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false)
+	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false,false)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

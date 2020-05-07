@@ -111,7 +111,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string,isTransportation bool,isExperience bool) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string,isTransportation bool,isExperience bool,isSchedule bool) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int
 
@@ -184,8 +184,14 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		queryT = queryT + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
 	}
 	if startDate != "" && endDate != "" {
-		query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
-		queryT = queryT + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+		if isSchedule == true {
+			query = query + ` AND DATE(b.booking_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+			queryT = queryT + ` AND DATE(b.booking_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+		}else {
+			query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+			queryT = queryT + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
+		}
+
 	}
 	if isTransportation == true  && isExperience == false{
 		query = query + ` AND b.trans_id != '' `

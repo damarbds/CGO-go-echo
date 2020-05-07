@@ -222,6 +222,7 @@ type BookingExpDetailDto struct {
 	Transportation         []BookingTransportationDetail `json:"transportation,omitempty"`
 	ExperiencePaymentType  *ExperiencePaymentTypeDto     `json:"experience_payment_type"`
 	IsReview 			bool		`json:"is_review"`
+	ReviewDesc  *string		`json:"review_desc"`
 	GuideReview *float64		`json:"guide_review"`
 	ActivitiesReview *float64	`json:"activities_review"`
 	ServiceReview *float64		`json:"service_review"`

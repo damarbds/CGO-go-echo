@@ -635,10 +635,10 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		ExperienceAddOn: expAddOns,
 	}
 	if getDetailBooking.UserId == nil {
-		*getDetailBooking.UserId = ""
+		getDetailBooking.UserId = new(string)
 	}
 	if getDetailBooking.ExpId == nil {
-		*getDetailBooking.ExpId = ""
+		getDetailBooking.ExpId = new(string)
 	}
 	reviews ,_:= b.reviewRepo.GetByExpId(ctx , *getDetailBooking.ExpId,"",0,1,0,*getDetailBooking.UserId)
 	if err != nil {
@@ -673,6 +673,13 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 
 	}
 	if len(reviews) != 0 {
+		desc := models.ReviewDtoObject{}
+		if reviews[0].Desc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(reviews[0].Desc), &desc); errUnmarshal != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
+		bookingExp.ReviewDesc = &desc.Desc
 		bookingExp.IsReview = true
 		bookingExp.GuideReview = reviews[0].GuideReview
 		bookingExp.ActivitiesReview = reviews[0].ActivitiesReview
@@ -927,7 +934,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 
 			if element.UserId == nil {
-				*element.UserId = ""
+				element.UserId = new(string)
 			}
 			checkReview ,_:= b.reviewRepo.GetByExpId(ctx , element.ExpId,"",0,1,0,*element.UserId)
 			if err != nil {
@@ -1098,7 +1105,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				status = "Boarded"
 			}
 			if element.UserId == nil {
-				*element.UserId = ""
+				element.UserId = new(string)
 			}
 			checkReview ,err:= b.reviewRepo.GetByExpId(ctx , element.ExpId,"",0,1,0,*element.UserId)
 			if err != nil {
