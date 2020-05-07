@@ -167,7 +167,7 @@ func (r reviewsUsecase) GetReviewsByExpId(c context.Context, exp_id, sortBy stri
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	res, err := r.reviewsRepo.GetByExpId(ctx, exp_id, sortBy, rating, limit, offset)
+	res, err := r.reviewsRepo.GetByExpId(ctx, exp_id, sortBy, rating, limit, offset,"")
 	if err != nil {
 		return nil, err
 	}

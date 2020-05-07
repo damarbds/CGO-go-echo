@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/product/reviews"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -35,6 +36,7 @@ import (
 )
 
 type bookingExpUsecase struct {
+	reviewRepo 				reviews.Repository
 	adOnsRepo                 experience_add_ons.Repository
 	experiencePaymentTypeRepo exp_payment.Repository
 	bookingExpRepo            booking_exp.Repository
@@ -47,8 +49,9 @@ type bookingExpUsecase struct {
 }
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(reviewRepo reviews.Repository,adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
+		reviewRepo:reviewRepo,
 		adOnsRepo:                 adOnsRepo,
 		experiencePaymentTypeRepo: ept,
 		bookingExpRepo:            a,
@@ -241,6 +244,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 	if details[0].VaNumber != nil {
 		vaNumber = *details[0].VaNumber
 	}
+
 	results := &models.BookingExpDetailDto{
 		Id:                     details[0].Id,
 		GuestDesc:              guestDesc,
@@ -630,6 +634,17 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		HarborsName:     *getDetailBooking.HarborsName,
 		ExperienceAddOn: expAddOns,
 	}
+	if getDetailBooking.UserId == nil {
+		*getDetailBooking.UserId = ""
+	}
+	if getDetailBooking.ExpId == nil {
+		*getDetailBooking.ExpId = ""
+	}
+	reviews ,_:= b.reviewRepo.GetByExpId(ctx , *getDetailBooking.ExpId,"",0,1,0,*getDetailBooking.UserId)
+	if err != nil {
+		return nil,err
+	}
+	var isReview = false
 	bookingExp := models.BookingExpDetailDto{
 		Id:                     getDetailBooking.Id,
 		OrderId:                getDetailBooking.OrderId,
@@ -654,6 +669,16 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		ExperiencePaymentId:   getDetailBooking.ExperiencePaymentId,
 		Experience:            expDetail,
 		ExperiencePaymentType: experiencePaymentType,
+		IsReview:isReview,
+
+	}
+	if len(reviews) != 0 {
+		bookingExp.IsReview = true
+		bookingExp.GuideReview = reviews[0].GuideReview
+		bookingExp.ActivitiesReview = reviews[0].ActivitiesReview
+		bookingExp.ServiceReview = reviews[0].ServiceReview
+		bookingExp.CleanlinessReview = reviews[0].CleanlinessReview
+		bookingExp.ValueReview = reviews[0].ValueReview
 	}
 	return &bookingExp, nil
 
@@ -900,6 +925,19 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			} else if element.StatusTransaction == 2 && element.Status == 3 {
 				status = "Boarded"
 			}
+
+			if element.UserId == nil {
+				*element.UserId = ""
+			}
+			checkReview ,_:= b.reviewRepo.GetByExpId(ctx , element.ExpId,"",0,1,0,*element.UserId)
+			if err != nil {
+				return nil,err
+			}
+			var isReview = false
+			if len(checkReview) != 0 {
+				isReview = true
+			}
+
 			itemDto := models.ItemsHistoryDto{
 				OrderId:        element.OrderId,
 				ExpId:          element.ExpId,
@@ -913,6 +951,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
 				Status:         status,
+				IsReview:isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -965,6 +1004,20 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				tripMinute := arrivalTime.Minute() - departureTime.Minute()
 				tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 			}
+			//if element.UserId == nil {
+			//	*element.UserId = ""
+			//}
+			//if element.ExpId == nil {
+			//	*element.ExpId = ""
+			//}
+			//checkReview ,_:= b.reviewRepo.GetByExpId(ctx , *element.ExpId,"",0,0,1,*element.UserId)
+			//if err != nil {
+			//	return nil,err
+			//}
+			var isReview = false
+			//if len(checkReview) != 0 {
+			//	isReview = true
+			//}
 			itemDto := models.ItemsHistoryDto{
 				OrderId:            element.OrderId,
 				ExpId:              "",
@@ -986,6 +1039,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:           element.Province,
 				Country:            element.Country,
 				Status:             status,
+				IsReview:isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -1043,7 +1097,17 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			} else if element.StatusTransaction == 2 && element.Status == 3 {
 				status = "Boarded"
 			}
-
+			if element.UserId == nil {
+				*element.UserId = ""
+			}
+			checkReview ,err:= b.reviewRepo.GetByExpId(ctx , element.ExpId,"",0,1,0,*element.UserId)
+			if err != nil {
+				return nil,err
+			}
+			var isReview = false
+			if len(checkReview) != 0 {
+				isReview = true
+			}
 			itemDto := models.ItemsHistoryDto{
 				OrderId:        element.OrderId,
 				ExpId:          element.ExpId,
@@ -1057,9 +1121,11 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
 				Status:         status,
+				IsReview:isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
+
 		queryTrans, err := b.bookingExpRepo.QueryHistoryPerMonthTransByUserId(ctx, bookingIds)
 		if err != nil {
 			return nil, err
@@ -1108,6 +1174,20 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				tripMinute := arrivalTime.Minute() - departureTime.Minute()
 				tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 			}
+			//if element.UserId == nil {
+			//	*element.UserId = ""
+			//}
+			//if element.ExpId == nil {
+			//	*element.ExpId = ""
+			//}
+			//checkReview ,_:= b.reviewRepo.GetByExpId(ctx , *element.ExpId,"",0,0,1,*element.UserId)
+			//if err != nil {
+			//	return nil,err
+			//}
+			var isReview = false
+			//if len(checkReview) != 0 {
+			//	isReview = true
+			//}
 			itemDto := models.ItemsHistoryDto{
 				OrderId:            element.OrderId,
 				ExpId:              "",
@@ -1129,6 +1209,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:           element.Province,
 				Country:            element.Country,
 				Status:             status,
+				IsReview:isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}

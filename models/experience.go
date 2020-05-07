@@ -120,6 +120,11 @@ type ExperienceDto struct {
 	HarborsName             string                `json:"harbors_name"`
 	City                    string                `json:"city"`
 	Province                string                `json:"province"`
+	GuideReview *float64		`json:"guide_review"`
+	ActivitiesReview *float64	`json:"activities_review"`
+	ServiceReview *float64		`json:"service_review"`
+	CleanlinessReview *float64	`json:"cleanliness_review"`
+	ValueReview *float64		`json:"value_review"`
 }
 type ResponseCreateExperience struct {
 	Id      string `json:"id"`

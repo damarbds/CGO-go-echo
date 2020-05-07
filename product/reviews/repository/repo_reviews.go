@@ -112,10 +112,13 @@ func (r reviewRepository) CountRating(ctx context.Context, rating int, expID str
 	return count, nil
 }
 
-func (r reviewRepository) GetByExpId(ctx context.Context, expID, sortBy string, rating, limit, offset int) ([]*models.Review, error) {
+func (r reviewRepository) GetByExpId(ctx context.Context, expID, sortBy string, rating, limit, offset int,userId string) ([]*models.Review, error) {
 	query := `select * from reviews r where exp_id = ? AND is_deleted = 0 AND is_active = 1`
 	if rating != 0 {
 		query = query + ` AND r.values = ` + strconv.Itoa(rating)
+	}
+	if userId != ""{
+		query = query + ` AND r.user_id = '` + userId + `' `
 	}
 	if sortBy != "" {
 		if sortBy == "ratingup" {

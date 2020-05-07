@@ -1633,6 +1633,11 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		HarborsName:             harbors.HarborsName,
 		City:                    city.CityName,
 		Province:                province.ProvinceName,
+		GuideReview : res.GuideReview,
+		ActivitiesReview : res.ActivitiesReview,
+		ServiceReview : res.ServiceReview,
+		CleanlinessReview : res.CleanlinessReview,
+		ValueReview :res.ValueReview,
 	}
 	return &experiences, nil
 }
