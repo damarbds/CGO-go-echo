@@ -26,14 +26,16 @@ type midtransHandler struct {
 	bookingRepo     booking_exp.Repository
 	expRepo         experience.Repository
 	transactionRepo transaction.Repository
+	bookingUseCase  booking_exp.Usecase
 	isUsecase       identityserver.Usecase
 }
 
-func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, is identityserver.Usecase) {
+func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
 	handler := &midtransHandler{
 		bookingRepo:     br,
 		expRepo:         er,
 		transactionRepo: tr,
+		bookingUseCase:  bu,
 		isUsecase:       is,
 	}
 	e.POST("/midtrans/notif", handler.MidtransNotif)
@@ -81,27 +83,33 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
+			bookingDetail, err := m.bookingUseCase.GetDetailBookingID(ctx, booking.Id, "")
+			if err != nil {
+				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
-			} else {
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				transactionStatus = 5
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
 			}
-			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
+			if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", booking.Id); err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		} else {
 			transactionStatus = 2
-			if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.OrderId); err != nil {
+			if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", booking.OrderId); err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		}
 		msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
 		pushEmail := &models.SendingEmail{
-			Subject: "E-Ticket cGO",
-			Message: msg,
-			From:    "CGO Indonesia",
-			To:      bookedBy[0].Email,
-			FileName:"Ticket.pdf",
+			Subject:  "E-Ticket cGO",
+			Message:  msg,
+			From:     "CGO Indonesia",
+			To:       bookedBy[0].Email,
+			FileName: "Ticket.pdf",
 		}
 		if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 			return nil
@@ -110,7 +118,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 
 	if callback.TransactionStatus == "expire" || callback.TransactionStatus == "deny" {
 		transactionStatus = 3
-		if err := m.transactionRepo.UpdateStatus(ctx, transactionStatus, "", booking.Id); err != nil {
+		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", booking.Id); err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 	}

@@ -37,15 +37,15 @@ type BookingExpHistory struct {
 	ProvinceName       string     `json:"province_name"`
 	CountryName        string     `json:"country_name"`
 	StatusTransaction  int        `json:"status_transaction"`
-	TransName              *string        `json:"trans_name"`
-	TransTitle             *string        `json:"trans_title"`
-	TransStatus            *string        `json:"trans_status"`
-	TransClass             *string        `json:"trans_class"`
-	DepartureDate          *time.Time     `json:"departure_date"`
-	DepartureTime          *string        `json:"departure_time"`
-	ArrivalTime            *string        `json:"arrival_time"`
-	HarborSourceName       *string        `json:"harbor_source_name"`
-	HarborDestName         *string        `json:"harbor_dest_name"`
+	TransName          *string    `json:"trans_name"`
+	TransTitle         *string    `json:"trans_title"`
+	TransStatus        *string    `json:"trans_status"`
+	TransClass         *string    `json:"trans_class"`
+	DepartureDate      *time.Time `json:"departure_date"`
+	DepartureTime      *string    `json:"departure_time"`
+	ArrivalTime        *string    `json:"arrival_time"`
+	HarborSourceName   *string    `json:"harbor_source_name"`
+	HarborDestName     *string    `json:"harbor_dest_name"`
 }
 type BookingHistoryDto struct {
 	Category string            `json:"category"`
@@ -53,30 +53,30 @@ type BookingHistoryDto struct {
 }
 type BookingHistoryDtoWithPagination struct {
 	Data []*BookingHistoryDto `json:"data"`
-	Meta *MetaPagination    `json:"meta"`
+	Meta *MetaPagination      `json:"meta"`
 }
 type ItemsHistoryDto struct {
-	OrderId			string	`json:"order_id"`
-	ExpId          string    `json:"exp_id"`
-	ExpTitle       string    `json:"exp_title"`
-	ExpType        []string  `json:"exp_type"`
-	TransId		string	  `json:"trans_id"`
-	TransName 	string	  `json:"trans_name"`
-	TransFrom 	string		`json:"trans_from"`
-	TransTo 	string		`json:"trans_to"`
-	TransDepartureTime *string	`json:"trans_departure_time"`
-	TransArrivalTime   *string	`json:"trans_arrival_time"`
-	TripDuration string		`json:"trip_duration"`
-	TransClass	string		`json:"trans_class"`
-	TransGuest  TotalGuestTransportation `json:"trans_guest"`
-	ExpBookingDate time.Time `json:"exp_booking_date"`
-	ExpDuration    int       `json:"exp_duration"`
-	TotalGuest     int       `json:"total_guest"`
-	ExpGuest TotalGuestTransportation `json:"exp_guest"`
-	City           string    `json:"city"`
-	Province       string    `json:"province"`
-	Country        string    `json:"country"`
-	Status         string       `json:"status"`
+	OrderId            string                   `json:"order_id"`
+	ExpId              string                   `json:"exp_id"`
+	ExpTitle           string                   `json:"exp_title"`
+	ExpType            []string                 `json:"exp_type"`
+	TransId            string                   `json:"trans_id"`
+	TransName          string                   `json:"trans_name"`
+	TransFrom          string                   `json:"trans_from"`
+	TransTo            string                   `json:"trans_to"`
+	TransDepartureTime *string                  `json:"trans_departure_time"`
+	TransArrivalTime   *string                  `json:"trans_arrival_time"`
+	TripDuration       string                   `json:"trip_duration"`
+	TransClass         string                   `json:"trans_class"`
+	TransGuest         TotalGuestTransportation `json:"trans_guest"`
+	ExpBookingDate     time.Time                `json:"exp_booking_date"`
+	ExpDuration        int                      `json:"exp_duration"`
+	TotalGuest         int                      `json:"total_guest"`
+	ExpGuest           TotalGuestTransportation `json:"exp_guest"`
+	City               string                   `json:"city"`
+	Province           string                   `json:"province"`
+	Country            string                   `json:"country"`
+	Status             string                   `json:"status"`
 }
 type BookingExp struct {
 	Id                 string     `json:"id" validate:"required"`
@@ -123,7 +123,8 @@ type BookingExpJoin struct {
 	ExpiredDatePayment     *time.Time     `json:"expired_date_payment"`
 	UserId                 *string        `json:"user_id"`
 	Status                 int            `json:"status"`
-	TransactionStatus      *int            `json:"transaction_status"`
+	TransactionStatus      *int           `json:"transaction_status"`
+	VaNumber               *string        `json:"va_number"`
 	TicketCode             string         `json:"ticket_code"`
 	TicketQRCode           string         `json:"ticket_qr_code"`
 	ExperienceAddOnId      *string        `json:"experience_add_on_id"`
@@ -135,17 +136,17 @@ type BookingExpJoin struct {
 	ExpPickupPlace         *string        `json:"exp_pickup_place"`
 	ExpPickupTime          *string        `json:"exp_pickup_time"`
 	ExpDuration            *int           `json:"exp_duration"`
-	TotalPrice             *float64        `json:"total_price"`
-	PaymentType            *string         `json:"payment_type"`
-	HarborsName 			*string			`json:"harbors_name"`
+	TotalPrice             *float64       `json:"total_price"`
+	PaymentType            *string        `json:"payment_type"`
+	HarborsName            *string        `json:"harbors_name"`
 	City                   string         `json:"city"`
 	Province               string         `json:"province"`
 	Country                string         `json:"country"`
 	ExperiencePaymentId    string         `json:"experience_payment_id"`
 	Currency               int            `json:"currency"`
-	AccountBank            *string         `json:"account_bank"`
-	Icon                   *string         `json:"icon"`
-	CreatedDateTransaction *time.Time      `json:"created_date_transaction"`
+	AccountBank            *string        `json:"account_bank"`
+	Icon                   *string        `json:"icon"`
+	CreatedDateTransaction *time.Time     `json:"created_date_transaction"`
 	MerchantName           sql.NullString `json:"merchant_name"`
 	MerchantPhone          sql.NullString `json:"merchant_phone"`
 	MerchantPicture        sql.NullString `json:"merchant_picture"`
@@ -179,20 +180,20 @@ type BookingTransportationDetail struct {
 }
 
 type BookingExpDetail struct {
-	ExpId           string   `json:"exp_id"`
-	ExpTitle        string   `json:"exp_title"`
-	ExpType         []string `json:"exp_type"`
-	ExpPickupPlace  string   `json:"exp_pickup_place"`
-	ExpPickupTime   string   `json:"exp_pickup_time"`
-	MerchantName    string   `json:"merchant_name"`
-	MerchantPhone   string   `json:"merchant_phone"`
-	MerchantPicture string   `json:"merchant_picture"`
-	TotalGuest      int      `json:"total_guest"`
-	City 			string	`json:"city"`
-	ProvinceName 	string	`json:"province_name"`
-	HarborsName 	string	`json:"harbors_name"`
-	ExperienceAddOn         []ExperienceAddOnObj  `json:"experience_add_on"`
-	ExpDuration             int                   `json:"exp_duration"`
+	ExpId           string               `json:"exp_id"`
+	ExpTitle        string               `json:"exp_title"`
+	ExpType         []string             `json:"exp_type"`
+	ExpPickupPlace  string               `json:"exp_pickup_place"`
+	ExpPickupTime   string               `json:"exp_pickup_time"`
+	MerchantName    string               `json:"merchant_name"`
+	MerchantPhone   string               `json:"merchant_phone"`
+	MerchantPicture string               `json:"merchant_picture"`
+	TotalGuest      int                  `json:"total_guest"`
+	City            string               `json:"city"`
+	ProvinceName    string               `json:"province_name"`
+	HarborsName     string               `json:"harbors_name"`
+	ExperienceAddOn []ExperienceAddOnObj `json:"experience_add_on"`
+	ExpDuration     int                  `json:"exp_duration"`
 }
 
 type BookingExpDetailDto struct {
@@ -202,24 +203,23 @@ type BookingExpDetailDto struct {
 	BookedByEmail          string                        `json:"booked_by_email"`
 	BookingDate            time.Time                     `json:"booking_date"`
 	ExpiredDatePayment     *time.Time                    `json:"expired_date_payment"`
-	CreatedDateTransaction *time.Time                     `json:"created_date_transaction"`
+	CreatedDateTransaction *time.Time                    `json:"created_date_transaction"`
 	UserId                 *string                       `json:"user_id"`
 	Status                 int                           `json:"status"`
-	TransactionStatus      *int                           `json:"transaction_status"`
+	TransactionStatus      *int                          `json:"transaction_status"`
 	OrderId                string                        `json:"order_id"`
 	TicketQRCode           string                        `json:"ticket_qr_code"`
 	ExperienceAddOnId      *string                       `json:"experience_add_on_id"`
-	TotalPrice             *float64                       `json:"total_price"`
+	TotalPrice             *float64                      `json:"total_price"`
 	Currency               string                        `json:"currency"`
-	PaymentType            *string                        `json:"payment_type"`
+	PaymentType            *string                       `json:"payment_type"`
 	AccountNumber          string                        `json:"account_number"`
 	AccountHolder          string                        `json:"account_holder"`
-	BankIcon               *string                        `json:"bank_icon"`
+	BankIcon               *string                       `json:"bank_icon"`
 	ExperiencePaymentId    string                        `json:"experience_payment_id"`
 	Experience             []BookingExpDetail            `json:"experience,omitempty"`
 	Transportation         []BookingTransportationDetail `json:"transportation,omitempty"`
-	ExperiencePaymentType  *ExperiencePaymentTypeDto  	`json:"experience_payment_type"`
-
+	ExperiencePaymentType  *ExperiencePaymentTypeDto     `json:"experience_payment_type"`
 }
 type AccountDesc struct {
 	AccNumber string `json:"acc_number"`
@@ -256,35 +256,35 @@ type NewBookingExpCommand struct {
 	ScheduleId        *string `json:"schedule_id"`
 }
 type MyBookingWithPagination struct {
-	Data []*MyBooking `json:"data"`
-	Meta *MetaPagination    `json:"meta"`
+	Data []*MyBooking    `json:"data"`
+	Meta *MetaPagination `json:"meta"`
 }
 type MyBooking struct {
-	OrderId 	string		`json:"order_id"`
-	ExpType     []string              `json:"exp_type"`
-	ExpId       string    `json:"exp_id"`
-	ExpTitle    string    `json:"exp_title"`
-	TransId		string	  `json:"trans_id"`
-	TransName 	string	  `json:"trans_name"`
-	TransFrom 	string		`json:"trans_from"`
-	TransTo 	string		`json:"trans_to"`
-	TransDepartureTime *string	`json:"trans_departure_time"`
-	TransArrivalTime   *string	`json:"trans_arrival_time"`
-	TripDuration string		`json:"trip_duration"`
-	TransClass	string		`json:"trans_class"`
-	TransGuest  TotalGuestTransportation `json:"trans_guest"`
-	BookingDate time.Time `json:"booking_date"`
-	ExpDuration int       `json:"exp_duration"`
-	ExpGuest  TotalGuestTransportation `json:"exp_guest"`
-	TotalGuest  int       `json:"total_guest"`
-	City        string    `json:"city"`
-	Province    string    `json:"province"`
-	Country     string    `json:"country"`
+	OrderId            string                   `json:"order_id"`
+	ExpType            []string                 `json:"exp_type"`
+	ExpId              string                   `json:"exp_id"`
+	ExpTitle           string                   `json:"exp_title"`
+	TransId            string                   `json:"trans_id"`
+	TransName          string                   `json:"trans_name"`
+	TransFrom          string                   `json:"trans_from"`
+	TransTo            string                   `json:"trans_to"`
+	TransDepartureTime *string                  `json:"trans_departure_time"`
+	TransArrivalTime   *string                  `json:"trans_arrival_time"`
+	TripDuration       string                   `json:"trip_duration"`
+	TransClass         string                   `json:"trans_class"`
+	TransGuest         TotalGuestTransportation `json:"trans_guest"`
+	BookingDate        time.Time                `json:"booking_date"`
+	ExpDuration        int                      `json:"exp_duration"`
+	ExpGuest           TotalGuestTransportation `json:"exp_guest"`
+	TotalGuest         int                      `json:"total_guest"`
+	City               string                   `json:"city"`
+	Province           string                   `json:"province"`
+	Country            string                   `json:"country"`
 }
 
 type TotalGuestTransportation struct {
-	Adult 		int `json:"adult"`
-	Children 	int `json:"children"`
+	Adult    int `json:"adult"`
+	Children int `json:"children"`
 }
 type BookingGrowth struct {
 	Date  time.Time `json:"date"`
