@@ -237,6 +237,10 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 	if len(transport) > 1 {
 		transport[1].TotalGuest = len(guestDesc)
 	}
+	vaNumber := ""
+	if details[0].VaNumber != nil {
+		vaNumber = *details[0].VaNumber
+	}
 	results := &models.BookingExpDetailDto{
 		Id:                     details[0].Id,
 		GuestDesc:              guestDesc,
@@ -254,7 +258,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 		TotalPrice:             details[0].TotalPrice,
 		Currency:               currency,
 		PaymentType:            details[0].PaymentType,
-		AccountNumber:          *details[0].VaNumber,
+		AccountNumber:          vaNumber,
 		AccountHolder:          accountBank.AccHolder,
 		BankIcon:               details[0].Icon,
 		ExperiencePaymentId:    details[0].ExperiencePaymentId,
@@ -604,6 +608,11 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		}
 	}
 
+	vaNumber := ""
+	if getDetailBooking.VaNumber != nil {
+		vaNumber = *getDetailBooking.VaNumber
+	}
+
 	expDetail := make([]models.BookingExpDetail, 1)
 	expDetail[0] = models.BookingExpDetail{
 		ExpId:           *getDetailBooking.ExpId,
@@ -639,7 +648,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		TotalPrice:            getDetailBooking.TotalPrice,
 		Currency:              currency,
 		PaymentType:           getDetailBooking.PaymentType,
-		AccountNumber:         *getDetailBooking.VaNumber,
+		AccountNumber:         vaNumber,
 		AccountHolder:         accountBank.AccHolder,
 		BankIcon:              getDetailBooking.Icon,
 		ExperiencePaymentId:   getDetailBooking.ExperiencePaymentId,
