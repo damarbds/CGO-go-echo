@@ -131,14 +131,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		t.status as transaction_status,
 		b.status as booking_status,
 		t.total_price,
-		ep.id as experience_payment_id,
+		t.experience_payment_id as experience_payment_id,
 		merchant_name,
 		b.order_id
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
-		JOIN experience_payments ep ON e.id = ep.exp_id
 		JOIN merchants m ON e.merchant_id = m.id
 	WHERE 
 		t.is_deleted = 0
@@ -391,7 +390,6 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
-		JOIN experience_payments ep ON e.id = ep.exp_id
 	WHERE
 		t.is_deleted = 0
 		AND t.is_active = 1`
