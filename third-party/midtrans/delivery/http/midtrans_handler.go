@@ -116,9 +116,22 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 		}
 	}
 
+	var bookingCode string
+	if booking.ExpId != nil {
+		bookingCode = booking.Id
+	} else {
+		bookingCode = booking.OrderId
+	}
 	if callback.TransactionStatus == "expire" || callback.TransactionStatus == "deny" {
 		transactionStatus = 3
-		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", booking.Id); err != nil {
+		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", bookingCode); err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+	}
+
+	if callback.TransactionStatus == "pending" {
+		transactionStatus = 0
+		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", bookingCode); err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 	}
