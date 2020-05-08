@@ -91,7 +91,7 @@ type TransactionOut struct {
 	TransactionStatus   int       `json:"transaction_status"`
 	BookingStatus       int       `json:"booking_status"`
 	TotalPrice          float64   `json:"total_price"`
-	ExperiencePaymentId string    `json:"experience_payment_id"`
+	ExperiencePaymentId *string    `json:"experience_payment_id"`
 	MerchantName        string    `json:"merchant_name"`
 	OrderId				*string		`json:"order_id"`
 }

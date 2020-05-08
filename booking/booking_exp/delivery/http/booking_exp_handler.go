@@ -118,7 +118,7 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 		bookingStatus = 1
 	} else if status == "pending" {
 		transactionStatus = 0
-		bookingStatus = 0
+		bookingStatus = 1
 	}
 
 	ctx := c.Request().Context()

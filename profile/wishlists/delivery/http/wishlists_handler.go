@@ -101,6 +101,13 @@ func (w *wishlistHandler) Create(c echo.Context) error {
 		"message":     "Create Wishlist Succeeds",
 		"wishlist_id": res,
 	}
+	if wi.IsDeleted == true {
+		response = map[string]interface{}{
+			"status":      http.StatusOK,
+			"message":     "Deleted Wishlist Succeeds",
+			"wishlist_id": res,
+		}
+	}
 
 	return c.JSON(http.StatusOK, response)
 }

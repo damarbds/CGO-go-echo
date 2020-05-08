@@ -92,8 +92,8 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			}
 		}
 		var experiencePaymentType *models.ExperiencePaymentTypeDto
-		if item.ExperiencePaymentId != "" {
-			if item.ExperiencePaymentId == "Economy" || item.ExperiencePaymentId == "Executive" {
+		if item.ExperiencePaymentId != nil {
+			if *item.ExperiencePaymentId == "Economy" || *item.ExperiencePaymentId == "Executive" {
 				// Default Payment Type for Transportation
 				experiencePaymentType = &models.ExperiencePaymentTypeDto{
 					Id:   "8a5e3eef-a6db-4584-a280-af5ab18a979b",
@@ -106,7 +106,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 					return nil, err
 				}
 				for _, element := range query {
-					if element.Id == item.ExperiencePaymentId {
+					if element.Id == *item.ExperiencePaymentId {
 						paymentType := models.ExperiencePaymentTypeDto{
 							Id:   element.ExpPaymentTypeId,
 							Name: element.ExpPaymentTypeName,

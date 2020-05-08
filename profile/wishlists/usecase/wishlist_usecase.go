@@ -171,35 +171,48 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 	if err != nil {
 		return "", err
 	}
-	checkWhislist, err := w.wlRepo.GetByUserAndExpId(ctx, currentUser.Id, wl.ExpID,wl.TransID)
-	if err != nil {
-		return "", err
-	}
-	if len(checkWhislist) != 0{
-		errDelete := w.wlRepo.DeleteByUserIdAndExpIdORTransId(ctx, currentUser.Id, wl.ExpID,wl.TransID,currentUser.UserEmail)
-		if errDelete != nil {
-			return "", errDelete
+	var resultId string
+	if wl.IsDeleted == true {
+		checkWhislist, err := w.wlRepo.GetByUserAndExpId(ctx, currentUser.Id, wl.ExpID,wl.TransID)
+		if err != nil {
+			return "", err
 		}
-	}
-	newData := &models.Wishlist{
-		Id:           "",
-		CreatedBy:    currentUser.UserEmail,
-		CreatedDate:  time.Now(),
-		ModifiedBy:   nil,
-		ModifiedDate: nil,
-		DeletedBy:    nil,
-		DeletedDate:  nil,
-		IsDeleted:    0,
-		IsActive:     1,
-		UserId:       currentUser.Id,
-		ExpId:        wl.ExpID,
-		TransId:      wl.TransID,
-	}
+		if len(checkWhislist) != 0{
+			errDelete := w.wlRepo.DeleteByUserIdAndExpIdORTransId(ctx, currentUser.Id, wl.ExpID,wl.TransID,currentUser.UserEmail)
+			if errDelete != nil {
+				return "", models.ErrNotFound
+			}
+			resultId = checkWhislist[0].Id
+		}
+	}else {
+		checkWhislist, err := w.wlRepo.GetByUserAndExpId(ctx, currentUser.Id, wl.ExpID,wl.TransID)
+		if err != nil {
+			return "", err
+		}
+		if len(checkWhislist) != 0{
+			return "",models.ErrConflict
+		}
+		newData := &models.Wishlist{
+			Id:           "",
+			CreatedBy:    currentUser.UserEmail,
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     1,
+			UserId:       currentUser.Id,
+			ExpId:        wl.ExpID,
+			TransId:      wl.TransID,
+		}
 
-	res, err := w.wlRepo.Insert(ctx, newData)
-	if err != nil {
-		return "", err
-	}
+		res, err := w.wlRepo.Insert(ctx, newData)
+		if err != nil {
+			return "", err
+		}
 
-	return res.Id, nil
+		resultId = res.Id
+	}
+  return resultId,nil
 }

@@ -36,6 +36,7 @@ type WishlistObj struct {
 }
 
 type WishlistIn struct {
+	IsDeleted bool  `json:"is_deleted"`
 	TransID string `json:"trans_id"`
 	ExpID   string `json:"exp_id"`
 }

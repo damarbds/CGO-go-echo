@@ -197,6 +197,7 @@ func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*mo
 		MerchantDesc:  getMerchant.MerchantDesc,
 		MerchantEmail: existedMerchant.Email,
 		Balance:       getMerchant.Balance,
+		MerchantPicture:getMerchant.MerchantPicture,
 	}
 
 	return &merchantInfo, nil

@@ -352,36 +352,56 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmi
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	var currentUser string
+	updateUser := models.RegisterAndUpdateUser{}
 	if isAdmin == true {
 		currentUserAdmin, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
 		if err != nil {
 			return err
 		}
 		currentUser = currentUserAdmin.Name
+		updateUser = models.RegisterAndUpdateUser{
+			Id:            ar.Id,
+			Username:      ar.UserEmail,
+			Password:      ar.Password,
+			Name:          ar.FullName,
+			GivenName:     "",
+			FamilyName:    "",
+			Email:         ar.UserEmail,
+			EmailVerified: true,
+			Website:       "",
+			Address:       "",
+			OTP:           "",
+			UserType:      1,
+			PhoneNumber:   ar.PhoneNumber,
+			UserRoles:nil,
+		}
 	}else {
 		currentUsers, err := m.ValidateTokenUser(ctx, token)
 		if err != nil {
 			return err
 		}
 		currentUser = currentUsers.UserEmail
+
+		getUserById,err := m.identityServerUc.GetDetailUserById(ar.Id,token,"true")
+		updateUser = models.RegisterAndUpdateUser{
+			Id:            ar.Id,
+			Username:      ar.UserEmail,
+			Password:      getUserById.Password,
+			Name:          ar.FullName,
+			GivenName:     "",
+			FamilyName:    "",
+			Email:         ar.UserEmail,
+			EmailVerified: true,
+			Website:       "",
+			Address:       "",
+			OTP:           "",
+			UserType:      1,
+			PhoneNumber:   ar.PhoneNumber,
+			UserRoles:nil,
+		}
 	}
 	//var roles []string
-	updateUser := models.RegisterAndUpdateUser{
-		Id:            ar.Id,
-		Username:      ar.UserEmail,
-		Password:      ar.Password,
-		Name:          ar.FullName,
-		GivenName:     "",
-		FamilyName:    "",
-		Email:         ar.UserEmail,
-		EmailVerified: true,
-		Website:       "",
-		Address:       "",
-		OTP:           "",
-		UserType:      1,
-		PhoneNumber:   ar.PhoneNumber,
-		UserRoles:nil,
-	}
+
 	_, err := m.identityServerUc.UpdateUser(&updateUser)
 	if err != nil {
 		return err
