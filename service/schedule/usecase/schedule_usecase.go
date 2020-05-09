@@ -61,7 +61,10 @@ func (s scheduleUsecase) GetScheduleByMerchantId(c context.Context, merchantId s
 				return nil,err
 			}
 			schedule.Count = count
-			scheduleDtos.ScheduleDate = append(scheduleDtos.ScheduleDate,schedule)
+			if schedule.Count != 0 {
+				scheduleDtos.ScheduleDate = append(scheduleDtos.ScheduleDate,schedule)
+			}
+
 		}
 
 	getExperienceByMerchantId , err := s.experieceRepo.SelectIdGetByMerchantId(ctx,merchantId)
@@ -93,7 +96,9 @@ func (s scheduleUsecase) GetScheduleByMerchantId(c context.Context, merchantId s
 						}
 					}
 					if len(scheduler) == 0 {
-						scheduleDtos.ScheduleDate = append(scheduleDtos.ScheduleDate,schedule)
+						if schedule.Count != 0 {
+							scheduleDtos.ScheduleDate = append(scheduleDtos.ScheduleDate,schedule)
+						}
 					}
 
 

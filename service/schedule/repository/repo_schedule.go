@@ -327,21 +327,23 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 func (m scheduleRepository) GetCountSchedule(ctx context.Context, transId []*string, date string) (int, error) {
 	query := `
 	SELECT
-		count(DISTINCT departure_date,trans_id) AS count
+		count(DISTINCT b.booking_date,b.trans_id) AS count
 	FROM
-		schedules
+		transactions t
+	JOIN booking_exps b on b.id = t.booking_exp_id
 	WHERE
-		departure_date = ?`
+		DATE (b.booking_date) = ? AND 
+		t.status = 2`
 
 	for index, id := range transId {
 		if index == 0 && index != (len(transId)-1) {
-			query = query + ` AND (trans_id LIKE '%` + *id + `%' `
+			query = query + ` AND (b.trans_id LIKE '%` + *id + `%' `
 		} else if index == 0 && index == (len(transId)-1) {
-			query = query + ` AND (trans_id LIKE '%` + *id + `%' ) `
+			query = query + ` AND (b.trans_id LIKE '%` + *id + `%' ) `
 		} else if index == (len(transId) - 1) {
-			query = query + ` OR  trans_id LIKE '%` + *id + `%' ) `
+			query = query + ` OR  b.trans_id LIKE '%` + *id + `%' ) `
 		} else {
-			query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+			query = query + ` OR  b.trans_id LIKE '%` + *id + `%' `
 		}
 	}
 	rows, err := m.Conn.QueryContext(ctx, query, date)

@@ -54,22 +54,23 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date string, expId []*string) (int, error) {
 	query := `
 	SELECT
-		count(*) AS count
+		count(DISTINCT b.booking_date,b.exp_id) AS count
 	FROM
-		exp_availabilities
+		transactions t
+	JOIN booking_exps b on b.id = t.booking_exp_id
 	WHERE
-		exp_availability_date LIKE ?`
+		DATE (b.booking_date) = ? AND 
+		t.status = 2`
 
-	date = "%" + date + "%"
 	for index, id := range expId {
 		if index == 0 && index != (len(expId)-1) {
-			query = query + ` AND (exp_id LIKE '%` + *id + `%' `
+			query = query + ` AND (b.exp_id LIKE '%` + *id + `%' `
 		} else if index == 0 && index == (len(expId)-1) {
-			query = query + ` AND (exp_id LIKE '%` + *id + `%' ) `
+			query = query + ` AND (b.exp_id LIKE '%` + *id + `%' ) `
 		} else if index == (len(expId) - 1) {
-			query = query + ` OR  exp_id LIKE '%` + *id + `%' ) `
+			query = query + ` OR  b.exp_id LIKE '%` + *id + `%' ) `
 		} else {
-			query = query + ` OR  exp_id LIKE '%` + *id + `%' `
+			query = query + ` OR  b.exp_id LIKE '%` + *id + `%' `
 		}
 	}
 	rows, err := m.Conn.QueryContext(ctx, query, date)
