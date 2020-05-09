@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"time"
+
 	"github.com/auth/user_merchant"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 const (
@@ -19,9 +20,7 @@ type userMerchantRepository struct {
 	Conn *sql.DB
 }
 
-
-
-// NewuserRepository will create an object that represent the article.Repository interface
+// NewuserRepository will create an object that represent the article.repository interface
 func NewuserMerchantRepository(Conn *sql.DB) user_merchant.Repository {
 	return &userMerchantRepository{Conn}
 }
@@ -53,9 +52,9 @@ func (m *userMerchantRepository) fetch(ctx context.Context, query string, args .
 			&t.IsDeleted,
 			&t.IsActive,
 			&t.FullName,
-			&t.Email ,
-			&t.PhoneNumber ,
-			&t.MerchantId ,
+			&t.Email,
+			&t.PhoneNumber,
+			&t.MerchantId,
 		)
 
 		if err != nil {
@@ -120,7 +119,7 @@ func (m *userMerchantRepository) GetUserByMerchantId(ctx context.Context, mercha
 
 	return
 }
-func (m *userMerchantRepository) GetByUserEmail(ctx context.Context, userEmail string) (res *models.UserMerchant,err error) {
+func (m *userMerchantRepository) GetByUserEmail(ctx context.Context, userEmail string) (res *models.UserMerchant, err error) {
 	query := `SELECT * FROM user_merchants WHERE email = ?`
 
 	list, err := m.fetch(ctx, query, userEmail)
@@ -145,7 +144,7 @@ func (m *userMerchantRepository) Update(ctx context.Context, a *models.UserMerch
 		return nil
 	}
 
-	res, err := stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.FullName,a.Email, a.PhoneNumber,a.MerchantId,a.Id)
+	res, err := stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.FullName, a.Email, a.PhoneNumber, a.MerchantId, a.Id)
 	if err != nil {
 		return err
 	}
@@ -169,7 +168,7 @@ func (m *userMerchantRepository) Insert(ctx context.Context, a *models.UserMerch
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.FullName,a.Email,a.PhoneNumber,a.MerchantId)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.FullName, a.Email, a.PhoneNumber, a.MerchantId)
 	if err != nil {
 		return err
 	}
@@ -190,7 +189,7 @@ func (m *userMerchantRepository) Delete(ctx context.Context, id string, deleted_
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}
@@ -247,6 +246,7 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	}
 	return count, nil
 }
+
 // DecodeCursor will decode cursor from user for mysql
 func DecodeCursor(encodedTime string) (time.Time, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedTime)

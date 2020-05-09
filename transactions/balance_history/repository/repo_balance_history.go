@@ -20,8 +20,7 @@ type balanceHistoryRepository struct {
 	Conn *sql.DB
 }
 
-
-// NewpromoRepository will create an object that represent the article.Repository interface
+// NewpromoRepository will create an object that represent the article.repository interface
 func NewbalanceHistoryRepository(Conn *sql.DB) balance_history.Repository {
 	return &balanceHistoryRepository{Conn}
 }
@@ -102,7 +101,7 @@ func (b balanceHistoryRepository) GetAll(ctx context.Context, merchantId string,
 
 func (b *balanceHistoryRepository) GetById(ctx context.Context, id string) (*models.BalanceHistory, error) {
 	query := `SELECT * FROM balance_histories WHERE is_deleted = 0 AND is_active = 1 AND id = ?`
-	res, err := b.fetch(ctx, query,id)
+	res, err := b.fetch(ctx, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrNotFound
@@ -161,13 +160,13 @@ func (m *balanceHistoryRepository) Update(ctx context.Context, a models.BalanceH
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.Status,a.MerchantId, a.Amount,a.DateOfRequest,
-		a.DateOfPayment,a.Remarks,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.Status, a.MerchantId, a.Amount, a.DateOfRequest,
+		a.DateOfPayment, a.Remarks, a.Id)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	//affect, err := res.RowsAffected()
 	//if err != nil {
@@ -179,7 +178,7 @@ func (m *balanceHistoryRepository) Update(ctx context.Context, a models.BalanceH
 	//	return err
 	//}
 
-	return &a.Id,nil
+	return &a.Id, nil
 }
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {

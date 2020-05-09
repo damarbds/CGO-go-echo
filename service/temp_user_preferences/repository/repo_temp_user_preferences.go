@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/models"
 	"github.com/service/temp_user_preferences"
 	"github.com/sirupsen/logrus"
@@ -16,7 +17,7 @@ type tempUserPreferencesRepository struct {
 	Conn *sql.DB
 }
 
-// NewexperienceRepository will create an object that represent the article.Repository interface
+// NewexperienceRepository will create an object that represent the article.repository interface
 func NewtempUserPreferencesRepository(Conn *sql.DB) temp_user_preferences.Repository {
 	return &tempUserPreferencesRepository{Conn}
 }
@@ -39,9 +40,9 @@ func (m *tempUserPreferencesRepository) fetch(ctx context.Context, query string,
 		t := new(models.TempUserPreference)
 		err = rows.Scan(
 			&t.Id,
-			&t.ProvinceId ,
-			&t.CityId ,
-			&t.HarborsId ,
+			&t.ProvinceId,
+			&t.CityId,
+			&t.HarborsId,
 		)
 
 		if err != nil {

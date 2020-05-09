@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+
 	"github.com/google/uuid"
 
 	"time"
@@ -22,8 +23,7 @@ type harborsRepository struct {
 	Conn *sql.DB
 }
 
-
-// NewharborsRepository will create an object that represent the article.Repository interface
+// NewharborsRepository will create an object that represent the article.repository interface
 func NewharborsRepository(Conn *sql.DB) harbors.Repository {
 	return &harborsRepository{Conn}
 }
@@ -112,7 +112,7 @@ func (m *harborsRepository) fetchWithJoinCPC(ctx context.Context, query string, 
 	return result, nil
 }
 
-func (m *harborsRepository) Fetch(ctx context.Context, limit,offset int) ([]*models.Harbors, error) {
+func (m *harborsRepository) Fetch(ctx context.Context, limit, offset int) ([]*models.Harbors, error) {
 	if limit != 0 {
 		query := `Select * FROM harbors where is_deleted = 0 AND is_active = 1 `
 
@@ -151,10 +151,10 @@ func (m *harborsRepository) Fetch(ctx context.Context, limit,offset int) ([]*mod
 	}
 }
 
-func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , size *int,search string) ([]*models.HarborsWCPC, error) {
+func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string) ([]*models.HarborsWCPC, error) {
 
 	search = "%" + search + "%"
-	if page != nil && size != nil && search != ""{
+	if page != nil && size != nil && search != "" {
 		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
@@ -163,13 +163,13 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , si
 			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?) 
             ORDER BY h.created_date desc LIMIT ? OFFSET ? `
 
-		res, err := m.fetchWithJoinCPC(ctx, query, search,search,search,page, size)
+		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search, page, size)
 		if err != nil {
 			return nil, err
 		}
 		return res, err
 
-	} else if page == nil && size == nil && search != ""{
+	} else if page == nil && size == nil && search != "" {
 		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
@@ -177,13 +177,13 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , si
 			where h.is_active = 1 and h.is_deleted = 0 
 			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
 
-		res, err := m.fetchWithJoinCPC(ctx, query, search,search,search)
+		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search)
 		if err != nil {
 			return nil, err
 		}
 		return res, err
 
-	}else {
+	} else {
 		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
@@ -196,7 +196,6 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context,page *int , si
 		}
 		return res, err
 	}
-
 
 	return nil, nil
 }
@@ -216,7 +215,7 @@ func (m *harborsRepository) GetByID(ctx context.Context, id string) (res *models
 
 	return
 }
-func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*string,error) {
+func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*string, error) {
 	a.Id = uuid.New().String()
 	query := `INSERT harbors SET id=?,created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
@@ -226,18 +225,18 @@ func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*str
 		return nil, err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.HarborsName, a.HarborsLongitude,
-		a.HarborsLatitude, a.HarborsImage,a.CityId)
+		a.HarborsLatitude, a.HarborsImage, a.CityId)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//lastID, err := res.RowsAffected()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	//a.Id = lastID
-	return &a.Id,nil
+	return &a.Id, nil
 }
 func (m *harborsRepository) Update(ctx context.Context, a *models.Harbors) error {
 	query := `UPDATE harbors set modified_by=?, modified_date=? ,  harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
@@ -249,7 +248,7 @@ func (m *harborsRepository) Update(ctx context.Context, a *models.Harbors) error
 	}
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.HarborsName, a.HarborsLongitude,
-		a.HarborsLatitude, a.HarborsImage,a.CityId, a.Id)
+		a.HarborsLatitude, a.HarborsImage, a.CityId, a.Id)
 	if err != nil {
 		return err
 	}
@@ -273,7 +272,7 @@ func (m *harborsRepository) Delete(ctx context.Context, id string, deletedBy str
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}
@@ -305,7 +304,6 @@ func (m *harborsRepository) GetCount(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {
 		err = rows.Scan(&count)
@@ -315,6 +313,7 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	}
 	return count, nil
 }
+
 // DecodeCursor will decode cursor from user for mysql
 func DecodeCursor(encodedTime string) (time.Time, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedTime)

@@ -20,8 +20,7 @@ type cpcRepository struct {
 	Conn *sql.DB
 }
 
-
-// NewcpcRepository will create an object that represent the article.Repository interface
+// NewcpcRepository will create an object that represent the article.repository interface
 func NewcpcRepository(Conn *sql.DB) cpc.Repository {
 	return &cpcRepository{Conn}
 }
@@ -69,7 +68,7 @@ func (m *cpcRepository) fetchCity(ctx context.Context, query string, args ...int
 	return result, nil
 }
 
-func (m *cpcRepository) FetchCity(ctx context.Context, limit,offset int) ([]*models.City, error) {
+func (m *cpcRepository) FetchCity(ctx context.Context, limit, offset int) ([]*models.City, error) {
 	if limit != 0 {
 		query := `Select * FROM cities where is_deleted = 0 AND is_active = 1 `
 
@@ -150,12 +149,11 @@ func (m *cpcRepository) InsertCity(ctx context.Context, a *models.City) (*int, e
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CityName,a.CityDesc,
-		a.CityPhotos,a.ProvinceId)
+	res, err := stmt.ExecContext(ctx, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CityName, a.CityDesc,
+		a.CityPhotos, a.ProvinceId)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-
 
 	lastID, err := res.LastInsertId()
 	if err != nil {
@@ -163,7 +161,7 @@ func (m *cpcRepository) InsertCity(ctx context.Context, a *models.City) (*int, e
 	}
 
 	a.Id = int(lastID)
-	return &a.Id,nil
+	return &a.Id, nil
 }
 
 func (m *cpcRepository) UpdateCity(ctx context.Context, a *models.City) error {
@@ -175,7 +173,7 @@ func (m *cpcRepository) UpdateCity(ctx context.Context, a *models.City) error {
 		return nil
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CityName,a.CityDesc, a.CityPhotos,a.ProvinceId,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CityName, a.CityDesc, a.CityPhotos, a.ProvinceId, a.Id)
 	if err != nil {
 		return err
 	}
@@ -199,7 +197,7 @@ func (m *cpcRepository) DeleteCity(ctx context.Context, id int, deletedBy string
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}
@@ -333,9 +331,9 @@ func (m *cpcRepository) InsertProvince(ctx context.Context, a *models.Province) 
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ProvinceName,a.CountryId)
+	res, err := stmt.ExecContext(ctx, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ProvinceName, a.CountryId)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	lastID, err := res.LastInsertId()
@@ -344,7 +342,7 @@ func (m *cpcRepository) InsertProvince(ctx context.Context, a *models.Province) 
 	}
 
 	a.Id = int(lastID)
-	return &a.Id,nil
+	return &a.Id, nil
 }
 
 func (m *cpcRepository) UpdateProvince(ctx context.Context, a *models.Province) error {
@@ -355,7 +353,7 @@ func (m *cpcRepository) UpdateProvince(ctx context.Context, a *models.Province) 
 		return nil
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.ProvinceName,a.CountryId, a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.ProvinceName, a.CountryId, a.Id)
 	if err != nil {
 		return err
 	}
@@ -379,7 +377,7 @@ func (m *cpcRepository) DeleteProvince(ctx context.Context, id int, deletedBy st
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}
@@ -433,7 +431,6 @@ func (m *cpcRepository) fetchCountry(ctx context.Context, query string, args ...
 	return result, nil
 }
 
-
 func (m *cpcRepository) FetchCountry(ctx context.Context, limit, offset int) ([]*models.Country, error) {
 	if limit != 0 {
 		query := `Select * FROM countries where is_deleted = 0 AND is_active = 1 `
@@ -473,7 +470,7 @@ func (m *cpcRepository) FetchCountry(ctx context.Context, limit, offset int) ([]
 	}
 }
 
-func (m *cpcRepository) GetCountryByID(ctx context.Context, id int) (res *models.Country,err error) {
+func (m *cpcRepository) GetCountryByID(ctx context.Context, id int) (res *models.Country, err error) {
 	query := `SELECT * FROM countries WHERE id = ?`
 
 	list, err := m.fetchCountry(ctx, query, id)
@@ -515,9 +512,9 @@ func (m *cpcRepository) InsertCountry(ctx context.Context, a *models.Country) (*
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CountryName)
+	res, err := stmt.ExecContext(ctx, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CountryName)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	lastID, err := res.LastInsertId()
@@ -526,7 +523,7 @@ func (m *cpcRepository) InsertCountry(ctx context.Context, a *models.Country) (*
 	}
 
 	a.Id = int(lastID)
-	return &a.Id,nil
+	return &a.Id, nil
 }
 
 func (m *cpcRepository) UpdateCountry(ctx context.Context, a *models.Country) error {
@@ -537,7 +534,7 @@ func (m *cpcRepository) UpdateCountry(ctx context.Context, a *models.Country) er
 		return nil
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CountryName,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CountryName, a.Id)
 	if err != nil {
 		return err
 	}
@@ -561,7 +558,7 @@ func (m *cpcRepository) DeleteCountry(ctx context.Context, id int, deletedBy str
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}
@@ -575,7 +572,6 @@ func (m *cpcRepository) DeleteCountry(ctx context.Context, id int, deletedBy str
 	return nil
 }
 
-
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {
 		err = rows.Scan(&count)
@@ -585,6 +581,7 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	}
 	return count, nil
 }
+
 // DecodeCursor will decode cursor from user for mysql
 func DecodeCursor(encodedTime string) (time.Time, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedTime)

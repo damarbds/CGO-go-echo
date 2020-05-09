@@ -3,20 +3,20 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"strconv"
+	"time"
+
 	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/product/reviews"
 	"github.com/sirupsen/logrus"
-	"strconv"
-	"time"
 )
 
 type reviewRepository struct {
 	Conn *sql.DB
 }
 
-
-// NewReviewRepository will create an object that represent the exp_payment.Repository interface
+// NewReviewRepository will create an object that represent the exp_payment.repository interface
 func NewReviewRepository(Conn *sql.DB) reviews.Repository {
 	return &reviewRepository{Conn}
 }
@@ -28,21 +28,21 @@ func (m *reviewRepository) Insert(ctx context.Context, a models.Review) (string,
 				guide_review=?,activities_review=?,service_review=?,cleanliness_review=?,value_review=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return"", err
+		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Values,a.Desc,
-		a.ExpId,a.UserId,a.GuideReview, a.ActivitiesReview,a.ServiceReview,a.CleanlinessReview,a.ValueReview)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Values, a.Desc,
+		a.ExpId, a.UserId, a.GuideReview, a.ActivitiesReview, a.ServiceReview, a.CleanlinessReview, a.ValueReview)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	//lastID, err := res.RowsAffected()
 	if err != nil {
-		return"", err
+		return "", err
 	}
 
 	//a.Id = lastID
-	return a.Id,nil
+	return a.Id, nil
 }
 func (m *reviewRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Review, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
@@ -74,12 +74,12 @@ func (m *reviewRepository) fetch(ctx context.Context, query string, args ...inte
 			&t.Values,
 			&t.Desc,
 			&t.ExpId,
-			&t.UserId  ,
-			&t.GuideReview ,
-			&t.ActivitiesReview ,
-			&t.ServiceReview ,
-			&t.CleanlinessReview ,
-			&t.ValueReview ,
+			&t.UserId,
+			&t.GuideReview,
+			&t.ActivitiesReview,
+			&t.ServiceReview,
+			&t.CleanlinessReview,
+			&t.ValueReview,
 		)
 
 		if err != nil {
@@ -112,12 +112,12 @@ func (r reviewRepository) CountRating(ctx context.Context, rating int, expID str
 	return count, nil
 }
 
-func (r reviewRepository) GetByExpId(ctx context.Context, expID, sortBy string, rating, limit, offset int,userId string) ([]*models.Review, error) {
+func (r reviewRepository) GetByExpId(ctx context.Context, expID, sortBy string, rating, limit, offset int, userId string) ([]*models.Review, error) {
 	query := `select * from reviews r where exp_id = ? AND is_deleted = 0 AND is_active = 1`
 	if rating != 0 {
 		query = query + ` AND r.values = ` + strconv.Itoa(rating)
 	}
-	if userId != ""{
+	if userId != "" {
 		query = query + ` AND r.user_id = '` + userId + `' `
 	}
 	if sortBy != "" {

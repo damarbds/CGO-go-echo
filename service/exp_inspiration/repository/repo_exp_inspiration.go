@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/models"
 	inspiration "github.com/service/exp_inspiration"
 	"github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ type expInspirationRepository struct {
 	Conn *sql.DB
 }
 
-// NewExpInspirationRepository will create an object that represent the exp_payment.Repository interface
+// NewExpInspirationRepository will create an object that represent the exp_payment.repository interface
 func NewExpInspirationRepository(Conn *sql.DB) inspiration.Repository {
 	return &expInspirationRepository{Conn}
 }

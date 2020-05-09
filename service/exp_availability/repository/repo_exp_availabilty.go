@@ -2,12 +2,13 @@ package repository
 
 import (
 	"database/sql"
+	"time"
+
 	guuid "github.com/google/uuid"
 	"github.com/models"
 	exp_availability "github.com/service/exp_availability"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type exp_availabilityRepository struct {
@@ -37,7 +38,7 @@ func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*s
 	return res, nil
 }
 
-// NewExpexp_availabilityRepository will create an object that represent the exp_exp_availability.Repository interface
+// NewExpexp_availabilityRepository will create an object that represent the exp_exp_availability.repository interface
 func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
 	return &exp_availabilityRepository{Conn}
 }
@@ -50,7 +51,7 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	}
 	return count, nil
 }
-func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date string,expId []*string) (int, error) {
+func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date string, expId []*string) (int, error) {
 	query := `
 	SELECT
 		count(*) AS count
@@ -71,7 +72,7 @@ func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date stri
 			query = query + ` OR  exp_id LIKE '%` + *id + `%' `
 		}
 	}
-	rows, err := m.Conn.QueryContext(ctx, query,date)
+	rows, err := m.Conn.QueryContext(ctx, query, date)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err

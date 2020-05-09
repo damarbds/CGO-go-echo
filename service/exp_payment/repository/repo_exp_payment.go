@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	guuid "github.com/google/uuid"
 	"time"
+
+	guuid "github.com/google/uuid"
 
 	"github.com/models"
 	payment "github.com/service/exp_payment"
@@ -15,7 +16,7 @@ type expPaymentRepository struct {
 	Conn *sql.DB
 }
 
-// NewExpPaymentRepository will create an object that represent the exp_payment.Repository interface
+// NewExpPaymentRepository will create an object that represent the exp_payment.repository interface
 func NewExpPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &expPaymentRepository{Conn}
 }

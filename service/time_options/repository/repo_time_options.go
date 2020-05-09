@@ -2,11 +2,12 @@ package repository
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/models"
 	"github.com/service/time_options"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 const (
@@ -17,7 +18,7 @@ type timeOptionsRepository struct {
 	Conn *sql.DB
 }
 
-// NewpromoRepository will create an object that represent the article.Repository interface
+// NewpromoRepository will create an object that represent the article.repository interface
 func NewTimeOptionsRepository(Conn *sql.DB) time_options.Repository {
 	return &timeOptionsRepository{Conn}
 }
