@@ -21,7 +21,7 @@ type Transaction struct {
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
 	OrderId             *string    `json:"order_id"`
-	VaNumber			*string 	`json:"va_number"`
+	VaNumber            *string    `json:"va_number"`
 }
 
 type TransactionWMerchant struct {
@@ -43,7 +43,7 @@ type TransactionWMerchant struct {
 	TotalPrice          float64    `json:"total_price"`
 	Currency            string     `json:"currency"`
 	OrderId             *string    `json:"order_id"`
-	VaNumber			*string 	`json:"va_number"`
+	VaNumber            *string    `json:"va_number"`
 	MerchantId          string     `json:"merchant_id"`
 	OrderIdBook         string     `json:"order_id_book"`
 	BookedBy            string     `json:"booked_by"`
@@ -61,6 +61,9 @@ type TransactionIn struct {
 	BookingId           string  `json:"booking_id"`
 	OrderId             string  `json:"order_id"`
 	PaypalOrderId       string  `json:"paypal_order_id"`
+	CcTokenId           string  `json:"cc_token_id"`
+	CcAuthId            string  `json:"cc_auth_id"`
+	CcAmount            float64 `json:"cc_amount"`
 	PromoId             string  `json:"promo_id"`
 	PaymentMethodId     string  `json:"payment_method_id"`
 	ExperiencePaymentId string  `json:"experience_payment_id"`
@@ -91,9 +94,9 @@ type TransactionOut struct {
 	TransactionStatus   int       `json:"transaction_status"`
 	BookingStatus       int       `json:"booking_status"`
 	TotalPrice          float64   `json:"total_price"`
-	ExperiencePaymentId *string    `json:"experience_payment_id"`
+	ExperiencePaymentId *string   `json:"experience_payment_id"`
 	MerchantName        string    `json:"merchant_name"`
-	OrderId				*string		`json:"order_id"`
+	OrderId             *string   `json:"order_id"`
 }
 
 type TransactionDto struct {
@@ -112,7 +115,7 @@ type TransactionDto struct {
 	TotalPrice            float64                   `json:"total_price"`
 	ExperiencePaymentType *ExperiencePaymentTypeDto `json:"experience_payment_type"`
 	Merchant              string                    `json:"merchant"`
-	OrderId				  *string					`json:"order_id"`
+	OrderId               *string                   `json:"order_id"`
 }
 
 type TransactionWithPagination struct {
