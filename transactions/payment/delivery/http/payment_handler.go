@@ -157,6 +157,11 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
+	} else if *pm.MidtransPaymentCode == "BRI" {
+		data, err = p.bookingUsecase.XenPayment(ctx, bookingCode, *pm.MidtransPaymentCode)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
 	} else {
 		data, err = p.bookingUsecase.SendCharge(ctx, bookingCode, *pm.MidtransPaymentCode)
 		if err != nil {
