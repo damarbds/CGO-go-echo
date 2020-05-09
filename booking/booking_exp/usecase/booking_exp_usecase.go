@@ -12,9 +12,12 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/third-party/xendit"
 
 	"github.com/product/experience_add_ons"
 	"github.com/service/exp_payment"
@@ -62,6 +65,55 @@ func NewbookingExpUsecase(reviewRepo reviews.Repository,adOnsRepo experience_add
 		transactionRepo:           tr,
 		contextTimeout:            timeout,
 	}
+}
+
+func (b bookingExpUsecase) XenPayment(ctx context.Context, orderId, paymentType string) (map[string]interface{}, error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+
+	var result map[string]interface{}
+
+	xendit.XenditSetup()
+
+	booking, err := b.bookingExpRepo.GetByID(ctx, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	var bookedBy []models.BookedByObj
+	if booking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+	}
+
+	if paymentType == "BRI" {
+		va := &xendit.VirtualAccount{
+			Client:     xendit.XenClient.VirtualAccount,
+			ExternalID: orderId,
+			BankCode:   paymentType,
+			Name:       bookedBy[0].FullName,
+			ExpireDate: booking.ExpiredDatePayment,
+		}
+		resXen, err := va.CreateFixedVA(ctx)
+		if err != nil {
+			return result, err
+		}
+
+		var bookingCode string
+		if booking.ExpId != nil {
+			bookingCode = booking.Id
+		} else {
+			bookingCode = booking.OrderId
+		}
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, 0, resXen.AccountNumber, "", bookingCode); err != nil {
+			return nil, err
+		}
+
+		result = structToMap(resXen)
+	}
+
+	return result, nil
 }
 
 func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool, error) {
@@ -161,9 +213,15 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 		}
 	}
 
+	var bookCode string
+	if booking.ExpId != nil {
+		bookCode = booking.Id
+	} else {
+		bookCode = booking.OrderId
+	}
 	if res.Status == "VOIDED" {
 		transactionStatus = 3
-		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.Id); err != nil {
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookCode); err != nil {
 			return nil, err
 		}
 	}
@@ -578,10 +636,10 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 					Name: element.ExpPaymentTypeName,
 					Desc: element.ExpPaymentTypeDesc,
 				}
-				if paymentType.Name == "Down Payment"{
-					remainingPayment := element.Price -  *getDetailBooking.TotalPrice
+				if paymentType.Name == "Down Payment" {
+					remainingPayment := element.Price - *getDetailBooking.TotalPrice
 					paymentType.RemainingPayment = remainingPayment
-				}else {
+				} else {
 					paymentType.RemainingPayment = 0
 				}
 				experiencePaymentType = &paymentType
@@ -1298,4 +1356,30 @@ func generateRandomBytes(n int) ([]byte, error) {
 	}
 
 	return b, nil
+}
+func structToMap(item interface{}) map[string]interface{} {
+
+	res := map[string]interface{}{}
+	if item == nil {
+		return res
+	}
+	v := reflect.TypeOf(item)
+	reflectValue := reflect.ValueOf(item)
+	reflectValue = reflect.Indirect(reflectValue)
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	for i := 0; i < v.NumField(); i++ {
+		tag := v.Field(i).Tag.Get("json")
+		field := reflectValue.Field(i).Interface()
+		if tag != "" && tag != "-" {
+			if v.Field(i).Type.Kind() == reflect.Struct {
+				res[tag] = structToMap(field)
+			} else {
+				res[tag] = field
+			}
+		}
+	}
+	return res
 }

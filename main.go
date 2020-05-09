@@ -132,6 +132,8 @@ import (
 	_currencyMasterHttpHandler "github.com/service/currency/delivery/http"
 	_currencyMasterRepo "github.com/service/currency/repository"
 	_currencyMasterUsecase "github.com/service/currency/usecase"
+
+	_xenditHttpHandler "github.com/third-party/xendit/delivery/http"
 )
 
 // func init() {
@@ -307,6 +309,7 @@ func main() {
 	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e, balanceHistoryUcase)
 	_midtransHttpHandler.NewMidtransHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
+	_xenditHttpHandler.NewXenditHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 
 	log.Fatal(e.Start(":9090"))
 }
