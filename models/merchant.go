@@ -35,6 +35,7 @@ type NewCommandMerchant struct {
 
 type MerchantInfoDto struct {
 	Id            string     `json:"id"`
+	UserMerchantId string	`json:"user_merchant_id"`
 	CreatedDate   time.Time  `json:"created_date"`
 	UpdatedDate   *time.Time `json:"updated_date"`
 	IsActive      int        `json:"is_active"`
