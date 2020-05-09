@@ -48,11 +48,11 @@ func (f filterActivityTypeRepository) GetByExpId(context context.Context, expId 
 	panic("implement me")
 }
 
-// NewexperienceRepository will create an object that represent the article.Repository interface
+// NewexperienceRepository will create an object that represent the article.repository interface
 func NewFilterActivityTypeRepository(Conn *sql.DB) filter_activity_type.Repository {
 	return &filterActivityTypeRepository{Conn}
 }
-func (m filterActivityTypeRepository) Insert(ctx context.Context,a *models.FilterActivityType) error {
+func (m filterActivityTypeRepository) Insert(ctx context.Context, a *models.FilterActivityType) error {
 	query := `INSERT filter_activity_types SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_type_id=? , exp_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)

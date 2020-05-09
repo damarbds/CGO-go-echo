@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+
 	"github.com/misc/faq"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ type faqRepository struct {
 	Conn *sql.DB
 }
 
-// NewReviewRepository will create an object that represent the exp_payment.Repository interface
+// NewReviewRepository will create an object that represent the exp_payment.repository interface
 func NewReviewRepository(Conn *sql.DB) faq.Repository {
 	return &faqRepository{Conn}
 }

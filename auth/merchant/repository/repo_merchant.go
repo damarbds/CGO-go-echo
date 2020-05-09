@@ -22,22 +22,22 @@ type merchantRepository struct {
 	Conn *sql.DB
 }
 
-// NewmerchantRepository will create an object that represent the article.Repository interface
+// NewmerchantRepository will create an object that represent the article.repository interface
 func NewmerchantRepository(Conn *sql.DB) merchant.Repository {
 	return &merchantRepository{Conn}
 }
 
-func (m *merchantRepository) List(ctx context.Context, limit, offset int,search string) ([]*models.Merchant, error) {
+func (m *merchantRepository) List(ctx context.Context, limit, offset int, search string) ([]*models.Merchant, error) {
 	var query string
-	if search != ""{
+	if search != "" {
 		query = `SELECT * FROM merchants WHERE is_deleted = 0 and is_active = 1 
 				and (merchant_name LIKE '%` + search + `%'` +
-				`OR merchant_email LIKE '%` + search + `%'` +
-				`OR merchant_desc LIKE '%` + search + `%'` +
-				`OR balance LIKE '%` + search + `%'` +
-				`OR phone_number LIKE '%` + search + `%' )` +
-				` LIMIT ? OFFSET ?`
-	}else {
+			`OR merchant_email LIKE '%` + search + `%'` +
+			`OR merchant_desc LIKE '%` + search + `%'` +
+			`OR balance LIKE '%` + search + `%'` +
+			`OR phone_number LIKE '%` + search + `%' )` +
+			` LIMIT ? OFFSET ?`
+	} else {
 		query = `SELECT * FROM merchants WHERE is_deleted = 0 and is_active = 1 LIMIT ? OFFSET ?`
 	}
 
@@ -180,7 +180,7 @@ func (m *merchantRepository) Insert(ctx context.Context, a *models.Merchant) err
 		return err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.MerchantName, a.MerchantDesc,
-		a.MerchantEmail, a.Balance,a.PhoneNumber,a.MerchantPicture)
+		a.MerchantEmail, a.Balance, a.PhoneNumber, a.MerchantPicture)
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func (m *merchantRepository) Delete(ctx context.Context, id string, deleted_by s
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deleted_by, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}
@@ -224,7 +224,7 @@ func (m *merchantRepository) Update(ctx context.Context, ar *models.Merchant) er
 	}
 
 	res, err := stmt.ExecContext(ctx, ar.ModifiedBy, time.Now(), ar.MerchantName, ar.MerchantDesc, ar.MerchantEmail,
-		ar.Balance, ar.PhoneNumber,ar.MerchantPicture,ar.Id)
+		ar.Balance, ar.PhoneNumber, ar.MerchantPicture, ar.Id)
 	if err != nil {
 		return err
 	}

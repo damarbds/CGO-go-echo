@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+
 	guuid "github.com/google/uuid"
 
 	"time"
@@ -22,8 +23,7 @@ type experienceRepository struct {
 	Conn *sql.DB
 }
 
-
-// NewexperienceRepository will create an object that represent the article.Repository interface
+// NewexperienceRepository will create an object that represent the article.repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
@@ -36,8 +36,8 @@ func (m *experienceRepository) UpdateRating(ctx context.Context, exp models.Expe
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, exp.ModifiedBy, time.Now(), nil, nil, 0, 1, exp.Rating,exp.GuideReview,exp.ActivitiesReview,
-		exp.ServiceReview,exp.CleanlinessReview,exp.ValueReview, exp.Id)
+	_, err = stmt.ExecContext(ctx, exp.ModifiedBy, time.Now(), nil, nil, 0, 1, exp.Rating, exp.GuideReview, exp.ActivitiesReview,
+		exp.ServiceReview, exp.CleanlinessReview, exp.ValueReview, exp.Id)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,6 @@ func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId strin
 
 	return count, nil
 }
-
 
 func (m *experienceRepository) GetExpPendingTransactionCount(ctx context.Context, merchantId string) (int, error) {
 	query := `
@@ -342,10 +341,10 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
-			&t.GuideReview ,
-			&t.ActivitiesReview ,
-			&t.ServiceReview ,
-			&t.CleanlinessReview ,
+			&t.GuideReview,
+			&t.ActivitiesReview,
+			&t.ServiceReview,
+			&t.CleanlinessReview,
 			&t.ValueReview,
 		)
 
@@ -413,10 +412,10 @@ func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.C
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
-			&t.GuideReview ,
-			&t.ActivitiesReview ,
-			&t.ServiceReview ,
-			&t.CleanlinessReview ,
+			&t.GuideReview,
+			&t.ActivitiesReview,
+			&t.ServiceReview,
+			&t.CleanlinessReview,
 			&t.ValueReview,
 		)
 
@@ -520,10 +519,10 @@ func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query str
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
-			&t.GuideReview ,
-			&t.ActivitiesReview ,
-			&t.ServiceReview ,
-			&t.CleanlinessReview ,
+			&t.GuideReview,
+			&t.ActivitiesReview,
+			&t.ServiceReview,
+			&t.CleanlinessReview,
 			&t.ValueReview,
 			&t.MinimumBookingAmount,
 			&t.MinimumBookingDesc,
@@ -591,10 +590,10 @@ func (m *experienceRepository) fetch(ctx context.Context, query string, args ...
 			&t.MinimumBookingId,
 			&t.MerchantId,
 			&t.HarborsId,
-			&t.GuideReview ,
-			&t.ActivitiesReview ,
-			&t.ServiceReview ,
-			&t.CleanlinessReview ,
+			&t.GuideReview,
+			&t.ActivitiesReview,
+			&t.ServiceReview,
+			&t.CleanlinessReview,
 			&t.ValueReview,
 		)
 
@@ -659,7 +658,7 @@ func (m *experienceRepository) GetIdByCityId(ctx context.Context, cityId string)
 
 	return result, err
 }
-func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, page *int, size *int,) ([]*models.ExpUserDiscoverPreference, error) {
+func (m *experienceRepository) GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreference, error) {
 
 	if page != nil && size != nil {
 		query := `select c.city_id, c.city_name, city.city_desc,city_photos,a.* from cgo_indonesia.experiences a
@@ -729,12 +728,12 @@ func (m *experienceRepository) GetUserDiscoverPreferenceByHarborsIdOrProvince(ct
 			join provinces province on province.id = c.province_id
 			WHERE a.harbors_id = ?`
 
-		res, err := m.fetchUserDiscoverPreference(ctx, query, harborsId,harborsId)
+		res, err := m.fetchUserDiscoverPreference(ctx, query, harborsId, harborsId)
 		if err != nil {
 			return nil, err
 		}
 		return res, err
-	} else if provinceId != nil{
+	} else if provinceId != nil {
 		query := `select 
 					province.id as province_id ,
 					province.province_name,
@@ -754,13 +753,13 @@ func (m *experienceRepository) GetUserDiscoverPreferenceByHarborsIdOrProvince(ct
 			join provinces province on province.id = c.province_id
 			WHERE province.id = ?`
 
-		res, err := m.fetchUserDiscoverPreferenceProvince(ctx, query, provinceId,provinceId)
+		res, err := m.fetchUserDiscoverPreferenceProvince(ctx, query, provinceId, provinceId)
 		if err != nil {
 			return nil, err
 		}
 		return res, err
 	}
-	return nil,nil
+	return nil, nil
 }
 func (m *experienceRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Experience, string, error) {
 	query := `SELECT * FROM experiences WHERE created_at > ? ORDER BY created_at LIMIT ? `
@@ -855,7 +854,7 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 	return &a.Id, nil
 }
 
-func (m *experienceRepository) UpdateStatus(ctx context.Context, status int,id string,user string) error {
+func (m *experienceRepository) UpdateStatus(ctx context.Context, status int, id string, user string) error {
 	query := `UPDATE experiences SET modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , status=?
 				WHERE id=?`

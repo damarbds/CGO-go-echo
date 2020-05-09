@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"github.com/transactions/experience_payment_type"
@@ -12,7 +13,7 @@ type experiencePaymentTypeRepository struct {
 	Conn *sql.DB
 }
 
-// NewPaymentRepository will create an object that represent the article.Repository interface
+// NewPaymentRepository will create an object that represent the article.repository interface
 func NewExperiencePaymentTypeRepository(Conn *sql.DB) experience_payment_type.Repostiory {
 	return &experiencePaymentTypeRepository{Conn}
 }

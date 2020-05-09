@@ -2,12 +2,13 @@ package repository
 
 import (
 	"database/sql"
+	"time"
+
 	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/product/experience_add_ons"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 const (
@@ -18,7 +19,7 @@ type experienceAddOnsRepository struct {
 	Conn *sql.DB
 }
 
-// NewexperienceRepository will create an object that represent the article.Repository interface
+// NewexperienceRepository will create an object that represent the article.repository interface
 func NewexperienceRepository(Conn *sql.DB) experience_add_ons.Repository {
 	return &experienceAddOnsRepository{Conn}
 }

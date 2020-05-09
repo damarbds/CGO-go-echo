@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	pm "github.com/transactions/payment_methods"
@@ -12,7 +13,7 @@ type paymentMethodRepository struct {
 	Conn *sql.DB
 }
 
-// NewPaymentMethodRepository will create an object that represent the article.Repository interface
+// NewPaymentMethodRepository will create an object that represent the article.repository interface
 func NewPaymentMethodRepository(Conn *sql.DB) pm.Repository {
 	return &paymentMethodRepository{Conn}
 }
@@ -27,7 +28,6 @@ func (m *paymentMethodRepository) GetByID(ctx context.Context, paymentMethodId s
 
 	return res[0], nil
 }
-
 
 func (m *paymentMethodRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.PaymentMethod, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)

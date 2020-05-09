@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
-	guuid "github.com/google/uuid"
 	"time"
+
+	guuid "github.com/google/uuid"
 
 	"github.com/sirupsen/logrus"
 
@@ -21,8 +22,7 @@ type promoRepository struct {
 	Conn *sql.DB
 }
 
-
-// NewpromoRepository will create an object that represent the article.Repository interface
+// NewpromoRepository will create an object that represent the article.repository interface
 func NewpromoRepository(Conn *sql.DB) promo.Repository {
 	return &promoRepository{Conn}
 }
@@ -77,11 +77,11 @@ func (m *promoRepository) fetch(ctx context.Context, query string, args ...inter
 			&t.PromoValue,
 			&t.PromoType,
 			&t.PromoImage,
-			&t.StartDate ,
-			&t.EndDate ,
-			&t.MaxUsage   ,
-			&t.ProductionCapacity ,
-			&t.CurrencyId ,
+			&t.StartDate,
+			&t.EndDate,
+			&t.MaxUsage,
+			&t.ProductionCapacity,
+			&t.CurrencyId,
 		)
 
 		if err != nil {
@@ -94,14 +94,14 @@ func (m *promoRepository) fetch(ctx context.Context, query string, args ...inter
 	return result, nil
 }
 
-func (m *promoRepository) Delete(ctx context.Context, id string,deletedBy string) error {
+func (m *promoRepository) Delete(ctx context.Context, id string, deletedBy string) error {
 	query := `UPDATE promos SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE id =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, id)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (m *promoRepository) Delete(ctx context.Context, id string,deletedBy string
 	return nil
 }
 
-func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string,error) {
+func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string, error) {
 	a.Id = guuid.New().String()
 	query := `INSERT promos SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , promo_code=?,promo_name=? , 
@@ -123,21 +123,21 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string,e
 				max_usage=?,production_capacity=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return"", err
+		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.PromoCode,a.PromoName,
-		a.PromoDesc,a.PromoValue, a.PromoType,a.PromoImage,a.StartDate,a.EndDate,a.CurrencyId,a.MaxUsage,a.ProductionCapacity)
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.PromoCode, a.PromoName,
+		a.PromoDesc, a.PromoValue, a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	//lastID, err := res.RowsAffected()
 	if err != nil {
-		return"", err
+		return "", err
 	}
 
 	//a.Id = lastID
-	return a.Id,nil
+	return a.Id, nil
 }
 
 func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
@@ -149,8 +149,8 @@ func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 		return nil
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.PromoCode,a.PromoName, a.PromoDesc,a.PromoValue,
-					a.PromoType,a.PromoImage,a.StartDate,a.EndDate,a.CurrencyId,a.MaxUsage,a.ProductionCapacity,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
+		a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity, a.Id)
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 	return nil
 }
 
-func (m *promoRepository) GetById(ctx context.Context, id string) (res *models.Promo,err error) {
+func (m *promoRepository) GetById(ctx context.Context, id string) (res *models.Promo, err error) {
 	query := `SELECT * FROM promos WHERE is_deleted = 0 and is_active = 1 and id = ?`
 
 	list, err := m.fetch(ctx, query, id)
@@ -195,11 +195,11 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string) ([]*models
 	return res, nil
 }
 
-func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int,search string) ([]*models.Promo, error) {
+func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, search string) ([]*models.Promo, error) {
 	if page != nil && size != nil {
 		query := `Select * FROM promos where is_deleted = 0 AND is_active = 1 `
 
-		if search != ""{
+		if search != "" {
 			query = query + `AND (promo_name LIKE '%` + search + `%'` +
 				`OR promo_desc LIKE '%` + search + `%' ` +
 				`OR start_date LIKE '%` + search + `%' ` +
@@ -217,7 +217,7 @@ func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int,search
 	} else {
 		query := `Select * FROM promos where is_deleted = 0 AND is_active = 1 `
 
-		if search != ""{
+		if search != "" {
 			query = query + `AND (promo_name LIKE '%` + search + `%'` +
 				`OR promo_desc LIKE '%` + search + `%' ` +
 				`OR start_date LIKE '%` + search + `%' ` +
@@ -243,6 +243,7 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	}
 	return count, nil
 }
+
 // DecodeCursor will decode cursor from user for mysql
 func DecodeCursor(encodedTime string) (time.Time, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedTime)
