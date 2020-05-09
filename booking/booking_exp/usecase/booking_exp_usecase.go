@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/product/reviews"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/product/reviews"
 
 	"github.com/third-party/xendit"
 
@@ -39,7 +40,7 @@ import (
 )
 
 type bookingExpUsecase struct {
-	reviewRepo 				reviews.Repository
+	reviewRepo                reviews.Repository
 	adOnsRepo                 experience_add_ons.Repository
 	experiencePaymentTypeRepo exp_payment.Repository
 	bookingExpRepo            booking_exp.Repository
@@ -52,9 +53,9 @@ type bookingExpUsecase struct {
 }
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(reviewRepo reviews.Repository,adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
-		reviewRepo:reviewRepo,
+		reviewRepo:                reviewRepo,
 		adOnsRepo:                 adOnsRepo,
 		experiencePaymentTypeRepo: ept,
 		bookingExpRepo:            a,
@@ -67,7 +68,7 @@ func NewbookingExpUsecase(reviewRepo reviews.Repository,adOnsRepo experience_add
 	}
 }
 
-func (b bookingExpUsecase) XenPayment(ctx context.Context, orderId, paymentType string) (map[string]interface{}, error) {
+func (b bookingExpUsecase) XenPayment(ctx context.Context, amount float64, tokenId, authId, orderId, paymentType string) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 
@@ -95,7 +96,7 @@ func (b bookingExpUsecase) XenPayment(ctx context.Context, orderId, paymentType 
 			Name:       bookedBy[0].FullName,
 			ExpireDate: booking.ExpiredDatePayment,
 		}
-		resXen, err := va.CreateFixedVA(ctx)
+		resVA, err := va.CreateFixedVA(ctx)
 		if err != nil {
 			return result, err
 		}
@@ -106,14 +107,102 @@ func (b bookingExpUsecase) XenPayment(ctx context.Context, orderId, paymentType 
 		} else {
 			bookingCode = booking.OrderId
 		}
-		if err := b.transactionRepo.UpdateAfterPayment(ctx, 0, resXen.AccountNumber, "", bookingCode); err != nil {
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, 0, resVA.AccountNumber, "", bookingCode); err != nil {
 			return nil, err
 		}
 
-		result = structToMap(resXen)
+		result = structToMap(resVA)
+	}
+
+	if paymentType == "cc" || (amount != 0 && authId != "" && tokenId != "") {
+		cc := &xendit.CreditCard{
+			Client:     xendit.XenClient.Card,
+			TokenID:    tokenId,
+			AuthID:     authId,
+			ExternalID: orderId,
+			Amount:     amount,
+			IsCapture:  true,
+		}
+		resCC, err := cc.CreateCharge(ctx)
+		if err != nil {
+			return result, err
+		}
+
+		if err := b.SetAfterCCPayment(ctx, resCC.ExternalID, resCC.MaskedCardNumber, resCC.Status); err != nil {
+			return result, err
+		}
+
+		result = structToMap(resCC)
 	}
 
 	return result, nil
+}
+
+func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, accountNumber, status string) error {
+	booking, err := b.bookingExpRepo.GetByID(ctx, externalId)
+	if err != nil {
+		return err
+	}
+
+	var bookedBy []models.BookedByObj
+	if booking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return errUnmarshal
+		}
+	}
+
+	var transactionStatus int
+	if status == "CAPTURED" {
+		if booking.ExpId != nil {
+			exp, err := b.expRepo.GetByID(ctx, *booking.ExpId)
+			if err != nil {
+				return err
+			}
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "")
+			if err != nil {
+				return err
+			}
+			if exp.ExpBookingType == "No Instant Booking" {
+				transactionStatus = 1
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				transactionStatus = 5
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
+				transactionStatus = 2
+			}
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.Id); err != nil {
+				return err
+			}
+		} else {
+			transactionStatus = 2
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.OrderId); err != nil {
+				return err
+			}
+		}
+		msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
+		pushEmail := &models.SendingEmail{
+			Subject:  "E-Ticket cGO",
+			Message:  msg,
+			From:     "CGO Indonesia",
+			To:       bookedBy[0].Email,
+			FileName: "Ticket.pdf",
+		}
+		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+			return err
+		}
+	} else if status == "FAILED" {
+		var bookingCode string
+		if booking.ExpId != nil {
+			bookingCode = booking.Id
+		} else {
+			bookingCode = booking.OrderId
+		}
+		transactionStatus = 3
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", bookingCode); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool, error) {
@@ -698,9 +787,9 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	if getDetailBooking.ExpId == nil {
 		getDetailBooking.ExpId = new(string)
 	}
-	reviews ,_:= b.reviewRepo.GetByExpId(ctx , *getDetailBooking.ExpId,"",0,1,0,*getDetailBooking.UserId)
+	reviews, _ := b.reviewRepo.GetByExpId(ctx, *getDetailBooking.ExpId, "", 0, 1, 0, *getDetailBooking.UserId)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	var isReview = false
 	bookingExp := models.BookingExpDetailDto{
@@ -727,8 +816,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		ExperiencePaymentId:   getDetailBooking.ExperiencePaymentId,
 		Experience:            expDetail,
 		ExperiencePaymentType: experiencePaymentType,
-		IsReview:isReview,
-
+		IsReview:              isReview,
 	}
 	if len(reviews) != 0 {
 		desc := models.ReviewDtoObject{}
@@ -994,9 +1082,9 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			if element.UserId == nil {
 				element.UserId = new(string)
 			}
-			checkReview ,_:= b.reviewRepo.GetByExpId(ctx , element.ExpId,"",0,1,0,*element.UserId)
+			checkReview, _ := b.reviewRepo.GetByExpId(ctx, element.ExpId, "", 0, 1, 0, *element.UserId)
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
 			var isReview = false
 			if len(checkReview) != 0 {
@@ -1016,7 +1104,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
 				Status:         status,
-				IsReview:isReview,
+				IsReview:       isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -1104,7 +1192,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:           element.Province,
 				Country:            element.Country,
 				Status:             status,
-				IsReview:isReview,
+				IsReview:           isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -1165,9 +1253,9 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			if element.UserId == nil {
 				element.UserId = new(string)
 			}
-			checkReview ,err:= b.reviewRepo.GetByExpId(ctx , element.ExpId,"",0,1,0,*element.UserId)
+			checkReview, err := b.reviewRepo.GetByExpId(ctx, element.ExpId, "", 0, 1, 0, *element.UserId)
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
 			var isReview = false
 			if len(checkReview) != 0 {
@@ -1186,7 +1274,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:       element.ProvinceName,
 				Country:        element.CountryName,
 				Status:         status,
-				IsReview:isReview,
+				IsReview:       isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}
@@ -1274,7 +1362,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Province:           element.Province,
 				Country:            element.Country,
 				Status:             status,
-				IsReview:isReview,
+				IsReview:           isReview,
 			}
 			historyDto.Items = append(historyDto.Items, itemDto)
 		}

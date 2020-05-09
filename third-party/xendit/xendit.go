@@ -63,20 +63,19 @@ func (va *VirtualAccount) CreateFixedVA(ctx context.Context) (*xendit.VirtualAcc
 type CreditCard struct {
 	*card.Client
 	TokenID    string
+	AuthID     string
 	ExternalID string
 	Amount     float64
+	IsCapture  bool
 }
 
 func (cc *CreditCard) CreateCharge(ctx context.Context) (*xendit.CardCharge, error) {
 	data := &card.CreateChargeParams{
-		TokenID:          "",
-		ExternalID:       "",
-		Amount:           0,
-		AuthenticationID: "",
-		CardCVN:          "",
-		Capture:          nil,
-		Currency:         "",
-		IsRecurring:      nil,
+		TokenID:          cc.TokenID,
+		AuthenticationID: cc.AuthID,
+		ExternalID:       cc.ExternalID,
+		Amount:           cc.Amount,
+		Capture:          &cc.IsCapture,
 	}
 
 	resCc, err := cc.CreateChargeWithContext(ctx, data)

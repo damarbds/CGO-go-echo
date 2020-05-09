@@ -98,7 +98,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 		FileName: "Ticket.pdf",
 	}
 	if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
-		return nil
+		return err
 	}
 
 	return c.JSON(http.StatusOK, ResponseError{Message: "Xendit Callback Succeed"})

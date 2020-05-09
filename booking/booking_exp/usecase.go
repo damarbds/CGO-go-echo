@@ -16,5 +16,5 @@ type Usecase interface {
 	CountThisMonth(ctx context.Context) (*models.Count, error)
 	SendCharge(ctx context.Context, bookingCode, paymentType string) (map[string]interface{}, error)
 	Verify(ctx context.Context, orderId, bookingCode string) (map[string]interface{}, error)
-	XenPayment(ctx context.Context, orderId, paymentType string) (map[string]interface{}, error)
+	XenPayment(ctx context.Context, amount float64, tokenId, authId, orderId, paymentType string) (map[string]interface{}, error)
 }
