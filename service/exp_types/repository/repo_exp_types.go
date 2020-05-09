@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/models"
 	types "github.com/service/exp_types"
 	"github.com/sirupsen/logrus"
@@ -12,9 +13,7 @@ type expTypeRepository struct {
 	Conn *sql.DB
 }
 
-
-
-// NewExpTypeRepository will create an object that represent the exp_payment.Repository interface
+// NewExpTypeRepository will create an object that represent the exp_payment.repository interface
 func NewExpTypeRepository(Conn *sql.DB) types.Repository {
 	return &expTypeRepository{Conn}
 }
@@ -86,7 +85,7 @@ func (e *expTypeRepository) GetByName(ctx context.Context, name string) (*models
 		is_active = 1
 		AND is_deleted = 0 AND exp_type_name = ?`
 
-	list, err := e.fetch(ctx, query,name)
+	list, err := e.fetch(ctx, query, name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrNotFound

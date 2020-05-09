@@ -13,7 +13,7 @@ type paymentRepository struct {
 	Conn *sql.DB
 }
 
-// NewPaymentRepository will create an object that represent the article.Repository interface
+// NewPaymentRepository will create an object that represent the article.repository interface
 func NewPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &paymentRepository{Conn}
 }

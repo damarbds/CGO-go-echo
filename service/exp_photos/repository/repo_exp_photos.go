@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
-	guuid "github.com/google/uuid"
 	"time"
+
+	guuid "github.com/google/uuid"
 
 	"github.com/sirupsen/logrus"
 
@@ -21,7 +22,7 @@ type exp_photosRepository struct {
 	Conn *sql.DB
 }
 
-// Newexp_photosRepository will create an object that represent the article.Repository interface
+// Newexp_photosRepository will create an object that represent the article.repository interface
 func Newexp_photosRepository(Conn *sql.DB) exp_photos.Repository {
 	return &exp_photosRepository{Conn}
 }

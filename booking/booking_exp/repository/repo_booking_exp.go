@@ -19,7 +19,7 @@ type bookingExpRepository struct {
 	Conn *sql.DB
 }
 
-// NewMysqlArticleRepository will create an object that represent the article.Repository interface
+// NewMysqlArticleRepository will create an object that represent the article.repository interface
 func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }

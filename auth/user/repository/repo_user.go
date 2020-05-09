@@ -22,7 +22,7 @@ type userRepository struct {
 	Conn *sql.DB
 }
 
-// NewuserRepository will create an object that represent the article.Repository interface
+// NewuserRepository will create an object that represent the article.repository interface
 func NewuserRepository(Conn *sql.DB) user.Repository {
 	return &userRepository{Conn}
 }

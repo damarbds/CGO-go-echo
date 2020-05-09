@@ -22,7 +22,7 @@ type adminRepository struct {
 	Conn *sql.DB
 }
 
-// NewadminRepository will create an object that represent the article.Repository interface
+// NewadminRepository will create an object that represent the article.repository interface
 func NewadminRepository(Conn *sql.DB) admin.Repository {
 	return &adminRepository{Conn}
 }

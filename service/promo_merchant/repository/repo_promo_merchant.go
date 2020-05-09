@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/service/promo_merchant"
 	"github.com/sirupsen/logrus"
 
@@ -16,6 +17,7 @@ const (
 type promoMerchantRepository struct {
 	Conn *sql.DB
 }
+
 func (m *promoMerchantRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.PromoMerchant, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -36,7 +38,7 @@ func (m *promoMerchantRepository) fetch(ctx context.Context, query string, args 
 		err = rows.Scan(
 			&t.Id,
 			&t.PromoId,
-			&t.MerchantId ,
+			&t.MerchantId,
 		)
 
 		if err != nil {
@@ -48,9 +50,9 @@ func (m *promoMerchantRepository) fetch(ctx context.Context, query string, args 
 
 	return result, nil
 }
-func (m promoMerchantRepository) GetByMerchantId(ctx context.Context, merchantId string, promoId string) (res []*models.PromoMerchant,err error) {
+func (m promoMerchantRepository) GetByMerchantId(ctx context.Context, merchantId string, promoId string) (res []*models.PromoMerchant, err error) {
 	query := `SELECT * FROM promo_merchants WHERE promo_id= ?`
-	if merchantId != ""{
+	if merchantId != "" {
 		query = query + ` and merchant_id = '` + merchantId + `' `
 	}
 	list, err := m.fetch(ctx, query, promoId)
@@ -65,7 +67,7 @@ func (m promoMerchantRepository) GetByMerchantId(ctx context.Context, merchantId
 	return
 }
 
-// NewpromoRepository will create an object that represent the article.Repository interface
+// NewpromoRepository will create an object that represent the article.repository interface
 func NewpromoMerchantRepository(Conn *sql.DB) promo_merchant.Repository {
 	return &promoMerchantRepository{Conn}
 }
@@ -75,7 +77,7 @@ func (m promoMerchantRepository) Insert(ctx context.Context, a models.PromoMerch
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, a.PromoId,a.MerchantId)
+	_, err = stmt.ExecContext(ctx, a.PromoId, a.MerchantId)
 	if err != nil {
 		return err
 	}
@@ -89,7 +91,7 @@ func (m promoMerchantRepository) Insert(ctx context.Context, a models.PromoMerch
 	return nil
 }
 
-func (m promoMerchantRepository) DeleteByMerchantId(ctx context.Context, merchantId string,promoId string) error {
+func (m promoMerchantRepository) DeleteByMerchantId(ctx context.Context, merchantId string, promoId string) error {
 	query := "DELETE FROM promo_merchants WHERE merchant_id = ? AND promo_id=?"
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -97,12 +99,11 @@ func (m promoMerchantRepository) DeleteByMerchantId(ctx context.Context, merchan
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, merchantId,promoId)
+	_, err = stmt.ExecContext(ctx, merchantId, promoId)
 	if err != nil {
 
 		return err
 	}
-
 
 	return nil
 }
