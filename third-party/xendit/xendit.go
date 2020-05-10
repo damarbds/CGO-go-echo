@@ -13,8 +13,10 @@ import (
 var XenClient *client.API
 
 const (
-	defXenditSecretKey           = "xnd_development_Dms6iAkgd6b4p5f9jpLdP41uaCVBdCLPNqJ00XDiFQL0oIpsTZYVLlERGFnxi"
-	defXenditVerifyTokenCallback = "41a617f2a5fed878b48570432f3d5e1d68f49666e2fa22270a9c694532fba50a"
+	defXenditSecretKey = "xnd_development_Dms6iAkgd6b4p5f9jpLdP41uaCVBdCLPNqJ00XDiFQL0oIpsTZYVLlERGFnxi"
+
+	// Production
+	defXenditSecretKeyProd = "xnd_production_wUqt0xBrasJpktiTTgOgOIojpewhY455AGFik0AxizdVAL1pIUYBic8EGeStyDs"
 )
 
 func XenditSetup() {

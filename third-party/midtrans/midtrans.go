@@ -6,21 +6,27 @@ var Midclient midtrans.Client
 var CoreGateway midtrans.CoreGateway
 var SnapGateway midtrans.SnapGateway
 
-var (
+const (
 	MidtransServerKey   = "SB-Mid-server-GHKQBfmGEt_NfZLQSi_2nFzV"
 	MidtransClientKey   = "SB-Mid-client-g6CpjvcnJVhosUrt"
 	TransactionEndpoint = "https://app.sandbox.midtrans.com/snap/v1/transactions"
+
+	// Production
+	ProdMidtransServerKey   = "Mid-server-_ctQOnsKzxl7gY4FyWjboPgx"
+	ProdMidtransClientKey   = "Mid-client-hcjkcpg5p77ob8Mc"
+	ProdTransactionEndpoint = "https://app.midtrans.com/snap/v1/transactions"
 )
 
 func SetupMidtrans() {
 	Midclient = midtrans.NewClient()
 	Midclient.ServerKey = MidtransServerKey
 	Midclient.ClientKey = MidtransClientKey
+
+	// Dev or staging
 	Midclient.APIEnvType = midtrans.Sandbox
 
-	//if cfg.App.Server.Mode == "release" && cfg.App.Server.Environment == "production" {
-	//	Midclient.APIEnvType = midtrans.Production
-	//}
+	// Production, please uncomment code below if env is production
+	//Midclient.APIEnvType = midtrans.Production
 
 	CoreGateway = midtrans.CoreGateway{
 		Client: Midclient,
