@@ -63,7 +63,6 @@ type TransactionIn struct {
 	PaypalOrderId       string  `json:"paypal_order_id"`
 	CcTokenId           string  `json:"cc_token_id"`
 	CcAuthId            string  `json:"cc_auth_id"`
-	CcAmount            float64 `json:"cc_amount"`
 	PromoId             string  `json:"promo_id"`
 	PaymentMethodId     string  `json:"payment_method_id"`
 	ExperiencePaymentId string  `json:"experience_payment_id"`

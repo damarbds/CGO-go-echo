@@ -162,8 +162,8 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
-	} else if *pm.MidtransPaymentCode == "cc" || (t.CcAmount != 0 && t.CcAuthId != "" && t.CcTokenId != "") {
-		data, err = p.bookingUsecase.XenPayment(ctx, t.CcAmount, t.CcTokenId, t.CcAuthId, bookingCode, *pm.MidtransPaymentCode)
+	} else if *pm.MidtransPaymentCode == "cc" || (t.CcAuthId != "" && t.CcTokenId != "") {
+		data, err = p.bookingUsecase.XenPayment(ctx, t.TotalPrice, t.CcTokenId, t.CcAuthId, bookingCode, *pm.MidtransPaymentCode)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

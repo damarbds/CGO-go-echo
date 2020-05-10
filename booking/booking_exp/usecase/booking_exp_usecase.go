@@ -114,7 +114,7 @@ func (b bookingExpUsecase) XenPayment(ctx context.Context, amount float64, token
 		result = structToMap(resVA)
 	}
 
-	if paymentType == "cc" || (amount != 0 && authId != "" && tokenId != "") {
+	if paymentType == "cc" || (authId != "" && tokenId != "") {
 		cc := &xendit.CreditCard{
 			Client:     xendit.XenClient.Card,
 			TokenID:    tokenId,
