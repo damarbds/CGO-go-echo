@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"math"
 	"time"
 
@@ -224,26 +225,26 @@ func (m merchantUsecase) Update(c context.Context, ar *models.NewCommandMerchant
 		currentUser = currentUsers.MerchantEmail
 	}
 
-	updateUser := models.RegisterAndUpdateUser{
-		Id:            ar.Id,
-		Username:      ar.MerchantEmail,
-		Password:      ar.MerchantPassword,
-		Name:          ar.MerchantName,
-		GivenName:     "",
-		FamilyName:    "",
-		Email:         ar.MerchantEmail,
-		EmailVerified: false,
-		Website:       "",
-		Address:       "",
-		OTP:           "",
-		UserType:      2,
-		PhoneNumber:   ar.PhoneNumber,
-		UserRoles:     nil,
-	}
-	_, err := m.identityServerUc.UpdateUser(&updateUser)
-	if err != nil {
-		return err
-	}
+	//updateUser := models.RegisterAndUpdateUser{
+	//	Id:            ar.Id,
+	//	Username:      ar.MerchantEmail,
+	//	Password:      ar.MerchantPassword,
+	//	Name:          ar.MerchantName,
+	//	GivenName:     "",
+	//	FamilyName:    "",
+	//	Email:         ar.MerchantEmail,
+	//	EmailVerified: false,
+	//	Website:       "",
+	//	Address:       "",
+	//	OTP:           "",
+	//	UserType:      2,
+	//	PhoneNumber:   ar.PhoneNumber,
+	//	UserRoles:     nil,
+	//}
+	//_, err := m.identityServerUc.UpdateUser(&updateUser)
+	//if err != nil {
+	//	return err
+	//}
 
 	merchant := models.Merchant{}
 	merchant.Id = ar.Id
@@ -269,29 +270,30 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		return models.ErrConflict
 	}
 	//var roles []string
-	registerUser := models.RegisterAndUpdateUser{
-		Id:            "",
-		Username:      ar.MerchantEmail,
-		Password:      ar.MerchantPassword,
-		Name:          ar.MerchantName,
-		GivenName:     "",
-		FamilyName:    "",
-		Email:         ar.MerchantEmail,
-		EmailVerified: false,
-		Website:       "",
-		Address:       "",
-		OTP:           "",
-		UserType:      2,
-		PhoneNumber:   ar.PhoneNumber,
-		UserRoles:     nil,
-	}
-	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
-	ar.Id = isUser.Id
-	if errorIs != nil {
-		return errorIs
-	}
+	//registerUser := models.RegisterAndUpdateUser{
+	//	Id:            "",
+	//	Username:      ar.MerchantEmail,
+	//	Password:      ar.MerchantPassword,
+	//	Name:          ar.MerchantName,
+	//	GivenName:     "",
+	//	FamilyName:    "",
+	//	Email:         ar.MerchantEmail,
+	//	EmailVerified: false,
+	//	Website:       "",
+	//	Address:       "",
+	//	OTP:           "",
+	//	UserType:      2,
+	//	PhoneNumber:   ar.PhoneNumber,
+	//	UserRoles:     nil,
+	//}
+	//isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
+
+	//if errorIs != nil {
+	//	return errorIs
+	//}
+	ar.Id = uuid.New().String()
 	merchant := models.Merchant{}
-	merchant.Id = isUser.Id
+	merchant.Id = ar.Id
 	merchant.CreatedBy = currentUserAdmin.Name
 	merchant.MerchantName = ar.MerchantName
 	merchant.MerchantDesc = ar.MerchantDesc
@@ -334,12 +336,14 @@ func (m merchantUsecase) GetDetailMerchantById(c context.Context, id string, tok
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	getUserIdentity, err := m.identityServerUc.GetDetailUserById(id, token, "true")
-	if err != nil {
-		return nil, err
-	}
+	//getUserIdentity, err := m.identityServerUc.GetDetailUserById(id, token, "true")
+	//if err != nil {
+	//	return nil, err
+	//}
 	getMerchant, err := m.merchantRepo.GetByID(ctx, id)
-
+	if err != nil {
+		return nil, models.ErrNotFound
+	}
 	result := models.MerchantDto{
 		Id:              getMerchant.Id,
 		CreatedDate:     getMerchant.CreatedDate,
@@ -348,7 +352,7 @@ func (m merchantUsecase) GetDetailMerchantById(c context.Context, id string, tok
 		MerchantName:    getMerchant.MerchantName,
 		MerchantDesc:    getMerchant.MerchantDesc,
 		MerchantEmail:   getMerchant.MerchantEmail,
-		Password:        getUserIdentity.Password,
+		Password:       "",
 		Balance:         getMerchant.Balance,
 		PhoneNumber:     getMerchant.PhoneNumber,
 		MerchantPicture: getMerchant.MerchantPicture,
