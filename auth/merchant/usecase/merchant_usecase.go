@@ -194,6 +194,7 @@ func (m merchantUsecase) GetMerchantInfo(ctx context.Context, token string) (*mo
 	getMerchant,_ := m.merchantRepo.GetByID(ctx,existedMerchant.MerchantId)
 	merchantInfo := models.MerchantInfoDto{
 		Id:            existedMerchant.MerchantId,
+		UserMerchantId:existedMerchant.Id,
 		MerchantName:  existedMerchant.FullName,
 		MerchantDesc:  getMerchant.MerchantDesc,
 		MerchantEmail: existedMerchant.Email,
