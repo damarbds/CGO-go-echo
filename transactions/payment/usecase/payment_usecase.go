@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com/auth/identityserver"
 	"time"
 
 	"github.com/misc/notif"
@@ -14,6 +15,7 @@ import (
 )
 
 type paymentUsecase struct {
+	isUsecase  identityserver.Usecase
 	transactionRepo  transaction.Repository
 	notificationRepo notif.Repository
 	paymentRepo      payment.Repository
@@ -24,8 +26,9 @@ type paymentUsecase struct {
 }
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(isUsecase identityserver.Usecase,t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
+		isUsecase:isUsecase,
 		transactionRepo:  t,
 		notificationRepo: n,
 		paymentRepo:      p,
@@ -105,6 +108,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		}
 	}
 
+
 	return res.Id, nil
 }
 
@@ -139,5 +143,33 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 	if pushNotifErr != nil {
 		return nil
 	}
+	if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
+		//confirm
+		msg := "<p>This is your order id " + *getTransaction.OrderId + "</p>"
+		pushEmail := &models.SendingEmail{
+			Subject:  "E-Ticket cGO",
+			Message:  msg,
+			From:     "CGO Indonesia",
+			To:       getTransaction.CreatedBy,
+			FileName: "Ticket.pdf",
+		}
+		if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+			return nil
+		}
+	}else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
+		//cancelled
+		msg := "<p>This is your order id " + *getTransaction.OrderId + " is Cancelled </p>"
+		pushEmail := &models.SendingEmail{
+			Subject:  "Failed Payment",
+			Message:  msg,
+			From:     "CGO Indonesia",
+			To:        getTransaction.CreatedBy,
+			FileName: "",
+		}
+		if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+			return nil
+		}
+	}
+
 	return nil
 }

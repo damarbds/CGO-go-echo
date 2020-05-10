@@ -277,29 +277,53 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				transactionStatus = 1
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
+				//maxTime := time.Now().AddDate(0,0,1)
+				//msg := "<h1>" + bookingDetail.Experience[0].ExpTitle + "</h1><p>Trip Dates :" + bookingDetail.BookingDate.Format("2006-01-01") + "</p><p>Waiting for Approval Max Time:" + maxTime.Format("2006-01-02 15:04:05")+"</p><p>Price :" + strconv.FormatFloat(*bookingDetail.TotalPrice, 'f', 6, 64) + "</p>"
+				//pushEmail := &models.SendingEmail{
+				//	Subject:  "Waiting Approval For Merchant",
+				//	Message:  msg,
+				//	From:     "CGO Indonesia",
+				//	To:      bookedBy[0].Email,
+				//	FileName: "",
+				//}
+				//if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+				//	return nil,err
+				//}
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
+				msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
+				pushEmail := &models.SendingEmail{
+					Subject:  "E-Ticket cGO",
+					Message:  msg,
+					From:     "CGO Indonesia",
+					To:       bookedBy[0].Email,
+					FileName: "Ticket.pdf",
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil, nil
+				}
 			}
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.OrderId); err != nil {
 				return nil, err
 			}
 		} else {
+			msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
+			pushEmail := &models.SendingEmail{
+				Subject:  "E-Ticket cGO",
+				Message:  msg,
+				From:     "CGO Indonesia",
+				To:       bookedBy[0].Email,
+				FileName: "Ticket.pdf",
+			}
+			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+				return nil, nil
+			}
 			transactionStatus = 2
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.OrderId); err != nil {
 				return nil, err
 			}
 		}
-		msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
-		pushEmail := &models.SendingEmail{
-			Subject:  "E-Ticket cGO",
-			Message:  msg,
-			From:     "CGO Indonesia",
-			To:       bookedBy[0].Email,
-			FileName: "Ticket.pdf",
-		}
-		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-			return nil, nil
-		}
+
 	}
 
 	var bookCode string

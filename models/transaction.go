@@ -48,6 +48,7 @@ type TransactionWMerchant struct {
 	OrderIdBook         string     `json:"order_id_book"`
 	BookedBy            string     `json:"booked_by"`
 	ExpTitle            string     `json:"exp_title"`
+	BookingDate         time.Time  `json:"booking_date"`
 }
 
 type PaymentTransaction struct {

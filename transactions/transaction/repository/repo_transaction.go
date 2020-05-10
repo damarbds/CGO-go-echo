@@ -352,6 +352,7 @@ func (t transactionRepository) fetch(ctx context.Context, query string, args ...
 			&t.OrderIdBook,
 			&t.BookedBy,
 			&t.ExpTitle,
+			&t.BookingDate,
 		)
 
 		if err != nil {
@@ -467,7 +468,7 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 }
 
 func (m transactionRepository) GetById(ctx context.Context, id string) (*models.TransactionWMerchant, error) {
-	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title FROM transactions t
+	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title,b.booking_date FROM transactions t
 				join booking_exps b on t.booking_exp_id = b.id
 				join experiences e on b.exp_id = e.id WHERE t.id = ?`
 
