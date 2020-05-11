@@ -169,7 +169,7 @@ func (a *userMerchantHandler) List(c echo.Context) error {
 		}
 		return c.JSON(http.StatusOK, result)
 	}else {
-		result, err := a.userMerchantUsecase.List(ctx, page, limit, offset, token,search)
+		result, err := a.userMerchantUsecase.List(ctx, page, limit, offset, search,token)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
