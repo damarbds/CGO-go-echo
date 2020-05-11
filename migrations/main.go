@@ -10,10 +10,16 @@ import (
 )
 
 func main() {
-	db, err := gorm.Open("mysql", "AdminCgo@api-blog-cgo-mysqldbserver:Standar123.@(api-blog-cgo-mysqldbserver.mysql.database.azure.com)/cgo_indonesia?charset=utf8&parseTime=True&loc=Local")
+	//prd
+	db, err := gorm.Open("mysql", "admincgo@cgo-indonesia-prod:k_)V/p53u9z.V{C,@(cgo-indonesia-prod.mysql.database.azure.com)/cgo_indonesia?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// db, err := gorm.Open("mysql", "AdminCgo@api-blog-cgo-mysqldbserver:Standar123.@(api-blog-cgo-mysqldbserver.mysql.database.azure.com)/cgo_indonesia?charset=utf8&parseTime=True&loc=Local")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
 	//user := model.Currency{}
@@ -26,11 +32,11 @@ func main() {
 	//
 	//	db.Create(&migration)
 	//}
-	transportationdestid := model.Transaction{}
+	transportationdestid := model.Experience{}
 	errortransportationdestid := db.AutoMigrate(&transportationdestid)
 	if errortransportationdestid != nil {
 		migration := model.MigrationHistory{
-			DescMigration: "alter table currency add column va_number",
+			DescMigration: "alter table currency add column IsCustomisedByUser",
 			Date:          time.Now(),
 		}
 
