@@ -22,7 +22,6 @@ const (
 type experienceRepository struct {
 	Conn *sql.DB
 }
-
 // NewexperienceRepository will create an object that represent the article.repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
@@ -843,7 +842,8 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 				exp_desc=?,exp_max_guest=?,exp_pickup_place=?,exp_pickup_time=?,exp_pickup_place_longitude=?,
 				exp_pickup_place_latitude=?,exp_pickup_place_maps_name=?,exp_itinerary=?,exp_facilities=?,exp_inclusion=?,
 				exp_rules=?,status=?,rating=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
-				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=?`
+				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=?,exp_payment_deadline_amount=?,
+				exp_payment_deadline_type=?,is_customised_by_user=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -852,7 +852,8 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 		a.ExpBookingType, a.ExpDesc, a.ExpMaxGuest, a.ExpPickupPlace, a.ExpPickupTime, a.ExpPickupPlaceLongitude,
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.Rating, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
-		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId)
+		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId,a.ExpPaymentDeadlineAmount,
+		a.ExpPaymentDeadlineType,a.IsCustomisedByUser)
 	if err != nil {
 		return nil, err
 	}
@@ -893,8 +894,8 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 				exp_desc=?,exp_max_guest=?,exp_pickup_place=?,exp_pickup_time=?,exp_pickup_place_longitude=?,
 				exp_pickup_place_latitude=?,exp_pickup_place_maps_name=?,exp_itinerary=?,exp_facilities=?,exp_inclusion=?,
 				exp_rules=?,status=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
-				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=? 
-				WHERE id=?`
+				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=? ,exp_payment_deadline_amount=?,
+				exp_payment_deadline_type=?,is_customised_by_user=? WHERE id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -903,7 +904,8 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 		a.ExpBookingType, a.ExpDesc, a.ExpMaxGuest, a.ExpPickupPlace, a.ExpPickupTime, a.ExpPickupPlaceLongitude,
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
-		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.Id)
+		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId,a.ExpPaymentDeadlineAmount,
+		a.ExpPaymentDeadlineType,a.IsCustomisedByUser, a.Id)
 	if err != nil {
 		return nil, err
 	}

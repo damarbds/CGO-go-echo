@@ -166,15 +166,22 @@ type NewCommandExperience struct {
 	ExpPhotos               []ExpPhotosObj        `json:"exp_photos"`
 	ExperienceAddOn         []ExperienceAddOnObj  `json:"experience_add_on"`
 	Status                  int                   `json:"status"`
-	//Rating                  float64               `json:"rating"`
 	ExpLocationLatitude  float64 `json:"exp_location_latitude"`
 	ExpLocationLongitude float64 `json:"exp_location_longitude"`
 	ExpLocationName      string  `json:"exp_location_name"`
 	ExpCoverPhoto        *string `json:"exp_cover_photo"`
 	ExpDuration          int     `json:"exp_duration"`
 	MinimumBookingId     string  `json:"minimum_booking_id"`
-	//MerchantId              string                `json:"merchant_id"`
 	HarborsId string `json:"harbors_id"`
+	ExpPaymentDeadlineAmount int `json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType string	`json:"exp_payment_deadline_type"`
+	IsCustomisedByUser int 		`json:"is_customised_by_user"`
+	
+}
+type CustomPrice struct {
+	Currency	string 		`json:"currency"`
+	Price 		float64		`json:"price"`
+	Guest 		int 		`json:"guest"`
 }
 type MinimumBookingObj struct {
 	MinimumBookingDesc   string `json:"minimum_booking_desc"`
@@ -201,6 +208,7 @@ type ExpPaymentObj struct {
 	PaymentTypeId   string  `json:"payment_type_id"`
 	PaymentTypeName string  `json:"payment_type_name"`
 	PaymentTypeDesc string  `json:"payment_type_desc"`
+	CustomPrice    []CustomPrice	`json:"custom_price"`
 }
 type ExpPhotosObj struct {
 	Id            string           `json:"id"`

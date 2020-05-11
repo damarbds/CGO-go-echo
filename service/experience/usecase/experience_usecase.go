@@ -927,6 +927,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		MinimumBookingId:        &commandExperience.MinimumBookingId,
 		MerchantId:              currentUserMerchant.Id,
 		HarborsId:               &commandExperience.HarborsId,
+		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
+		ExpPaymentDeadlineType : &commandExperience.ExpPaymentDeadlineType,
+		IsCustomisedByUser : &commandExperience.IsCustomisedByUser,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -997,6 +1000,12 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		} else {
 			currency = 0
 		}
+		var customPriceJson string
+		if len(element.CustomPrice) != 0 {
+			customPrice, _ := json.Marshal(element.CustomPrice)
+			customPriceJson = string(customPrice)
+		}
+
 		payments := models.ExperiencePayment{
 			Id:               "",
 			CreatedBy:        currentUserMerchant.MerchantEmail,
@@ -1012,7 +1021,7 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 			PriceItemType:    priceItemType,
 			Currency:         currency,
 			Price:            element.Price,
-			CustomPrice:      nil,
+			CustomPrice:      &customPriceJson,
 		}
 
 		id, err := m.paymentRepo.Insert(ctx, payments)
@@ -1139,6 +1148,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		MinimumBookingId:        &commandExperience.MinimumBookingId,
 		MerchantId:              currentUserMerchant.Id,
 		HarborsId:               &commandExperience.HarborsId,
+		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
+		ExpPaymentDeadlineType : &commandExperience.ExpPaymentDeadlineType,
+		IsCustomisedByUser : &commandExperience.IsCustomisedByUser,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1238,6 +1250,11 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			} else {
 				currency = 0
 			}
+			var customPriceJson string
+			if len(element.CustomPrice) != 0 {
+				customPrice, _ := json.Marshal(element.CustomPrice)
+				customPriceJson = string(customPrice)
+			}
 			payments := models.ExperiencePayment{
 				Id:               "",
 				CreatedBy:        currentUserMerchant.MerchantEmail,
@@ -1253,7 +1270,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 				PriceItemType:    priceItemType,
 				Currency:         currency,
 				Price:            element.Price,
-				CustomPrice:      nil,
+				CustomPrice:      &customPriceJson,
 			}
 
 			id, err := m.paymentRepo.Insert(ctx, payments)
@@ -1514,6 +1531,13 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		} else {
 			priceItemType = "Per Trip"
 		}
+		customPrice := make([]models.CustomPrice,0)
+		if elementPayment.CustomPrice != nil {
+			errObject := json.Unmarshal([]byte(*elementPayment.CustomPrice), &customPrice)
+			if errObject != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
 		expPayobj := models.ExpPaymentObj{
 			Id:              elementPayment.Id,
 			Currency:        currency,
@@ -1522,6 +1546,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 			PaymentTypeId:   elementPayment.ExpPaymentTypeId,
 			PaymentTypeName: elementPayment.ExpPaymentTypeName,
 			PaymentTypeDesc: elementPayment.ExpPaymentTypeDesc,
+			CustomPrice:customPrice,
 		}
 		expPayment = append(expPayment, expPayobj)
 	}
@@ -1638,6 +1663,9 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		ServiceReview : res.ServiceReview,
 		CleanlinessReview : res.CleanlinessReview,
 		ValueReview :res.ValueReview,
+		ExpPaymentDeadlineAmount: res.ExpPaymentDeadlineAmount,
+		ExpPaymentDeadlineType : res.ExpPaymentDeadlineType,
+		IsCustomisedByUser : res.IsCustomisedByUser,
 	}
 	return &experiences, nil
 }
