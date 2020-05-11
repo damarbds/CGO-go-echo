@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/auth/identityserver"
+	"strconv"
 	"time"
 
 	"github.com/misc/notif"
@@ -145,7 +146,13 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 	}
 	if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 		//confirm
-		msg := "<p>This is your order id " + *getTransaction.OrderId + "</p>"
+		bookingDetail, err := p.bookingRepo.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
+		if err != nil {
+			return err
+		}
+		msg := "<h1>" + *bookingDetail.ExpTitle + "</h1>" +
+			"<p>Trip Dates :" + bookingDetail.BookingDate.Format("2006-01-01") + "</p>" +
+			"<p>Price :" + strconv.FormatFloat(*bookingDetail.TotalPrice, 'f', 6, 64) + "</p>"
 		pushEmail := &models.SendingEmail{
 			Subject:  "E-Ticket cGO",
 			Message:  msg,
@@ -158,7 +165,13 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		}
 	}else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
 		//cancelled
-		msg := "<p>This is your order id " + *getTransaction.OrderId + " is Cancelled </p>"
+		bookingDetail, err := p.bookingRepo.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
+		if err != nil {
+			return err
+		}
+		msg := "<h1>" + *bookingDetail.ExpTitle + "</h1>" +
+			"<p>Trip Dates :" + bookingDetail.BookingDate.Format("2006-01-01") + "</p>" +
+			"<p>Price :" + strconv.FormatFloat(*bookingDetail.TotalPrice, 'f', 6, 64) + "</p>"
 		pushEmail := &models.SendingEmail{
 			Subject:  "Failed Payment",
 			Message:  msg,
