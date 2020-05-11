@@ -12,9 +12,9 @@ const (
 	TransactionEndpoint = "https://app.sandbox.midtrans.com/snap/v1/transactions"
 
 	// Production
-	ProdMidtransServerKey   = "Mid-server-_ctQOnsKzxl7gY4FyWjboPgx"
-	ProdMidtransClientKey   = "Mid-client-hcjkcpg5p77ob8Mc"
-	ProdTransactionEndpoint = "https://app.midtrans.com/snap/v1/transactions"
+	// MidtransServerKey   = "Mid-server-_ctQOnsKzxl7gY4FyWjboPgx"
+	// MidtransClientKey   = "Mid-client-hcjkcpg5p77ob8Mc"
+	// TransactionEndpoint = "https://app.midtrans.com/snap/v1/transactions"
 )
 
 func SetupMidtrans() {

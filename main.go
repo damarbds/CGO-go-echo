@@ -9,6 +9,7 @@ import (
 	"time"
 
 	_merchantUcase "github.com/auth/merchant/usecase"
+	"github.com/booking/booking_exp"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
@@ -156,12 +157,26 @@ func main() {
 	// dbName := viper.GetString(`database.name`)
 	// baseUrlis := viper.GetString(`identityServer.baseUrl`)
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
+
+	//dev
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
 	dbPort := "3306"
 	dbUser := "AdminCgo@api-blog-cgo-mysqldbserver"
 	dbPass := "Standar123."
 	dbName := "cgo_indonesia"
+
+	//prd db
+	//dbHost := "cgo-indonesia-prod.mysql.database.azure.com"
+	//dbPort := "3306"
+	//dbUser := "admincgo@cgo-indonesia-prod"
+	//dbPass := "k_)V/p53u9z.V{C,"
+	//dbName := "cgo_indonesia"
+
+	//dev
 	baseUrlis := "http://identity-server-cgo-indonesia.azurewebsites.net"
+	//prd
+	//baseUrlis := "https://identity-server-cgo-prod.azurewebsites.net"
+
 	basicAuth := "cm9jbGllbnQ6c2VjcmV0"
 	accountStorage := "cgostorage"
 	accessKeyStorage := "OwvEOlzf6e7QwVoV0H75GuSZHpqHxwhYnYL9QbpVPgBRJn+26K26aRJxtZn7Ip5AhaiIkw9kH11xrZSscavXfQ=="
@@ -267,8 +282,8 @@ func main() {
 	)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
-	paymentUsecase := _paymentUcase.NewPaymentUsecase(isUsecase,transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(reviewsRepo,experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
+	paymentUsecase := _paymentUcase.NewPaymentUsecase(isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(adminUsecase, facilityRepo, timeoutContext)
@@ -311,5 +326,28 @@ func main() {
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
 	_xenditHttpHandler.NewXenditHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 
+	//go Scheduler(bookingExpUcase)
+
 	log.Fatal(e.Start(":9090"))
+}
+func Scheduler(bookingUsecase booking_exp.Usecase) {
+	done := make(chan bool)
+	ticker := time.NewTicker(time.Second * 60)
+	go func() {
+		for {
+			select {
+			case <-done:
+				ticker.Stop()
+				return
+			case <-ticker.C:
+				bookingUsecase.RemainingPaymentNotification()
+				// fmt.Println("Current time: ", t)
+			}
+		}
+	}()
+
+	// wait for 10 seconds
+	time.Sleep(1 * time.Minute)
+	done <- true
+
 }

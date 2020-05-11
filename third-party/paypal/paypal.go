@@ -51,10 +51,10 @@ const (
 	PaypalOrderUrl       = "https://api.sandbox.paypal.com/v2/checkout/orders/"
 
 	// Production
-	defClientIDProd    = "Aer1l0Q_pqnw_S0Opw-Qd2VMEPWFuDD05xW6hGC1VhAv4NnKvnSi6JS93B5ZGDO1HYqRHNFTerjo4Aos"
-	defSecretKeyProd   = "EIhYAOGV5EIHWfQ85aRo0KopugZmDyUTx3fZp9nWXGJ5EYwZ3VzRirm6BDphz-U7PGzBSrEDYpNd5MBZ"
-	ProdPaypalOauthUrl = "https://api.paypal.com/v1/oauth2/token/"
-	ProdPaypalOrderUrl = "https://api.paypal.com/v2/checkout/orders/"
+	// defClientID    = "Aer1l0Q_pqnw_S0Opw-Qd2VMEPWFuDD05xW6hGC1VhAv4NnKvnSi6JS93B5ZGDO1HYqRHNFTerjo4Aos"
+	// defSecretKey   = "EIhYAOGV5EIHWfQ85aRo0KopugZmDyUTx3fZp9nWXGJ5EYwZ3VzRirm6BDphz-U7PGzBSrEDYpNd5MBZ"
+	// PaypalOauthUrl = "https://api.paypal.com/v1/oauth2/token/"
+	// PaypalOrderUrl = "https://api.paypal.com/v2/checkout/orders/"
 )
 
 func AuthPaypal(paypalOauthUrl string) (string, error) {

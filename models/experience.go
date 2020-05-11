@@ -42,6 +42,9 @@ type Experience struct {
 	ServiceReview *float64		`json:"service_review"`
 	CleanlinessReview *float64	`json:"cleanliness_review"`
 	ValueReview *float64		`json:"value_review"`
+	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
+	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
 }
 type ExperienceJoinForegnKey struct {
 	Id                      string     `json:"id" validate:"required"`
@@ -83,6 +86,9 @@ type ExperienceJoinForegnKey struct {
 	ServiceReview *float64		`json:"service_review"`
 	CleanlinessReview *float64	`json:"cleanliness_review"`
 	ValueReview *float64		`json:"value_review"`
+	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
+	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
 	MinimumBookingAmount    *int       `json:"minimum_booking_amount"`
 	MinimumBookingDesc      string     `json:"minimum_booking_desc"`
 }
@@ -125,6 +131,9 @@ type ExperienceDto struct {
 	ServiceReview *float64		`json:"service_review"`
 	CleanlinessReview *float64	`json:"cleanliness_review"`
 	ValueReview *float64		`json:"value_review"`
+	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
+	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
 }
 type ResponseCreateExperience struct {
 	Id      string `json:"id"`
@@ -315,6 +324,9 @@ type ExpUserDiscoverPreference struct {
 	ServiceReview *float64		`json:"service_review"`
 	CleanlinessReview *float64	`json:"cleanliness_review"`
 	ValueReview *float64		`json:"value_review"`
+	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
+	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
 }
 
 type ExpUserDiscoverPreferenceDto struct {

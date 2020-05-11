@@ -16,7 +16,7 @@ const (
 	defXenditSecretKey = "xnd_development_Dms6iAkgd6b4p5f9jpLdP41uaCVBdCLPNqJ00XDiFQL0oIpsTZYVLlERGFnxi"
 
 	// Production
-	defXenditSecretKeyProd = "xnd_production_wUqt0xBrasJpktiTTgOgOIojpewhY455AGFik0AxizdVAL1pIUYBic8EGeStyDs"
+	// defXenditSecretKey = "xnd_production_wUqt0xBrasJpktiTTgOgOIojpewhY455AGFik0AxizdVAL1pIUYBic8EGeStyDs"
 )
 
 func XenditSetup() {
