@@ -157,8 +157,12 @@ func main() {
 	// dbName := viper.GetString(`database.name`)
 	// baseUrlis := viper.GetString(`identityServer.baseUrl`)
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
-
-	baseUrlLocal := "http://localhost:9090"
+	//dev
+	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
+	//prd
+	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
+	//local
+	// baseUrlLocal := "http://localhost:9090"
 
 	//dev
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
@@ -343,7 +347,7 @@ func Scheduler(baseUrl string) {
 				return
 			case <-ticker.C:
 				time.Sleep(time.Hour * 24)
-				req, err := http.NewRequest("POST", baseUrl +"/booking/remaining-payment-booking", nil)
+				req, err := http.NewRequest("POST", baseUrl+"/booking/remaining-payment-booking", nil)
 
 				if err != nil {
 					fmt.Println("Error : ", err.Error())
