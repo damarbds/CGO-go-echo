@@ -135,6 +135,11 @@ import (
 	_currencyMasterUsecase "github.com/service/currency/usecase"
 
 	_xenditHttpHandler "github.com/third-party/xendit/delivery/http"
+
+	_minimumBookingHttpHandler "github.com/service/minimum_booking/delivery/http"
+	_minimumBookingRepo "github.com/service/minimum_booking/repository"
+	_minimumBookingUsecase "github.com/service/minimum_booking/usecase"
+
 )
 
 // func init() {
@@ -221,6 +226,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	minimumBookingRepo := _minimumBookingRepo.NewMinimumBookingRepository(dbConn)
 	tempUserPreferenceRepo := _tempUserPreferenceRepo.NewtempUserPreferencesRepository(dbConn)
 	promoMerchantRepo := _promoMerchantRepo.NewpromoMerchantRepository(dbConn)
 	filterActivityTypeRepo := _filterActivityTypeRepo.NewFilterActivityTypeRepository(dbConn)
@@ -301,7 +307,9 @@ func main() {
 	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 	currencyMasterUcase := _currencyMasterUsecase.NewCurrencyUsecase(adminUsecase, currencyMasterRepo, timeoutContext)
 	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase, cpcRepo, timeoutContext)
+	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo,timeoutContext)
 
+	_minimumBookingHttpHandler.NewminimumBookingHandler(e,minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
 	_currencyMasterHttpHandler.NewCurrencyHandler(e, currencyMasterUcase)
 	_userMerchantHttpDeliver.NewuserMerchantHandler(e, userMerchantUcase)

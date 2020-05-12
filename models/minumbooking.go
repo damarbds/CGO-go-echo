@@ -15,3 +15,14 @@ type MinimumBooking struct {
 	MinimumBookingDesc   string     `json:"minimum_booking_desc"`
 	MinimumBookingAmount int        `json:"minimum_booking_amount"`
 }
+
+type MinimumBookingDto struct {
+	Id                   string     `json:"id" validate:"required"`
+	MinimumBookingDesc   string     `json:"minimum_booking_desc"`
+	MinimumBookingAmount int        `json:"minimum_booking_amount"`
+}
+
+type MinimumBookingDtoWithPagination struct {
+	Data []*MinimumBookingDto `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
+}
