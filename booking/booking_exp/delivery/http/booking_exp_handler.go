@@ -28,6 +28,7 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	handler := &booking_expHandler{
 		booking_expUsecase: us,
 	}
+	e.POST("booking/remaining-payment-booking", handler.RemainingPaymentBooking)
 	e.POST("booking/checkout", handler.CreateBooking)
 	e.GET("booking/detail/:id", handler.GetDetail)
 	e.GET("booking/my", handler.GetMyBooking)
@@ -182,7 +183,6 @@ func (a *booking_expHandler) GetHistoryBookingByUser(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, result)
 }
-
 func (a *booking_expHandler) GetDetail(c echo.Context) error {
 	id := c.Param("id")
 
@@ -204,6 +204,19 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 	} else {
 		return c.JSON(http.StatusOK, result)
 	}
+}
+func (a *booking_expHandler) RemainingPaymentBooking(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err := a.booking_expUsecase.RemainingPaymentNotification(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, true)
+
 }
 
 // Store will store the booking_exp by given request body

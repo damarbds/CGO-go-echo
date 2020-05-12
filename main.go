@@ -1,16 +1,16 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"time"
 
 	_merchantUcase "github.com/auth/merchant/usecase"
-	"github.com/booking/booking_exp"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 	_echoMiddleware "github.com/labstack/echo/middleware"
@@ -157,6 +157,8 @@ func main() {
 	// dbName := viper.GetString(`database.name`)
 	// baseUrlis := viper.GetString(`identityServer.baseUrl`)
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
+
+	baseUrlLocal := "http://localhost:9090"
 
 	//dev
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
@@ -326,13 +328,13 @@ func main() {
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
 	_xenditHttpHandler.NewXenditHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 
-	//go Scheduler(bookingExpUcase)
+	go Scheduler(baseUrlLocal)
 
 	log.Fatal(e.Start(":9090"))
 }
-func Scheduler(bookingUsecase booking_exp.Usecase) {
+func Scheduler(baseUrl string) {
 	done := make(chan bool)
-	ticker := time.NewTicker(time.Second * 60)
+	ticker := time.NewTicker(time.Second)
 	go func() {
 		for {
 			select {
@@ -340,8 +342,27 @@ func Scheduler(bookingUsecase booking_exp.Usecase) {
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				bookingUsecase.RemainingPaymentNotification()
-				// fmt.Println("Current time: ", t)
+				time.Sleep(time.Hour * 24)
+				req, err := http.NewRequest("POST", baseUrl +"/booking/remaining-payment-booking", nil)
+
+				if err != nil {
+					fmt.Println("Error : ", err.Error())
+					os.Exit(1)
+				}
+
+				tr := &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}
+
+				client := &http.Client{Transport: tr}
+
+				resp, err := client.Do(req)
+				if err != nil {
+					fmt.Println("Error : ", err.Error())
+					os.Exit(1)
+				}
+				fmt.Println(resp.Body)
+				fmt.Println("Current time: ", time.Now().String())
 			}
 		}
 	}()

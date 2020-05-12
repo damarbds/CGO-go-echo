@@ -52,10 +52,6 @@ type bookingExpUsecase struct {
 	contextTimeout            time.Duration
 }
 
-func (b bookingExpUsecase) RemainingPaymentNotification() {
-
-}
-
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -70,6 +66,39 @@ func NewbookingExpUsecase(reviewRepo reviews.Repository, adOnsRepo experience_ad
 		transactionRepo:           tr,
 		contextTimeout:            timeout,
 	}
+}
+
+func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context)error {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+	list , err := b.transactionRepo.GetTransactionDownPaymentByDate(ctx)
+	if err != nil {
+		return err
+	}
+	for _, element := range list {
+		var bookedBy []models.BookedByObj
+		if element.BookedBy != "" {
+			if errUnmarshal := json.Unmarshal([]byte(element.BookedBy), &bookedBy); errUnmarshal != nil {
+				return  err
+			}
+		}
+		msg := "<h1>" + element.ExpTitle + "</h1>" +
+			"<p>Trip Dates :" + element.BookingDate.Format("2006-01-01") + "</p>" +
+			"<p>Price :" + strconv.FormatFloat(element.Price, 'f', 6, 64) + "</p>" +
+			"<p>Remaining Payment Price :" + strconv.FormatFloat(element.TotalPrice, 'f', 6, 64) + "</p>"
+		pushEmail := &models.SendingEmail{
+			Subject:  "Remaining Payment",
+			Message:  msg,
+			From:     "CGO Indonesia",
+			To:       element.BookedByEmail,
+			FileName: "",
+		}
+		_, err = b.isUsecase.SendingEmail(pushEmail)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b bookingExpUsecase) XenPayment(ctx context.Context, amount float64, tokenId, authId, orderId, paymentType string) (map[string]interface{}, error) {

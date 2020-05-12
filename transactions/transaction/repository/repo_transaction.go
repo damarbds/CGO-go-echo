@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/models"
 
@@ -16,10 +17,60 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
+func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Context) ([]*models.TransactionWithBooking, error) {
+	threeDay := time.Now().AddDate(0,0,3).Format("2006-01-02")
+	twoDay := time.Now().AddDate(0,0,2).Format("2006-01-02")
+	tenDay := time.Now().AddDate(0,0,10).Format("2006-01-02")
+	threetyDay := time.Now().AddDate(0,0,30).Format("2006-01-02")
+
+	query := `
+	SELECT 
+		e.exp_title,
+		be.booked_by,
+		be.booked_by_email,
+		be.booking_date,
+		t.total_price,
+		ep.price 
+	FROM transactions t
+	JOIN experience_payments ep on ep.id = t.experience_payment_id
+	JOIN booking_exps be on be.id = t.booking_exp_id
+	JOIN experiences e on e.id = be.exp_id
+	WHERE 
+		ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' AND 
+		t.total_price != ep.price AND 
+		(DATE(be.booking_date) = ? OR DATE(be.booking_date) = ? OR DATE(be.booking_date) = ? OR DATE(be.booking_date) = ?)`
+
+	rows, err := t.Conn.QueryContext(ctx, query, threeDay,twoDay,tenDay,threetyDay)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	result := make([]*models.TransactionWithBooking,0)
+	for rows.Next() {
+		t := new(models.TransactionWithBooking)
+		err = rows.Scan(
+			&t.ExpTitle 	,
+			&t.BookedBy 	,
+			&t.BookedByEmail,
+			&t.BookingDate   ,
+			&t.TotalPrice 		,
+			&t.Price 			,
+			)
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
 func (t transactionRepository) GetCountByExpId(ctx context.Context, date string, expId string) (*string, error) {
 	query := `
 	select b.guest_desc from transactions a

@@ -6,7 +6,7 @@ import (
 )
 
 type Usecase interface {
-	RemainingPaymentNotification()
+	RemainingPaymentNotification(ctx context.Context)error
 	GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool, error)
 	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)
 	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)

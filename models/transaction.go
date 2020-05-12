@@ -23,7 +23,14 @@ type Transaction struct {
 	OrderId             *string    `json:"order_id"`
 	VaNumber            *string    `json:"va_number"`
 }
-
+type TransactionWithBooking struct {
+	ExpTitle 		string 		`json:"exp_title"`
+	BookedBy 		string 		`json:"booked_by"`
+	BookedByEmail 	string		`json:"booked_by_email"`
+	BookingDate   	time.Time	`json:"booking_date"`
+	TotalPrice 		float64		`json:"total_price"`
+	Price 			float64		`json:"price"`
+}
 type TransactionWMerchant struct {
 	Id                  string     `json:"id" validate:"required"`
 	CreatedBy           string     `json:"created_by" validate:"required"`
