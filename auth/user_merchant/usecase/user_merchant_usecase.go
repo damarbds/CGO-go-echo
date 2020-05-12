@@ -307,6 +307,7 @@ func (m userMerchantUsecase) List(ctx context.Context, page, limit, offset int, 
 			Email:item.Email,
 			PhoneNumber:item.PhoneNumber,
 			MerchantId:item.MerchantId,
+			MerchantName:item.MerchantName,
 		}
 	}
 	totalRecords, _ := m.userMerchantRepo.Count(ctx)

@@ -14,5 +14,5 @@ type Repository interface {
 	Insert(ctx context.Context, a *models.UserMerchant) error
 	Delete(ctx context.Context, id string, deleted_by string) error
 	Count(ctx context.Context) (int, error)
-	List(ctx context.Context, limit, offset int,search string) ([]*models.UserMerchant, error)
+	List(ctx context.Context, limit, offset int,search string) ([]*models.UserMerchantWithMerchant, error)
 }

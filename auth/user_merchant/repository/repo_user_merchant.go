@@ -24,6 +24,49 @@ type userMerchantRepository struct {
 func NewuserMerchantRepository(Conn *sql.DB) user_merchant.Repository {
 	return &userMerchantRepository{Conn}
 }
+func (m *userMerchantRepository) fetchWithMerchant(ctx context.Context, query string, args ...interface{}) ([]*models.UserMerchantWithMerchant, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.UserMerchantWithMerchant, 0)
+	for rows.Next() {
+		t := new(models.UserMerchantWithMerchant)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.FullName,
+			&t.Email,
+			&t.PhoneNumber,
+			&t.MerchantId,
+			&t.MerchantName,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
 func (m *userMerchantRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.UserMerchant, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -221,15 +264,19 @@ func (m *userMerchantRepository) Count(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (m userMerchantRepository) List(ctx context.Context, limit, offset int, search string) ([]*models.UserMerchant, error) {
-	query := `SELECT * FROM user_merchants WHERE is_deleted = 0 and is_active = 1 `
+func (m userMerchantRepository) List(ctx context.Context, limit, offset int, search string) ([]*models.UserMerchantWithMerchant, error) {
+	query := `SELECT um.* ,m.merchant_name
+					FROM 
+						user_merchants um 
+					JOIN merchants m on m.id = um.merchant_id
+					WHERE um.is_deleted = 0 and um.is_active = 1 `
 	if search != "" {
-		query = query + ` AND ( email LIKE '%` + search + `%' ` +
-			`OR full_name LIKE '%` + search + `%' ` +
-			`OR phone_number LIKE '%` + search + `%' )`
+		query = query + ` AND ( um.email LIKE '%` + search + `%' ` +
+			`OR um.full_name LIKE '%` + search + `%' ` +
+			`OR um.phone_number LIKE '%` + search + `%' )`
 	}
 	query = query + ` LIMIT ? OFFSET ?`
-	list, err := m.fetch(ctx, query, limit, offset)
+	list, err := m.fetchWithMerchant(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
