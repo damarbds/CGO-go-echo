@@ -1533,9 +1533,11 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		}
 		customPrice := make([]models.CustomPrice,0)
 		if elementPayment.CustomPrice != nil {
-			errObject := json.Unmarshal([]byte(*elementPayment.CustomPrice), &customPrice)
-			if errObject != nil {
-				return nil, models.ErrInternalServerError
+			if *elementPayment.CustomPrice != "" {
+				errObject := json.Unmarshal([]byte(*elementPayment.CustomPrice), &customPrice)
+				if errObject != nil {
+					return nil, models.ErrInternalServerError
+				}
 			}
 		}
 		expPayobj := models.ExpPaymentObj{
