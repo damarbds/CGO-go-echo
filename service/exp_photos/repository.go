@@ -12,4 +12,5 @@ type Repository interface {
 	Update(ctx context.Context, a *models.ExpPhotos) (*string, error)
 	Insert(ctx context.Context, a *models.ExpPhotos) (*string, error)
 	Deletes(ctx context.Context, ids []string, expId string, deletedBy string) error
+	DeleteByExpId(ctx context.Context,expId string,deletedBy string)error
 }

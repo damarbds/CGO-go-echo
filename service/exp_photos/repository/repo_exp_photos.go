@@ -22,6 +22,7 @@ type exp_photosRepository struct {
 	Conn *sql.DB
 }
 
+
 // Newexp_photosRepository will create an object that represent the article.repository interface
 func Newexp_photosRepository(Conn *sql.DB) exp_photos.Repository {
 	return &exp_photosRepository{Conn}
@@ -168,7 +169,7 @@ func (m *exp_photosRepository) Update(ctx context.Context, a *models.ExpPhotos) 
 	return &a.Id, nil
 }
 func (m *exp_photosRepository) Deletes(ctx context.Context, ids []string, expId string, deletedBy string) error {
-	query := `UPDATE  exp_photos SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
+	query := `UPDATE exp_photos SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
 	for index, id := range ids {
 		if index == 0 && index != (len(ids)-1) {
 			query = query + ` AND (id !=` + id
@@ -199,6 +200,27 @@ func (m *exp_photosRepository) Deletes(ctx context.Context, ids []string, expId 
 	return nil
 }
 
+func (m *exp_photosRepository) DeleteByExpId(ctx context.Context, expId string, deletedBy string) error {
+	query := `UPDATE exp_photos SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
 //func (m *exp_photosRepository) Update(ctx context.Context, ar *models.exp_photos) error {
 //	query := `UPDATE exp_photoss set modified_by=?, modified_date=? , exp_photos_name=? ,
 //				exp_photos_desc=? , exp_photos_email=? , balance=? WHERE id = ?`

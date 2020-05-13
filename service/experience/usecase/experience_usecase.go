@@ -1159,7 +1159,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		experiences.MinimumBookingId = nil
 	}
 	insertToExperience, err := m.experienceRepo.Update(ctx, &experiences)
-
+	if err != nil {
+		return nil,err
+	}
 	err = m.filterATRepo.DeleteByExpId(ctx, experiences.Id)
 
 	for _, element := range commandExperience.ExpType {
@@ -1186,9 +1188,12 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		}
 	}
 	var photoIds []string
+	err = m.expPhotos.DeleteByExpId(ctx, experiences.Id,currentUserMerchant.MerchantEmail)
+	if err != nil {
+		return nil, err
+	}
 	for _, element := range commandExperience.ExpPhotos {
 		if element.Id == "" {
-
 			images, _ := json.Marshal(element.ExpPhotoImage)
 			expPhoto := models.ExpPhotos{
 				Id:             "",
@@ -1211,25 +1216,6 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			}
 			photoIds = append(photoIds, *id)
 			element.Id = *id
-		} else {
-			images, _ := json.Marshal(element.ExpPhotoImage)
-			expPhoto := models.ExpPhotos{
-				Id:             element.Id,
-				CreatedBy:      "",
-				CreatedDate:    time.Time{},
-				ModifiedBy:     &currentUserMerchant.MerchantEmail,
-				ModifiedDate:   &time.Time{},
-				DeletedBy:      nil,
-				DeletedDate:    nil,
-				IsDeleted:      0,
-				IsActive:       0,
-				ExpPhotoFolder: element.Folder,
-				ExpPhotoImage:  string(images),
-				ExpId:          *insertToExperience,
-			}
-
-			_, err = m.expPhotos.Update(ctx, &expPhoto)
-			photoIds = append(photoIds, element.Id)
 		}
 	}
 
