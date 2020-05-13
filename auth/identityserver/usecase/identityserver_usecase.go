@@ -260,7 +260,7 @@ func (m identityserverUsecase) UploadFileToBlob(image string, folder string) (st
 }
 
 func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, error) {
-
+	requestAgain :
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/userinfo", nil)
 	//os.Exit(1)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -281,7 +281,12 @@ func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, e
 		os.Exit(1)
 	}
 	if resp.StatusCode != 200 {
-		return nil, models.ErrUnAuthorize
+		if resp.StatusCode == 502 {
+			goto requestAgain
+		}else {
+			return nil, models.ErrUnAuthorize
+		}
+
 	}
 	user := models.GetUserInfo{}
 	json.NewDecoder(resp.Body).Decode(&user)
@@ -289,7 +294,7 @@ func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, e
 }
 
 func (m identityserverUsecase) GetToken(username string, password string, scope string) (*models.GetToken, error) {
-
+	requestAgain :
 	var param = url.Values{}
 	param.Set("grant_type", "password")
 	param.Set("username", username)
@@ -323,14 +328,18 @@ func (m identityserverUsecase) GetToken(username string, password string, scope 
 		os.Exit(1)
 	}
 	if resp.StatusCode != 200 {
-		return nil, models.ErrUsernamePassword
+		if resp.StatusCode == 502 {
+			goto requestAgain
+		}else {
+			return nil, models.ErrUsernamePassword
+		}
 	}
 	user := models.GetToken{}
 	json.NewDecoder(resp.Body).Decode(&user)
 	return &user, nil
 }
 func (m identityserverUsecase) RefreshToken(refreshToken string) (*models.RefreshToken, error) {
-
+	requestAgain :
 	var param = url.Values{}
 	param.Set("grant_type", "refresh_token")
 	param.Set("refresh_token", refreshToken)
@@ -358,7 +367,11 @@ func (m identityserverUsecase) RefreshToken(refreshToken string) (*models.Refres
 		os.Exit(1)
 	}
 	if resp.StatusCode != 200 {
-		return nil, models.ErrUsernamePassword
+		if resp.StatusCode == 502 {
+			goto requestAgain
+		}else {
+			return nil, models.ErrUnAuthorize
+		}
 	}
 	user := models.RefreshToken{}
 	json.NewDecoder(resp.Body).Decode(&user)
