@@ -53,6 +53,7 @@ type MidtransCallback struct {
 	SignatureKey           string     `json:"signature_key,omitempty"`
 	BillKey                string     `json:"bill_key,omitempty"`
 	BillerCode             string     `json:"biller_code,omitempty"`
+	PermataVaNumber        string     `json:"permata_va_number,omitempty"`
 	PaymentType            string     `json:"payment_type,omitempty"`
 	OrderId                string     `json:"order_id,omitempty"`
 	MaskedCard             string     `json:"masked_card,omitempty"`
