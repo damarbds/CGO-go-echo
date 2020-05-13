@@ -5,10 +5,11 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/auth/identityserver"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/auth/identityserver"
 
 	"github.com/booking/booking_exp"
 	"github.com/labstack/echo"
@@ -77,6 +78,15 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 		}
 	}
 
+	var accountNumber string
+	if callback.PermataVaNumber != "" {
+		accountNumber = callback.PermataVaNumber
+	} else if callback.BillerCode != "" && callback.BillKey != "" {
+		accountNumber = callback.BillerCode + "-" + callback.BillKey
+	} else if len(callback.VaNumber) > 0 {
+		accountNumber = callback.VaNumber[0].Number
+	}
+
 	var transactionStatus int
 	if callback.TransactionStatus == "capture" || callback.TransactionStatus == "settlement" {
 		if booking.ExpId != nil {
@@ -90,16 +100,16 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
-				maxTime := time.Now().AddDate(0,0,1)
+				maxTime := time.Now().AddDate(0, 0, 1)
 				msg := "<h1>" + bookingDetail.Experience[0].ExpTitle + "</h1>" +
 					"<p>Trip Dates :" + bookingDetail.BookingDate.Format("2006-01-01") + "</p>" +
-					"<p>Waiting for Approval Max Time:" + maxTime.Format("2006-01-02 15:04:05")+"</p>" +
+					"<p>Waiting for Approval Max Time:" + maxTime.Format("2006-01-02 15:04:05") + "</p>" +
 					"<p>Price :" + strconv.FormatFloat(*bookingDetail.TotalPrice, 'f', 6, 64) + "</p>"
 				pushEmail := &models.SendingEmail{
 					Subject:  "Waiting Approval For Merchant",
 					Message:  msg,
 					From:     "CGO Indonesia",
-					To:      bookedBy[0].Email,
+					To:       bookedBy[0].Email,
 					FileName: "",
 				}
 				if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -135,7 +145,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					return nil
 				}
 			}
-			if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", booking.Id); err != nil {
+			if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.Id); err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		} else {
@@ -158,7 +168,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			}
 
 			transactionStatus = 2
-			if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", booking.OrderId); err != nil {
+			if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.OrderId); err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 		}
@@ -189,14 +199,14 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 		if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 			return nil
 		}
-		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", bookingCode); err != nil {
+		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", bookingCode); err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 	}
 
 	if callback.TransactionStatus == "pending" {
 		transactionStatus = 0
-		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.VaNumber[0].Number, "", bookingCode); err != nil {
+		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", bookingCode); err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 	}
