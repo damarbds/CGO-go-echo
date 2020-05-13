@@ -77,7 +77,7 @@ type ItemsHistoryDto struct {
 	Province           string                   `json:"province"`
 	Country            string                   `json:"country"`
 	Status             string                   `json:"status"`
-	IsReview			bool 					`json:"is_review"`
+	IsReview           bool                     `json:"is_review"`
 }
 type BookingExp struct {
 	Id                 string     `json:"id" validate:"required"`
@@ -221,13 +221,14 @@ type BookingExpDetailDto struct {
 	Experience             []BookingExpDetail            `json:"experience,omitempty"`
 	Transportation         []BookingTransportationDetail `json:"transportation,omitempty"`
 	ExperiencePaymentType  *ExperiencePaymentTypeDto     `json:"experience_payment_type"`
-	IsReview 			bool		`json:"is_review"`
-	ReviewDesc  *string		`json:"review_desc"`
-	GuideReview *float64		`json:"guide_review"`
-	ActivitiesReview *float64	`json:"activities_review"`
-	ServiceReview *float64		`json:"service_review"`
-	CleanlinessReview *float64	`json:"cleanliness_review"`
-	ValueReview *float64		`json:"value_review"`
+	IsReview               bool                          `json:"is_review"`
+	ReviewDesc             *string                       `json:"review_desc"`
+	GuideReview            *float64                      `json:"guide_review"`
+	ActivitiesReview       *float64                      `json:"activities_review"`
+	ServiceReview          *float64                      `json:"service_review"`
+	CleanlinessReview      *float64                      `json:"cleanliness_review"`
+	ValueReview            *float64                      `json:"value_review"`
+	MidtransUrl            *string                       `json:"midtrans_url"`
 }
 type AccountDesc struct {
 	AccNumber string `json:"acc_number"`

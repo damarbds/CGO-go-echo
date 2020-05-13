@@ -68,10 +68,10 @@ func NewbookingExpUsecase(reviewRepo reviews.Repository, adOnsRepo experience_ad
 	}
 }
 
-func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context)error {
+func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
-	list , err := b.transactionRepo.GetTransactionDownPaymentByDate(ctx)
+	list, err := b.transactionRepo.GetTransactionDownPaymentByDate(ctx)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context)erro
 		var bookedBy []models.BookedByObj
 		if element.BookedBy != "" {
 			if errUnmarshal := json.Unmarshal([]byte(element.BookedBy), &bookedBy); errUnmarshal != nil {
-				return  err
+				return err
 			}
 		}
 		msg := "<h1>" + element.ExpTitle + "</h1>" +
@@ -308,20 +308,20 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
-				maxTime := time.Now().AddDate(0,0,1)
+				maxTime := time.Now().AddDate(0, 0, 1)
 				msg := "<h1>" + bookingDetail.Experience[0].ExpTitle + "</h1>" +
 					"<p>Trip Dates :" + bookingDetail.BookingDate.Format("2006-01-01") + "</p>" +
-					"<p>Waiting for Approval Max Time:" + maxTime.Format("2006-01-02 15:04:05")+"</p>" +
+					"<p>Waiting for Approval Max Time:" + maxTime.Format("2006-01-02 15:04:05") + "</p>" +
 					"<p>Price :" + strconv.FormatFloat(*bookingDetail.TotalPrice, 'f', 6, 64) + "</p>"
 				pushEmail := &models.SendingEmail{
 					Subject:  "Waiting Approval For Merchant",
 					Message:  msg,
 					From:     "CGO Indonesia",
-					To:      bookedBy[0].Email,
+					To:       bookedBy[0].Email,
 					FileName: "",
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil,err
+					return nil, err
 				}
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
@@ -494,6 +494,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 		BankIcon:               details[0].Icon,
 		ExperiencePaymentId:    details[0].ExperiencePaymentId,
 		Transportation:         transport,
+		MidtransUrl:            details[0].PaymentUrl,
 	}
 
 	return results, nil
@@ -897,6 +898,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		Experience:            expDetail,
 		ExperiencePaymentType: experiencePaymentType,
 		IsReview:              isReview,
+		MidtransUrl:           getDetailBooking.PaymentUrl,
 	}
 	if len(reviews) != 0 {
 		desc := models.ReviewDtoObject{}
