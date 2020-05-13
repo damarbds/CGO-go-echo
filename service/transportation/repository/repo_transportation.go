@@ -148,6 +148,7 @@ func (t *transportationRepository) fetch(ctx context.Context, query string, args
 			&t.Transcoverphoto,
 			&t.Class,
 			&t.TransFacilities,
+			&t.IsReturn,
 		)
 
 		if err != nil {
@@ -267,14 +268,14 @@ func (t transportationRepository) Insert(ctx context.Context, a models.Transport
 	query := `INSERT transportations SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , trans_name=?,harbors_source_id=?,harbors_dest_id=?,merchant_id=?,
 				trans_capacity=?,trans_title=?,trans_status=?,trans_images=?,return_trans_id=?,boat_details=?,transcoverphoto=?,
-				class=?,trans_facilities=?`
+				class=?,trans_facilities=?,is_return=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
 		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
-		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities)
+		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities,a.IsReturn)
 	if err != nil {
 		return nil, err
 	}
@@ -312,14 +313,14 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	query := `UPDATE transportations SET modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , trans_name=?,harbors_source_id=?,harbors_dest_id=?,merchant_id=?,
 				trans_capacity=?,trans_title=?,trans_status=?,trans_images=?,return_trans_id=?,boat_details=?,transcoverphoto=?,
-				class=?,trans_facilities=? WHERE id=?`
+				class=?,trans_facilities=?,is_return=? WHERE id=?`
 	stmt, err := t.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
 		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
-		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities, a.Id)
+		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities, a.IsReturn,a.Id)
 	if err != nil {
 		return nil, err
 	}

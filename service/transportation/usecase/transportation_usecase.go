@@ -302,7 +302,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		t.is_deleted = 0
-		AND t.is_active = 1`
+		AND t.is_active = 1
+		AND t.is_return = 0`
 
 		queryCount = `
 	SELECT
@@ -312,7 +313,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		t.is_deleted = 0
-		AND t.is_active = 1`
+		AND t.is_active = 1
+        AND t.is_return = 0`
 	} else if isMerchant == true {
 		query = `
 	SELECT 
@@ -354,7 +356,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		t.is_deleted = 0
-		AND t.is_active = 1`
+		AND t.is_active = 1
+		AND t.is_return = 0`
 
 		queryCount = `
 	SELECT
@@ -370,7 +373,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
 		s.is_deleted = 0
-		AND s.is_active = 1`
+		AND s.is_active = 1
+		AND t.is_return = 0`
 	} else {
 		query = `
 	SELECT
@@ -701,6 +705,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 	facilites, _ := json.Marshal(newCommandTransportation.Facilities)
 	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdFrom
 	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
+	isReturn := 0
 	var transFacilities string
 	transFacilities = string(facilites)
 	transportation := models.Transportation{
@@ -726,10 +731,12 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		Transcoverphoto: newCommandTransportation.Transcoverphoto,
 		Class:           newCommandTransportation.Class,
 		TransFacilities:&transFacilities,
+		IsReturn: &isReturn,
 	}
 	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
+		isReturnn := 1
 		transportationReturn := models.Transportation{
 			Id:              guuid.New().String(),
 			CreatedBy:       currentUserMerchant.MerchantEmail,
@@ -753,6 +760,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 			Transcoverphoto: newCommandTransportation.Transcoverphoto,
 			Class:           newCommandTransportation.Class,
 			TransFacilities:&transFacilities,
+			IsReturn:&isReturnn,
 		}
 		insertTransportationReturn, err := t.transportationRepo.Insert(ctx, transportationReturn)
 		if err != nil {
@@ -907,6 +915,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
 	var transFacilities string
 	transFacilities = string(facilites)
+	isReturn := 0
 	transportation := models.Transportation{
 		Id:              newCommandTransportation.Id,
 		CreatedBy:       "",
@@ -930,10 +939,12 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		Transcoverphoto: newCommandTransportation.Transcoverphoto,
 		Class:           newCommandTransportation.Class,
 		TransFacilities:&transFacilities,
+		IsReturn:&isReturn,
 	}
 	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
 		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
+		isReturnn := 1
 		transportationReturn := models.Transportation{
 			Id:              newCommandTransportation.ReturnRoute.Id,
 			CreatedBy:       "",
@@ -957,6 +968,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 			Transcoverphoto: newCommandTransportation.Transcoverphoto,
 			Class:           newCommandTransportation.Class,
 			TransFacilities:&transFacilities,
+			IsReturn:&isReturnn,
 		}
 		insertTransportationReturn, err := t.transportationRepo.Update(ctx, transportationReturn)
 		if err != nil {

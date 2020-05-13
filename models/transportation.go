@@ -25,6 +25,7 @@ type Transportation struct {
 	Transcoverphoto string     `json:"transcoverphoto"`
 	Class           string     `json:"class"`
 	TransFacilities *string  `json:"trans_facilities"`
+	IsReturn 		*int 		`json:"is_return"`
 }
 
 type NewCommandTransportation struct {
