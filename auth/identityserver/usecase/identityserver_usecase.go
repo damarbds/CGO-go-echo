@@ -5,8 +5,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -16,6 +14,9 @@ import (
 	"strconv"
 	"time"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/auth/identityserver"
 	"github.com/models"
@@ -23,26 +24,25 @@ import (
 )
 
 type identityserverUsecase struct {
-	redirectUrlGoogle string
-	clientIDGoogle		string
+	redirectUrlGoogle  string
+	clientIDGoogle     string
 	clientSecretGoogle string
-	baseUrl          string
-	basicAuth        string
-	accountStorage   string
-	accessKeyStorage string
+	baseUrl            string
+	basicAuth          string
+	accountStorage     string
+	accessKeyStorage   string
 }
 
-
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
-func NewidentityserverUsecase(redirectUrlGoogle string, clientIDGoogle string, clientSecretGoogle string,baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
+func NewidentityserverUsecase(redirectUrlGoogle string, clientIDGoogle string, clientSecretGoogle string, baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
 	return &identityserverUsecase{
-		redirectUrlGoogle:redirectUrlGoogle,
-		clientIDGoogle:clientIDGoogle,
-		clientSecretGoogle:clientSecretGoogle,
-		baseUrl:          baseUrl,
-		basicAuth:        basicAuth,
-		accountStorage:   accountStorage,
-		accessKeyStorage: accessKeyStorage,
+		redirectUrlGoogle:  redirectUrlGoogle,
+		clientIDGoogle:     clientIDGoogle,
+		clientSecretGoogle: clientSecretGoogle,
+		baseUrl:            baseUrl,
+		basicAuth:          basicAuth,
+		accountStorage:     accountStorage,
+		accessKeyStorage:   accessKeyStorage,
 	}
 }
 
@@ -64,13 +64,13 @@ func (m identityserverUsecase) CallBackGoogle(code string) (*models.GetInfoUserG
 	client := conf.Client(oauth2.NoContext, tok)
 	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	defer email.Body.Close()
 	//data, _ := ioutil.ReadAll(email.Body)
 	var userInfo models.GetInfoUserGoogle
 	json.NewDecoder(email.Body).Decode(&userInfo)
-	return &userInfo,nil
+	return &userInfo, nil
 }
 func randomString() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -260,7 +260,7 @@ func (m identityserverUsecase) UploadFileToBlob(image string, folder string) (st
 }
 
 func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, error) {
-	requestAgain :
+requestAgain:
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/userinfo", nil)
 	//os.Exit(1)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -283,7 +283,9 @@ func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, e
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 502 {
 			goto requestAgain
-		}else {
+		} else if resp.StatusCode == 500 {
+			goto requestAgain
+		} else {
 			return nil, models.ErrUnAuthorize
 		}
 
@@ -294,7 +296,7 @@ func (m identityserverUsecase) GetUserInfo(token string) (*models.GetUserInfo, e
 }
 
 func (m identityserverUsecase) GetToken(username string, password string, scope string) (*models.GetToken, error) {
-	requestAgain :
+requestAgain:
 	var param = url.Values{}
 	param.Set("grant_type", "password")
 	param.Set("username", username)
@@ -330,7 +332,9 @@ func (m identityserverUsecase) GetToken(username string, password string, scope 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 502 {
 			goto requestAgain
-		}else {
+		} else if resp.StatusCode == 500 {
+			goto requestAgain
+		} else {
 			return nil, models.ErrUsernamePassword
 		}
 	}
@@ -339,7 +343,7 @@ func (m identityserverUsecase) GetToken(username string, password string, scope 
 	return &user, nil
 }
 func (m identityserverUsecase) RefreshToken(refreshToken string) (*models.RefreshToken, error) {
-	requestAgain :
+requestAgain:
 	var param = url.Values{}
 	param.Set("grant_type", "refresh_token")
 	param.Set("refresh_token", refreshToken)
@@ -369,7 +373,9 @@ func (m identityserverUsecase) RefreshToken(refreshToken string) (*models.Refres
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 502 {
 			goto requestAgain
-		}else {
+		} else if resp.StatusCode == 500 {
+			goto requestAgain
+		} else {
 			return nil, models.ErrUnAuthorize
 		}
 	}
@@ -379,8 +385,8 @@ func (m identityserverUsecase) RefreshToken(refreshToken string) (*models.Refres
 }
 
 func (m identityserverUsecase) UpdateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error) {
-	if ar.UserRoles == nil{
-		ar.UserRoles = make([]string,0)
+	if ar.UserRoles == nil {
+		ar.UserRoles = make([]string, 0)
 	}
 	data, _ := json.Marshal(ar)
 
@@ -413,8 +419,8 @@ func (m identityserverUsecase) UpdateUser(ar *models.RegisterAndUpdateUser) (*mo
 }
 
 func (m identityserverUsecase) CreateUser(ar *models.RegisterAndUpdateUser) (*models.RegisterAndUpdateUser, error) {
-	if ar.UserRoles == nil{
-		ar.UserRoles = make([]string,0)
+	if ar.UserRoles == nil {
+		ar.UserRoles = make([]string, 0)
 	}
 	data, _ := json.Marshal(ar)
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/register", bytes.NewReader(data))
@@ -504,7 +510,7 @@ func (m identityserverUsecase) VerifiedEmail(r *models.VerifiedEmail) (*models.V
 	user := models.VerifiedEmail{}
 	json.NewDecoder(resp.Body).Decode(&response)
 	if response == false {
-		return nil,models.ErrInvalidOTP
+		return nil, models.ErrInvalidOTP
 	}
 	user = *r
 	return &user, nil
@@ -553,7 +559,7 @@ func (m identityserverUsecase) RequestOTP(phoneNumber string) (*models.RequestOT
 	}
 	return &user, nil
 }
-func (m identityserverUsecase) RequestOTPTmp(phoneNumber string,email string) (*models.RequestOTP, error) {
+func (m identityserverUsecase) RequestOTPTmp(phoneNumber string, email string) (*models.RequestOTP, error) {
 	var param = url.Values{}
 	param.Set("phone_number", phoneNumber)
 	param.Set("email", email)
@@ -629,17 +635,17 @@ func (m identityserverUsecase) SendingSMS(sms *models.SendingSMS) (*models.Sendi
 	return &user, nil
 }
 
-func (m identityserverUsecase) GetDetailUserById(id string, token string,isDetail string) (*models.GetUserDetail, error) {
+func (m identityserverUsecase) GetDetailUserById(id string, token string, isDetail string) (*models.GetUserDetail, error) {
 	var param = url.Values{}
 	param.Set("id", id)
-	if isDetail != ""{
+	if isDetail != "" {
 		param.Set("isDetail", "true")
 	}
 	var payload = bytes.NewBufferString(param.Encode())
 
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/user-detail", payload)
 	//os.Exit(1)
-	req.Header.Set("Authorization", "Bearer "+ token)
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		fmt.Println("Error : ", err.Error())
