@@ -7,12 +7,12 @@ require (
 	github.com/Azure/azure-pipeline-go v0.2.2 // indirect
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest/adal v0.8.2 // indirect
+	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.5.0
 	github.com/bxcodec/faker v2.0.1+incompatible
 	github.com/bxcodec/go-clean-arch v2.0.1+incompatible
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/google/uuid v1.1.1
-	github.com/jasonlvhit/gocron v0.0.0-20200423141508-ab84337f7963
 	github.com/jinzhu/gorm v1.9.12
 	github.com/labstack/echo v3.3.5+incompatible
 	github.com/labstack/gommon v0.2.2-0.20180426014445-588f4e8bddc6 // indirect

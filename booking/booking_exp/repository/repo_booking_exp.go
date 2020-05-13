@@ -913,9 +913,9 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 		s.departure_time,
 		s.arrival_time,
 		t.total_price,
-		pm.name AS payment_type,
-		pm.desc AS account_bank,
-		pm.icon,
+		(SELECT pm.name FROM payment_methods pm WHERE id = t.payment_method_id LIMIT 0,1) AS payment_type,
+		(SELECT pm.desc FROM payment_methods pm WHERE id = t.payment_method_id LIMIT 0,1) AS account_bank,
+		(SELECT pm.icon FROM payment_methods pm WHERE id = t.payment_method_id LIMIT 0,1),
 		t.status AS transaction_status,
 		t.va_number ,
 		t.created_date AS created_date_transaction,
@@ -928,7 +928,6 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
 			OR t.order_id = a.order_id
-		LEFT JOIN payment_methods pm ON t.payment_method_id = pm.id
 		JOIN transportations b ON a.trans_id = b.id
 		LEFT JOIN schedules s ON b.id = s.trans_id
 			AND a.schedule_id = s.id

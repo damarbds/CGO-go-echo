@@ -104,6 +104,9 @@ type TransactionOut struct {
 	ExperiencePaymentId *string   `json:"experience_payment_id"`
 	MerchantName        string    `json:"merchant_name"`
 	OrderId             *string   `json:"order_id"`
+	ExpDuration 		*int 		`json:"exp_duration"`
+	ProvinceName 		*string		`json:"province_name"`
+	CountryName 		*string 		`json:"country_name"`
 }
 
 type TransactionDto struct {
@@ -123,6 +126,10 @@ type TransactionDto struct {
 	ExperiencePaymentType *ExperiencePaymentTypeDto `json:"experience_payment_type"`
 	Merchant              string                    `json:"merchant"`
 	OrderId               *string                   `json:"order_id"`
+	GuestCount 			   TotalGuestTransportation 			`json:"guest_count"`
+	ExpDuration 			int 		`json:"exp_duration"`
+	ProvinceName 			string		`json:"province_name"`
+	CountryName 		string			`json:"country_name"`
 }
 
 type TransactionWithPagination struct {

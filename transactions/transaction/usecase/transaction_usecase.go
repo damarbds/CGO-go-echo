@@ -123,7 +123,16 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 				return nil, errUnmarshal
 			}
 		}
-
+		var expGuest models.TotalGuestTransportation
+		if len(guestDesc) > 0 {
+			for _, guest := range guestDesc {
+				if guest.Type == "Adult" {
+					expGuest.Adult = expGuest.Adult + 1
+				} else if guest.Type == "Children" {
+					expGuest.Children = expGuest.Children + 1
+				}
+			}
+		}
 		var bookedBy []models.BookedByObj
 		if item.BookedBy != "" {
 			if errUnmarshal := json.Unmarshal([]byte(item.BookedBy), &bookedBy); errUnmarshal != nil {
@@ -161,6 +170,12 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			ExperiencePaymentType: experiencePaymentType,
 			Merchant:              item.MerchantName,
 			OrderId:			   item.OrderId,
+			GuestCount:expGuest,
+		}
+		if expType[0] != "Transportation"{
+			transactions[i].ExpDuration  = *item.ExpDuration
+			transactions[i].ProvinceName = *item.ProvinceName
+			transactions[i].CountryName = *item.CountryName
 		}
 	}
 	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status,merchantId)

@@ -184,12 +184,19 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		t.total_price,
 		t.experience_payment_id as experience_payment_id,
 		merchant_name,
-		b.order_id
+		b.order_id,
+		e.exp_duration,
+		p.province_name,
+		co.country_name
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
 		JOIN merchants m ON e.merchant_id = m.id
+		JOIN harbors  h ON e.harbors_id = h.id
+		JOIN cities  c ON h.city_id = c.id
+		JOIN provinces p on c.province_id = p.id
+		JOIN countries co on p.country_id = co.id
 	WHERE 
 		t.is_deleted = 0
 		AND t.is_active = 1
@@ -213,7 +220,10 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		t.total_price,
 		tr.class as trans_class,
 		merchant_name,
-		b.order_id
+		b.order_id,
+		tr.trans_capacity as exp_duration,
+		trans_name as province_name,
+		trans_title as country_name
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
@@ -351,6 +361,9 @@ func (t transactionRepository) fetchWithJoin(ctx context.Context, query string, 
 			&t.ExperiencePaymentId,
 			&t.MerchantName,
 			&t.OrderId,
+			&t.ExpDuration 	,
+			&t.ProvinceName 	,
+			&t.CountryName 	,
 		)
 
 		if err != nil {
