@@ -13,6 +13,7 @@ import (
 var XenClient *client.API
 
 const (
+	// dev
 	defXenditSecretKey = "xnd_development_Dms6iAkgd6b4p5f9jpLdP41uaCVBdCLPNqJ00XDiFQL0oIpsTZYVLlERGFnxi"
 
 	// Production
