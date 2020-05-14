@@ -861,6 +861,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		ExpDuration:     *getDetailBooking.ExpDuration,
 		HarborsName:     *getDetailBooking.HarborsName,
 		ExperienceAddOn: expAddOns,
+		CountryName:getDetailBooking.Country,
 	}
 	if getDetailBooking.UserId == nil {
 		getDetailBooking.UserId = new(string)

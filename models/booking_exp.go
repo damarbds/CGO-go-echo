@@ -195,6 +195,7 @@ type BookingExpDetail struct {
 	HarborsName     string               `json:"harbors_name"`
 	ExperienceAddOn []ExperienceAddOnObj `json:"experience_add_on"`
 	ExpDuration     int                  `json:"exp_duration"`
+	CountryName 	string 				 `json:"country_name"`
 }
 
 type BookingExpDetailDto struct {
