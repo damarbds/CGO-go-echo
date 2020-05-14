@@ -770,7 +770,7 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		for _, year := range newCommandTransportation.ReturnRoute.Schedule {
 			for _, month := range year.Month {
 				for _, day := range month.DayPrice {
-					for _, times := range newCommandTransportation.DepartureRoute.Time {
+					for _, times := range newCommandTransportation.ReturnRoute.Time {
 						var currency int
 						if day.Currency == "USD" {
 							currency = 1
@@ -981,7 +981,7 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		for _, year := range newCommandTransportation.ReturnRoute.Schedule {
 			for _, month := range year.Month {
 				for _, day := range month.DayPrice {
-					for _, times := range newCommandTransportation.DepartureRoute.Time {
+					for _, times := range newCommandTransportation.ReturnRoute.Time {
 						var currency int
 						if day.Currency == "USD" {
 							currency = 1
