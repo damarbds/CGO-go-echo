@@ -58,7 +58,7 @@ func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*model
 		returnTrans := models.RouteObj{
 			Id:            getreturnTrans.Id,
 			HarborsIdFrom: getreturnTrans.HarborsDestId,
-			HarborsIdTo:   getDetailTrans.HarborsSourceId,
+			HarborsIdTo:   getreturnTrans.HarborsSourceId,
 			Time:          times,
 			Schedule:      schedules,
 		}
