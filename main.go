@@ -139,7 +139,6 @@ import (
 	_minimumBookingHttpHandler "github.com/service/minimum_booking/delivery/http"
 	_minimumBookingRepo "github.com/service/minimum_booking/repository"
 	_minimumBookingUsecase "github.com/service/minimum_booking/usecase"
-
 )
 
 // func init() {
@@ -177,16 +176,16 @@ func main() {
 	dbName := "cgo_indonesia"
 
 	//prd db
-	//dbHost := "cgo-indonesia-prod.mysql.database.azure.com"
-	//dbPort := "3306"
-	//dbUser := "admincgo@cgo-indonesia-prod"
-	//dbPass := "k_)V/p53u9z.V{C,"
-	//dbName := "cgo_indonesia"
+	// dbHost := "cgo-indonesia-prod.mysql.database.azure.com"
+	// dbPort := "3306"
+	// dbUser := "admincgo@cgo-indonesia-prod"
+	// dbPass := "k_)V/p53u9z.V{C,"
+	// dbName := "cgo_indonesia"
 
 	//dev
 	baseUrlis := "http://identity-server-cgo-indonesia.azurewebsites.net"
 	//prd
-	//baseUrlis := "https://identity-server-cgo-prod.azurewebsites.net"
+	// baseUrlis := "https://identity-server-cgo-prod.azurewebsites.net"
 
 	basicAuth := "cm9jbGllbnQ6c2VjcmV0"
 	accountStorage := "cgostorage"
@@ -307,9 +306,9 @@ func main() {
 	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 	currencyMasterUcase := _currencyMasterUsecase.NewCurrencyUsecase(adminUsecase, currencyMasterRepo, timeoutContext)
 	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase, cpcRepo, timeoutContext)
-	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo,timeoutContext)
+	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo, timeoutContext)
 
-	_minimumBookingHttpHandler.NewminimumBookingHandler(e,minimumBookingUsecase)
+	_minimumBookingHttpHandler.NewminimumBookingHandler(e, minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
 	_currencyMasterHttpHandler.NewCurrencyHandler(e, currencyMasterUcase)
 	_userMerchantHttpDeliver.NewuserMerchantHandler(e, userMerchantUcase)
