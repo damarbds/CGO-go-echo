@@ -12,7 +12,7 @@ type Usecase interface {
 	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)
 	GetHistoryBookingByUserId(ctx context.Context, token string, monthType string, page, limit, offset int) (*models.BookingHistoryDtoWithPagination, error)
 	Insert(ctx context.Context, booking *models.NewBookingExpCommand, transReturnId, scheduleReturnId, token string) ([]*models.NewBookingExpCommand, error, error)
-	GetByUserID(ctx context.Context, transactionStatus, bookingStatus int, token string, page, limit, offset int) (*models.MyBookingWithPagination, error)
+	GetByUserID(ctx context.Context, status string, token string, page, limit, offset int) (*models.MyBookingWithPagination, error)
 	GetGrowthByMerchantID(ctx context.Context, token string) ([]*models.BookingGrowthDto, error)
 	CountThisMonth(ctx context.Context) (*models.Count, error)
 	SendCharge(ctx context.Context, bookingCode, paymentType string) (map[string]interface{}, error)

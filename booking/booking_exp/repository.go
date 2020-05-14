@@ -15,8 +15,8 @@ type Repository interface {
 	UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error
 	GetBookingExpByUserID(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error)
 	GetBookingTransByUserID(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error)
-	GetBookingCountByUserID(ctx context.Context,transactionStatus, bookingStatus int, userId string)(int,error)
-	GetBookingIdByUserID(ctx context.Context,transactionStatus, bookingStatus int, userId string,limit,offset int)([]*string,error)
+	GetBookingCountByUserID(ctx context.Context,status string, userId string)(int,error)
+	GetBookingIdByUserID(ctx context.Context,status string, userId string,limit,offset int)([]*string,error)
 	QueryHistoryPer30DaysExpByUserId(ctx context.Context, bookingIds []*string) ([]*models.BookingExpHistory, error)
 	QueryHistoryPerMonthExpByUserId(ctx context.Context, bookingIds []*string) ([]*models.BookingExpHistory, error)
 	QueryHistoryPer30DaysTransByUserId(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error)

@@ -110,24 +110,12 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 	limit, _ = strconv.Atoi(qperPage)
 	offset = (page - 1) * limit
 
-	var transactionStatus, bookingStatus int
-	if status == "confirm" {
-		transactionStatus = 3
-		bookingStatus = 1
-	} else if status == "waiting" {
-		transactionStatus = 1
-		bookingStatus = 1
-	} else if status == "pending" {
-		transactionStatus = 0
-		bookingStatus = 1
-	}
-
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	res, err := a.booking_expUsecase.GetByUserID(ctx, transactionStatus, bookingStatus, token, page, limit, offset)
+	res, err := a.booking_expUsecase.GetByUserID(ctx, status, token, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
