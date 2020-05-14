@@ -46,16 +46,16 @@ type PaypalConfig struct {
 const (
 	defHTTPClientTimeout = 15 * time.Second
 	// dev
-	// defClientID    = "AUQh6fyxaSlxELSff1NUlBaBskgh5emI7MnGwnm68xF1lUJ5jnmPXFcKNDp4D5ZmNaXRyA1ONKnzavKt"
-	// defSecretKey   = "ENH-GqjLFOmJUyHKwNA_eMs1s8N5qbKcSCl2zGOvyIYf-1M_G4fK_Yk18WOcrD15J2B_d1mzeVKlb0zt"
-	// PaypalOauthUrl = "https://api.sandbox.paypal.com/v1/oauth2/token/"
-	// PaypalOrderUrl = "https://api.sandbox.paypal.com/v2/checkout/orders/"
+	defClientID    = "AUQh6fyxaSlxELSff1NUlBaBskgh5emI7MnGwnm68xF1lUJ5jnmPXFcKNDp4D5ZmNaXRyA1ONKnzavKt"
+	defSecretKey   = "ENH-GqjLFOmJUyHKwNA_eMs1s8N5qbKcSCl2zGOvyIYf-1M_G4fK_Yk18WOcrD15J2B_d1mzeVKlb0zt"
+	PaypalOauthUrl = "https://api.sandbox.paypal.com/v1/oauth2/token/"
+	PaypalOrderUrl = "https://api.sandbox.paypal.com/v2/checkout/orders/"
 
 	// Production
-	defClientID    = "Aer1l0Q_pqnw_S0Opw-Qd2VMEPWFuDD05xW6hGC1VhAv4NnKvnSi6JS93B5ZGDO1HYqRHNFTerjo4Aos"
-	defSecretKey   = "EIhYAOGV5EIHWfQ85aRo0KopugZmDyUTx3fZp9nWXGJ5EYwZ3VzRirm6BDphz-U7PGzBSrEDYpNd5MBZ"
-	PaypalOauthUrl = "https://api.paypal.com/v1/oauth2/token/"
-	PaypalOrderUrl = "https://api.paypal.com/v2/checkout/orders/"
+	// defClientID    = "Aer1l0Q_pqnw_S0Opw-Qd2VMEPWFuDD05xW6hGC1VhAv4NnKvnSi6JS93B5ZGDO1HYqRHNFTerjo4Aos"
+	// defSecretKey   = "EIhYAOGV5EIHWfQ85aRo0KopugZmDyUTx3fZp9nWXGJ5EYwZ3VzRirm6BDphz-U7PGzBSrEDYpNd5MBZ"
+	// PaypalOauthUrl = "https://api.paypal.com/v1/oauth2/token/"
+	// PaypalOrderUrl = "https://api.paypal.com/v2/checkout/orders/"
 )
 
 func AuthPaypal(paypalOauthUrl string) (string, error) {
