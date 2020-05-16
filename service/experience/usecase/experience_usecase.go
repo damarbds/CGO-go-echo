@@ -1150,11 +1150,14 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		experiences.MinimumBookingId = nil
 	}
 	insertToExperience, err := m.experienceRepo.Update(ctx, &experiences)
+
 	if err != nil {
 		return nil, err
 	}
 	err = m.filterATRepo.DeleteByExpId(ctx, experiences.Id)
-
+	if err != nil {
+		return nil, err
+	}
 	for _, element := range commandExperience.ExpType {
 		getExpType, err := m.typesRepo.GetByName(ctx, element)
 		if err != nil {
@@ -1178,6 +1181,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			return nil, insertToFilterAT
 		}
 	}
+
 	var photoIds []string
 	err = m.expPhotos.DeleteByExpId(ctx, experiences.Id, currentUserMerchant.MerchantEmail)
 	if err != nil {
@@ -1210,11 +1214,12 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		}
 	}
 
-	_ = m.expPhotos.Deletes(ctx, photoIds, *insertToExperience, currentUserMerchant.MerchantEmail)
-
 	var expPaymentIds []string
+	err = m.paymentRepo.DeleteByExpId(ctx, experiences.Id, currentUserMerchant.MerchantEmail)
+	if err != nil {
+		return nil, err
+	}
 	for _, element := range commandExperience.ExpPayment {
-		if element.Id == "" {
 			var priceItemType int
 			if element.PriceItemType == "Per Pax" {
 				priceItemType = 1
@@ -1256,50 +1261,14 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			}
 			expPaymentIds = append(expPaymentIds, id)
 			element.Id = id
-
-		} else {
-			var priceItemType int
-			if element.PriceItemType == "Per Pax" {
-				priceItemType = 1
-			} else {
-				priceItemType = 0
-			}
-			var currency int
-			if element.Currency == "USD" {
-				currency = 1
-			} else {
-				currency = 0
-			}
-			payments := models.ExperiencePayment{
-				Id:               element.Id,
-				CreatedBy:        "",
-				CreatedDate:      time.Time{},
-				ModifiedBy:       &currentUserMerchant.MerchantEmail,
-				ModifiedDate:     &time.Time{},
-				DeletedBy:        nil,
-				DeletedDate:      nil,
-				IsDeleted:        0,
-				IsActive:         0,
-				ExpPaymentTypeId: element.PaymentTypeId,
-				ExpId:            *insertToExperience,
-				PriceItemType:    priceItemType,
-				Currency:         currency,
-				Price:            element.Price,
-				CustomPrice:      nil,
-			}
-
-			err = m.paymentRepo.Update(ctx, payments)
-
-			expPaymentIds = append(expPaymentIds, element.Id)
-		}
-
 	}
 
-	_ = m.paymentRepo.Deletes(ctx, expPaymentIds, *insertToExperience, currentUserMerchant.MerchantEmail)
-
 	var expAvailabilityIds []string
+	err = m.exp_availablitiy.DeleteByExpId(ctx, experiences.Id, currentUserMerchant.MerchantEmail)
+	if err != nil {
+		return nil, err
+	}
 	for _, element := range commandExperience.ExpAvailability {
-		if element.Id == "" {
 			date, _ := json.Marshal(element.Date)
 			expAvailability := models.ExpAvailability{
 				Id:                   "",
@@ -1323,35 +1292,14 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			}
 			expAvailabilityIds = append(expAvailabilityIds, id)
 			element.Id = id
-		} else {
-			date, _ := json.Marshal(element.Date)
-			expAvailability := models.ExpAvailability{
-				Id:                   element.Id,
-				CreatedBy:            "",
-				CreatedDate:          time.Time{},
-				ModifiedBy:           &currentUserMerchant.MerchantEmail,
-				ModifiedDate:         &time.Time{},
-				DeletedBy:            nil,
-				DeletedDate:          nil,
-				IsDeleted:            0,
-				IsActive:             0,
-				ExpAvailabilityMonth: element.Month,
-				ExpAvailabilityDate:  string(date),
-				ExpAvailabilityYear:  element.Year,
-				ExpId:                *insertToExperience,
-			}
-
-			err = m.exp_availablitiy.Update(ctx, expAvailability)
-			expAvailabilityIds = append(expAvailabilityIds, element.Id)
-		}
-
 	}
-
-	_ = m.exp_availablitiy.Deletes(ctx, expAvailabilityIds, *insertToExperience, currentUserMerchant.MerchantEmail)
-
+	
 	var addOnIds []string
+	err = m.adOnsRepo.DeleteByExpId(ctx, experiences.Id, currentUserMerchant.MerchantEmail)
+	if err != nil {
+		return nil, err
+	}
 	for _, element := range commandExperience.ExperienceAddOn {
-		if element.Id == "" {
 			var currency int
 			if element.Currency == "USD" {
 				currency = 1
@@ -1380,35 +1328,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			}
 			addOnIds = append(addOnIds, id)
 			element.Id = id
-		} else {
-			var currency int
-			if element.Currency == "USD" {
-				currency = 1
-			} else {
-				currency = 0
-			}
-			addOns := models.ExperienceAddOn{
-				Id:           element.Id,
-				CreatedBy:    "",
-				CreatedDate:  time.Time{},
-				ModifiedBy:   &currentUserMerchant.MerchantEmail,
-				ModifiedDate: &time.Time{},
-				DeletedBy:    nil,
-				DeletedDate:  nil,
-				IsDeleted:    0,
-				IsActive:     0,
-				Name:         element.Name,
-				Desc:         element.Desc,
-				Currency:     currency,
-				Amount:       element.Amount,
-				ExpId:        *insertToExperience,
-			}
-			err = m.adOnsRepo.Update(ctx, addOns)
-			addOnIds = append(addOnIds, element.Id)
-		}
-
 	}
-	_ = m.adOnsRepo.Deletes(ctx, addOnIds, *insertToExperience, currentUserMerchant.MerchantEmail)
 
 	var status string
 	if commandExperience.Status == 1 {
