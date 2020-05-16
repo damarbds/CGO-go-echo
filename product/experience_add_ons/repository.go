@@ -10,4 +10,5 @@ type Repository interface {
 	Insert(ctx context.Context, addOns models.ExperienceAddOn) (string, error)
 	Update(ctx context.Context, addOns models.ExperienceAddOn) error
 	Deletes(ctx context.Context, ids []string, expId string, deletedBy string) error
+	DeleteByExpId(ctx context.Context, expId string, deletedBy string) error
 }

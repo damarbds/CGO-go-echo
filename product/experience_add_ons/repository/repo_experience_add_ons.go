@@ -19,6 +19,7 @@ type experienceAddOnsRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewexperienceRepository will create an object that represent the article.repository interface
 func NewexperienceRepository(Conn *sql.DB) experience_add_ons.Repository {
 	return &experienceAddOnsRepository{Conn}
@@ -138,6 +139,29 @@ func (m *experienceAddOnsRepository) Deletes(ctx context.Context, ids []string, 
 			query = query + ` OR id !=` + id
 		}
 	}
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
+
+
+func (m *experienceAddOnsRepository) DeleteByExpId(ctx context.Context, expId string, deletedBy string) error {
+	query := `UPDATE experience_add_ons SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
+
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
