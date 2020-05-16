@@ -508,7 +508,6 @@ func (b bookingExpUsecase) SendCharge(ctx context.Context, bookingId, paymentTyp
 
 	booking, err := b.bookingExpRepo.GetByID(ctx, bookingId)
 	if err != nil {
-		fmt.Println("errGet", err.Error())
 		return nil, err
 	}
 

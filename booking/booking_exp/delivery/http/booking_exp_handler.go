@@ -112,7 +112,7 @@ func (a *booking_expHandler) GetMyBooking(c echo.Context) error {
 
 	var transactionStatus, bookingStatus int
 	if status == "confirm" {
-		transactionStatus = 3
+		transactionStatus = 2
 		bookingStatus = 1
 	} else if status == "waiting" {
 		transactionStatus = 1
