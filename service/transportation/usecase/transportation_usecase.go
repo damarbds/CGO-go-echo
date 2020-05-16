@@ -369,8 +369,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN provinces pdest ON cdest.province_id = pdest.id
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
-		s.is_deleted = 0
-		AND s.is_active = 1
+		t.is_deleted = 0
+		AND t.is_active = 1
 		AND t.is_return = 0`
 	} else {
 		query = `
@@ -413,8 +413,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN provinces pdest ON cdest.province_id = pdest.id
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
-	s.is_deleted = 0
-	AND s.is_active = 1`
+	t.is_deleted = 0
+	AND t.is_active = 1`
 
 		queryCount = `
 	SELECT
@@ -430,8 +430,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		JOIN provinces pdest ON cdest.province_id = pdest.id
 		JOIN merchants m on t.merchant_id = m.id
 	WHERE
-	s.is_deleted = 0
-	AND s.is_active = 1`
+	t.is_deleted = 0
+	AND t.is_active = 1`
 	}
 
 	if isMerchant {
@@ -482,6 +482,9 @@ func (t transportationUsecase) FilterSearchTrans(
 		if isReturn {
 			query = query + ` AND t.harbors_source_id = '` + harborDestId + `'`
 			queryCount = queryCount + ` AND t.harbors_source_id = '` + harborDestId + `'`
+		} else {
+			query = query + ` AND t.is_return = 0`
+			queryCount = queryCount + ` AND t.is_return = 0`
 		}
 	}
 	if harborDestId != "" {
@@ -490,6 +493,9 @@ func (t transportationUsecase) FilterSearchTrans(
 		if isReturn {
 			query = query + ` AND t.harbors_dest_id = '` + harborSourceId + `'`
 			queryCount = queryCount + ` AND t.harbors_dest_id = '` + harborSourceId + `'`
+		} else {
+			query = query + ` AND t.is_return = 0`
+			queryCount = queryCount + ` AND t.is_return = 0`
 		}
 	}
 	//if guest != 0 {
