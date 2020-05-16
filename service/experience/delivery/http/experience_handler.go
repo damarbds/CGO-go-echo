@@ -2,12 +2,13 @@ package http
 
 import (
 	"fmt"
-	"github.com/service/transportation"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/service/transportation"
 
 	"github.com/auth/identityserver"
 	"github.com/labstack/echo"
@@ -26,16 +27,16 @@ type ResponseError struct {
 // experienceHandler  represent the httphandler for experience
 type experienceHandler struct {
 	transportationsUsecase transportation.Usecase
-	experienceUsecase experience.Usecase
-	isUsecase         identityserver.Usecase
+	experienceUsecase      experience.Usecase
+	isUsecase              identityserver.Usecase
 }
 
 // NewexperienceHandler will initialize the experiences/ resources endpoint
-func NewexperienceHandler(e *echo.Echo, t transportation.Usecase,us experience.Usecase, is identityserver.Usecase) {
+func NewexperienceHandler(e *echo.Echo, t transportation.Usecase, us experience.Usecase, is identityserver.Usecase) {
 	handler := &experienceHandler{
-		isUsecase:         is,
-		experienceUsecase: us,
-		transportationsUsecase:t,
+		isUsecase:              is,
+		experienceUsecase:      us,
+		transportationsUsecase: t,
 	}
 	//e.POST("/experiences", handler.Createexperience)
 	e.PUT("service/change-status", handler.UpdateStatusExpORTrans)
@@ -109,17 +110,15 @@ func (a *experienceHandler) UploadFile(c echo.Context) error {
 		if error != nil {
 			return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 		}
-			imagePath = append(imagePath,imagePat)
+		imagePath = append(imagePath, imagePat)
 		targetFile.Close()
-			
-			//out.Close()
-			//os.Remove(out.Name())
+
+		//out.Close()
+		//os.Remove(out.Name())
 		errRemove := os.Remove(fileLocation)
 		if errRemove != nil {
 			return models.ErrInternalServerError
 		}
-
-
 
 	}
 	return c.JSON(http.StatusOK, imagePath)
@@ -144,16 +143,16 @@ func (a *experienceHandler) UpdateStatusExpORTrans(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	if experienceCommand.ExpId != ""{
+	if experienceCommand.ExpId != "" {
 
-		response, error := a.experienceUsecase.UpdateStatus(ctx, experienceCommand.Status,experienceCommand.ExpId, token)
+		response, error := a.experienceUsecase.UpdateStatus(ctx, experienceCommand.Status, experienceCommand.ExpId, token)
 
 		if error != nil {
 			return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 		}
 		return c.JSON(http.StatusOK, response)
-	}else if experienceCommand.TransId != ""{
-		response, error := a.transportationsUsecase.UpdateStatus(ctx, experienceCommand.Status,experienceCommand.TransId, token)
+	} else if experienceCommand.TransId != "" {
+		response, error := a.transportationsUsecase.UpdateStatus(ctx, experienceCommand.Status, experienceCommand.TransId, token)
 
 		if error != nil {
 			return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -349,7 +348,7 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	}
 
 	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, needMerchantAuth, search, token, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
-		bottomprice, upprice, sortby, page, limit, offset,provinceID)
+		bottomprice, upprice, sortby, page, limit, offset, provinceID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
