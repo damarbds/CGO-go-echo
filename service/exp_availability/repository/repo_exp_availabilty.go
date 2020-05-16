@@ -2,11 +2,11 @@ package repository
 
 import (
 	"database/sql"
+	"github.com/service/exp_availability"
 	"time"
 
 	guuid "github.com/google/uuid"
 	"github.com/models"
-	exp_availability "github.com/service/exp_availability"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
@@ -15,6 +15,11 @@ type exp_availabilityRepository struct {
 	Conn *sql.DB
 }
 
+
+// NewExpexp_availabilityRepository will create an object that represent the exp_exp_availability.repository interface
+func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
+	return &exp_availabilityRepository{Conn}
+}
 func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*string) ([]*models.ExpAvailability, error) {
 	query := `SELECT * FROM exp_availabilities WHERE `
 	for index, id := range expId {
@@ -38,10 +43,6 @@ func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*s
 	return res, nil
 }
 
-// NewExpexp_availabilityRepository will create an object that represent the exp_exp_availability.repository interface
-func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
-	return &exp_availabilityRepository{Conn}
-}
 func checkCount(rows *sql.Rows) (count int, err error) {
 	for rows.Next() {
 		err = rows.Scan(&count)
@@ -202,6 +203,28 @@ func (m *exp_availabilityRepository) Deletes(ctx context.Context, ids []string, 
 			query = query + ` OR id !=` + id
 		}
 	}
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
+
+func (m *exp_availabilityRepository) DeleteByExpId(ctx context.Context, expId string, deletedBy string) error {
+	query := `UPDATE exp_availabilities SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
+
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
