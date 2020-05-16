@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/booking/booking_exp"
@@ -393,8 +394,7 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 		JOIN countries co ON p.country_id = co.id
 		JOIN merchants m ON b.merchant_id = m.id`
 
-	result := make([]*models.BookingExpJoin, 0)
-
+	result := make([]*models.BookingExpJoin, len(bookingIds))
 	if len(bookingIds) != 0 {
 		for index, id := range bookingIds {
 			if index == 0 && index != (len(bookingIds)-1) {
@@ -408,6 +408,7 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 			}
 		}
 
+		fmt.Println(query)
 		list, err := b.fetch(ctx, query)
 		if err != nil {
 			return nil, err
@@ -478,7 +479,7 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 						a.is_active = 1
 					AND a.is_deleted = 0
 					AND a.user_id = ?`
-
+					
 	if status == "confirm" {
 		//bookingStatus = 1
 		query = query + ` 	AND t.status = 2 
@@ -498,6 +499,7 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 
 	if limit != 0 {
 		query = query + ` LIMIT ? OFFSET ?`
+
 		rows, err := b.Conn.QueryContext(ctx, query, userId, limit, offset)
 		if err != nil {
 			logrus.Error(err)
@@ -505,12 +507,12 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 		}
 
 		for rows.Next() {
-			var bookingId string
-			err = rows.Scan(&bookingId)
+			id := new(string)
+			err = rows.Scan(&id)
 			if err != nil {
 				return nil, err
 			}
-			bookingIds = append(bookingIds, &bookingId)
+			bookingIds = append(bookingIds, id)
 		}
 	} else {
 		rows, err := b.Conn.QueryContext(ctx, query, userId)
@@ -520,12 +522,12 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 		}
 
 		for rows.Next() {
-			var bookingId string
-			err = rows.Scan(&bookingId)
+			id := new(string)
+			err = rows.Scan(&id)
 			if err != nil {
 				return nil, err
 			}
-			bookingIds = append(bookingIds, &bookingId)
+			bookingIds = append(bookingIds, id)
 		}
 	}
 	return bookingIds, nil
