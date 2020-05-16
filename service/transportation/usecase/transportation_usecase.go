@@ -703,8 +703,8 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 	}
 	boatDetails, _ := json.Marshal(newCommandTransportation.BoatDetails)
 	facilites, _ := json.Marshal(newCommandTransportation.Facilities)
-	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdFrom
-	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
+	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdTo
+	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdFrom
 	isReturn := 0
 	var transFacilities string
 	transFacilities = string(facilites)
@@ -734,8 +734,8 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		IsReturn: &isReturn,
 	}
 	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
-		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
-		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
+		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
+		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		isReturnn := 1
 		transportationReturn := models.Transportation{
 			Id:              guuid.New().String(),
@@ -911,8 +911,8 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 	}
 	facilites, _ := json.Marshal(newCommandTransportation.Facilities)
 	boatDetails, _ := json.Marshal(newCommandTransportation.BoatDetails)
-	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdFrom
-	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdTo
+	harborsDestId = newCommandTransportation.DepartureRoute.HarborsIdTo
+	harborsSourceId = newCommandTransportation.DepartureRoute.HarborsIdFrom
 	var transFacilities string
 	transFacilities = string(facilites)
 	isReturn := 0
@@ -942,8 +942,8 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		IsReturn:&isReturn,
 	}
 	if newCommandTransportation.ReturnRoute.HarborsIdFrom != nil && newCommandTransportation.ReturnRoute.HarborsIdTo != nil {
-		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
-		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
+		harborsDestReturnId := newCommandTransportation.ReturnRoute.HarborsIdTo
+		harborsSourceReturnId := newCommandTransportation.ReturnRoute.HarborsIdFrom
 		isReturnn := 1
 		transportationReturn := models.Transportation{
 			Id:              newCommandTransportation.ReturnRoute.Id,
