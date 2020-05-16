@@ -16,6 +16,7 @@ type expPaymentRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewExpPaymentRepository will create an object that represent the exp_payment.repository interface
 func NewExpPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &expPaymentRepository{Conn}
@@ -145,6 +146,29 @@ func (m *expPaymentRepository) Deletes(ctx context.Context, ids []string, expId 
 			query = query + ` OR id !=` + id
 		}
 	}
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0, expId)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
+
+
+func (m *expPaymentRepository) DeleteByExpId(ctx context.Context, expId string, deletedBy string) error {
+	query := `UPDATE experience_payments SET deleted_by=? , deleted_date=? , is_deleted=? , is_active=? WHERE exp_id=?`
+
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
