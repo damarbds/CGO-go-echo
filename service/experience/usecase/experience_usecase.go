@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/booking/booking_exp"
-	"github.com/service/temp_user_preferences"
 	"math"
 	"strconv"
 	"time"
+
+	"github.com/booking/booking_exp"
+	"github.com/service/temp_user_preferences"
 
 	"github.com/service/filter_activity_type"
 
@@ -29,8 +30,8 @@ import (
 )
 
 type experienceUsecase struct {
-	bookingRepo 	booking_exp.Repository
-	tempUserPreRepo temp_user_preferences.Repository
+	bookingRepo      booking_exp.Repository
+	tempUserPreRepo  temp_user_preferences.Repository
 	filterATRepo     filter_activity_type.Repository
 	adOnsRepo        experience_add_ons.Repository
 	experienceRepo   experience.Repository
@@ -45,7 +46,6 @@ type experienceUsecase struct {
 	contextTimeout   time.Duration
 	exp_availablitiy exp_availability.Repository
 }
-
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
@@ -66,8 +66,8 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
-		bookingRepo:b,
-		tempUserPreRepo:tup,
+		bookingRepo:      b,
+		tempUserPreRepo:  tup,
 		filterATRepo:     fac,
 		adOnsRepo:        adOns,
 		exp_availablitiy: ea,
@@ -84,7 +84,7 @@ func NewexperienceUsecase(
 	}
 }
 
-func (m experienceUsecase) UpdateStatus(ctx context.Context, status int, id string,token string) (*models.NewCommandChangeStatus, error) {
+func (m experienceUsecase) UpdateStatus(ctx context.Context, status int, id string, token string) (*models.NewCommandChangeStatus, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -93,16 +93,16 @@ func (m experienceUsecase) UpdateStatus(ctx context.Context, status int, id stri
 		return nil, err
 	}
 
-	errorUpdate := m.experienceRepo.UpdateStatus(ctx,status,id,currentMerchant.MerchantEmail)
+	errorUpdate := m.experienceRepo.UpdateStatus(ctx, status, id, currentMerchant.MerchantEmail)
 	if errorUpdate != nil {
-		return nil,errorUpdate
+		return nil, errorUpdate
 	}
 	result := models.NewCommandChangeStatus{
 		ExpId:   id,
 		TransId: "",
 		Status:  status,
 	}
-	return &result,nil
+	return &result, nil
 }
 func (m experienceUsecase) GetExpPendingTransactionCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
@@ -236,10 +236,10 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 		return nil, err
 	}
 	var expListDto []*models.ExpUserDiscoverPreferenceDto
-	for _,tup := range tempUserPreference{
-		expList,err := m.experienceRepo.GetUserDiscoverPreferenceByHarborsIdOrProvince(ctx,tup.HarborsId,tup.ProvinceId)
+	for _, tup := range tempUserPreference {
+		expList, err := m.experienceRepo.GetUserDiscoverPreferenceByHarborsIdOrProvince(ctx, tup.HarborsId, tup.ProvinceId)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		for _, element := range expList {
 
@@ -257,7 +257,7 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 			//}
 
 			var coverPhotos models.CoverPhotosObj
-			cityPhotos := make([]models.CoverPhotosObj,0)
+			cityPhotos := make([]models.CoverPhotosObj, 0)
 			if element.ExpCoverPhoto != nil {
 				covertPhoto := models.CoverPhotosObj{
 					Original:  *element.ExpCoverPhoto,
@@ -302,15 +302,15 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 
 			if len(expListDto) == 0 {
 				cityDto := models.ExpUserDiscoverPreferenceDto{
-					ProvinceId:element.ProvinceId,
-					ProvinceName:element.ProvinceName,
-					CityId:     element.CityId,
-					City:       element.CityName,
-					CityDesc:   element.CityDesc,
-					Item:       nil,
-					CityPhotos: cityPhotos,
-					HarborsId:element.IdHarbors,
-					HarborsName:element.HarborsName,
+					ProvinceId:   element.ProvinceId,
+					ProvinceName: element.ProvinceName,
+					CityId:       element.CityId,
+					City:         element.CityName,
+					CityDesc:     element.CityDesc,
+					Item:         nil,
+					CityPhotos:   cityPhotos,
+					HarborsId:    element.IdHarbors,
+					HarborsName:  element.HarborsName,
 				}
 				expDto := models.ExperienceUserDiscoverPreferenceDto{
 					Id:          element.Id,
@@ -337,15 +337,15 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 				}
 				if searchDto == nil {
 					cityDto := models.ExpUserDiscoverPreferenceDto{
-						ProvinceId:element.ProvinceId,
-						ProvinceName:element.ProvinceName,
-						CityId:     element.CityId,
-						City:       element.CityName,
-						CityDesc:   element.CityDesc,
-						Item:       nil,
-						CityPhotos: cityPhotos,
-						HarborsId:element.IdHarbors,
-						HarborsName:element.HarborsName,
+						ProvinceId:   element.ProvinceId,
+						ProvinceName: element.ProvinceName,
+						CityId:       element.CityId,
+						City:         element.CityName,
+						CityDesc:     element.CityDesc,
+						Item:         nil,
+						CityPhotos:   cityPhotos,
+						HarborsId:    element.IdHarbors,
+						HarborsName:  element.HarborsName,
 					}
 					expDto := models.ExperienceUserDiscoverPreferenceDto{
 						Id:          element.Id,
@@ -482,7 +482,7 @@ func (m experienceUsecase) FilterSearchExp(
 		query = query + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
 		qCount = qCount + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
 	}
-	if provinceId != ""{
+	if provinceId != "" {
 		query = query + ` AND ci.province_id = '` + provinceId + `'`
 		qCount = qCount + ` AND ci.province_id = '` + provinceId + `'`
 	}
@@ -619,8 +619,8 @@ func (m experienceUsecase) FilterSearchExp(
 	if err != nil {
 		return nil, err
 	}
-	results := make([]*models.ExpSearchObject, 0)
-	for _, exp := range expList {
+	results := make([]*models.ExpSearchObject, len(expList))
+	for i, exp := range expList {
 		var expType []string
 		if errUnmarshal := json.Unmarshal([]byte(exp.ExpType), &expType); errUnmarshal != nil {
 			return nil, models.ErrInternalServerError
@@ -693,7 +693,7 @@ func (m experienceUsecase) FilterSearchExp(
 			transStatus = "Archived"
 		}
 
-		result := &models.ExpSearchObject{
+		results[i] = &models.ExpSearchObject{
 			Id:          exp.Id,
 			ExpTitle:    exp.ExpTitle,
 			ExpType:     expType,
@@ -708,15 +708,6 @@ func (m experienceUsecase) FilterSearchExp(
 			Province:    exp.Province,
 			CoverPhoto:  coverPhoto,
 			ListPhoto:   listPhotos,
-		}
-		var check models.ExpSearchObject
-		for _,checks := range results {
-			if checks.Id == exp.Id {
-				check = *checks
-			}
-		}
-		if check.Id == "" {
-			results = append(results,result)
 		}
 	}
 	totalRecords, _ := m.experienceRepo.CountFilterSearch(ctx, qCount)
@@ -893,43 +884,43 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	expRules, _ := json.Marshal(commandExperience.ExpRules)
 	expTypes, _ := json.Marshal(commandExperience.ExpType)
 	experiences := models.Experience{
-		Id:                      "",
-		CreatedBy:               currentUserMerchant.MerchantEmail,
-		CreatedDate:             time.Time{},
-		ModifiedBy:              nil,
-		ModifiedDate:            nil,
-		DeletedBy:               nil,
-		DeletedDate:             nil,
-		IsDeleted:               0,
-		IsActive:                0,
-		ExpTitle:                commandExperience.ExpTitle,
-		ExpType:                 string(expTypes),
-		ExpTripType:             commandExperience.ExpTripType,
-		ExpBookingType:          commandExperience.ExpBookingType,
-		ExpDesc:                 commandExperience.ExpDesc,
-		ExpMaxGuest:             commandExperience.ExpMaxGuest,
-		ExpPickupPlace:          commandExperience.ExpPickupPlace,
-		ExpPickupTime:           commandExperience.ExpPickupTime,
-		ExpPickupPlaceLongitude: commandExperience.ExpPickupPlaceLongitude,
-		ExpPickupPlaceLatitude:  commandExperience.ExpPickupPlaceLatitude,
-		ExpPickupPlaceMapsName:  commandExperience.ExpPickupPlaceMapsName,
-		ExpInternary:            string(expItinerary),
-		ExpFacilities:           string(expFacilities),
-		ExpInclusion:            string(expInclusion),
-		ExpRules:                string(expRules),
-		Status:                  commandExperience.Status,
-		Rating:                  0,
-		ExpLocationLatitude:     commandExperience.ExpLocationLatitude,
-		ExpLocationLongitude:    commandExperience.ExpLocationLongitude,
-		ExpLocationName:         commandExperience.ExpLocationName,
-		ExpCoverPhoto:           commandExperience.ExpCoverPhoto,
-		ExpDuration:             commandExperience.ExpDuration,
-		MinimumBookingId:        &commandExperience.MinimumBookingId,
-		MerchantId:              currentUserMerchant.Id,
-		HarborsId:               &commandExperience.HarborsId,
+		Id:                       "",
+		CreatedBy:                currentUserMerchant.MerchantEmail,
+		CreatedDate:              time.Time{},
+		ModifiedBy:               nil,
+		ModifiedDate:             nil,
+		DeletedBy:                nil,
+		DeletedDate:              nil,
+		IsDeleted:                0,
+		IsActive:                 0,
+		ExpTitle:                 commandExperience.ExpTitle,
+		ExpType:                  string(expTypes),
+		ExpTripType:              commandExperience.ExpTripType,
+		ExpBookingType:           commandExperience.ExpBookingType,
+		ExpDesc:                  commandExperience.ExpDesc,
+		ExpMaxGuest:              commandExperience.ExpMaxGuest,
+		ExpPickupPlace:           commandExperience.ExpPickupPlace,
+		ExpPickupTime:            commandExperience.ExpPickupTime,
+		ExpPickupPlaceLongitude:  commandExperience.ExpPickupPlaceLongitude,
+		ExpPickupPlaceLatitude:   commandExperience.ExpPickupPlaceLatitude,
+		ExpPickupPlaceMapsName:   commandExperience.ExpPickupPlaceMapsName,
+		ExpInternary:             string(expItinerary),
+		ExpFacilities:            string(expFacilities),
+		ExpInclusion:             string(expInclusion),
+		ExpRules:                 string(expRules),
+		Status:                   commandExperience.Status,
+		Rating:                   0,
+		ExpLocationLatitude:      commandExperience.ExpLocationLatitude,
+		ExpLocationLongitude:     commandExperience.ExpLocationLongitude,
+		ExpLocationName:          commandExperience.ExpLocationName,
+		ExpCoverPhoto:            commandExperience.ExpCoverPhoto,
+		ExpDuration:              commandExperience.ExpDuration,
+		MinimumBookingId:         &commandExperience.MinimumBookingId,
+		MerchantId:               currentUserMerchant.Id,
+		HarborsId:                &commandExperience.HarborsId,
 		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
-		ExpPaymentDeadlineType : &commandExperience.ExpPaymentDeadlineType,
-		IsCustomisedByUser : &commandExperience.IsCustomisedByUser,
+		ExpPaymentDeadlineType:   &commandExperience.ExpPaymentDeadlineType,
+		IsCustomisedByUser:       &commandExperience.IsCustomisedByUser,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1114,43 +1105,43 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	expRules, _ := json.Marshal(commandExperience.ExpRules)
 	expTypes, _ := json.Marshal(commandExperience.ExpType)
 	experiences := models.Experience{
-		Id:                      commandExperience.Id,
-		CreatedBy:               currentUserMerchant.MerchantEmail,
-		CreatedDate:             time.Time{},
-		ModifiedBy:              &currentUserMerchant.MerchantEmail,
-		ModifiedDate:            &time.Time{},
-		DeletedBy:               nil,
-		DeletedDate:             nil,
-		IsDeleted:               0,
-		IsActive:                0,
-		ExpTitle:                commandExperience.ExpTitle,
-		ExpType:                 string(expTypes),
-		ExpTripType:             commandExperience.ExpTripType,
-		ExpBookingType:          commandExperience.ExpBookingType,
-		ExpDesc:                 commandExperience.ExpDesc,
-		ExpMaxGuest:             commandExperience.ExpMaxGuest,
-		ExpPickupPlace:          commandExperience.ExpPickupPlace,
-		ExpPickupTime:           commandExperience.ExpPickupTime,
-		ExpPickupPlaceLongitude: commandExperience.ExpPickupPlaceLongitude,
-		ExpPickupPlaceLatitude:  commandExperience.ExpPickupPlaceLatitude,
-		ExpPickupPlaceMapsName:  commandExperience.ExpPickupPlaceMapsName,
-		ExpInternary:            string(expItinerary),
-		ExpFacilities:           string(expFacilities),
-		ExpInclusion:            string(expInclusion),
-		ExpRules:                string(expRules),
-		Status:                  commandExperience.Status,
-		Rating:                  0,
-		ExpLocationLatitude:     commandExperience.ExpLocationLatitude,
-		ExpLocationLongitude:    commandExperience.ExpLocationLongitude,
-		ExpLocationName:         commandExperience.ExpLocationName,
-		ExpCoverPhoto:           commandExperience.ExpCoverPhoto,
-		ExpDuration:             commandExperience.ExpDuration,
-		MinimumBookingId:        &commandExperience.MinimumBookingId,
-		MerchantId:              currentUserMerchant.Id,
-		HarborsId:               &commandExperience.HarborsId,
+		Id:                       commandExperience.Id,
+		CreatedBy:                currentUserMerchant.MerchantEmail,
+		CreatedDate:              time.Time{},
+		ModifiedBy:               &currentUserMerchant.MerchantEmail,
+		ModifiedDate:             &time.Time{},
+		DeletedBy:                nil,
+		DeletedDate:              nil,
+		IsDeleted:                0,
+		IsActive:                 0,
+		ExpTitle:                 commandExperience.ExpTitle,
+		ExpType:                  string(expTypes),
+		ExpTripType:              commandExperience.ExpTripType,
+		ExpBookingType:           commandExperience.ExpBookingType,
+		ExpDesc:                  commandExperience.ExpDesc,
+		ExpMaxGuest:              commandExperience.ExpMaxGuest,
+		ExpPickupPlace:           commandExperience.ExpPickupPlace,
+		ExpPickupTime:            commandExperience.ExpPickupTime,
+		ExpPickupPlaceLongitude:  commandExperience.ExpPickupPlaceLongitude,
+		ExpPickupPlaceLatitude:   commandExperience.ExpPickupPlaceLatitude,
+		ExpPickupPlaceMapsName:   commandExperience.ExpPickupPlaceMapsName,
+		ExpInternary:             string(expItinerary),
+		ExpFacilities:            string(expFacilities),
+		ExpInclusion:             string(expInclusion),
+		ExpRules:                 string(expRules),
+		Status:                   commandExperience.Status,
+		Rating:                   0,
+		ExpLocationLatitude:      commandExperience.ExpLocationLatitude,
+		ExpLocationLongitude:     commandExperience.ExpLocationLongitude,
+		ExpLocationName:          commandExperience.ExpLocationName,
+		ExpCoverPhoto:            commandExperience.ExpCoverPhoto,
+		ExpDuration:              commandExperience.ExpDuration,
+		MinimumBookingId:         &commandExperience.MinimumBookingId,
+		MerchantId:               currentUserMerchant.Id,
+		HarborsId:                &commandExperience.HarborsId,
 		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
-		ExpPaymentDeadlineType : &commandExperience.ExpPaymentDeadlineType,
-		IsCustomisedByUser : &commandExperience.IsCustomisedByUser,
+		ExpPaymentDeadlineType:   &commandExperience.ExpPaymentDeadlineType,
+		IsCustomisedByUser:       &commandExperience.IsCustomisedByUser,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1160,7 +1151,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	}
 	insertToExperience, err := m.experienceRepo.Update(ctx, &experiences)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	err = m.filterATRepo.DeleteByExpId(ctx, experiences.Id)
 
@@ -1188,7 +1179,7 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		}
 	}
 	var photoIds []string
-	err = m.expPhotos.DeleteByExpId(ctx, experiences.Id,currentUserMerchant.MerchantEmail)
+	err = m.expPhotos.DeleteByExpId(ctx, experiences.Id, currentUserMerchant.MerchantEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -1498,7 +1489,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 				Currency: currency,
 				Amount:   element.Amount,
 			}
-			expAddOns = append(expAddOns,addOns)
+			expAddOns = append(expAddOns, addOns)
 		}
 	}
 	var expPayment []models.ExpPaymentObj
@@ -1517,7 +1508,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		} else {
 			priceItemType = "Per Trip"
 		}
-		customPrice := make([]models.CustomPrice,0)
+		customPrice := make([]models.CustomPrice, 0)
 		if elementPayment.CustomPrice != nil {
 			if *elementPayment.CustomPrice != "" {
 				errObject := json.Unmarshal([]byte(*elementPayment.CustomPrice), &customPrice)
@@ -1534,7 +1525,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 			PaymentTypeId:   elementPayment.ExpPaymentTypeId,
 			PaymentTypeName: elementPayment.ExpPaymentTypeName,
 			PaymentTypeDesc: elementPayment.ExpPaymentTypeDesc,
-			CustomPrice:customPrice,
+			CustomPrice:     customPrice,
 		}
 		expPayment = append(expPayment, expPayobj)
 	}
@@ -1557,17 +1548,17 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 			if errObject != nil {
 				return nil, models.ErrInternalServerError
 			}
-			if res.ExpTripType == "Private Trip"{
-				for _,date := range dates{
-					checkBookingCount , err := m.bookingRepo.GetCountByBookingDateExp(ctx,date,element.ExpId)
+			if res.ExpTripType == "Private Trip" {
+				for _, date := range dates {
+					checkBookingCount, err := m.bookingRepo.GetCountByBookingDateExp(ctx, date, element.ExpId)
 					if err != nil {
-						return nil,err
+						return nil, err
 					}
 					if checkBookingCount == 0 {
-						expA.Date = append(expA.Date,date)
+						expA.Date = append(expA.Date, date)
 					}
 				}
-			}else {
+			} else {
 				expA.Date = dates
 			}
 			expAvailability = append(expAvailability, expA)
@@ -1613,47 +1604,47 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 	}
 	countRating, err := m.reviewsRepo.CountRating(ctx, 0, res.Id)
 	experiences := models.ExperienceDto{
-		Id:                      res.Id,
-		ExpTitle:                res.ExpTitle,
-		ExpType:                 expType,
-		ExpTripType:             res.ExpTripType,
-		ExpBookingType:          res.ExpBookingType,
-		ExpDesc:                 res.ExpDesc,
-		ExpMaxGuest:             res.ExpMaxGuest,
-		ExpPickupPlace:          res.ExpPickupPlace,
-		ExpPickupTime:           res.ExpPickupTime,
-		ExpPickupPlaceLongitude: res.ExpPickupPlaceLongitude,
-		ExpPickupPlaceLatitude:  res.ExpPickupPlaceLatitude,
-		ExpPickupPlaceMapsName:  res.ExpPickupPlaceMapsName,
-		ExpInternary:            expItinerary,
-		ExpFacilities:           expFacilities,
-		ExpInclusion:            expInclusion,
-		ExpRules:                expRules,
-		ExpAvailability:         expAvailability,
-		ExpPayment:              expPayment,
-		ExpPhotos:               expPhotos,
-		ExperienceAddOn:expAddOns,
-		Status:                  res.Status,
-		Rating:                  res.Rating,
-		CountRating:             countRating,
-		ExpLocationLatitude:     res.ExpLocationLatitude,
-		ExpLocationLongitude:    res.ExpLocationLongitude,
-		ExpLocationName:         res.ExpLocationName,
-		ExpCoverPhoto:           res.ExpCoverPhoto,
-		ExpDuration:             res.ExpDuration,
-		MinimumBooking:          minimumBooking,
-		MerchantId:              res.MerchantId,
-		HarborsName:             harbors.HarborsName,
-		City:                    city.CityName,
-		Province:                province.ProvinceName,
-		GuideReview : res.GuideReview,
-		ActivitiesReview : res.ActivitiesReview,
-		ServiceReview : res.ServiceReview,
-		CleanlinessReview : res.CleanlinessReview,
-		ValueReview :res.ValueReview,
+		Id:                       res.Id,
+		ExpTitle:                 res.ExpTitle,
+		ExpType:                  expType,
+		ExpTripType:              res.ExpTripType,
+		ExpBookingType:           res.ExpBookingType,
+		ExpDesc:                  res.ExpDesc,
+		ExpMaxGuest:              res.ExpMaxGuest,
+		ExpPickupPlace:           res.ExpPickupPlace,
+		ExpPickupTime:            res.ExpPickupTime,
+		ExpPickupPlaceLongitude:  res.ExpPickupPlaceLongitude,
+		ExpPickupPlaceLatitude:   res.ExpPickupPlaceLatitude,
+		ExpPickupPlaceMapsName:   res.ExpPickupPlaceMapsName,
+		ExpInternary:             expItinerary,
+		ExpFacilities:            expFacilities,
+		ExpInclusion:             expInclusion,
+		ExpRules:                 expRules,
+		ExpAvailability:          expAvailability,
+		ExpPayment:               expPayment,
+		ExpPhotos:                expPhotos,
+		ExperienceAddOn:          expAddOns,
+		Status:                   res.Status,
+		Rating:                   res.Rating,
+		CountRating:              countRating,
+		ExpLocationLatitude:      res.ExpLocationLatitude,
+		ExpLocationLongitude:     res.ExpLocationLongitude,
+		ExpLocationName:          res.ExpLocationName,
+		ExpCoverPhoto:            res.ExpCoverPhoto,
+		ExpDuration:              res.ExpDuration,
+		MinimumBooking:           minimumBooking,
+		MerchantId:               res.MerchantId,
+		HarborsName:              harbors.HarborsName,
+		City:                     city.CityName,
+		Province:                 province.ProvinceName,
+		GuideReview:              res.GuideReview,
+		ActivitiesReview:         res.ActivitiesReview,
+		ServiceReview:            res.ServiceReview,
+		CleanlinessReview:        res.CleanlinessReview,
+		ValueReview:              res.ValueReview,
 		ExpPaymentDeadlineAmount: res.ExpPaymentDeadlineAmount,
-		ExpPaymentDeadlineType : res.ExpPaymentDeadlineType,
-		IsCustomisedByUser : res.IsCustomisedByUser,
+		ExpPaymentDeadlineType:   res.ExpPaymentDeadlineType,
+		IsCustomisedByUser:       res.IsCustomisedByUser,
 	}
 	return &experiences, nil
 }

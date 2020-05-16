@@ -22,6 +22,7 @@ const (
 type experienceRepository struct {
 	Conn *sql.DB
 }
+
 // NewexperienceRepository will create an object that represent the article.repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
@@ -345,9 +346,9 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 			&t.ServiceReview,
 			&t.CleanlinessReview,
 			&t.ValueReview,
-			&t.ExpPaymentDeadlineAmount ,
-			&t.ExpPaymentDeadlineType ,
-			&t.IsCustomisedByUser ,
+			&t.ExpPaymentDeadlineAmount,
+			&t.ExpPaymentDeadlineType,
+			&t.IsCustomisedByUser,
 		)
 
 		if err != nil {
@@ -419,9 +420,9 @@ func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.C
 			&t.ServiceReview,
 			&t.CleanlinessReview,
 			&t.ValueReview,
-			&t.ExpPaymentDeadlineAmount ,
-			&t.ExpPaymentDeadlineType ,
-			&t.IsCustomisedByUser ,
+			&t.ExpPaymentDeadlineAmount,
+			&t.ExpPaymentDeadlineType,
+			&t.IsCustomisedByUser,
 		)
 
 		if err != nil {
@@ -529,9 +530,9 @@ func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query str
 			&t.ServiceReview,
 			&t.CleanlinessReview,
 			&t.ValueReview,
-			&t.ExpPaymentDeadlineAmount ,
-			&t.ExpPaymentDeadlineType ,
-			&t.IsCustomisedByUser ,
+			&t.ExpPaymentDeadlineAmount,
+			&t.ExpPaymentDeadlineType,
+			&t.IsCustomisedByUser,
 			&t.MinimumBookingAmount,
 			&t.MinimumBookingDesc,
 		)
@@ -603,9 +604,9 @@ func (m *experienceRepository) fetch(ctx context.Context, query string, args ...
 			&t.ServiceReview,
 			&t.CleanlinessReview,
 			&t.ValueReview,
-			&t.ExpPaymentDeadlineAmount ,
-			&t.ExpPaymentDeadlineType ,
-			&t.IsCustomisedByUser ,
+			&t.ExpPaymentDeadlineAmount,
+			&t.ExpPaymentDeadlineType,
+			&t.IsCustomisedByUser,
 		)
 
 		if err != nil {
@@ -852,8 +853,8 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 		a.ExpBookingType, a.ExpDesc, a.ExpMaxGuest, a.ExpPickupPlace, a.ExpPickupTime, a.ExpPickupPlaceLongitude,
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.Rating, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
-		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId,a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType,a.IsCustomisedByUser)
+		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser)
 	if err != nil {
 		return nil, err
 	}
@@ -904,8 +905,8 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 		a.ExpBookingType, a.ExpDesc, a.ExpMaxGuest, a.ExpPickupPlace, a.ExpPickupTime, a.ExpPickupPlaceLongitude,
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
-		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId,a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType,a.IsCustomisedByUser, a.Id)
+		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser, a.Id)
 	if err != nil {
 		return nil, err
 	}

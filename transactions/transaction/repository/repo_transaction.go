@@ -17,16 +17,15 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
-
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
 func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Context) ([]*models.TransactionWithBooking, error) {
-	threeDay := time.Now().AddDate(0,0,3).Format("2006-01-02")
-	twoDay := time.Now().AddDate(0,0,2).Format("2006-01-02")
-	tenDay := time.Now().AddDate(0,0,10).Format("2006-01-02")
-	threetyDay := time.Now().AddDate(0,0,30).Format("2006-01-02")
+	threeDay := time.Now().AddDate(0, 0, 3).Format("2006-01-02")
+	twoDay := time.Now().AddDate(0, 0, 2).Format("2006-01-02")
+	tenDay := time.Now().AddDate(0, 0, 10).Format("2006-01-02")
+	threetyDay := time.Now().AddDate(0, 0, 30).Format("2006-01-02")
 
 	query := `
 	SELECT 
@@ -45,23 +44,23 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 		t.total_price != ep.price AND 
 		(DATE(be.booking_date) = ? OR DATE(be.booking_date) = ? OR DATE(be.booking_date) = ? OR DATE(be.booking_date) = ?)`
 
-	rows, err := t.Conn.QueryContext(ctx, query, threeDay,twoDay,tenDay,threetyDay)
+	rows, err := t.Conn.QueryContext(ctx, query, threeDay, twoDay, tenDay, threetyDay)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
 	}
 
-	result := make([]*models.TransactionWithBooking,0)
+	result := make([]*models.TransactionWithBooking, 0)
 	for rows.Next() {
 		t := new(models.TransactionWithBooking)
 		err = rows.Scan(
-			&t.ExpTitle 	,
-			&t.BookedBy 	,
+			&t.ExpTitle,
+			&t.BookedBy,
 			&t.BookedByEmail,
-			&t.BookingDate   ,
-			&t.TotalPrice 		,
-			&t.Price 			,
-			)
+			&t.BookingDate,
+			&t.TotalPrice,
+			&t.Price,
+		)
 		if err != nil {
 			logrus.Error(err)
 			return nil, err
@@ -162,7 +161,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string,isTransportation bool,isExperience bool,isSchedule bool) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int
 
@@ -247,16 +246,16 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		if isSchedule == true {
 			query = query + ` AND DATE(b.booking_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 			queryT = queryT + ` AND DATE(b.booking_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
-		}else {
+		} else {
 			query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 			queryT = queryT + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
 		}
 
 	}
-	if isTransportation == true  && isExperience == false{
+	if isTransportation == true && isExperience == false {
 		query = query + ` AND b.trans_id != '' `
 		queryT = queryT + ` AND b.trans_id != '' `
-	}else if isExperience == true && isTransportation == false{
+	} else if isExperience == true && isTransportation == false {
 		query = query + ` AND b.exp_id != '' `
 		queryT = queryT + ` AND b.exp_id != '' `
 	}
@@ -319,7 +318,6 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		}
 	}
 	if err != nil {
-		fmt.Println("err1", err.Error())
 		return nil, err
 	}
 
@@ -361,9 +359,9 @@ func (t transactionRepository) fetchWithJoin(ctx context.Context, query string, 
 			&t.ExperiencePaymentId,
 			&t.MerchantName,
 			&t.OrderId,
-			&t.ExpDuration 	,
-			&t.ProvinceName 	,
-			&t.CountryName 	,
+			&t.ExpDuration,
+			&t.ProvinceName,
+			&t.CountryName,
 		)
 
 		if err != nil {
