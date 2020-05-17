@@ -13,6 +13,12 @@ type Country struct {
 	IsDeleted    int        `json:"is_deleted" validate:"required"`
 	IsActive     int        `json:"is_active" validate:"required"`
 	CountryName  string     `json:"country_name"`
+	Iso 		*string 		`json:"iso"`
+	Name 		*string		`json:"name"`
+	NiceName 	*string 		`json:"nicename"`
+	Iso3 		*string 		`json:"iso3"`
+	NumCode 	*int    	`json:"numcode"`
+	PhoneCode 	*int 		`json:"phonecode"`
 }
 type CountryDto struct {
 	Id           int        `json:"id"`

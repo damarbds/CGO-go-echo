@@ -24,6 +24,7 @@ type Promo struct {
 	MaxUsage   	*int 		`json:"max_usage"`
 	ProductionCapacity	*int `json:"production_capacity"`
 	CurrencyId *int 	`json:"currency_id"`
+	PromoProductType *int `json:"promo_product_type"`
 	//VoucherValueOptionType *string 	`json:"voucher_value_option_type"`
 }
 type PromoDto struct {
@@ -40,6 +41,7 @@ type PromoDto struct {
 	MaxUsage   	*int 		`json:"max_usage"`
 	ProductionCapacity	*int `json:"production_capacity"`
 	MerchantId	[]string	`json:"merchant_id"`
+	PromoProductType *int `json:"promo_product_type"`
 }
 type NewCommandPromo struct {
 	Id         string  `json:"id"`
@@ -55,6 +57,7 @@ type NewCommandPromo struct {
 	MaxUsage   	int 		`json:"max_usage"`
 	ProductionCapacity int 	`json:"production_capacity"`
 	MerchantId 	[]string	`json:"merchant_id"`
+	PromoProductType *int `json:"promo_product_type"`
 }
 type PromoWithPagination struct {
 	Data []*PromoDto `json:"data"`
