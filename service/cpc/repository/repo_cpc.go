@@ -419,6 +419,12 @@ func (m *cpcRepository) fetchCountry(ctx context.Context, query string, args ...
 			&t.IsDeleted,
 			&t.IsActive,
 			&t.CountryName,
+			&t.Iso ,
+			&t.Name,
+			&t.NiceName ,
+			&t.Iso3 	,
+			&t.NumCode ,
+			&t.PhoneCode 	,
 		)
 
 		if err != nil {
