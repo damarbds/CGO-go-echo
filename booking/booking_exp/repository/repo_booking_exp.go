@@ -493,8 +493,8 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 		//transactionStatus = 0
 		//bookingStatus = 1
 		query = query + ` 	AND t.status = 0 
-							AND DATE(a.booking_date) >= CURRENT_DATE 
-							AND a.expired_date_payment > CURRENT_TIMESTAMP `
+							AND DATE(a.booking_date) >= CURRENT_DATE
+							AND DATE_SUB(a.expired_date_payment, INTERVAL 7 HOUR) > CURRENT_TIMESTAMP + 7`
 	}
 
 	if limit != 0 {

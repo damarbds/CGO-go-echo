@@ -1158,7 +1158,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 					status = "Success"
 				}
 			}else {
-				if element.StatusTransaction == 0 && time.Now().After(*element.ExpiredDatePayment){
+				if element.StatusTransaction == 0 && time.Now().Add(7 * time.Hour).After(element.ExpiredDatePayment.Add(7 * time.Hour)){
 					status = "Payment Expired"
 				}else if element.StatusTransaction == 3 || element.StatusTransaction == 4{
 					status = "Cancelled"
@@ -1232,7 +1232,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 					status = "Success"
 				}
 			}else {
-				if *element.TransactionStatus == 0 && time.Now().After(*element.ExpiredDatePayment){
+				if *element.TransactionStatus == 0 && time.Now().Add(7 * time.Hour).After(element.ExpiredDatePayment.Add(7 * time.Hour)){
 					status = "Payment Expired"
 				}else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4{
 					status = "Cancelled"
@@ -1338,7 +1338,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 					status = "Success"
 				}
 			}else {
-				if element.StatusTransaction == 0 && time.Now().After(*element.ExpiredDatePayment){
+				if element.StatusTransaction == 0 && time.Now().Add(7 * time.Hour).After(element.ExpiredDatePayment.Add(7 * time.Hour)){
 					status = "Payment Expired"
 				}else if element.StatusTransaction == 3 || element.StatusTransaction == 4{
 					status = "Cancelled"
@@ -1410,7 +1410,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 					status = "Success"
 				}
 			}else {
-				if *element.TransactionStatus == 0 && time.Now().After(*element.ExpiredDatePayment){
+				if *element.TransactionStatus == 0 && time.Now().Add(7 * time.Hour).After(element.ExpiredDatePayment.Add(7 * time.Hour)){
 					status = "Payment Expired"
 				}else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4{
 					status = "Cancelled"
