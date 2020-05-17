@@ -56,6 +56,7 @@ func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search 
 			Currency:           item.CurrencyId,
 			MaxUsage:           item.MaxUsage,
 			ProductionCapacity: item.ProductionCapacity,
+			PromoProductType:item.PromoProductType,
 			//VoucherValueOptionType: item.VoucherValueOptionType,
 		}
 		merchantIds := make([]string, 0)
@@ -124,6 +125,7 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 		CurrencyId:         &command.Currency,
 		MaxUsage:           &command.MaxUsage,
 		ProductionCapacity: &command.ProductionCapacity,
+		PromoProductType:command.PromoProductType,
 		//VoucherValueOptionType: &command.VoucherValueOptionType,
 	}
 	err = p.promoRepo.Update(ctx, &promo)
@@ -175,6 +177,7 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 		CurrencyId:         &command.Currency,
 		MaxUsage:           &command.MaxUsage,
 		ProductionCapacity: &command.ProductionCapacity,
+		PromoProductType:command.PromoProductType,
 	}
 	id, err := p.promoRepo.Insert(ctx, &promo)
 
@@ -241,7 +244,7 @@ func (p promoUsecase) GetDetail(ctx context.Context, id string, token string) (*
 		Currency:           getPromoDetail.CurrencyId,
 		MaxUsage:           getPromoDetail.MaxUsage,
 		ProductionCapacity: getPromoDetail.ProductionCapacity,
-
+		PromoProductType:getPromoDetail.PromoProductType,
 		//VoucherValueOptionType: getPromoDetail.VoucherValueOptionType,
 	}
 	merchantIds := make([]string, 0)
@@ -276,6 +279,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 			Currency:           element.CurrencyId,
 			MaxUsage:           element.MaxUsage,
 			ProductionCapacity: element.ProductionCapacity,
+			PromoProductType:element.PromoProductType,
 		}
 		merchantIds := make([]string, 0)
 		getPromoMerchant, err := p.promoMerchant.GetByMerchantId(ctx, "", element.Id)
@@ -292,11 +296,11 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	return promoDto, nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string) (*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,merchantId string) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
-	promos, err := p.promoRepo.GetByCode(ctx, code)
+	promos, err := p.promoRepo.GetByCode(ctx, code,&promoType,merchantId)
 	if err != nil {
 		return nil, err
 	}
@@ -310,6 +314,12 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string) (*models.Promo
 			PromoValue: p.PromoValue,
 			PromoType:  p.PromoType,
 			PromoImage: p.PromoImage,
+			StartDate:          p.StartDate,
+			EndDate:            p.EndDate,
+			Currency:           p.CurrencyId,
+			MaxUsage:           p.MaxUsage,
+			ProductionCapacity: p.ProductionCapacity,
+			PromoProductType:p.PromoProductType,
 		}
 	}
 

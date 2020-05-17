@@ -12,5 +12,5 @@ type Usecase interface {
 	Delete(ctx context.Context, id string,token string)(*models.ResponseDelete,error)
 	GetDetail(ctx context.Context, id string,token string)(*models.PromoDto,error)
 	Fetch(ctx context.Context, page *int, size *int) ([]*models.PromoDto, error)
-	GetByCode(ctx context.Context, code string) (*models.PromoDto, error)
+	GetByCode(ctx context.Context, code string,promoType int,merchantId string) (*models.PromoDto, error)
 }

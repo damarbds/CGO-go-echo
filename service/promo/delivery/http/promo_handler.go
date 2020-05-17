@@ -138,6 +138,7 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 	promoValue, _ := strconv.ParseFloat(c.FormValue("promo_value"),64)
 	promoType, _ := strconv.Atoi(c.FormValue("promo_type"))
 	productionCapacity , _ := strconv.Atoi(c.FormValue("production_capacity"))
+	promoProductType , _ := strconv.Atoi(c.FormValue("promo_product_type"))
 	merchants := c.FormValue("merchant_id")
 	merchantId := make([]string,0)
 	if merchants != ""{
@@ -159,6 +160,7 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 		MaxUsage:               maxUsage,
 		ProductionCapacity: productionCapacity,
 		MerchantId:merchantId,
+		PromoProductType:&promoProductType,
 	}
 	if ok, err := isRequestValid(&promoCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -217,6 +219,7 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 	promoValue, _ := strconv.ParseFloat(c.FormValue("promo_value"),64)
 	promoType, _ := strconv.Atoi(c.FormValue("promo_type"))
 	productionCapacity , _ := strconv.Atoi(c.FormValue("production_capacity"))
+	promoProductType , _ := strconv.Atoi(c.FormValue("promo_product_type"))
 	merchants := c.FormValue("merchant_id")
 	merchantId := make([]string,0)
 	if merchants != ""{
@@ -238,6 +241,7 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 		MaxUsage:               maxUsage,
 		ProductionCapacity: productionCapacity,
 		MerchantId:merchantId,
+		PromoProductType:&promoProductType,
 	}
 	if ok, err := isRequestValid(&promoCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -308,12 +312,17 @@ func (a *promoHandler) GetDetailID(c echo.Context) error {
 func (a *promoHandler) GetPromoByCode(c echo.Context) error {
 	code := c.Param("code")
 
+	promoProductType := c.QueryParam("promo_type")
+	merchantId := c.QueryParam("merchant_id")
+
+	promoType , _ := strconv.Atoi(promoProductType)
+
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	results, err := a.promoUsecase.GetByCode(ctx, code)
+	results, err := a.promoUsecase.GetByCode(ctx, code,promoType,merchantId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

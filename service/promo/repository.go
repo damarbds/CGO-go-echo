@@ -12,5 +12,5 @@ type Repository interface {
 	Delete(ctx context.Context,id string,deletedBy string)error
 	GetById(ctx context.Context,id string)(*models.Promo,error)
 	Fetch(ctx context.Context, page *int, size *int,search string) ([]*models.Promo, error)
-	GetByCode(ctx context.Context, code string) ([]*models.Promo, error)
+	GetByCode(ctx context.Context, code string,promoType *int,merchantId string) ([]*models.Promo, error)
 }
