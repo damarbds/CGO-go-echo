@@ -1126,10 +1126,20 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
-					and t.status IN (0,3,4)`
+					and t.status IN (3,4)
+				UNION 
+					SELECT DISTINCT a.id
+					FROM 
+						booking_exps a 
+					LEFT JOIN 
+						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					where a.user_id = ?
+					and (t.created_date >= ? or t.modified_date >= ?)
+					and t.status = 0
+					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR) `
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date, limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date,userId, date, date, limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1144,7 +1154,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 				bookingIds = append(bookingIds, &bookingId)
 			}
 		} else {
-			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date,userId, date, date)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1180,11 +1190,21 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
-					and t.status IN (0,3,4) 
-                    `
+					and t.status IN (3,4)
+ 				UNION 
+ 					SELECT DISTINCT a.id
+					FROM 
+						cgo_indonesia.booking_exps a 
+					LEFT JOIN 
+						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+					WHERE 
+					a.user_id = ?
+					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
+					and t.status = 0 
+					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR)`
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, userId,limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1199,7 +1219,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 				bookingIds = append(bookingIds, &bookingId)
 			}
 		} else {
-			rows, err := b.Conn.QueryContext(ctx, query, userId, userId)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, userId,userId)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
