@@ -1181,7 +1181,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                      font-weight: normal;
                      font-size: 15px;
                      line-height: 24px;">
-                        Dear Ms. Emma Watson,
+                        Dear {{.user}},
                      </td>
                     </tr>
                     <tr>
@@ -1893,7 +1893,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting Approval For Merchant",
+						Subject:  "Waiting Approval For Merchant DP",
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
@@ -1922,7 +1922,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting Approval For Merchant",
+						Subject:  "Waiting Approval For Merchant FP",
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
