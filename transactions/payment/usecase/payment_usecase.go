@@ -89,6 +89,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		TotalPrice:          payment.TotalPrice,
 		Currency:            payment.Currency,
 		OrderId:             payment.OrderId,
+		ExChangeRates:payment.ExChangeRates,
+		ExChangeCurrency:payment.ExChangeCurrency,
 	}
 
 	res, err := p.paymentRepo.Insert(ctx, newData)

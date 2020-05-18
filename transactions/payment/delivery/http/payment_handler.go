@@ -134,6 +134,8 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		Status:              t.Status,
 		TotalPrice:          t.TotalPrice,
 		Currency:            t.Currency,
+		ExChangeRates:		&t.ExChangeRates,
+		ExChangeCurrency:	&t.ExChangeCurrency,
 	}
 
 	_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points)
