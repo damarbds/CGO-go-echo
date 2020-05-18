@@ -200,12 +200,14 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string,promoType *
 					p.is_active = 1 AND
 					pm.merchant_id = '` + merchantId  + `'`
 	}else {
-		query = `SELECT * FROM promos WHERE promo_code = ? AND promo_product_type = ? AND is_deleted = 0 AND is_active = 1`
+		query = `SELECT * FROM promos WHERE promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
 	}
 
 	res, err := m.fetch(ctx, query, code,promoType)
 	if err != nil {
 		return nil, err
+	}else if len(res) == 0 {
+		return nil,models.ErrNotFound
 	}
 
 	return res, nil
