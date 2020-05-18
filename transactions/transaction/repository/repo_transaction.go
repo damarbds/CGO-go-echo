@@ -34,7 +34,9 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 		be.booked_by_email,
 		be.booking_date,
 		t.total_price,
-		ep.price 
+		ep.price ,
+		e.exp_duration,
+		t.order_id,
 	FROM transactions t
 	JOIN experience_payments ep on ep.id = t.experience_payment_id
 	JOIN booking_exps be on be.id = t.booking_exp_id
@@ -60,6 +62,8 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 			&t.BookingDate,
 			&t.TotalPrice,
 			&t.Price,
+			&t.ExpDuration,
+			&t.OrderId,
 		)
 		if err != nil {
 			logrus.Error(err)
