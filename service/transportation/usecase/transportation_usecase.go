@@ -479,24 +479,14 @@ func (t transportationUsecase) FilterSearchTrans(
 	if harborSourceId != "" {
 		query = query + ` AND t.harbors_source_id = '` + harborSourceId + `'`
 		queryCount = queryCount + ` AND t.harbors_source_id = '` + harborSourceId + `'`
-		if isReturn {
-			query = query + ` AND t.harbors_source_id = '` + harborDestId + `'`
-			queryCount = queryCount + ` AND t.harbors_source_id = '` + harborDestId + `'`
-		} else {
-			query = query + ` AND t.is_return = 0`
-			queryCount = queryCount + ` AND t.is_return = 0`
-		}
 	}
 	if harborDestId != "" {
 		query = query + ` AND t.harbors_dest_id = '` + harborDestId + `'`
 		queryCount = queryCount + ` AND t.harbors_dest_id = '` + harborDestId + `'`
-		if isReturn {
-			query = query + ` AND t.harbors_dest_id = '` + harborSourceId + `'`
-			queryCount = queryCount + ` AND t.harbors_dest_id = '` + harborSourceId + `'`
-		} else {
-			query = query + ` AND t.is_return = 0`
-			queryCount = queryCount + ` AND t.is_return = 0`
-		}
+	}
+	if isReturn {
+		query = query + ` AND t.is_return = 0 AND t.return_trans_id	!= '' `
+		queryCount = queryCount + ` AND t.is_return = 0 AND t.return_trans_id != '' `
 	}
 	//if guest != 0 {
 	//	query = query + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
