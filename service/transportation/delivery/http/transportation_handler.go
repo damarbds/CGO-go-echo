@@ -58,7 +58,7 @@ func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
 	isMerchant := c.QueryParam("isMerchant")
-
+	returnTransId := c.QueryParam("return_trans_id")
 	harborSourceId := c.QueryParam("harbor_source_id")
 	harborDestId := c.QueryParam("harbor_dest_id")
 	guest := c.QueryParam("guest")
@@ -103,7 +103,7 @@ func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 	arrTimeOp, _ := strconv.Atoi(arrTimeOptions)
 
 
-	results, err := t.transportationUsecase.FilterSearchTrans(ctx, needMerchantAuth, token, search, status, sortBy, harborSourceId, harborDestId, depDate, class, isReturnTrip, depTimeOp, arrTimeOp, guestTrip, page, limit, offset)
+	results, err := t.transportationUsecase.FilterSearchTrans(ctx, needMerchantAuth, token, search, status, sortBy, harborSourceId, harborDestId, depDate, class, isReturnTrip, depTimeOp, arrTimeOp, guestTrip, page, limit, offset,returnTransId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

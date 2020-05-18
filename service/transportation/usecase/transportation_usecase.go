@@ -266,6 +266,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	page,
 	limit,
 	offset int,
+	returnTransId string,
 ) (*models.FilterSearchTransWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
@@ -341,7 +342,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		psource.province_name as province_source_name,
 		pdest.id as province_dest_id,
 		pdest.province_name as province_dest_name,
-		t.boat_details
+		t.boat_details,
+		t.return_trans_id
 	FROM
 		transportations t 
 		JOIN harbors h ON t.harbors_source_id = h.id
@@ -401,7 +403,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		psource.province_name as province_source_name,
 		pdest.id as province_dest_id,
 		pdest.province_name as province_dest_name,
-		t.boat_details
+		t.boat_details,
+		t.return_trans_id
 	FROM
 		schedules s
 		JOIN transportations t ON s.trans_id = t.id
@@ -487,6 +490,10 @@ func (t transportationUsecase) FilterSearchTrans(
 	if isReturn {
 		query = query + ` AND t.is_return = 0 AND t.return_trans_id	!= '' `
 		queryCount = queryCount + ` AND t.is_return = 0 AND t.return_trans_id != '' `
+	}
+	if returnTransId != ""{
+		query = query + ` AND t.id = '` + returnTransId + `'`
+		queryCount = queryCount + ` AND t.id  = '` + returnTransId + `'`
 	}
 	//if guest != 0 {
 	//	query = query + ` AND t.trans_capacity <=` + strconv.Itoa(guest)
@@ -599,6 +606,7 @@ func (t transportationUsecase) FilterSearchTrans(
 			ProvinceDestId:        element.ProvinceDestId,
 			ProvinceDestName:      element.ProvinceDestName,
 			BoatSpecification:     boatDetails,
+			ReturnTransId:element.ReturnTransId,
 		}
 		if guest != 0 {
 			getbookingCount, _ := t.transactionRepo.GetCountByTransId(ctx, element.TransId)
