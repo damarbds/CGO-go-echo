@@ -33,18 +33,19 @@ type VirtualAccount struct {
 }
 
 type VACallbackRequest struct {
-	ID                       string `json:"id"`
-	MerchantCode             string `json:"merchant_code"`
-	TransactionTimestamp     string `json:"transaction_timestamp"`
-	Amount                   string `json:"amount"`
-	BankCode                 string `json:"bank_code"`
-	AccountNumber            string `json:"account_number"`
-	ExternalID               string `json:"external_id"`
-	OwnerID                  string `json:"owner_id"`
-	CallbackVirtualAccountID string `json:"callback_virtual_account_id"`
-	PaymentID                string `json:"payment_id"`
-	Created                  string `json:"created"`
-	Updated                  string `json:"updated"`
+	Amount                   float64 `json:"amount"`
+	CallbackVirtualAccountID string  `json:"callback_virtual_account_id"`
+	PaymentID                string  `json:"payment_id"`
+	ExternalID               string  `json:"external_id"`
+	AccountNumber            string  `json:"account_number"`
+	MerchantCode             string  `json:"merchant_code"`
+	BankCode                 string  `json:"bank_code"`
+	TransactionTimestamp     string  `json:"transaction_timestamp"`
+	Currency                 string  `json:"currency"`
+	Created                  string  `json:"created"`
+	Updated                  string  `json:"updated"`
+	ID                       string  `json:"id"`
+	OwnerID                  string  `json:"owner_id"`
 }
 
 func (va *VirtualAccount) CreateFixedVA(ctx context.Context) (*xendit.VirtualAccount, error) {
