@@ -1933,6 +1933,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 						return nil
 					}
 				}
+
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
