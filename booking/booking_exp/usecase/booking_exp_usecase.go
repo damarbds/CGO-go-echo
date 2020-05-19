@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -2173,8 +2174,8 @@ If you wish your payment to be transmitted to credits, please click transmit to 
      </tr>
     </table>
    </body>`
+)
 
-	)
 func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
@@ -2191,19 +2192,19 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 		}
 		user := bookedBy[0].Title + `.` + bookedBy[0].FullName
 		tripDate := element.BookingDate.Format("06")
-		tripDate = tripDate + `-` + element.BookingDate.AddDate(0,0,element.ExpDuration).Format("02 January 2006")
+		tripDate = tripDate + `-` + element.BookingDate.AddDate(0, 0, element.ExpDuration).Format("02 January 2006")
 		var tmpl = template.Must(template.New("main-template").Parse(templateWaitingRemainingDP))
 		remainingPayment := element.Price - element.TotalPrice
 		var data = map[string]interface{}{
-			"title": element.ExpTitle,
-			"user":  user,
-			"payment": element.TotalPrice,
+			"title":            element.ExpTitle,
+			"user":             user,
+			"payment":          element.TotalPrice,
 			"remainingPayment": remainingPayment,
-			"paymentDeadline" : element.BookingDate.Format("02 January 2006"),
-			"orderId" : element.OrderId,
-			"tripDate" : tripDate,
-			"userGuide" : "Budi Sutomo",
-			"guideContact" : "+68 56 219 2264",
+			"paymentDeadline":  element.BookingDate.Format("02 January 2006"),
+			"orderId":          element.OrderId,
+			"tripDate":         tripDate,
+			"userGuide":        "Budi Sutomo",
+			"guideContact":     "+68 56 219 2264",
 		}
 		var tpl bytes.Buffer
 		err = tmpl.Execute(&tpl, data)
@@ -2249,12 +2250,25 @@ func (b bookingExpUsecase) XenPayment(ctx context.Context, amount float64, token
 		}
 	}
 
+	re, err := regexp.Compile("[0-9]+")
+	if err != nil {
+		return nil, err
+	}
+	fullname := re.ReplaceAllString(bookedBy[0].FullName, "")
+	splitName := strings.Split(fullname, " ")
+	var name string
+	if len(splitName) < 2 {
+		name = bookedBy[0].Title + " " + strings.Title(fullname)
+	} else {
+		name = fullname
+	}
+
 	if paymentType == "BRI" {
 		va := &xendit.VirtualAccount{
 			Client:     xendit.XenClient.VirtualAccount,
 			ExternalID: orderId,
 			BankCode:   paymentType,
-			Name:       bookedBy[0].FullName,
+			Name:       name,
 			ExpireDate: booking.ExpiredDatePayment,
 		}
 		resVA, err := va.CreateFixedVA(ctx)
@@ -2436,19 +2450,19 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment"{
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
 					var data = map[string]interface{}{
-						"title": exp.ExpTitle,
-						"user":  user,
-						"payment": bookingDetail.TotalPrice,
+						"title":            exp.ExpTitle,
+						"user":             user,
+						"payment":          bookingDetail.TotalPrice,
 						"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
-						"paymentDeadline" : bookingDetail.BookingDate.Format("02 January 2006"),
-						"orderId" : bookingDetail.OrderId,
-						"tripDate" : tripDate,
+						"paymentDeadline":  bookingDetail.BookingDate.Format("02 January 2006"),
+						"orderId":          bookingDetail.OrderId,
+						"tripDate":         tripDate,
 					}
 					var tpl bytes.Buffer
 					err = tmpl.Execute(&tpl, data)
@@ -2466,18 +2480,18 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						FileName: "",
 					}
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-						return nil,nil
+						return nil, nil
 					}
-				}else {
+				} else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
 					var data = map[string]interface{}{
-						"title": exp.ExpTitle,
-						"user":  user,
-						"tripDate" : tripDate,
-						"orderId" : bookingDetail.OrderId,
+						"title":    exp.ExpTitle,
+						"user":     user,
+						"tripDate": tripDate,
+						"orderId":  bookingDetail.OrderId,
 					}
 					var tpl bytes.Buffer
 					err = tmpl.Execute(&tpl, data)
@@ -2496,7 +2510,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					}
 
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-						return nil,nil
+						return nil, nil
 					}
 				}
 
@@ -2504,20 +2518,20 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketDP))
 				var data = map[string]interface{}{
-					"title": exp.ExpTitle,
-					"user":  user,
-					"tripDate" : tripDate,
-					"orderId" : bookingDetail.OrderId,
+					"title":        exp.ExpTitle,
+					"user":         user,
+					"tripDate":     tripDate,
+					"orderId":      bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-					"time" : bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide" : "Budi Sutomo",
-					"guideContact" : "+68 56 219 2264",
-					"guestCount" : strconv.Itoa(guestCount) + " Guest(s)" ,
+					"time":         bookingDetail.Experience[0].ExpPickupTime,
+					"userGuide":    "Budi Sutomo",
+					"guideContact": "+68 56 219 2264",
+					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
 				var tpl bytes.Buffer
 				err = tmpl.Execute(&tpl, data)
@@ -2535,27 +2549,27 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					FileName: "",
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil,nil
+					return nil, nil
 				}
 
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
 				var data = map[string]interface{}{
-					"title": exp.ExpTitle,
-					"user":  user,
-					"tripDate" : tripDate,
-					"orderId" : bookingDetail.OrderId,
+					"title":        exp.ExpTitle,
+					"user":         user,
+					"tripDate":     tripDate,
+					"orderId":      bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-					"time" : bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide" : "Budi Sutomo",
-					"guideContact" : "+68 56 219 2264",
-					"guestCount" : strconv.Itoa(guestCount) + " Guest(s)" ,
+					"time":         bookingDetail.Experience[0].ExpPickupTime,
+					"userGuide":    "Budi Sutomo",
+					"guideContact": "+68 56 219 2264",
+					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
 				var tpl bytes.Buffer
 				err = tmpl.Execute(&tpl, data)
@@ -2574,7 +2588,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				}
 
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil,nil
+					return nil, nil
 				}
 			}
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.Id); err != nil {
@@ -2584,7 +2598,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.Id, "")
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
@@ -2592,16 +2606,16 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 			var tmpl = template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			var data = map[string]interface{}{
-				"title": bookingDetail.Transportation[0].TransTitle,
-				"user":  user,
-				"tripDate" : tripDate,
-				"guestCount" : strconv.Itoa(guestCount) + " Guest(s)" ,
-				"sourceTime" : bookingDetail.Transportation[0].DepartureTime,
-				"desTime" : bookingDetail.Transportation[0].ArrivalTime,
-				"duration" : bookingDetail.Transportation[0].TripDuration,
-				"source" : bookingDetail.Transportation[0].HarborSourceName,
-				"dest" : bookingDetail.Transportation[0].HarborDestName,
-				"class": bookingDetail.Transportation[0].TransClass,
+				"title":      bookingDetail.Transportation[0].TransTitle,
+				"user":       user,
+				"tripDate":   tripDate,
+				"guestCount": strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTime": bookingDetail.Transportation[0].DepartureTime,
+				"desTime":    bookingDetail.Transportation[0].ArrivalTime,
+				"duration":   bookingDetail.Transportation[0].TripDuration,
+				"source":     bookingDetail.Transportation[0].HarborSourceName,
+				"dest":       bookingDetail.Transportation[0].HarborDestName,
+				"class":      bookingDetail.Transportation[0].TransClass,
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
@@ -2619,7 +2633,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				FileName: "",
 			}
 			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-				return nil,nil
+				return nil, nil
 			}
 
 			transactionStatus = 2

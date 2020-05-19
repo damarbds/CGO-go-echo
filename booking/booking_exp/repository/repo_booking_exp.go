@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/booking/booking_exp"
@@ -408,7 +407,6 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 			}
 		}
 
-		fmt.Println(query)
 		list, err := b.fetch(ctx, query)
 		if err != nil {
 			return nil, err
@@ -479,7 +477,7 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 						a.is_active = 1
 					AND a.is_deleted = 0
 					AND a.user_id = ?`
-					
+
 	if status == "confirm" {
 		//bookingStatus = 1
 		query = query + ` 	AND t.status = 2 
@@ -1139,7 +1137,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR) `
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date,userId, date, date, limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date, userId, date, date, limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1154,7 +1152,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 				bookingIds = append(bookingIds, &bookingId)
 			}
 		} else {
-			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date,userId, date, date)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date, userId, date, date)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1204,7 +1202,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR)`
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, userId,limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, userId, limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1219,7 +1217,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 				bookingIds = append(bookingIds, &bookingId)
 			}
 		} else {
-			rows, err := b.Conn.QueryContext(ctx, query, userId, userId,userId)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, userId)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
