@@ -475,9 +475,16 @@ func (t transportationUsecase) FilterSearchTrans(
 
 	}
 	if search != "" {
-		keyword := `'%` + search + `%'`
-		query = query + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
-		queryCount = queryCount + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
+		if isMerchant == true && qStatus == "draft" {
+			keyword := `'%` + search + `%'`
+			query = query + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `))`
+			queryCount = queryCount + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `))`
+		}else {
+			keyword := `'%` + search + `%'`
+			query = query + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
+			queryCount = queryCount + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
+		}
+
 	}
 	if harborSourceId != "" {
 		query = query + ` AND t.harbors_source_id = '` + harborSourceId + `'`
@@ -525,7 +532,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	for _, element := range transList {
 
 		var boatDetails models.BoatDetailsObj
-		if element.TransImages != "" {
+		if element.BoatDetails != "" {
 			if errUnmarshal := json.Unmarshal([]byte(element.BoatDetails), &boatDetails); errUnmarshal != nil {
 				return nil, errUnmarshal
 			}
