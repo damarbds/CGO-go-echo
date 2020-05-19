@@ -508,8 +508,8 @@ func (m experienceUsecase) FilterSearchExp(
 			status = 4
 		}
 		if qStatus == "inService" {
-			query = query + ` AND e.status IN (2,3,4)`
-			qCount = qCount + ` AND e.status IN (2,3,4)`
+			query = query + ` AND e.status IN (2,3)`
+			qCount = qCount + ` AND e.status IN (2,3)`
 		} else {
 			query = query + ` AND e.status =` + strconv.Itoa(status)
 			qCount = qCount + ` AND e.status =` + strconv.Itoa(status)
@@ -1220,47 +1220,47 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		return nil, err
 	}
 	for _, element := range commandExperience.ExpPayment {
-			var priceItemType int
-			if element.PriceItemType == "Per Pax" {
-				priceItemType = 1
-			} else {
-				priceItemType = 0
-			}
-			var currency int
-			if element.Currency == "USD" {
-				currency = 1
-			} else {
-				currency = 0
-			}
-			var customPriceJson string
-			if len(element.CustomPrice) != 0 {
-				customPrice, _ := json.Marshal(element.CustomPrice)
-				customPriceJson = string(customPrice)
-			}
-			payments := models.ExperiencePayment{
-				Id:               "",
-				CreatedBy:        currentUserMerchant.MerchantEmail,
-				CreatedDate:      time.Time{},
-				ModifiedBy:       nil,
-				ModifiedDate:     nil,
-				DeletedBy:        nil,
-				DeletedDate:      nil,
-				IsDeleted:        0,
-				IsActive:         0,
-				ExpPaymentTypeId: element.PaymentTypeId,
-				ExpId:            *insertToExperience,
-				PriceItemType:    priceItemType,
-				Currency:         currency,
-				Price:            element.Price,
-				CustomPrice:      &customPriceJson,
-			}
+		var priceItemType int
+		if element.PriceItemType == "Per Pax" {
+			priceItemType = 1
+		} else {
+			priceItemType = 0
+		}
+		var currency int
+		if element.Currency == "USD" {
+			currency = 1
+		} else {
+			currency = 0
+		}
+		var customPriceJson string
+		if len(element.CustomPrice) != 0 {
+			customPrice, _ := json.Marshal(element.CustomPrice)
+			customPriceJson = string(customPrice)
+		}
+		payments := models.ExperiencePayment{
+			Id:               "",
+			CreatedBy:        currentUserMerchant.MerchantEmail,
+			CreatedDate:      time.Time{},
+			ModifiedBy:       nil,
+			ModifiedDate:     nil,
+			DeletedBy:        nil,
+			DeletedDate:      nil,
+			IsDeleted:        0,
+			IsActive:         0,
+			ExpPaymentTypeId: element.PaymentTypeId,
+			ExpId:            *insertToExperience,
+			PriceItemType:    priceItemType,
+			Currency:         currency,
+			Price:            element.Price,
+			CustomPrice:      &customPriceJson,
+		}
 
-			id, err := m.paymentRepo.Insert(ctx, payments)
-			if err != nil {
-				return nil, err
-			}
-			expPaymentIds = append(expPaymentIds, id)
-			element.Id = id
+		id, err := m.paymentRepo.Insert(ctx, payments)
+		if err != nil {
+			return nil, err
+		}
+		expPaymentIds = append(expPaymentIds, id)
+		element.Id = id
 	}
 
 	var expAvailabilityIds []string
@@ -1269,65 +1269,65 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		return nil, err
 	}
 	for _, element := range commandExperience.ExpAvailability {
-			date, _ := json.Marshal(element.Date)
-			expAvailability := models.ExpAvailability{
-				Id:                   "",
-				CreatedBy:            currentUserMerchant.MerchantEmail,
-				CreatedDate:          time.Time{},
-				ModifiedBy:           nil,
-				ModifiedDate:         nil,
-				DeletedBy:            nil,
-				DeletedDate:          nil,
-				IsDeleted:            0,
-				IsActive:             0,
-				ExpAvailabilityMonth: element.Month,
-				ExpAvailabilityDate:  string(date),
-				ExpAvailabilityYear:  element.Year,
-				ExpId:                *insertToExperience,
-			}
+		date, _ := json.Marshal(element.Date)
+		expAvailability := models.ExpAvailability{
+			Id:                   "",
+			CreatedBy:            currentUserMerchant.MerchantEmail,
+			CreatedDate:          time.Time{},
+			ModifiedBy:           nil,
+			ModifiedDate:         nil,
+			DeletedBy:            nil,
+			DeletedDate:          nil,
+			IsDeleted:            0,
+			IsActive:             0,
+			ExpAvailabilityMonth: element.Month,
+			ExpAvailabilityDate:  string(date),
+			ExpAvailabilityYear:  element.Year,
+			ExpId:                *insertToExperience,
+		}
 
-			id, err := m.exp_availablitiy.Insert(ctx, expAvailability)
-			if err != nil {
-				return nil, err
-			}
-			expAvailabilityIds = append(expAvailabilityIds, id)
-			element.Id = id
+		id, err := m.exp_availablitiy.Insert(ctx, expAvailability)
+		if err != nil {
+			return nil, err
+		}
+		expAvailabilityIds = append(expAvailabilityIds, id)
+		element.Id = id
 	}
-	
+
 	var addOnIds []string
 	err = m.adOnsRepo.DeleteByExpId(ctx, experiences.Id, currentUserMerchant.MerchantEmail)
 	if err != nil {
 		return nil, err
 	}
 	for _, element := range commandExperience.ExperienceAddOn {
-			var currency int
-			if element.Currency == "USD" {
-				currency = 1
-			} else {
-				currency = 0
-			}
-			addOns := models.ExperienceAddOn{
-				Id:           "",
-				CreatedBy:    currentUserMerchant.MerchantEmail,
-				CreatedDate:  time.Time{},
-				ModifiedBy:   nil,
-				ModifiedDate: nil,
-				DeletedBy:    nil,
-				DeletedDate:  nil,
-				IsDeleted:    0,
-				IsActive:     0,
-				Name:         element.Name,
-				Desc:         element.Desc,
-				Currency:     currency,
-				Amount:       element.Amount,
-				ExpId:        *insertToExperience,
-			}
-			id, err := m.adOnsRepo.Insert(ctx, addOns)
-			if err != nil {
-				return nil, err
-			}
-			addOnIds = append(addOnIds, id)
-			element.Id = id
+		var currency int
+		if element.Currency == "USD" {
+			currency = 1
+		} else {
+			currency = 0
+		}
+		addOns := models.ExperienceAddOn{
+			Id:           "",
+			CreatedBy:    currentUserMerchant.MerchantEmail,
+			CreatedDate:  time.Time{},
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     0,
+			Name:         element.Name,
+			Desc:         element.Desc,
+			Currency:     currency,
+			Amount:       element.Amount,
+			ExpId:        *insertToExperience,
+		}
+		id, err := m.adOnsRepo.Insert(ctx, addOns)
+		if err != nil {
+			return nil, err
+		}
+		addOnIds = append(addOnIds, id)
+		element.Id = id
 	}
 
 	var status string
