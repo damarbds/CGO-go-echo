@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/booking/booking_exp"
@@ -408,7 +407,6 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 			}
 		}
 
-		fmt.Println(query)
 		list, err := b.fetch(ctx, query)
 		if err != nil {
 			return nil, err

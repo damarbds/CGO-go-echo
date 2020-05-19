@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -296,7 +295,6 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
 			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
 			unionQuery = querySt + ` UNION ` + queryTSt
-			fmt.Println(unionQuery)
 			if limit != nil && offset != nil {
 				unionQuery = unionQuery +
 					` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +

@@ -49,14 +49,13 @@ type VACallbackRequest struct {
 }
 
 func (va *VirtualAccount) CreateFixedVA(ctx context.Context) (*xendit.VirtualAccount, error) {
-	data := &virtualaccount.CreateFixedVAParams{
+	data := virtualaccount.CreateFixedVAParams{
 		ExternalID:     va.ExternalID,
 		BankCode:       va.BankCode,
 		Name:           va.Name,
 		ExpirationDate: va.ExpireDate,
 	}
-
-	resVa, err := va.CreateFixedVAWithContext(ctx, data)
+	resVa, err := va.CreateFixedVAWithContext(ctx, &data)
 	if err != nil {
 		return nil, err
 	}

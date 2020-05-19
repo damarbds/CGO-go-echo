@@ -1,10 +1,11 @@
 package usecase
 
 import (
-	"github.com/auth/admin"
 	"math"
 	"math/rand"
 	"time"
+
+	"github.com/auth/admin"
 
 	"github.com/auth/identityserver"
 	"github.com/auth/user"
@@ -13,19 +14,18 @@ import (
 )
 
 type userUsecase struct {
-	adminUsecase    admin.Usecase
+	adminUsecase     admin.Usecase
 	userRepo         user.Repository
 	identityServerUc identityserver.Usecase
 	contextTimeout   time.Duration
 }
 
-
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
-func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Usecase,timeout time.Duration) user.Usecase {
+func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Usecase, timeout time.Duration) user.Usecase {
 	return &userUsecase{
 		userRepo:         a,
 		identityServerUc: is,
-		adminUsecase:au,
+		adminUsecase:     au,
 		contextTimeout:   timeout,
 	}
 }
@@ -34,7 +34,7 @@ func (m userUsecase) GetUserByEmail(ctx context.Context, email string) (*models.
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getUser,_ := m.userRepo.GetByUserEmail(ctx,email)
+	getUser, _ := m.userRepo.GetByUserEmail(ctx, email)
 	var result *models.UserDto
 	if getUser != nil {
 		result = &models.UserDto{
@@ -57,24 +57,23 @@ func (m userUsecase) GetUserByEmail(ctx context.Context, email string) (*models.
 		}
 	}
 
-
-	return result,nil
+	return result, nil
 }
 func (m userUsecase) LoginByGoogle(c context.Context, code string) (*models.GetToken, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	var requestToken *models.GetToken
 
-	getInfoUserGoogle ,err := m.identityServerUc.CallBackGoogle(code)
+	getInfoUserGoogle, err := m.identityServerUc.CallBackGoogle(code)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	checkUser ,err := m.userRepo.GetByUserEmail(ctx,getInfoUserGoogle.Email)
+	checkUser, err := m.userRepo.GetByUserEmail(ctx, getInfoUserGoogle.Email)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	if checkUser == nil{
-		password ,_ := generateRandomString(11)
+	if checkUser == nil {
+		password, _ := generateRandomString(11)
 		registerUser := models.RegisterAndUpdateUser{
 			Id:            "",
 			Username:      getInfoUserGoogle.Email,
@@ -89,7 +88,7 @@ func (m userUsecase) LoginByGoogle(c context.Context, code string) (*models.GetT
 			OTP:           "",
 			UserType:      1,
 			PhoneNumber:   "",
-			UserRoles: nil,
+			UserRoles:     nil,
 		}
 		isUser, _ := m.identityServerUc.CreateUser(&registerUser)
 		referralCode, _ := generateRandomString(9)
@@ -111,25 +110,25 @@ func (m userUsecase) LoginByGoogle(c context.Context, code string) (*models.GetT
 		userModel.Points = 0
 		err := m.userRepo.Insert(ctx, &userModel)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
-		getToken, err := m.identityServerUc.GetToken(registerUser.Email, registerUser.Password,"")
+		getToken, err := m.identityServerUc.GetToken(registerUser.Email, registerUser.Password, "")
 		if err != nil {
 			return nil, err
 		}
 		requestToken = getToken
-	}else {
-		getDetailUser ,err := m.identityServerUc.GetDetailUserById(checkUser.Id,"","true")
+	} else {
+		getDetailUser, err := m.identityServerUc.GetDetailUserById(checkUser.Id, "", "true")
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
-		getToken, err := m.identityServerUc.GetToken(getDetailUser.Email, getDetailUser.Password,"")
+		getToken, err := m.identityServerUc.GetToken(getDetailUser.Email, getDetailUser.Password, "")
 		if err != nil {
 			return nil, err
 		}
 		requestToken = getToken
 	}
-	return requestToken,nil
+	return requestToken, nil
 }
 func (m userUsecase) Delete(c context.Context, userId string, token string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
@@ -176,11 +175,11 @@ func (m userUsecase) RequestOTP(ctx context.Context, phoneNumber string) (*model
 
 	return requestOTP, nil
 }
-func (m userUsecase) List(ctx context.Context, page, limit, offset int,search string) (*models.UserWithPagination, error) {
+func (m userUsecase) List(ctx context.Context, page, limit, offset int, search string) (*models.UserWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	list, err := m.userRepo.List(ctx, limit, offset,search)
+	list, err := m.userRepo.List(ctx, limit, offset, search)
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +347,7 @@ func (m userUsecase) GetUserInfo(ctx context.Context, token string) (*models.Use
 	return &userInfo, nil
 }
 
-func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmin bool,token string) error {
+func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmin bool, token string) error {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	var currentUser string
@@ -373,16 +372,16 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmi
 			OTP:           "",
 			UserType:      1,
 			PhoneNumber:   ar.PhoneNumber,
-			UserRoles:nil,
+			UserRoles:     nil,
 		}
-	}else {
+	} else {
 		currentUsers, err := m.ValidateTokenUser(ctx, token)
 		if err != nil {
 			return err
 		}
 		currentUser = currentUsers.UserEmail
 
-		getUserById,err := m.identityServerUc.GetDetailUserById(ar.Id,token,"true")
+		getUserById, err := m.identityServerUc.GetDetailUserById(ar.Id, token, "true")
 		updateUser = models.RegisterAndUpdateUser{
 			Id:            ar.Id,
 			Username:      ar.UserEmail,
@@ -397,7 +396,7 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmi
 			OTP:           "",
 			UserType:      1,
 			PhoneNumber:   ar.PhoneNumber,
-			UserRoles:nil,
+			UserRoles:     nil,
 		}
 	}
 	//var roles []string
@@ -407,7 +406,7 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmi
 		return err
 	}
 	var dob time.Time
-	if ar.Dob != ""{
+	if ar.Dob != "" {
 
 		layoutFormat := "2006-01-02 15:04:05"
 		dobParse, errDateDob := time.Parse(layoutFormat, ar.Dob)
@@ -426,9 +425,9 @@ func (m userUsecase) Update(c context.Context, ar *models.NewCommandUser, isAdmi
 	userModel.PhoneNumber = ar.PhoneNumber
 	userModel.VerificationSendDate = existeduser.VerificationSendDate
 	userModel.VerificationCode = existeduser.VerificationCode
-	if ar.ProfilePictUrl != ""{
+	if ar.ProfilePictUrl != "" {
 		userModel.ProfilePictUrl = ar.ProfilePictUrl
-	}else {
+	} else {
 		userModel.ProfilePictUrl = existeduser.ProfilePictUrl
 	}
 
@@ -462,23 +461,23 @@ func generateRandomBytes(n int) ([]byte, error) {
 
 	return b, nil
 }
-func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, isAdmin bool,token string) (*models.NewCommandUser, error) {
+func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, isAdmin bool, token string) (*models.NewCommandUser, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 	existeduser, _ := m.userRepo.GetByUserEmail(ctx, ar.UserEmail)
 	if existeduser != nil {
-		return nil,models.ErrConflict
+		return nil, models.ErrConflict
 	}
 	//var roles []string
 
 	var createdBy string
-	if isAdmin == true{
-		if token == ""{
-			return nil,models.ErrUnAuthorize
-		}else {
-			currentUserAdmin ,err := m.adminUsecase.ValidateTokenAdmin(ctx,token)
+	if isAdmin == true {
+		if token == "" {
+			return nil, models.ErrUnAuthorize
+		} else {
+			currentUserAdmin, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
 			if err != nil {
-				return nil,models.ErrUnAuthorize
+				return nil, models.ErrUnAuthorize
 			}
 			createdBy = currentUserAdmin.Name
 		}
@@ -498,7 +497,7 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, isAdmi
 		OTP:           "",
 		UserType:      1,
 		PhoneNumber:   ar.PhoneNumber,
-		UserRoles: nil,
+		UserRoles:     nil,
 	}
 	isUser, errorIs := m.identityServerUc.CreateUser(&registerUser)
 	if isAdmin == false {
@@ -579,11 +578,11 @@ func (m userUsecase) GetUserDetailById(ctx context.Context, id string, token str
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
-	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(id,token,"true")
+	getUserIdentity, err := m.identityServerUc.GetDetailUserById(id, token, "true")
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	getUserById ,err := m.userRepo.GetByID(ctx,id)
+	getUserById, err := m.userRepo.GetByID(ctx, id)
 
 	result := models.UserDto{
 		Id:             getUserById.Id,
@@ -604,9 +603,10 @@ func (m userUsecase) GetUserDetailById(ctx context.Context, id string, token str
 		Points:         getUserById.Points,
 	}
 
-	return &result,nil
+	return &result, nil
 
 }
+
 /*
 * In this function below, I'm using errgroup with the pipeline pattern
 * Look how this works in this package explanation
