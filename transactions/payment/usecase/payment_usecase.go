@@ -3,10 +3,11 @@ package usecase
 import (
 	"bytes"
 	"context"
-	"github.com/auth/identityserver"
 	"html/template"
 	"strconv"
 	"time"
+
+	"github.com/auth/identityserver"
 
 	"github.com/misc/notif"
 	"github.com/transactions/transaction"
@@ -18,7 +19,7 @@ import (
 )
 
 type paymentUsecase struct {
-	isUsecase  identityserver.Usecase
+	isUsecase        identityserver.Usecase
 	transactionRepo  transaction.Repository
 	notificationRepo notif.Repository
 	paymentRepo      payment.Repository
@@ -26,14 +27,14 @@ type paymentUsecase struct {
 	bookingRepo      booking_exp.Repository
 	userRepo         user.Repository
 	contextTimeout   time.Duration
-	bookingUsecase booking_exp.Usecase
+	bookingUsecase   booking_exp.Usecase
 }
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(bookingUsecase  booking_exp.Usecase,isUsecase identityserver.Usecase,t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
-		bookingUsecase:bookingUsecase,
-		isUsecase:isUsecase,
+		bookingUsecase:   bookingUsecase,
+		isUsecase:        isUsecase,
 		transactionRepo:  t,
 		notificationRepo: n,
 		paymentRepo:      p,
@@ -43,6 +44,7 @@ func NewPaymentUsecase(bookingUsecase  booking_exp.Usecase,isUsecase identityser
 		contextTimeout:   timeout,
 	}
 }
+
 const (
 	templateBookingRejected string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -2365,8 +2367,8 @@ If you wish your payment to be transmitted to credits, please click transmit to 
      </tr>
     </table>
    </body>`
-
 )
+
 func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction, token string, points float64) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
@@ -2416,8 +2418,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		TotalPrice:          payment.TotalPrice,
 		Currency:            payment.Currency,
 		OrderId:             payment.OrderId,
-		ExChangeRates:payment.ExChangeRates,
-		ExChangeCurrency:payment.ExChangeCurrency,
+		ExChangeRates:       payment.ExChangeRates,
+		ExChangeCurrency:    payment.ExChangeCurrency,
 	}
 
 	res, err := p.paymentRepo.Insert(ctx, newData)
@@ -2437,7 +2439,6 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 			return "", err
 		}
 	}
-
 
 	return res.Id, nil
 }
@@ -2476,21 +2477,21 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 	if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 		//confirm
 		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
-		if bookingDetail.ExperiencePaymentType.Name == "Down Payment"{
+		if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("06")
-			tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+			tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 			var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
 			var data = map[string]interface{}{
-				"title": bookingDetail.Experience[0].ExpTitle,
-				"user":  user,
-				"payment": bookingDetail.TotalPrice,
+				"title":            bookingDetail.Experience[0].ExpTitle,
+				"user":             user,
+				"payment":          bookingDetail.TotalPrice,
 				"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
-				"paymentDeadline" : bookingDetail.BookingDate.Format("02 January 2006"),
-				"orderId" : bookingDetail.OrderId,
-				"tripDate" : tripDate,
-				"userGuide" : "Budi Sutomo",
-				"guideContact" : "+68 56 219 2264",
+				"paymentDeadline":  bookingDetail.BookingDate.Format("02 January 2006"),
+				"orderId":          bookingDetail.OrderId,
+				"tripDate":         tripDate,
+				"userGuide":        "Budi Sutomo",
+				"guideContact":     "+68 56 219 2264",
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
@@ -2511,23 +2512,23 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 				return nil
 			}
 
-		}else {
+		} else {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("06")
-			tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+			tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 			guestCount := len(bookingDetail.GuestDesc)
 
 			var tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
 			var data = map[string]interface{}{
-				"title": bookingDetail.Experience[0].ExpTitle,
-				"user":  user,
-				"tripDate" : tripDate,
-				"orderId" : bookingDetail.OrderId,
+				"title":        bookingDetail.Experience[0].ExpTitle,
+				"user":         user,
+				"tripDate":     tripDate,
+				"orderId":      bookingDetail.OrderId,
 				"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-				"time" : bookingDetail.Experience[0].ExpPickupTime,
-				"userGuide" : "Budi Sutomo",
-				"guideContact" : "+68 56 219 2264",
-				"guestCount" : strconv.Itoa(guestCount) + " Guest(s)" ,
+				"time":         bookingDetail.Experience[0].ExpPickupTime,
+				"userGuide":    "Budi Sutomo",
+				"guideContact": "+68 56 219 2264",
+				"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
@@ -2550,19 +2551,19 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			}
 		}
 
-	}else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
+	} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
 		//cancelled
 		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
 		if err != nil {
 			return err
 		}
 		tripDate := bookingDetail.BookingDate.Format("06")
-		tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 		var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
 		var data = map[string]interface{}{
-			"title": bookingDetail.Experience[0].ExpTitle,
-			"tripDate" : tripDate,
-			"orderId" : bookingDetail.OrderId,
+			"title":    bookingDetail.Experience[0].ExpTitle,
+			"tripDate": tripDate,
+			"orderId":  bookingDetail.OrderId,
 		}
 		var tpl bytes.Buffer
 		err = tmpl.Execute(&tpl, data)
@@ -2577,7 +2578,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			Subject:  "Booking Rejected",
 			Message:  msg,
 			From:     "CGO Indonesia",
-			To:        getTransaction.CreatedBy,
+			To:       getTransaction.CreatedBy,
 			FileName: "",
 		}
 		if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
