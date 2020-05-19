@@ -466,8 +466,8 @@ func (t transportationUsecase) FilterSearchTrans(
 		}
 
 		if qStatus == "inService" {
-			query = query + ` AND t.trans_status IN (2,3,4)`
-			queryCount = queryCount + ` AND t.trans_status IN (2,3,4)`
+			query = query + ` AND t.trans_status IN (2,3)`
+			queryCount = queryCount + ` AND t.trans_status IN (2,3)`
 		} else {
 			query = query + ` AND t.trans_status =` + strconv.Itoa(status)
 			queryCount = queryCount + ` AND t.trans_status =` + strconv.Itoa(status)
@@ -479,7 +479,7 @@ func (t transportationUsecase) FilterSearchTrans(
 			keyword := `'%` + search + `%'`
 			query = query + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `))`
 			queryCount = queryCount + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `))`
-		}else {
+		} else {
 			keyword := `'%` + search + `%'`
 			query = query + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
 			queryCount = queryCount + ` AND (LOWER(t.trans_name) LIKE LOWER(` + keyword + `) OR LOWER(h.harbors_name) LIKE LOWER(` + keyword + `) OR LOWER(hdest.harbors_name) LIKE LOWER(` + keyword + `))`
@@ -498,7 +498,7 @@ func (t transportationUsecase) FilterSearchTrans(
 		query = query + ` AND t.is_return = 0 AND t.return_trans_id	!= '' `
 		queryCount = queryCount + ` AND t.is_return = 0 AND t.return_trans_id != '' `
 	}
-	if returnTransId != ""{
+	if returnTransId != "" {
 		query = query + ` AND t.id = '` + returnTransId + `'`
 		queryCount = queryCount + ` AND t.id  = '` + returnTransId + `'`
 	}
@@ -613,7 +613,7 @@ func (t transportationUsecase) FilterSearchTrans(
 			ProvinceDestId:        element.ProvinceDestId,
 			ProvinceDestName:      element.ProvinceDestName,
 			BoatSpecification:     boatDetails,
-			ReturnTransId:element.ReturnTransId,
+			ReturnTransId:         element.ReturnTransId,
 		}
 		if guest != 0 {
 			getbookingCount, _ := t.transactionRepo.GetCountByTransId(ctx, element.TransId)
