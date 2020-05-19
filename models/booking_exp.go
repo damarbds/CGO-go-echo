@@ -160,6 +160,8 @@ type BookingExpJoin struct {
 	ArrivalTime            *string        `json:"arrival_time"`
 	HarborSourceName       *string        `json:"harbor_source_name"`
 	HarborDestName         *string        `json:"harbor_dest_name"`
+	ExChangeRates 			*float64	`json:"ex_change_rates"`
+	ExChangeCurrency 		*string		`json:"ex_change_currency"`
 }
 
 type BookingTransportationDetail struct {
@@ -230,6 +232,8 @@ type BookingExpDetailDto struct {
 	CleanlinessReview      *float64                      `json:"cleanliness_review"`
 	ValueReview            *float64                      `json:"value_review"`
 	MidtransUrl            *string                       `json:"midtrans_url"`
+	ExChangeRates 			*float64	`json:"ex_change_rates"`
+	ExChangeCurrency 		*string		`json:"ex_change_currency"`
 }
 type AccountDesc struct {
 	AccNumber string `json:"acc_number"`

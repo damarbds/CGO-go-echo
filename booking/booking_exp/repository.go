@@ -11,7 +11,6 @@ type Repository interface {
 	GetCountByBookingDateExp(ctx context.Context,bookingDate string,expId string)(int,error)
 	Insert(ctx context.Context, booking *models.BookingExp) (*models.BookingExp, error)
 	GetEmailByID(ctx context.Context, bookingId string) (string, error)
-	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error)
 	UpdateStatus(ctx context.Context, bookingId string, expiredDatePayment time.Time) error
 	GetBookingExpByUserID(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error)
 	GetBookingTransByUserID(ctx context.Context, bookingIds []*string) ([]*models.BookingExpJoin, error)
@@ -29,4 +28,5 @@ type Repository interface {
 	GetByID(ctx context.Context, bookingId string) (*models.BookingTransactionExp, error)
 	CheckBookingCode(ctx context.Context, bookingCode string) bool
 	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) ([]*models.BookingExpJoin, error)
+	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error)
 }

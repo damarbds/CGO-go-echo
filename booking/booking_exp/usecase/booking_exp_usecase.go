@@ -2757,6 +2757,8 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 		ExperiencePaymentId:    details[0].ExperiencePaymentId,
 		Transportation:         transport,
 		MidtransUrl:            details[0].PaymentUrl,
+		ExChangeRates 	: details[0].ExChangeRates,
+		ExChangeCurrency : details[0].ExChangeCurrency,
 	}
 
 	return results, nil
@@ -3161,6 +3163,8 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		ExperiencePaymentType: experiencePaymentType,
 		IsReview:              isReview,
 		MidtransUrl:           getDetailBooking.PaymentUrl,
+		ExChangeRates 			: getDetailBooking.ExChangeRates,
+		ExChangeCurrency 		: getDetailBooking.ExChangeCurrency,
 	}
 	if len(reviews) != 0 {
 		desc := models.ReviewDtoObject{}
