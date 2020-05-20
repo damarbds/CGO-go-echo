@@ -738,7 +738,7 @@ func (m *experienceRepository) GetUserDiscoverPreferenceByHarborsIdOrProvince(ct
 			) c on c.city_id = b.city_id
             join cities city on city.id = c.city_id
 			join provinces province on province.id = c.province_id
-			WHERE a.harbors_id = ?`
+			WHERE a.harbors_id = ? AND a.is_deleted = 0 AND a.is_active = 1 AND a.status = 2`
 
 		res, err := m.fetchUserDiscoverPreference(ctx, query, harborsId, harborsId)
 		if err != nil {
@@ -763,7 +763,7 @@ func (m *experienceRepository) GetUserDiscoverPreferenceByHarborsIdOrProvince(ct
 			) c on c.city_id = b.city_id
             join cities city on city.id = c.city_id
 			join provinces province on province.id = c.province_id
-			WHERE province.id = ?`
+			WHERE province.id = ? AND a.is_deleted = 0 AND a.is_active = 1 AND a.status = 2`
 
 		res, err := m.fetchUserDiscoverPreferenceProvince(ctx, query, provinceId, provinceId)
 		if err != nil {
