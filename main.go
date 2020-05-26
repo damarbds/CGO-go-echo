@@ -162,7 +162,7 @@ func main() {
 	// baseUrlis := viper.GetString(`identityServer.baseUrl`)
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
 	//dev
-	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
+	// baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//prd
 	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
 	//local
@@ -339,7 +339,7 @@ func main() {
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
 	_xenditHttpHandler.NewXenditHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 
-	go Scheduler(baseUrlLocal)
+	// go Scheduler(baseUrlLocal)
 
 	log.Fatal(e.Start(":9090"))
 }
