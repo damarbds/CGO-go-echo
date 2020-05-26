@@ -32,3 +32,14 @@ type CurrencyDtoWithPagination struct {
 	Data []*CurrencyDto `json:"data"`
 	Meta *MetaPagination    `json:"meta"`
 }
+
+type CurrencyExChangeRate struct {
+	Rates 		Rates `json:"rates"`
+	Base 		string 	`json:"base"`
+	Date		string 	`json:"date"`
+}
+
+type Rates struct {
+	IDR 		float64	`json:"IDR"`
+	USD 		float64 `json:"USD"`
+}

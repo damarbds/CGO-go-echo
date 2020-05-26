@@ -33,14 +33,19 @@ func (cu *currencyHandler) ExchangeRate(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	exchangeKey := from + "_" + to
-	res, err := cu.currencyUsecase.Exchange(ctx, exchangeKey)
+	//exchangeKey := from + "_" + to
+	res, err := cu.currencyUsecase.ExchangeRatesApi(ctx, from,to)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-
+	var rates float64
+	if to == "IDR" {
+		rates = res.Rates.IDR
+	}else if to == "USD" {
+		rates = res.Rates.USD
+	}
 	result := map[string]interface{}{
-		"rates": res[exchangeKey],
+		"rates": rates,
 	}
 
 	return c.JSON(http.StatusOK, result)
