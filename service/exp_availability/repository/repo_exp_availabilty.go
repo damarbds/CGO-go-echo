@@ -2,8 +2,9 @@ package repository
 
 import (
 	"database/sql"
-	"github.com/service/exp_availability"
 	"time"
+
+	"github.com/service/exp_availability"
 
 	guuid "github.com/google/uuid"
 	"github.com/models"
@@ -15,13 +16,12 @@ type exp_availabilityRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewExpexp_availabilityRepository will create an object that represent the exp_exp_availability.repository interface
 func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
 	return &exp_availabilityRepository{Conn}
 }
 func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*string) ([]*models.ExpAvailability, error) {
-	query := `SELECT * FROM exp_availabilities WHERE `
+	query := `SELECT * FROM exp_availabilities WHERE is_deleted = 0 AND is_active = 1 AND `
 	for index, id := range expId {
 		if index == 0 && index != (len(expId)-1) {
 			query = query + ` exp_id = '` + *id + `' `
