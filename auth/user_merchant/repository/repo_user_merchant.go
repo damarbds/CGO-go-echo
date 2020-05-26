@@ -163,7 +163,7 @@ func (m *userMerchantRepository) GetUserByMerchantId(ctx context.Context, mercha
 	return
 }
 func (m *userMerchantRepository) GetByUserEmail(ctx context.Context, userEmail string) (res *models.UserMerchant, err error) {
-	query := `SELECT * FROM user_merchants WHERE email = ?`
+	query := `SELECT * FROM user_merchants WHERE is_deleted = 0 AND is_active = 1 AND email = ?`
 
 	list, err := m.fetch(ctx, query, userEmail)
 	if err != nil {

@@ -204,7 +204,7 @@ func (m *userRepository) GetCreditByID(ctx context.Context, id string) (int, err
 }
 
 func (m *userRepository) GetByUserEmail(ctx context.Context, userEmail string) (res *models.User, err error) {
-	query := `SELECT * FROM users WHERE user_email = ?`
+	query := `SELECT * FROM users WHERE is_deleted = 0 AND is_active = 1 AND  user_email = ?`
 
 	list, err := m.fetch(ctx, query, userEmail)
 	if err != nil {
