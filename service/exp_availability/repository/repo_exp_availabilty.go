@@ -131,7 +131,7 @@ func (m *exp_availabilityRepository) fetch(ctx context.Context, query string, ar
 	return result, nil
 }
 func (e exp_availabilityRepository) GetByExpId(ctx context.Context, expId string) ([]*models.ExpAvailability, error) {
-	query := `SELECT * FROM exp_availabilities WHERE exp_id = ?`
+	query := `SELECT * FROM exp_availabilities WHERE is_deleted = 0 AND is_active = 1 AND exp_id = ?`
 
 	list, err := e.fetch(ctx, query, expId)
 	if err != nil {
