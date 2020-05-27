@@ -2339,31 +2339,198 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("06")
+					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
+					var data = map[string]interface{}{
+						"title":            exp.ExpTitle,
+						"user":             user,
+						"payment":          bookingDetail.TotalPrice,
+						"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+						"paymentDeadline":  bookingDetail.BookingDate.Format("02 January 2006"),
+						"orderId":          bookingDetail.OrderId,
+						"tripDate":         tripDate,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg := tpl.String()
+					pushEmail := &models.SendingEmail{
+						Subject:  "Waiting Approval For Merchant",
+						Message:  msg,
+						From:     "CGO Indonesia",
+						To:       bookedBy[0].Email,
+						FileName: "",
+					}
+					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil
+					}
+				} else {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("06")
+					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
+					var data = map[string]interface{}{
+						"title":    exp.ExpTitle,
+						"user":     user,
+						"tripDate": tripDate,
+						"orderId":  bookingDetail.OrderId,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg := tpl.String()
+					pushEmail := &models.SendingEmail{
+						Subject:  "Waiting Approval For Merchant",
+						Message:  msg,
+						From:     "CGO Indonesia",
+						To:       bookedBy[0].Email,
+						FileName: "",
+					}
+
+					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil
+					}
+				}
+
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("06")
+				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				guestCount := len(bookingDetail.GuestDesc)
+
+				var tmpl = template.Must(template.New("main-template").Parse(templateTicketDP))
+				var data = map[string]interface{}{
+					"title":        exp.ExpTitle,
+					"user":         user,
+					"tripDate":     tripDate,
+					"orderId":      bookingDetail.OrderId,
+					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+					"time":         bookingDetail.Experience[0].ExpPickupTime,
+					"userGuide":    "Budi Sutomo",
+					"guideContact": "+68 56 219 2264",
+					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//maxTime := time.Now().AddDate(0, 0, 1)
+				msg := tpl.String()
+				pushEmail := &models.SendingEmail{
+					Subject:  "Ticket DP",
+					Message:  msg,
+					From:     "CGO Indonesia",
+					To:       bookedBy[0].Email,
+					FileName: "",
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("06")
+				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				guestCount := len(bookingDetail.GuestDesc)
+
+				var tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
+				var data = map[string]interface{}{
+					"title":        exp.ExpTitle,
+					"user":         user,
+					"tripDate":     tripDate,
+					"orderId":      bookingDetail.OrderId,
+					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+					"time":         bookingDetail.Experience[0].ExpPickupTime,
+					"userGuide":    "Budi Sutomo",
+					"guideContact": "+68 56 219 2264",
+					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//maxTime := time.Now().AddDate(0, 0, 1)
+				msg := tpl.String()
+				pushEmail := &models.SendingEmail{
+					Subject:  "Ticket FP",
+					Message:  msg,
+					From:     "CGO Indonesia",
+					To:       bookedBy[0].Email,
+					FileName: "",
+				}
+
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
 			}
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.Id); err != nil {
 				return err
 			}
 		} else {
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.Id, "")
+			if err != nil {
+				return err
+			}
+			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			guestCount := len(bookingDetail.GuestDesc)
+
+			var tmpl = template.Must(template.New("main-template").Parse(templateTicketTransportation))
+			var data = map[string]interface{}{
+				"title":      bookingDetail.Transportation[0].TransTitle,
+				"user":       user,
+				"tripDate":   tripDate,
+				"guestCount": strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTime": bookingDetail.Transportation[0].DepartureTime,
+				"desTime":    bookingDetail.Transportation[0].ArrivalTime,
+				"duration":   bookingDetail.Transportation[0].TripDuration,
+				"source":     bookingDetail.Transportation[0].HarborSourceName,
+				"dest":       bookingDetail.Transportation[0].HarborDestName,
+				"class":      bookingDetail.Transportation[0].TransClass,
+			}
+			var tpl bytes.Buffer
+			err = tmpl.Execute(&tpl, data)
+			if err != nil {
+				//http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			//maxTime := time.Now().AddDate(0, 0, 1)
+			msg := tpl.String()
+			pushEmail := &models.SendingEmail{
+				Subject:  "Ticket FP Transportation",
+				Message:  msg,
+				From:     "CGO Indonesia",
+				To:       bookedBy[0].Email,
+				FileName: "",
+			}
+			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+				return nil
+			}
+
 			transactionStatus = 2
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.OrderId); err != nil {
 				return err
 			}
 		}
-		msg := "<p>This is your order id " + booking.OrderId + " and your ticket QR code " + booking.TicketQRCode + "</p>"
-		pushEmail := &models.SendingEmail{
-			Subject:  "E-Ticket cGO",
-			Message:  msg,
-			From:     "CGO Indonesia",
-			To:       bookedBy[0].Email,
-			FileName: "Ticket.pdf",
-		}
-		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-			return err
-		}
+
 	} else if status == "FAILED" {
 		var bookingCode string
 		if booking.ExpId != nil {
@@ -2372,6 +2539,38 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			bookingCode = booking.OrderId
 		}
 		transactionStatus = 3
+
+		bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "")
+		if err != nil {
+			return err
+		}
+		tripDate := bookingDetail.BookingDate.Format("06")
+		tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
+		var data = map[string]interface{}{
+			"title": bookingDetail.Experience[0].ExpTitle,
+			"orderId" : bookingDetail.OrderId,
+			"tripDate" : tripDate,
+		}
+		var tpl bytes.Buffer
+		err = tmpl.Execute(&tpl, data)
+		if err != nil {
+			//http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		//maxTime := time.Now().AddDate(0, 0, 1)
+		msg := tpl.String()
+		pushEmail := &models.SendingEmail{
+			Subject:  "Booking Cancelled",
+			Message:  msg,
+			From:     "CGO Indonesia",
+			To:       bookedBy[0].Email,
+			FileName: "",
+		}
+		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+			return nil
+		}
+
 		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", bookingCode); err != nil {
 			return err
 		}
