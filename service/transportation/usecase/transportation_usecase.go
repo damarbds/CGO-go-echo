@@ -267,6 +267,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	limit,
 	offset int,
 	returnTransId string,
+	notReturn string,
 ) (*models.FilterSearchTransWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
@@ -497,6 +498,9 @@ func (t transportationUsecase) FilterSearchTrans(
 	if isReturn {
 		query = query + ` AND t.is_return = 0 AND t.return_trans_id	!= '' `
 		queryCount = queryCount + ` AND t.is_return = 0 AND t.return_trans_id != '' `
+	}else if notReturn != ""{
+		query = query + ` AND t.is_return = 0 `
+		queryCount = queryCount + ` AND t.is_return = 0 `
 	}
 	if returnTransId != "" {
 		query = query + ` AND t.id = '` + returnTransId + `'`

@@ -68,7 +68,7 @@ func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 	sortBy := c.QueryParam("sortBy")
 	depTimeOptions := c.QueryParam("dep_timeoption_id")
 	arrTimeOptions := c.QueryParam("arr_timeoption_id")
-
+	notReturn := c.QueryParam("not_return")
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
 
@@ -103,7 +103,7 @@ func (t *transportationHandler) FilterSearchTrans(c echo.Context) error {
 	arrTimeOp, _ := strconv.Atoi(arrTimeOptions)
 
 
-	results, err := t.transportationUsecase.FilterSearchTrans(ctx, needMerchantAuth, token, search, status, sortBy, harborSourceId, harborDestId, depDate, class, isReturnTrip, depTimeOp, arrTimeOp, guestTrip, page, limit, offset,returnTransId)
+	results, err := t.transportationUsecase.FilterSearchTrans(ctx, needMerchantAuth, token, search, status, sortBy, harborSourceId, harborDestId, depDate, class, isReturnTrip, depTimeOp, arrTimeOp, guestTrip, page, limit, offset,returnTransId,notReturn)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
