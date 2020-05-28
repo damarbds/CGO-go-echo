@@ -27,6 +27,7 @@ type merchantUsecase struct {
 	contextTimeout   time.Duration
 }
 
+
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
 func NewmerchantUsecase(usm user_merchant.Repository, a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase, timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
@@ -40,6 +41,42 @@ func NewmerchantUsecase(usm user_merchant.Repository, a merchant.Repository, ex 
 	}
 }
 
+func (m merchantUsecase) AutoLoginByCMSAdmin(ctx context.Context, merchantId string, token string) (*models.GetToken, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	_, err := m.adminUsecase.ValidateTokenAdmin(ctx,token)
+	if err != nil {
+		return nil, models.ErrUnAuthorize
+	}
+	getMerchant,_ := m.merchantRepo.GetByID(ctx,merchantId)
+	if getMerchant == nil {
+		return nil, models.ErrUnAuthorize
+	}
+	userMerchant, _ := m.userMerchantRepo.GetUserByMerchantId(ctx, getMerchant.Id)
+	if userMerchant == nil {
+		return nil, models.ErrUnAuthorize
+	}
+	getUserIdentity ,err := m.identityServerUc.GetDetailUserById(userMerchant[0].Id,token,"true")
+	if err != nil {
+		return nil,models.ErrUnAuthorize
+	}
+
+	login := models.Login{
+		Email:    getUserIdentity.Email,
+		Password: getUserIdentity.Password,
+		Type:     "merchant",
+		Scope:    "",
+	}
+
+	result,err := m.Login(ctx,&login)
+	if err != nil {
+		return nil,models.ErrUnAuthorize
+	}
+
+	return result,nil
+
+}
 func (m merchantUsecase) ServiceCount(ctx context.Context, token string) (*models.ServiceCount, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()

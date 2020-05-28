@@ -2,13 +2,14 @@ package http
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/auth/admin"
 	"github.com/auth/identityserver"
 	"github.com/auth/merchant"
 	"github.com/auth/user"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
-	"net/http"
 
 	"github.com/models"
 )
@@ -20,20 +21,21 @@ type ResponseError struct {
 
 // isHandler  represent the httphandler for is
 type isHandler struct {
-	isUsecase 		identityserver.Usecase
+	isUsecase       identityserver.Usecase
 	merchantUsecase merchant.Usecase
 	userUsecase     user.Usecase
 	adminUsecase    admin.Usecase
 }
 
 // NewisHandler will initialize the iss/ resources endpoint
-func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usecase,is identityserver.Usecase) {
+func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usecase, is identityserver.Usecase) {
 	handler := &isHandler{
 		merchantUsecase: m,
 		userUsecase:     u,
 		adminUsecase:    a,
-		isUsecase:is,
+		isUsecase:       is,
 	}
+	e.POST("/account/auto-login", handler.AutoLogin)
 	e.GET("/account/info", handler.GetInfo)
 	e.POST("/account/login", handler.Login)
 	e.POST("/account/refresh-token", handler.RefreshToken)
@@ -42,7 +44,27 @@ func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usec
 	e.GET("/account/verified-email", handler.VerifiedEmail)
 	e.GET("/account/callback", handler.CallBack)
 }
+func (a *isHandler) AutoLogin(c echo.Context) error {
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	token := c.Request().Header.Get("Authorization")
+	var isLogin models.AutoLogin
+	err := c.Bind(&isLogin)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	isLogin.MerchantId = c.Request().Form.Get("merchant_id")
 
+
+	responseToken, err := a.merchantUsecase.AutoLoginByCMSAdmin(ctx,isLogin.MerchantId,token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, responseToken)
+}
 func (a *isHandler) RequestOTP(c echo.Context) error {
 	var requestOTP models.RequestOTPNumber
 	err := c.Bind(&requestOTP)
@@ -56,7 +78,7 @@ func (a *isHandler) RequestOTP(c echo.Context) error {
 	}
 
 	requestOTP.PhoneNumber = c.Request().Form.Get("phone_number")
-	responseOTP , err:= a.userUsecase.RequestOTP(ctx,requestOTP.PhoneNumber)
+	responseOTP, err := a.userUsecase.RequestOTP(ctx, requestOTP.PhoneNumber)
 	if err != nil {
 		return err
 	}
@@ -76,13 +98,13 @@ func (a *isHandler) RequestOTPTmp(c echo.Context) error {
 
 	requestOTP.PhoneNumber = c.Request().Form.Get("phone_number")
 	requestOTP.Email = c.Request().Form.Get("email")
-	if requestOTP.Email != ""{
-		checkEmail , _ := a.userUsecase.GetUserByEmail(ctx,requestOTP.Email)
-		if checkEmail != nil {
-			return c.JSON(getStatusCode(models.ErrConflict), ResponseError{Message: models.ErrConflict.Error()})
-		}
-	}
-	responseOTP , err:= a.isUsecase.RequestOTPTmp(requestOTP.PhoneNumber,requestOTP.Email)
+	// if requestOTP.Email != ""{
+	// 	checkEmail , _ := a.userUsecase.GetUserByEmail(ctx,requestOTP.Email)
+	// 	if checkEmail != nil {
+	// 		return c.JSON(getStatusCode(models.ErrConflict), ResponseError{Message: models.ErrConflict.Error()})
+	// 	}
+	// }
+	responseOTP, err := a.isUsecase.RequestOTPTmp(requestOTP.PhoneNumber, requestOTP.Email)
 	if err != nil {
 		return err
 	}
@@ -148,7 +170,7 @@ func (a *isHandler) RefreshToken(c echo.Context) error {
 	}
 
 	isLogin.RefreshToken = c.Request().Form.Get("refresh_token")
-	responseToken ,err := a.isUsecase.RefreshToken(isLogin.RefreshToken)
+	responseToken, err := a.isUsecase.RefreshToken(isLogin.RefreshToken)
 	return c.JSON(http.StatusOK, responseToken)
 }
 func (a *isHandler) VerifiedEmail(c echo.Context) error {
@@ -166,13 +188,13 @@ func (a *isHandler) VerifiedEmail(c echo.Context) error {
 		CodeOTP: otpCode,
 	}
 	//if typeUser == "user" {
-		response, err := a.isUsecase.VerifiedEmail(&verified)
+	response, err := a.isUsecase.VerifiedEmail(&verified)
 
-		if err != nil {
-			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-		}
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
 
-		return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 	//} else if typeUser == "merchant" {
 	//	return c.JSON(http.StatusNotFound, "Not Implemented")
 	//} else {

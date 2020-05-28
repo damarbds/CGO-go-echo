@@ -110,6 +110,10 @@ type Login struct {
 	Type     string `json:"type"`
 	Scope    string `json:"scope"`
 }
+
+type AutoLogin struct {
+	MerchantId 		string	`json:"merchant_id"`
+}
 type RefreshTokenLogin struct {
 	RefreshToken string	`json:"refresh_token"`
 }
