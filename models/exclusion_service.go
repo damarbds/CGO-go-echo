@@ -15,3 +15,13 @@ type ExclusionService struct {
 	ExclusionServiceName string     `json:"exclusion_service_name"`
 	ExclusionServiceType int        `json:"exclusion_service_type"`
 }
+type ExclusionServiceDto struct {
+	Id                   int        `json:"id" validate:"required"`
+	ExclusionServiceName string     `json:"exclusion_service_name"`
+	ExclusionServiceType int        `json:"exclusion_service_type"`
+}
+
+type ExclusionServiceWithPagination struct {
+	Data []*ExclusionServiceDto `json:"data"`
+	Meta *MetaPagination    `json:"meta"`
+}

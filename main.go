@@ -139,6 +139,11 @@ import (
 	_minimumBookingHttpHandler "github.com/service/minimum_booking/delivery/http"
 	_minimumBookingRepo "github.com/service/minimum_booking/repository"
 	_minimumBookingUsecase "github.com/service/minimum_booking/usecase"
+
+	_exclusionServicesHttpHandler "github.com/service/exclusion_service/delivery/http"
+	_exclusionServicesRepo "github.com/service/exclusion_service/repository"
+	_exclusionServicesUsecase "github.com/service/exclusion_service/usecase"
+
 )
 
 // func init() {
@@ -260,6 +265,7 @@ func main() {
 	balanceHistoryRepo := _balanceHistoryRepo.NewbalanceHistoryRepository(dbConn)
 	userMerchantRepo := _userMerchantRepo.NewuserMerchantRepository(dbConn)
 	currencyMasterRepo := _currencyMasterRepo.NewCurrencyRepository(dbConn)
+	exclusionServiceRepo := _exclusionServicesRepo.NewExclusionServiceRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -307,6 +313,7 @@ func main() {
 	currencyMasterUcase := _currencyMasterUsecase.NewCurrencyUsecase(adminUsecase, currencyMasterRepo, timeoutContext)
 	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase, cpcRepo, timeoutContext)
 	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo, timeoutContext)
+	exclusionServiceUsecase := _exclusionServicesUsecase.NewExclusionServicesUsecase(exclusionServiceRepo,adminUsecase,timeoutContext)
 
 	_minimumBookingHttpHandler.NewminimumBookingHandler(e, minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
@@ -338,7 +345,7 @@ func main() {
 	_midtransHttpHandler.NewMidtransHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
 	_xenditHttpHandler.NewXenditHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
-
+	_exclusionServicesHttpHandler.NewExclusionServicesHandler(e,exclusionServiceUsecase)
 	// go Scheduler(baseUrlLocal)
 
 	log.Fatal(e.Start(":9090"))
