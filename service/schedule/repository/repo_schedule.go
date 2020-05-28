@@ -156,25 +156,30 @@ func (s scheduleRepository) DeleteByTransId(ctx context.Context, transId *string
 }
 
 func (t scheduleRepository) GetScheduleByTransIds(ctx context.Context, transId []*string) ([]*models.ScheduleDtos, error) {
+	res := make([]*models.ScheduleDtos,0)
 	query := `SELECT distinct departure_date FROM schedules WHERE `
-	for index, id := range transId {
-		if index == 0 && index != (len(transId)-1) {
-			query = query + ` trans_id LIKE '%` + *id + `%' `
-		} else if index == 0 && index == (len(transId)-1) {
-			query = query + ` trans_id LIKE '%` + *id + `%' `
-		} else if index == (len(transId) - 1) {
-			query = query + ` OR  trans_id LIKE '%` + *id + `%' `
-		} else {
-			query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+	if len(transId) != 0 {
+		for index, id := range transId {
+			if index == 0 && index != (len(transId)-1) {
+				query = query + ` trans_id LIKE '%` + *id + `%' `
+			} else if index == 0 && index == (len(transId)-1) {
+				query = query + ` trans_id LIKE '%` + *id + `%' `
+			} else if index == (len(transId) - 1) {
+				query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+			} else {
+				query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+			}
 		}
-	}
-	res, err := t.fetchDtos(ctx, query)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, models.ErrNotFound
+		resp, err := t.fetchDtos(ctx, query)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
 		}
-		return nil, err
+		res = resp
 	}
+
 	return res, nil
 }
 

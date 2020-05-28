@@ -334,9 +334,15 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	//a.Id = lastID
 	return &a.Id, nil
 }
-func (t transportationRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string) ([]*string, error) {
-	query := `SELECT id FROM transportations WHERE merchant_id = ?`
-	rows, err := t.Conn.QueryContext(ctx, query, merchantId)
+func (t transportationRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string,month string,year int) ([]*string, error) {
+	query := `SELECT DISTINCT t.id
+				FROM transportations t
+				JOIN schedules s ON s.trans_id = t.id
+				WHERE 
+				t.merchant_id = ? AND 
+				s.month =? AND 
+				s.year = ? `
+	rows, err := t.Conn.QueryContext(ctx, query, merchantId,month,year)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err

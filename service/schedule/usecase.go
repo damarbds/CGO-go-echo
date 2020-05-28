@@ -6,5 +6,5 @@ import (
 )
 
 type Usecase interface {
-	GetScheduleByMerchantId(ctx context.Context,merchantId  string)(*models.ScheduleDtoObj,error)
+	GetScheduleByMerchantId(ctx context.Context,merchantId  string,date string)(*models.ScheduleDtoObj,error)
 }

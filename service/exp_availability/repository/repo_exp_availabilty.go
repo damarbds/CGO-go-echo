@@ -21,24 +21,28 @@ func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
 	return &exp_availabilityRepository{Conn}
 }
 func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*string) ([]*models.ExpAvailability, error) {
+	res := make([]*models.ExpAvailability,0)
 	query := `SELECT * FROM exp_availabilities WHERE is_deleted = 0 AND is_active = 1 AND `
-	for index, id := range expId {
-		if index == 0 && index != (len(expId)-1) {
-			query = query + ` exp_id = '` + *id + `' `
-		} else if index == 0 && index == (len(expId)-1) {
-			query = query + ` exp_id = '` + *id + `' `
-		} else if index == (len(expId) - 1) {
-			query = query + ` OR  exp_id = '` + *id + `' `
-		} else {
-			query = query + ` OR  exp_id = '` + *id + `' `
+	if len(expId) != 0 {
+		for index, id := range expId {
+			if index == 0 && index != (len(expId)-1) {
+				query = query + ` exp_id = '` + *id + `' `
+			} else if index == 0 && index == (len(expId)-1) {
+				query = query + ` exp_id = '` + *id + `' `
+			} else if index == (len(expId) - 1) {
+				query = query + ` OR  exp_id = '` + *id + `' `
+			} else {
+				query = query + ` OR  exp_id = '` + *id + `' `
+			}
 		}
-	}
-	res, err := m.fetch(ctx, query)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, models.ErrNotFound
+		resp, err := m.fetch(ctx, query)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, models.ErrNotFound
+			}
+			return nil, err
 		}
-		return nil, err
+	res = resp
 	}
 	return res, nil
 }

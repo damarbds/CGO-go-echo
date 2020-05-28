@@ -9,7 +9,7 @@ type Repository interface {
 	Fetch(ctx context.Context, cursor string, num int64) (res []*models.Experience, nextCursor string, err error)
 	SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearch, error)
 	GetByID(ctx context.Context, id string) (*models.ExperienceJoinForegnKey, error)
-	SelectIdGetByMerchantId(ctx context.Context, merchantId string) ([]*string, error)
+	SelectIdGetByMerchantId(ctx context.Context, merchantId string,month string,year int) ([]*string, error)
 	GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreference, error)
 	GetUserDiscoverPreferenceByHarborsIdOrProvince(ctx context.Context, harborsId *string,provinceId *int) ([]*models.ExpUserDiscoverPreference, error)
 	GetIdByHarborsId(ctx context.Context, harborsId string) ([]*string, error)

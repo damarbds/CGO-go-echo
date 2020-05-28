@@ -47,14 +47,13 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 // GetByID will get article by given id
 func (a *scheduleHandler) GetSchedule(c echo.Context) error {
 	merchantId := c.QueryParam("merchant_id")
-	//qsize := c.QueryParam("size")
-
+	date := c.QueryParam("date")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-		art, err := a.scheduleUsecase.GetScheduleByMerchantId(ctx, merchantId)
+		art, err := a.scheduleUsecase.GetScheduleByMerchantId(ctx, merchantId,date)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

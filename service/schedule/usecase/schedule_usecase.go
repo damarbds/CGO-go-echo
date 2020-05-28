@@ -36,11 +36,17 @@ func NewScheduleUsecase(tr transportation.Repository, mr merchant.Usecase, s sch
 		contextTimeout:     timeout,
 	}
 }
-func (s scheduleUsecase) GetScheduleByMerchantId(c context.Context, merchantId string) (*models.ScheduleDtoObj,error) {
+func (s scheduleUsecase) GetScheduleByMerchantId(c context.Context, merchantId string,date string) (*models.ScheduleDtoObj,error) {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	getTransportationByMerchantId ,err := s.transportationRepo.SelectIdGetByMerchantId(ctx,merchantId)
+	dateParse := date + "-" + "01" + " 00:00:00"
+	layoutFormat := "2006-01-02 15:04:05"
+	dt, _ := time.Parse(layoutFormat, dateParse)
+	year := dt.Year()
+	month := dt.Month().String()
+
+	getTransportationByMerchantId ,err := s.transportationRepo.SelectIdGetByMerchantId(ctx,merchantId,month,year)
 	if err != nil {
 		return nil,err
 	}
@@ -67,7 +73,7 @@ func (s scheduleUsecase) GetScheduleByMerchantId(c context.Context, merchantId s
 
 		}
 
-	getExperienceByMerchantId , err := s.experieceRepo.SelectIdGetByMerchantId(ctx,merchantId)
+	getExperienceByMerchantId , err := s.experieceRepo.SelectIdGetByMerchantId(ctx,merchantId,month,year)
 
 		getAvalibitryByExpId , err := s.expAvailability.GetByExpIds(ctx,getExperienceByMerchantId)
 		if err != nil {
