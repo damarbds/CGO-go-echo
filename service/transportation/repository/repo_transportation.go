@@ -40,7 +40,12 @@ func (m transportationRepository) GetById(ctx context.Context, id string) (res *
 	return
 }
 func (t transportationRepository) GetTransCount(ctx context.Context, merchantId string) (int, error) {
-	query := `SELECT count(*) as count FROM transportations WHERE merchant_id = ?`
+	query := `SELECT count(*) as count 
+	FROM transportations 
+	WHERE 
+	is_deleted = 0 AND
+	is_active = 1 AND
+	merchant_id = ?`
 
 	rows, err := t.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
@@ -83,10 +88,10 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	return count, nil
 }
 
-func (t transportationRepository) FilterSearch(ctx context.Context, query string, limit, offset int,isMerchant bool,qstatus string) ([]*models.TransSearch, error) {
+func (t transportationRepository) FilterSearch(ctx context.Context, query string, limit, offset int, isMerchant bool, qstatus string) ([]*models.TransSearch, error) {
 	query = query + ` LIMIT ? OFFSET ?`
 	var res []*models.TransSearch
-	if isMerchant == true && qstatus != "" && qstatus == "draft"{
+	if isMerchant == true && qstatus != "" && qstatus == "draft" {
 		response, err := t.fetchSearchTransForMerchant(ctx, query, limit, offset)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -95,7 +100,7 @@ func (t transportationRepository) FilterSearch(ctx context.Context, query string
 			return nil, err
 		}
 		res = response
-	}else {
+	} else {
 		response, err := t.fetchSearchTrans(ctx, query, limit, offset)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -196,14 +201,14 @@ func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query s
 			&t.Class,
 			&t.TransFacilities,
 			&t.TransCapacity,
-			&t.CitySourceId ,
-			&t.CitySourceName		,
-			&t.CityDestId		,
-			&t.CityDestName		,
-			&t.ProvinceSourceId	,
-			&t.ProvinceSourceName ,
-			&t.ProvinceDestId		,
-			&t.ProvinceDestName  	,
+			&t.CitySourceId,
+			&t.CitySourceName,
+			&t.CityDestId,
+			&t.CityDestName,
+			&t.ProvinceSourceId,
+			&t.ProvinceSourceName,
+			&t.ProvinceDestId,
+			&t.ProvinceDestName,
 			&t.BoatDetails,
 			&t.ReturnTransId,
 		)
@@ -276,7 +281,7 @@ func (t transportationRepository) Insert(ctx context.Context, a models.Transport
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
 		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
-		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities,a.IsReturn)
+		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities, a.IsReturn)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +326,7 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	}
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.TransName, a.HarborsSourceId,
 		a.HarborsDestId, a.MerchantId, a.TransCapacity, a.TransTitle, a.TransStatus, a.TransImages, a.ReturnTransId,
-		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities, a.IsReturn,a.Id)
+		a.BoatDetails, a.Transcoverphoto, a.Class, a.TransFacilities, a.IsReturn, a.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -334,7 +339,7 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	//a.Id = lastID
 	return &a.Id, nil
 }
-func (t transportationRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string,date string) ([]*string, error) {
+func (t transportationRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string, date string) ([]*string, error) {
 	query := `SELECT DISTINCT t.id
 				FROM transportations t
 				WHERE 

@@ -57,6 +57,8 @@ func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId strin
 	FROM
 		experiences
 	WHERE
+		is_deleted = 0 AND
+		is_active = 1 AND
 		merchant_id = ?`
 
 	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
@@ -163,8 +165,10 @@ func (m *experienceRepository) GetSuccessBookCount(ctx context.Context, merchant
 		experiences e
 		LEFT JOIN booking_exps b ON e.id = b.exp_id
 	WHERE
-		e.merchant_id = ?
-		AND b.status = 1`
+		e.is_deleted = 0 AND
+		e.is_active = 1 AND
+		e.merchant_id = ? AND 
+		b.status = 1`
 
 	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
@@ -804,7 +808,7 @@ func (m *experienceRepository) GetByID(ctx context.Context, id string) (res *mod
 
 	return
 }
-func (m *experienceRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string,month string,year int,date string) (res []*string, err error) {
+func (m *experienceRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string, month string, year int, date string) (res []*string, err error) {
 	query := `SELECT DISTINCT e.id 
 				FROM experiences e
 				WHERE 
