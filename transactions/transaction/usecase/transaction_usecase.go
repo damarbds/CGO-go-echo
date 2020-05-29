@@ -178,7 +178,13 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			transactions[i].CountryName = *item.CountryName
 		}
 	}
-	totalRecords, _ := t.transactionRepo.Count(ctx, startDate, endDate, search, status,merchantId)
+	var totalRecords int
+	if token != "" && isAdmin == true{
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status,"")
+	}else {
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status,merchantId)
+	}
+
 	if limit == nil{
 		limit = &totalRecords
 	}

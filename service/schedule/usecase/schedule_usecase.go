@@ -77,14 +77,14 @@ func (s scheduleUsecase) GetScheduleByMerchantId(c context.Context, merchantId s
 			}
 			obj.TransportationCount = transportationCount
 
-			experienceCount ,err := s.expAvailability.GetCountDate(ctx,date,merchantId)
+			experienceCount ,err := s.expAvailability.GetCountDate(ctx,element,merchantId)
 			if err != nil {
 				return nil,err
 			}
 
 			obj.ExperienceCount = experienceCount
 
-		if obj.TransportationCount != 0 && obj.ExperienceCount != 0 {
+		if obj.TransportationCount != 0 || obj.ExperienceCount != 0 {
 			result.ScheduleDate = append(result.ScheduleDate,obj)
 		}
 
