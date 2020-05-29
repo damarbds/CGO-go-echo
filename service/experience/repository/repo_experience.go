@@ -804,15 +804,12 @@ func (m *experienceRepository) GetByID(ctx context.Context, id string) (res *mod
 
 	return
 }
-func (m *experienceRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string,month string,year int) (res []*string, err error) {
+func (m *experienceRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string,month string,year int,date string) (res []*string, err error) {
 	query := `SELECT DISTINCT e.id 
 				FROM experiences e
-				JOIN exp_availabilities ea ON ea.exp_id = e.id
 				WHERE 
-				e.merchant_id = ? AND 
-				ea.exp_availability_month = ? AND 
-				ea.exp_availability_year = ? `
-	rows, err := m.Conn.QueryContext(ctx, query, merchantId,month,year)
+				e.merchant_id = ?`
+	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err

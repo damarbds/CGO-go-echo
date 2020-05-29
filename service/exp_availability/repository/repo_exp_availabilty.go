@@ -20,22 +20,26 @@ type exp_availabilityRepository struct {
 func NewExpavailabilityRepository(Conn *sql.DB) exp_availability.Repository {
 	return &exp_availabilityRepository{Conn}
 }
-func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*string) ([]*models.ExpAvailability, error) {
+func (m *exp_availabilityRepository) GetByExpIds(ctx context.Context, expId []*string,year int,month string) ([]*models.ExpAvailability, error) {
 	res := make([]*models.ExpAvailability,0)
-	query := `SELECT * FROM exp_availabilities WHERE is_deleted = 0 AND is_active = 1 AND `
+	query := `SELECT * FROM exp_availabilities 
+				WHERE is_deleted = 0 AND 
+						is_active = 1 AND 
+						exp_availability_month = ? AND 
+						exp_availability_year = ? `
 	if len(expId) != 0 {
 		for index, id := range expId {
 			if index == 0 && index != (len(expId)-1) {
-				query = query + ` exp_id = '` + *id + `' `
+				query = query + ` AND (exp_id = '` + *id + `' `
 			} else if index == 0 && index == (len(expId)-1) {
-				query = query + ` exp_id = '` + *id + `' `
+				query = query + ` AND (exp_id = '` + *id + `' ) `
 			} else if index == (len(expId) - 1) {
-				query = query + ` OR  exp_id = '` + *id + `' `
+				query = query + ` OR  exp_id = '` + *id + `' ) `
 			} else {
 				query = query + ` OR  exp_id = '` + *id + `' `
 			}
 		}
-		resp, err := m.fetch(ctx, query)
+		resp, err := m.fetch(ctx, query,month,year)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				return nil, models.ErrNotFound
@@ -56,29 +60,32 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	}
 	return count, nil
 }
-func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date string, expId []*string) (int, error) {
+func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date string, merchantId string) (int, error) {
 	query := `
 	SELECT
 		count(DISTINCT b.booking_date,b.exp_id) AS count
 	FROM
 		transactions t
 	JOIN booking_exps b on b.id = t.booking_exp_id
+	JOIN experiences e on e.id = b.exp_id
+	JOIN merchants m on m.id = e.merchant_id
 	WHERE
 		DATE (b.booking_date) = ? AND 
-		t.status = 2`
-
-	for index, id := range expId {
-		if index == 0 && index != (len(expId)-1) {
-			query = query + ` AND (b.exp_id LIKE '%` + *id + `%' `
-		} else if index == 0 && index == (len(expId)-1) {
-			query = query + ` AND (b.exp_id LIKE '%` + *id + `%' ) `
-		} else if index == (len(expId) - 1) {
-			query = query + ` OR  b.exp_id LIKE '%` + *id + `%' ) `
-		} else {
-			query = query + ` OR  b.exp_id LIKE '%` + *id + `%' `
-		}
-	}
-	rows, err := m.Conn.QueryContext(ctx, query, date)
+		t.status = 2 AND 
+		e.merchant_id = ?`
+	//
+	//for index, id := range expId {
+	//	if index == 0 && index != (len(expId)-1) {
+	//		query = query + ` AND (b.exp_id LIKE '%` + *id + `%' `
+	//	} else if index == 0 && index == (len(expId)-1) {
+	//		query = query + ` AND (b.exp_id LIKE '%` + *id + `%' ) `
+	//	} else if index == (len(expId) - 1) {
+	//		query = query + ` OR  b.exp_id LIKE '%` + *id + `%' ) `
+	//	} else {
+	//		query = query + ` OR  b.exp_id LIKE '%` + *id + `%' `
+	//	}
+	//}
+	rows, err := m.Conn.QueryContext(ctx, query, date,merchantId)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err

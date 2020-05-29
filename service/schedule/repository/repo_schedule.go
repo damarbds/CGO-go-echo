@@ -155,22 +155,22 @@ func (s scheduleRepository) DeleteByTransId(ctx context.Context, transId *string
 	return nil
 }
 
-func (t scheduleRepository) GetScheduleByTransIds(ctx context.Context, transId []*string) ([]*models.ScheduleDtos, error) {
+func (t scheduleRepository) GetScheduleByTransIds(ctx context.Context, transId []*string,year int,month string) ([]*models.ScheduleDtos, error) {
 	res := make([]*models.ScheduleDtos,0)
-	query := `SELECT distinct departure_date FROM schedules WHERE `
+	query := `SELECT distinct departure_date FROM schedules WHERE month =? AND year = ?`
 	if len(transId) != 0 {
 		for index, id := range transId {
 			if index == 0 && index != (len(transId)-1) {
-				query = query + ` trans_id LIKE '%` + *id + `%' `
+				query = query + ` AND (trans_id LIKE '%` + *id + `%' `
 			} else if index == 0 && index == (len(transId)-1) {
-				query = query + ` trans_id LIKE '%` + *id + `%' `
+				query = query + ` AND (trans_id LIKE '%` + *id + `%' ) `
 			} else if index == (len(transId) - 1) {
-				query = query + ` OR  trans_id LIKE '%` + *id + `%' `
+				query = query + ` OR  trans_id LIKE '%` + *id + `%' ) `
 			} else {
 				query = query + ` OR  trans_id LIKE '%` + *id + `%' `
 			}
 		}
-		resp, err := t.fetchDtos(ctx, query)
+		resp, err := t.fetchDtos(ctx, query,month,year)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				return nil, models.ErrNotFound
@@ -329,29 +329,32 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 	}
 	return count, nil
 }
-func (m scheduleRepository) GetCountSchedule(ctx context.Context, transId []*string, date string) (int, error) {
+func (m scheduleRepository) GetCountSchedule(ctx context.Context, merchantId string, date string) (int, error) {
 	query := `
 	SELECT
 		count(DISTINCT b.booking_date,b.trans_id) AS count
 	FROM
 		transactions t
 	JOIN booking_exps b on b.id = t.booking_exp_id
+	JOIN transportations trans on trans.id = b.trans_id
+	JOIN merchants m on m.id = trans.merchant_id
 	WHERE
 		DATE (b.booking_date) = ? AND 
-		t.status = 2`
-
-	for index, id := range transId {
-		if index == 0 && index != (len(transId)-1) {
-			query = query + ` AND (b.trans_id LIKE '%` + *id + `%' `
-		} else if index == 0 && index == (len(transId)-1) {
-			query = query + ` AND (b.trans_id LIKE '%` + *id + `%' ) `
-		} else if index == (len(transId) - 1) {
-			query = query + ` OR  b.trans_id LIKE '%` + *id + `%' ) `
-		} else {
-			query = query + ` OR  b.trans_id LIKE '%` + *id + `%' `
-		}
-	}
-	rows, err := m.Conn.QueryContext(ctx, query, date)
+		t.status = 2 AND 
+		trans.merchant_id = ?`
+	//
+	//for index, id := range transId {
+	//	if index == 0 && index != (len(transId)-1) {
+	//		query = query + ` AND (b.trans_id LIKE '%` + *id + `%' `
+	//	} else if index == 0 && index == (len(transId)-1) {
+	//		query = query + ` AND (b.trans_id LIKE '%` + *id + `%' ) `
+	//	} else if index == (len(transId) - 1) {
+	//		query = query + ` OR  b.trans_id LIKE '%` + *id + `%' ) `
+	//	} else {
+	//		query = query + ` OR  b.trans_id LIKE '%` + *id + `%' `
+	//	}
+	//}
+	rows, err := m.Conn.QueryContext(ctx, query, date,merchantId)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
