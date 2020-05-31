@@ -36,10 +36,13 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 		ep.price ,
 		e.exp_duration,
 		t.order_id,
+		m.merchant_name,
+		m.phone_number as merchant_phone
 	FROM transactions t
 	JOIN experience_payments ep on ep.id = t.experience_payment_id
 	JOIN booking_exps be on be.id = t.booking_exp_id
 	JOIN experiences e on e.id = be.exp_id
+	JOIN merchants m on m.id = e.merchant_id	
 	WHERE 
 		ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' AND 
 		t.total_price != ep.price AND 
@@ -63,6 +66,8 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 			&t.Price,
 			&t.ExpDuration,
 			&t.OrderId,
+			&t.MerchantName,
+			&t.MerchantPhone,
 		)
 		if err != nil {
 			logrus.Error(err)

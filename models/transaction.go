@@ -33,7 +33,9 @@ type TransactionWithBooking struct {
 	TotalPrice 		float64		`json:"total_price"`
 	Price 			float64		`json:"price"`
 	ExpDuration 	int 		`json:"exp_duration"`
-	OrderId			*string		`json:"order_id"`	
+	OrderId			*string		`json:"order_id"`
+	MerchantName 	string		`json:"merchant_name"`
+	MerchantPhone   string 		`json:"merchant_phone"`
 }
 type TransactionWMerchant struct {
 	Id                  string     `json:"id" validate:"required"`

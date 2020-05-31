@@ -2479,8 +2479,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
 		if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-			tripDate := bookingDetail.BookingDate.Format("06")
-			tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 			var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
 			var data = map[string]interface{}{
 				"title":            bookingDetail.Experience[0].ExpTitle,
@@ -2490,8 +2490,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 				"paymentDeadline":  bookingDetail.BookingDate.Format("02 January 2006"),
 				"orderId":          bookingDetail.OrderId,
 				"tripDate":         tripDate,
-				"userGuide":        "Budi Sutomo",
-				"guideContact":     "+68 56 219 2264",
+				"userGuide":        bookingDetail.Experience[0].MerchantName,
+				"guideContact":     bookingDetail.Experience[0].MerchantPhone,
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
@@ -2514,8 +2514,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 
 		} else {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-			tripDate := bookingDetail.BookingDate.Format("06")
-			tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 			guestCount := len(bookingDetail.GuestDesc)
 
 			var tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
@@ -2526,8 +2526,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 				"orderId":      bookingDetail.OrderId,
 				"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
 				"time":         bookingDetail.Experience[0].ExpPickupTime,
-				"userGuide":    "Budi Sutomo",
-				"guideContact": "+68 56 219 2264",
+				"userGuide":    bookingDetail.Experience[0].MerchantName,
+				"guideContact": bookingDetail.Experience[0].MerchantPhone,
 				"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 			}
 			var tpl bytes.Buffer
@@ -2557,8 +2557,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		if err != nil {
 			return err
 		}
-		tripDate := bookingDetail.BookingDate.Format("06")
-		tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 		var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
 		var data = map[string]interface{}{
 			"title":    bookingDetail.Experience[0].ExpTitle,

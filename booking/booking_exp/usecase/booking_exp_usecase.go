@@ -2191,8 +2191,8 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 			}
 		}
 		user := bookedBy[0].Title + `.` + bookedBy[0].FullName
-		tripDate := element.BookingDate.Format("06")
-		tripDate = tripDate + `-` + element.BookingDate.AddDate(0, 0, element.ExpDuration).Format("02 January 2006")
+		tripDate := element.BookingDate.Format("02 January 2006")
+		tripDate = tripDate + ` - ` + element.BookingDate.AddDate(0, 0, element.ExpDuration).Format("02 January 2006")
 		var tmpl = template.Must(template.New("main-template").Parse(templateWaitingRemainingDP))
 		remainingPayment := element.Price - element.TotalPrice
 		var data = map[string]interface{}{
@@ -2203,8 +2203,8 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 			"paymentDeadline":  element.BookingDate.Format("02 January 2006"),
 			"orderId":          element.OrderId,
 			"tripDate":         tripDate,
-			"userGuide":        "Budi Sutomo",
-			"guideContact":     "+68 56 219 2264",
+			"userGuide":        element.MerchantName,
+			"guideContact":     element.MerchantPhone,
 		}
 		var tpl bytes.Buffer
 		err = tmpl.Execute(&tpl, data)
@@ -2341,8 +2341,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				transactionStatus = 1
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
 					var data = map[string]interface{}{
 						"title":            exp.ExpTitle,
@@ -2373,8 +2373,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					}
 				} else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
 					var data = map[string]interface{}{
 						"title":    exp.ExpTitle,
@@ -2406,8 +2406,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketDP))
@@ -2418,8 +2418,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					"orderId":      bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
 					"time":         bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide":    "Budi Sutomo",
-					"guideContact": "+68 56 219 2264",
+					"userGuide":    bookingDetail.Experience[0].MerchantName,
+					"guideContact": bookingDetail.Experience[0].MerchantPhone,
 					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
 				var tpl bytes.Buffer
@@ -2444,8 +2444,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
@@ -2456,8 +2456,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					"orderId":      bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
 					"time":         bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide":    "Budi Sutomo",
-					"guideContact": "+68 56 219 2264",
+					"userGuide":    bookingDetail.Experience[0].MerchantName,
+					"guideContact": bookingDetail.Experience[0].MerchantPhone,
 					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
 				var tpl bytes.Buffer
@@ -2544,8 +2544,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 		if err != nil {
 			return err
 		}
-		tripDate := bookingDetail.BookingDate.Format("06")
-		tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 		var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
 		var data = map[string]interface{}{
 			"title": bookingDetail.Experience[0].ExpTitle,
@@ -2651,8 +2651,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				transactionStatus = 1
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
 					var data = map[string]interface{}{
 						"title":            exp.ExpTitle,
@@ -2683,8 +2683,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					}
 				} else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
 					var data = map[string]interface{}{
 						"title":    exp.ExpTitle,
@@ -2716,8 +2716,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketDP))
@@ -2728,8 +2728,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					"orderId":      bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
 					"time":         bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide":    "Budi Sutomo",
-					"guideContact": "+68 56 219 2264",
+					"userGuide":    bookingDetail.Experience[0].MerchantName,
+					"guideContact": bookingDetail.Experience[0].MerchantPhone,
 					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
 				var tpl bytes.Buffer
@@ -2754,8 +2754,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
@@ -2766,8 +2766,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					"orderId":      bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
 					"time":         bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide":    "Budi Sutomo",
-					"guideContact": "+68 56 219 2264",
+					"userGuide":    bookingDetail.Experience[0].MerchantName,
+					"guideContact": bookingDetail.Experience[0].MerchantPhone,
 					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
 				var tpl bytes.Buffer

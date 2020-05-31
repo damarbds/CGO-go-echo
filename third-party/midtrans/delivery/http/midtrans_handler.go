@@ -1872,8 +1872,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				transactionStatus = 1
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment"{
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
 					var data = map[string]interface{}{
 						"title": exp.ExpTitle,
@@ -1904,8 +1904,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					}
 				}else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("06")
-					tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
 					var data = map[string]interface{}{
 						"title": exp.ExpTitle,
@@ -1937,8 +1937,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketDP))
@@ -1949,8 +1949,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					"orderId" : bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
 					"time" : bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide" : "Budi Sutomo",
-					"guideContact" : "+68 56 219 2264",
+					"userGuide" : bookingDetail.Experience[0].MerchantName,
+					"guideContact" : bookingDetail.Experience[0].MerchantPhone,
 					"guestCount" : strconv.Itoa(guestCount) + " Guest(s)" ,
 				}
 				var tpl bytes.Buffer
@@ -1975,8 +1975,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 				transactionStatus = 2
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("06")
-				tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
@@ -1987,8 +1987,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					"orderId" : bookingDetail.OrderId,
 					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
 					"time" : bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide" : "Budi Sutomo",
-					"guideContact" : "+68 56 219 2264",
+					"userGuide" : bookingDetail.Experience[0].MerchantName,
+					"guideContact" : bookingDetail.Experience[0].MerchantPhone,
 					"guestCount" : strconv.Itoa(guestCount) + " Guest(s)" ,
 				}
 				var tpl bytes.Buffer
@@ -2075,8 +2075,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
-		tripDate := bookingDetail.BookingDate.Format("06")
-		tripDate = tripDate + `-` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
 		var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
 		var data = map[string]interface{}{
 			"title": bookingDetail.Experience[0].ExpTitle,
