@@ -58,8 +58,7 @@ func (a *isHandler) AutoLogin(c echo.Context) error {
 	}
 	isLogin.MerchantId = c.Request().Form.Get("merchant_id")
 
-
-	responseToken, err := a.merchantUsecase.AutoLoginByCMSAdmin(ctx,isLogin.MerchantId,token)
+	responseToken, err := a.merchantUsecase.AutoLoginByCMSAdmin(ctx, isLogin.MerchantId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -98,12 +97,12 @@ func (a *isHandler) RequestOTPTmp(c echo.Context) error {
 
 	requestOTP.PhoneNumber = c.Request().Form.Get("phone_number")
 	requestOTP.Email = c.Request().Form.Get("email")
-	// if requestOTP.Email != ""{
-	// 	checkEmail , _ := a.userUsecase.GetUserByEmail(ctx,requestOTP.Email)
-	// 	if checkEmail != nil {
-	// 		return c.JSON(getStatusCode(models.ErrConflict), ResponseError{Message: models.ErrConflict.Error()})
-	// 	}
-	// }
+	if requestOTP.Email != "" {
+		checkEmail, _ := a.userUsecase.GetUserByEmail(ctx, requestOTP.Email)
+		if checkEmail != nil {
+			return c.JSON(getStatusCode(models.ErrConflict), ResponseError{Message: models.ErrConflict.Error()})
+		}
+	}
 	responseOTP, err := a.isUsecase.RequestOTPTmp(requestOTP.PhoneNumber, requestOTP.Email)
 	if err != nil {
 		return err
