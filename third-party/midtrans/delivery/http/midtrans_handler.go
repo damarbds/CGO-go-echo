@@ -4174,36 +4174,36 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 	}
 	if callback.TransactionStatus == "expire" || callback.TransactionStatus == "deny" {
 		transactionStatus = 3
-		bookingDetail, err := m.bookingUseCase.GetDetailBookingID(ctx, booking.Id, "")
-		if err != nil {
-			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-		}
-		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
-		var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
-		var data = map[string]interface{}{
-			"title": bookingDetail.Experience[0].ExpTitle,
-			"orderId" : bookingDetail.OrderId,
-			"tripDate" : tripDate,
-		}
-		var tpl bytes.Buffer
-		err = tmpl.Execute(&tpl, data)
-		if err != nil {
-			//http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		//maxTime := time.Now().AddDate(0, 0, 1)
-		msg := tpl.String()
-		pushEmail := &models.SendingEmail{
-			Subject:  "Booking Cancelled",
-			Message:  msg,
-			From:     "CGO Indonesia",
-			To:       bookedBy[0].Email,
-			FileName: "",
-		}
-		if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
-			return nil
-		}
+		//bookingDetail, err := m.bookingUseCase.GetDetailBookingID(ctx, booking.Id, "")
+		//if err != nil {
+		//	return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		//}
+		//tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		//tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		//var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
+		//var data = map[string]interface{}{
+		//	"title": bookingDetail.Experience[0].ExpTitle,
+		//	"orderId" : bookingDetail.OrderId,
+		//	"tripDate" : tripDate,
+		//}
+		//var tpl bytes.Buffer
+		//err = tmpl.Execute(&tpl, data)
+		//if err != nil {
+		//	//http.Error(w, err.Error(), http.StatusInternalServerError)
+		//}
+		//
+		////maxTime := time.Now().AddDate(0, 0, 1)
+		//msg := tpl.String()
+		//pushEmail := &models.SendingEmail{
+		//	Subject:  "Booking Cancelled",
+		//	Message:  msg,
+		//	From:     "CGO Indonesia",
+		//	To:       bookedBy[0].Email,
+		//	FileName: "",
+		//}
+		//if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
+		//	return nil
+		//}
 		if err := m.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", bookingCode); err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
