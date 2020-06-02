@@ -4199,7 +4199,504 @@ If you wish your payment to be transmitted to credits, please click transmit to 
      </tr>
     </table>
    </body>`
-)
+
+	templateTicketExperiencePDF string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" type="text/css">
+    <title>Ticket PDF Experience</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+</html>
+<body style="margin: 0; padding: 0;">
+    <table bgcolor="#F2F2F2" border="0" cellpadding="0" cellspacing="0" width="100%">
+     <tr>
+      <td>
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="728">
+            <tr>
+                <td style="padding: 15px 30px 15px 30px; background:linear-gradient(90deg, rgba(35,62,152,1) 0%, rgba(35,62,152,1) 35%, rgba(53,116,222,1) 100%);">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                         <td width="14%">
+                          <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
+                         </td>
+                         <td>
+                          <font color="#ffffff" style="font-size: 20px; font-family: 'Rubik', sans-serif;font-weight: normal !important;">E-Ticket</font>
+                         </td>
+                        </tr>
+                       </table>
+                </td>
+            </tr>
+            <tr>
+             <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+
+                    <tr >
+                     <td bgcolor="#ffffff">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="padding: 20px; border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada; vertical-align: initial;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td>
+                                                {{range .expType}}<a style="padding: 4px 1rem;
+                                                background: #e8e5e5;
+                                                border-radius: 1rem;
+                                                font-size: 10px;
+                                                font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: 600;">{{.}}</a>{{end}}                                                
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 15px 0 10px 0;
+                                            font-size: 11px;
+                                            font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: 600;
+                                            color: #35405A">
+                                                {{.tripDate}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 0px 0 10px 0; font-size: 12px; font-family: 'Rubik', sans-serif;font-weight: normal !important; color: #35405A;">
+                                                {{.title}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="    border-bottom: 1px solid #efeaea !important;
+                                            padding-bottom: 1rem;">
+                                                <table  border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                    <td width="24">
+                                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/pin-outline_3.png" alt="" width="14" height="14">
+                                                    </td>
+                                                    <td style="color: #8E8E8E;font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                    font-style: normal;
+                                                    font-weight: 700;">
+                                                        {{.city}}, {{.country}}
+                                                    </td>
+                                                    <td style="font-size: 0; line-height: 0;" width="120">
+                                                        &nbsp;
+                                                        </td>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 10px 0px 6px 0px;">
+                                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td style="color:#7E7E7E; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 600; padding-top: 10px;">Meeting Point</td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 0 0 .6rem 0;">
+                                                <table >
+                                                    <tr>
+                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: normal; padding-right: 1rem;">
+                                                            Place
+                                                        </td>
+                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 600; color: #35405A;">
+                                                            {{.meetingPoint}}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: normal; padding-right: 1rem; padding-top: 6px;">
+                                                            Time
+                                                        </td>
+                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 600; color: #35405A; padding-top: 6px;">
+                                                            {{.time}}
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td  bgcolor="#E1FAFF" style="border: 1px solid #56CCF2; border-radius: .3rem; padding: 4px 7px;">
+                                                <table  border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td>
+                                                            <img src="{{.merchantPicture}}" alt="">
+                                                        </td>
+                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 600; color: #35405A">
+                                                            by {{.merchantName}}
+                                                        </td>
+                                                        <td align="right" style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 600; color: #35405A">
+                                                            Contact:   {{.merchantPhone}}
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="font-size: 0; line-height: 0;" width="20">
+                                &nbsp;
+                                </td>
+                                <td width="150" style="padding: 10px 20px 0px 20px; border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 15px 0;text-align: center;">
+                                                <img src="{{.qrCode}}" alt="" width="154" height="154" style="object-fit: cover;" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: black;text-align: center; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;">
+                                                Order ID
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: #3C7DF0;text-align: center; padding-bottom: 20px; font-size: 25px;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: 700;">
+                                                {{.orderId}}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                           </table>
+                     </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 50px 0 20px 0;">
+                            <table  border="0" cellpadding="4" cellspacing="0" width="100%">
+                                <tr bgcolor="#e6e6e6">
+                                  <th style="text-align: left; padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">No</th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">Guest </th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">Type</th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">ID Type</th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">ID Number</th>
+                                </tr>
+                                {{range .guestDesc}}<tr>
+                                    {{range rangeStruct .}}<td style="padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                     font-style: normal;
+                                     font-weight: 600; color: #35405A;" >{{.}}</td>{{end}}
+                                   </tr>{{end}}
+                              </table>
+                        </td>
+                    </tr>
+                   </table>
+             </td>
+            </tr>
+            <tr>
+             <td bgcolor="#EFF3FF" style="padding: 20px 30px 40px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/jam_ticket.png" alt="" width="35" height="35">
+                                    </td>
+                                    <td style="font-size: 11px; line-height: normal; font-family: 'Nunito Sans', sans-serif;
+                                    font-style: normal;
+                                    font-weight: 600; color: #35405A;">Show e-ticket to check-in at <br//> your departure place </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                        <td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/fa-regular_address-card.png" alt="" width="35" height="29">
+                                    </td>
+                                    <td style="font-size: 11px; line-height: normal; padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+                                    font-style: normal;
+                                    font-weight: 600; color: #35405A;">Bring your official identity <br/>document as used in your <br/>booking </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                        <td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1618.png" alt="" width="33" height="27">
+                                    </td>
+                                    <td style="font-size: 11px; line-height: normal;  padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+                                    font-style: normal;
+                                    font-weight: 600; color: #35405A;">Please arrive at the harbour 60 <br/> minutes before departure </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                </table>
+             </td>
+            </tr>
+           </table>
+      </td>
+     </tr>
+    </table>
+   </body>`
+
+	templateTicketTransportationPDF string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" type="text/css">
+    <title>Ticket PDF TRANSPORTATION</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+</html>
+<body style="margin: 0; padding: 0;">
+    <table bgcolor="#F2F2F2" border="0" cellpadding="0" cellspacing="0" width="100%">
+     <tr>
+      <td>
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="728">
+            <tr>
+                <td style="padding: 15px 30px 15px 30px; background:linear-gradient(90deg, rgba(35,62,152,1) 0%, rgba(35,62,152,1) 35%, rgba(53,116,222,1) 100%);">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                         <td width="14%">
+                          <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
+                         </td>
+                         <td>
+                          <font color="#ffffff" style="font-size: 20px; font-family: 'Rubik', sans-serif;font-weight: normal !important;">E-Ticket</font>
+                         </td>
+                        </tr>
+                       </table>
+                </td>
+            </tr>
+            <tr>
+             <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+
+                    <tr >
+                     <td bgcolor="#ffffff">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="padding: 20px 20px 0px 20px;border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada; vertical-align: initial;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td>
+                                                <a style="padding: 4px 1rem;
+                                                background: #e8e5e5;
+                                                border-radius: 1rem;
+                                                font-size: 10px;
+                                                font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: 600;">Transportation</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 15px 0;">
+                                                <img src="{{.merchantPicture}}" alt="" width="53" height="24" style="object-fit: cover;" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 0 0 10px 0;
+                                            font-size: 11px;
+                                            font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: 600;
+                                            color: #35405A">
+                                                {{.tripDate}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <table  border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                    <td style="color: black;">
+                                                        <b style="font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 700;">{{.sourceTime}}</b>
+                                                    </td>
+                                                    <td style="color: #8E8E8E;font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                                    font-style: normal;
+                                                    font-weight: 700;">
+                                                        {{.duration}}
+                                                    </td>
+                                                    <td style="color: black;">
+                                                        <b style="font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 700;">{{.desTime}}</b>
+                                                    </td>
+                                                    <td style="font-size: 0; line-height: 0;" width="120">
+                                                        &nbsp;
+                                                        </td>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 10px 0px 10px 0px;">
+                                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td style="font-family: 'Rubik', sans-serif;font-weight: normal !important; font-size: 13px;">
+                                                            {{.source}}
+                                                        </td>
+                                                        <td>
+                                                            <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/arrow-back.png" alt="">
+                                                        </td>
+                                                        <td style="color: black; text-align: right;font-family: 'Rubik', sans-serif;font-weight: normal !important; font-size: 13px;">
+                                                            {{.dest}}
+                                                        </td>
+                                                        <td style="font-size: 0; line-height: 0;" width="76">
+                                                            &nbsp;
+                                                            </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="color:#7E7E7E; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+                                                        font-style: normal;
+                                                        font-weight: 600; padding-top: 10px;">{{.class}}</td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="font-size: 0; line-height: 0;" width="20">
+                                &nbsp;
+                                </td>
+                                <td width="200" style="padding: 10px 20px 0px 20px; border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 15px 0;text-align: center;">
+                                                <img src="{{.qrCode}}" alt="" width="154" height="154" style="object-fit: cover;" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: black;text-align: center; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;">
+                                                Order ID
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: #3C7DF0;text-align: center; padding-bottom: 20px; font-size: 25px;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: 700;">
+                                                {{.orderId}}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                           </table>
+                     </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 50px 0 20px 0;">
+                            <table  border="0" cellpadding="4" cellspacing="0" width="100%">
+                                <tr bgcolor="#e6e6e6">
+                                  <th style="text-align: left; padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">No</th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">Guest </th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">Type</th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">ID Type</th>
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  font-style: normal;
+                                  font-weight: 600; color: #35405A;">ID Number</th>
+                                </tr>
+                                {{range .guestDesc}}<tr>
+                                    {{range rangeStruct .}}<td style="padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                     font-style: normal;
+                                     font-weight: 600; color: #35405A;" >{{.}}</td>{{end}}
+                                   </tr>{{end}}
+                              </table>
+                        </td>
+                    </tr>
+                   </table>
+             </td>
+            </tr>
+            <tr>
+             <td bgcolor="#EFF3FF" style="padding: 20px 30px 40px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/jam_ticket.png" alt="" width="35" height="35">
+                                    </td>
+                                    <td style="font-size: 8px; line-height: normal; font-family: 'Nunito Sans', sans-serif;
+                                    font-style: normal;
+                                    font-weight: 600; color: #35405A;">Show e-ticket to check-in at <br> your departure place </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                        <td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/fa-regular_address-card.png" alt="" width="35" height="29">
+                                    </td>
+                                    <td style="font-size: 8px; line-height: normal; padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+                                    font-style: normal;
+                                    font-weight: 600; color: #35405A;">Bring your official identity <br>document as used in your <br>booking </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                        <td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1618.png" alt="" width="33" height="27">
+                                    </td>
+                                    <td style="font-size: 8px; line-height: normal;  padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+                                    font-style: normal;
+                                    font-weight: 600; color: #35405A;">Please arrive at the harbour 60 <br> minutes before departure </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                </table>
+             </td>
+            </tr>
+           </table>
+      </td>
+     </tr>
+    </table>
+   </body>`
+
+	)
+
+var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
 func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
@@ -4491,14 +4988,57 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					//http.Error(w, err.Error(), http.StatusInternalServerError)
 				}
 
-				//maxTime := time.Now().AddDate(0, 0, 1)
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				guestDesc := make([]*models.GuestDescObjForHTML,0)
+				for i,element := range bookingDetail.GuestDesc{
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc,&guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":        guestDesc,
+					"expType" : bookingDetail.Experience[0].ExpType,
+					"tripDate" : bookingDetail.BookingDate.Format("02 January 2006"),
+					"title" : bookingDetail.Experience[0].ExpTitle,
+					"city" : bookingDetail.Experience[0].City,
+					"country" : bookingDetail.Experience[0].CountryName,
+					"meetingPoint" : bookingDetail.Experience[0].ExpPickupPlace,
+					"time" : bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName" : bookingDetail.Experience[0].MerchantName,
+					"merchantPhone" : bookingDetail.Experience[0].MerchantPhone,
+					"orderId" : bookingDetail.OrderId,
+					"qrCode" : bookingDetail.TicketQRCode,
+					"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err := t.Parse(templateTicketExperiencePDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
 				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
 					Subject:  "Ticket DP",
 					Message:  msg,
 					From:     "CGO Indonesia",
 					To:       bookedBy[0].Email,
-					FileName: "",
+					FileName: "E-Ticket.pdf",
+					AttachmentFileUrl:pdf,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
@@ -4568,14 +5108,57 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					//http.Error(w, err.Error(), http.StatusInternalServerError)
 				}
 
-				//maxTime := time.Now().AddDate(0, 0, 1)
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				guestDesc := make([]*models.GuestDescObjForHTML,0)
+				for i,element := range bookingDetail.GuestDesc{
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc,&guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":        guestDesc,
+					"expType" : bookingDetail.Experience[0].ExpType,
+					"tripDate" : bookingDetail.BookingDate.Format("02 January 2006"),
+					"title" : bookingDetail.Experience[0].ExpTitle,
+					"city" : bookingDetail.Experience[0].City,
+					"country" : bookingDetail.Experience[0].CountryName,
+					"meetingPoint" : bookingDetail.Experience[0].ExpPickupPlace,
+					"time" : bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName" : bookingDetail.Experience[0].MerchantName,
+					"merchantPhone" : bookingDetail.Experience[0].MerchantPhone,
+					"orderId" : bookingDetail.OrderId,
+					"qrCode" : bookingDetail.TicketQRCode,
+					"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err := t.Parse(templateTicketExperiencePDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
 				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
 					Subject:  "Ticket FP",
 					Message:  msg,
 					From:     "CGO Indonesia",
 					To:       bookedBy[0].Email,
-					FileName: "",
+					FileName: "E-Ticket.pdf",
+					AttachmentFileUrl:pdf,
 				}
 
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -4614,14 +5197,55 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				//http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
-			//maxTime := time.Now().AddDate(0, 0, 1)
+			//ticketPDF Bind HTML
+			var htmlPDFTicket bytes.Buffer
+
+			guestDesc := make([]*models.GuestDescObjForHTML,0)
+			for i,element := range bookingDetail.GuestDesc{
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc,&guest)
+			}
+
+			dataMapping := map[string]interface{}{
+				"guestDesc":        guestDesc,
+				"tripDate" : tripDate,
+				"sourceTime" : bookingDetail.Transportation[0].DepartureTime,
+				"desTime" : bookingDetail.Transportation[0].ArrivalTime,
+				"duration" : bookingDetail.Transportation[0].TripDuration,
+				"source" : bookingDetail.Transportation[0].HarborSourceName,
+				"dest" : bookingDetail.Transportation[0].HarborDestName,
+				"class": bookingDetail.Transportation[0].TransClass,
+				"qrCode" : bookingDetail.TicketQRCode,
+				"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+				"orderId" : bookingDetail.OrderId,
+			}
+			// We create the template and register out template function
+			t := template.New("t").Funcs(templateFuncs)
+			t, err = t.Parse(templateTicketTransportationPDF)
+			if err != nil {
+				panic(err)
+			}
+
+			err = t.Execute(&htmlPDFTicket, dataMapping)
+			if err != nil {
+				panic(err)
+			}
+
 			msg := tpl.String()
+			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
 				Subject:  "Ticket FP Transportation",
 				Message:  msg,
 				From:     "CGO Indonesia",
 				To:       bookedBy[0].Email,
-				FileName: "",
+				FileName: "E-Ticket.pdf",
+				AttachmentFileUrl:pdf,
 			}
 			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
@@ -4878,14 +5502,57 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					//http.Error(w, err.Error(), http.StatusInternalServerError)
 				}
 
-				//maxTime := time.Now().AddDate(0, 0, 1)
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				guestDesc := make([]*models.GuestDescObjForHTML,0)
+				for i,element := range bookingDetail.GuestDesc{
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc,&guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":        guestDesc,
+					"expType" : bookingDetail.Experience[0].ExpType,
+					"tripDate" : bookingDetail.BookingDate.Format("02 January 2006"),
+					"title" : bookingDetail.Experience[0].ExpTitle,
+					"city" : bookingDetail.Experience[0].City,
+					"country" : bookingDetail.Experience[0].CountryName,
+					"meetingPoint" : bookingDetail.Experience[0].ExpPickupPlace,
+					"time" : bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName" : bookingDetail.Experience[0].MerchantName,
+					"merchantPhone" : bookingDetail.Experience[0].MerchantPhone,
+					"orderId" : bookingDetail.OrderId,
+					"qrCode" : bookingDetail.TicketQRCode,
+					"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err := t.Parse(templateTicketExperiencePDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
 				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
 					Subject:  "Ticket DP",
 					Message:  msg,
 					From:     "CGO Indonesia",
 					To:       bookedBy[0].Email,
-					FileName: "",
+					FileName: "E-Ticket.pdf",
+					AttachmentFileUrl:pdf,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil, nil
@@ -4955,14 +5622,57 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					//http.Error(w, err.Error(), http.StatusInternalServerError)
 				}
 
-				//maxTime := time.Now().AddDate(0, 0, 1)
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				guestDesc := make([]*models.GuestDescObjForHTML,0)
+				for i,element := range bookingDetail.GuestDesc{
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc,&guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":        guestDesc,
+					"expType" : bookingDetail.Experience[0].ExpType,
+					"tripDate" : bookingDetail.BookingDate.Format("02 January 2006"),
+					"title" : bookingDetail.Experience[0].ExpTitle,
+					"city" : bookingDetail.Experience[0].City,
+					"country" : bookingDetail.Experience[0].CountryName,
+					"meetingPoint" : bookingDetail.Experience[0].ExpPickupPlace,
+					"time" : bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName" : bookingDetail.Experience[0].MerchantName,
+					"merchantPhone" : bookingDetail.Experience[0].MerchantPhone,
+					"orderId" : bookingDetail.OrderId,
+					"qrCode" : bookingDetail.TicketQRCode,
+					"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err := t.Parse(templateTicketExperiencePDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
 				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
 					Subject:  "Ticket FP",
 					Message:  msg,
 					From:     "CGO Indonesia",
 					To:       bookedBy[0].Email,
-					FileName: "",
+					FileName: "E-Ticket.pdf",
+					AttachmentFileUrl:pdf,
 				}
 
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -5001,14 +5711,56 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				//http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
-			//maxTime := time.Now().AddDate(0, 0, 1)
+			//ticketPDF Bind HTML
+			var htmlPDFTicket bytes.Buffer
+
+			guestDesc := make([]*models.GuestDescObjForHTML,0)
+			for i,element := range bookingDetail.GuestDesc{
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc,&guest)
+			}
+
+			dataMapping := map[string]interface{}{
+				"guestDesc":        guestDesc,
+				"tripDate" : tripDate,
+				"sourceTime" : bookingDetail.Transportation[0].DepartureTime,
+				"desTime" : bookingDetail.Transportation[0].ArrivalTime,
+				"duration" : bookingDetail.Transportation[0].TripDuration,
+				"source" : bookingDetail.Transportation[0].HarborSourceName,
+				"dest" : bookingDetail.Transportation[0].HarborDestName,
+				"class": bookingDetail.Transportation[0].TransClass,
+				"qrCode" : bookingDetail.TicketQRCode,
+				"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+				"orderId" : bookingDetail.OrderId,
+			}
+			// We create the template and register out template function
+			t := template.New("t").Funcs(templateFuncs)
+			t, err = t.Parse(templateTicketTransportationPDF)
+			if err != nil {
+				panic(err)
+			}
+
+			err = t.Execute(&htmlPDFTicket, dataMapping)
+			if err != nil {
+				panic(err)
+			}
+
+
 			msg := tpl.String()
+			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
 				Subject:  "Ticket FP Transportation",
 				Message:  msg,
 				From:     "CGO Indonesia",
 				To:       bookedBy[0].Email,
-				FileName: "",
+				FileName: "E-Ticket.pdf",
+				AttachmentFileUrl:pdf,
 			}
 			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil, nil
@@ -6141,6 +6893,24 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		Meta: meta,
 	}
 	return response, nil
+}
+
+func rangeStructer(args ...interface{}) []interface{} {
+	if len(args) == 0 {
+		return nil
+	}
+
+	v := reflect.ValueOf(args[0])
+	if v.Kind() != reflect.Struct {
+		return nil
+	}
+
+	out := make([]interface{}, v.NumField())
+	for i := 0; i < v.NumField(); i++ {
+		out[i] = v.Field(i).Interface()
+	}
+
+	return out
 }
 
 func generateQRCode(content string) (*string, error) {

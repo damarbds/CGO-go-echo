@@ -253,6 +253,13 @@ type GuestDescObj struct {
 	IdNumber string `json:"idnumber"`
 	Type     string `json:"type"`
 }
+type GuestDescObjForHTML struct {
+	No 		int 	`json:"no"`
+	FullName string `json:"fullname"`
+	Type     string `json:"type"`
+	IdType   string `json:"idtype"`
+	IdNumber string `json:"idnumber"`
+}
 type NewBookingExpCommand struct {
 	Id                string  `json:"id"`
 	ExpId             string  `json:"exp_id"`
