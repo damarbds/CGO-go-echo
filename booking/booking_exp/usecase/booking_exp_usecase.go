@@ -5047,7 +5047,11 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 		}
 		user := bookedBy[0].Title + `.` + bookedBy[0].FullName
 		tripDate := element.BookingDate.Format("02 January 2006")
-		tripDate = tripDate + ` - ` + element.BookingDate.AddDate(0, 0, element.ExpDuration).Format("02 January 2006")
+		duration := 0
+		if element.ExpDuration != 0 {
+			duration = element.ExpDuration - 1
+		}
+		tripDate = tripDate + ` - ` + element.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 		paymentDeadline := element.BookingDate
 		if element.ExpPaymentDeadlineType != nil && element.ExpPaymentDeadlineAmount != nil{
 			if *element.ExpPaymentDeadlineType == "Days" && *element.ExpPaymentDeadlineType == "" {
@@ -5207,7 +5211,11 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+					}
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 					paymentDeadline := bookingDetail.BookingDate
 					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
 						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
@@ -5249,7 +5257,11 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				} else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+					}
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
 					var data = map[string]interface{}{
 						"title":    exp.ExpTitle,
@@ -5282,7 +5294,11 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+				}
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0,duration).Format("02 January 2006")
 				paymentDeadline := bookingDetail.BookingDate
 				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
 					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
@@ -5371,7 +5387,11 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				transactionStatus = 2
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+				}
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl *template.Template
@@ -5706,7 +5726,11 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+					}
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 					paymentDeadline := bookingDetail.BookingDate
 					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
 						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
@@ -5748,7 +5772,11 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				} else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+					}
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
 					var data = map[string]interface{}{
 						"title":    exp.ExpTitle,
@@ -5781,7 +5809,11 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+				}
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 				paymentDeadline := bookingDetail.BookingDate
 				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
 					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
@@ -5870,7 +5902,11 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				transactionStatus = 2
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, exp.ExpDuration).Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+				}
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl *template.Template

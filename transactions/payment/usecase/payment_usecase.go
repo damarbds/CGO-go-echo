@@ -5002,7 +5002,11 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+			duration := 0
+			if bookingDetail.Experience[0].ExpDuration != 0 {
+				duration = bookingDetail.Experience[0].ExpDuration - 1
+			}
+			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			paymentDeadline := bookingDetail.BookingDate
 			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
 				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
@@ -5091,7 +5095,11 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		} else {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+			duration := 0
+			if bookingDetail.Experience[0].ExpDuration != 0 {
+				duration = bookingDetail.Experience[0].ExpDuration - 1
+			}
+			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			guestCount := len(bookingDetail.GuestDesc)
 
 			var tmpl *template.Template
@@ -5216,7 +5224,11 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			return err
 		}
 		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		duration := 0
+		if bookingDetail.Experience[0].ExpDuration != 0 {
+			duration = bookingDetail.Experience[0].ExpDuration - 1
+		}
+		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 		var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
 		var data = map[string]interface{}{
 			"title":    bookingDetail.Experience[0].ExpTitle,
