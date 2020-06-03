@@ -5003,13 +5003,23 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+			paymentDeadline := bookingDetail.BookingDate
+			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
+				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+					paymentDeadline = paymentDeadline.AddDate(0,0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+				}else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+					paymentDeadline = paymentDeadline.AddDate(0,0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount * 7)
+				}else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+					paymentDeadline = paymentDeadline.AddDate(0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount,0)
+				}
+			}
 			var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
 			var data = map[string]interface{}{
 				"title":            bookingDetail.Experience[0].ExpTitle,
 				"user":             user,
 				"payment":          bookingDetail.TotalPrice,
 				"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
-				"paymentDeadline":  bookingDetail.BookingDate.Format("02 January 2006"),
+				"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 				"orderId":          bookingDetail.OrderId,
 				"tripDate":         tripDate,
 				"userGuide":        bookingDetail.Experience[0].MerchantName,

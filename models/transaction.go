@@ -36,6 +36,8 @@ type TransactionWithBooking struct {
 	OrderId			*string		`json:"order_id"`
 	MerchantName 	string		`json:"merchant_name"`
 	MerchantPhone   string 		`json:"merchant_phone"`
+	ExpPaymentDeadlineAmount *int 		`json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType 	*string		`json:"exp_payment_deadline_type"`
 }
 type TransactionWMerchant struct {
 	Id                  string     `json:"id" validate:"required"`

@@ -162,6 +162,8 @@ type BookingExpJoin struct {
 	HarborDestName         *string        `json:"harbor_dest_name"`
 	ExChangeRates 			*float64	`json:"ex_change_rates"`
 	ExChangeCurrency 		*string		`json:"ex_change_currency"`
+	ExpPaymentDeadlineAmount *int 		`json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType 	*string		`json:"exp_payment_deadline_type"`
 }
 
 type BookingTransportationDetail struct {
@@ -198,6 +200,8 @@ type BookingExpDetail struct {
 	ExperienceAddOn []ExperienceAddOnObj `json:"experience_add_on"`
 	ExpDuration     int                  `json:"exp_duration"`
 	CountryName 	string 				 `json:"country_name"`
+	ExpPaymentDeadlineAmount *int 		`json:"exp_payment_deadline_amount"`
+	ExpPaymentDeadlineType 	*string		`json:"exp_payment_deadline_type"`
 }
 
 type BookingExpDetailDto struct {

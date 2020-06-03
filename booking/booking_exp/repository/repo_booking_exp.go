@@ -387,7 +387,9 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 		m.phone_number as merchant_phone,
 		m.merchant_picture,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.exp_payment_deadline_amount,
+		b.exp_payment_deadline_type
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id
@@ -711,6 +713,8 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.MerchantPicture,
 			&t.ExChangeRates,
 			&t.ExChangeCurrency,
+			&t.ExpPaymentDeadlineAmount,
+			&t.ExpPaymentDeadlineType,
 		)
 
 		if err != nil {
@@ -765,7 +769,9 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId,
 		m.phone_number as merchant_phone,
 		m.merchant_picture,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.exp_payment_deadline_amount,
+		b.exp_payment_deadline_type
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id
