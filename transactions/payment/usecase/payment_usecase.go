@@ -5021,14 +5021,58 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 				//http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
-			//maxTime := time.Now().AddDate(0, 0, 1)
+			//ticketPDF Bind HTML
+			var htmlPDFTicket bytes.Buffer
+
+			guestDesc := make([]*models.GuestDescObjForHTML,0)
+			for i,element := range bookingDetail.GuestDesc{
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc,&guest)
+			}
+
+			dataMapping := map[string]interface{}{
+				"guestDesc":        guestDesc,
+				"expType" : bookingDetail.Experience[0].ExpType,
+				"tripDate" : bookingDetail.BookingDate.Format("02 January 2006"),
+				"title" : bookingDetail.Experience[0].ExpTitle,
+				"city" : bookingDetail.Experience[0].City,
+				"country" : bookingDetail.Experience[0].CountryName,
+				"meetingPoint" : bookingDetail.Experience[0].ExpPickupPlace,
+				"time" : bookingDetail.Experience[0].ExpPickupTime,
+				"merchantName" : bookingDetail.Experience[0].MerchantName,
+				"merchantPhone" : bookingDetail.Experience[0].MerchantPhone,
+				"orderId" : bookingDetail.OrderId,
+				"qrCode" : bookingDetail.TicketQRCode,
+				"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+			}
+			// We create the template and register out template function
+			t := template.New("t").Funcs(templateFuncs)
+			t, err := t.Parse(templateTicketExperiencePDF)
+			if err != nil {
+				panic(err)
+			}
+
+			err = t.Execute(&htmlPDFTicket, dataMapping)
+			if err != nil {
+				panic(err)
+			}
+
+
 			msg := tpl.String()
+			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:  "Booking Approved DP By Merchant",
+				Subject:  "Ticket DP",
 				Message:  msg,
 				From:     "CGO Indonesia",
 				To:       bookingDetail.BookedBy[0].Email,
-				FileName: "",
+				FileName: "E-Ticket.pdf",
+				AttachmentFileUrl:pdf,
 			}
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
