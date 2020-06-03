@@ -4332,6 +4332,339 @@ If you wish your payment to be transmitted to credits, please click transmit to 
     </table>
    </body>`
 
+	templateBookingApprovalDP string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" type="text/css">
+    <title>Booking Approved Down Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+</html>
+<body style="margin: 0; padding: 0;">
+    <table bgcolor="#F2F2F2" border="0" cellpadding="0" cellspacing="0" width="100%">
+     <tr>
+      <td>
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="628">
+            <tr>
+                <td style="padding: 15px 30px 15px 30px; background:linear-gradient(90deg, rgba(35,62,152,1) 0%, rgba(35,62,152,1) 35%, rgba(53,116,222,1) 100%);">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                         <td>
+                          <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
+                         </td>
+                         <td align="right" style="color: white; font-family: 'Nunito Sans', sans-serif;
+                         font-weight: 700 !important;
+                         font-size: 17px;">
+                            Order ID: {{.orderId}}
+                         </td>
+                        </tr>
+                       </table>
+                </td>
+            </tr>
+            <tr>
+             <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                     <td>
+                        <b style="font-size: 20px; font-family: 'Rubik', sans-serif;
+                        color: #35405A;font-weight: normal !important;">Your booking has been confirmed</b>
+                     </td>
+                    </tr>
+                    <tr>
+                     <td style="padding: 30px 0 20px 0; font-family: 'Nunito Sans', sans-serif;
+                     font-style: normal;
+                     font-weight: normal;
+                     font-size: 15px;
+                     line-height: 24px;">
+                        Dear {{.user}},
+                     </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0 20px 0; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            We are happy to inform you that your booking <b>{{.title}}</b> with trip <br> date on <b> {{.tripDate}}</b> has been confirmed with your guide.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0 20px 0; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            You have chosen to make a payment with Down Payment. Please note that your booking is reserved but to get your official E-ticket from us, you must pay the remaining payment within determined time.
+                        </td>
+                    </tr>
+                    <tr >
+                     <td bgcolor="#E1FAFF" style="border-radius: .8rem;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="padding: 10px 20px 10px 20px;     border-bottom: 1px solid #E0E0E0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                            Down Payment
+                                            </td>
+                                            <td align="right" style="color: #35405A;">
+                                            <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">IDR {{.payment}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 20px 10px 20px;     border-bottom: 1px solid #E0E0E0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                Remaining Payment
+                                            </td>
+                                            <td align="right" style="color: #35405A;">
+                                                <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-size: 15px;
+                                                line-height: 24px;">IDR {{.remainingPayment}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 20px 10px 20px; ">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                Payment Deadline
+                                            </td>
+                                            <td align="right" style="color: #35405A;">
+                                                <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-size: 15px;
+                                                line-height: 24px;">{{.paymentDeadline}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                           </table>
+                     </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 20px 0 5px 0; ">
+                            <b style="font-family: 'Nunito Sans', sans-serif;
+                            font-style: normal;
+                            font-weight: 700;
+                            font-size: 15px;
+                            line-height: 24px;">How to pay your remaining payment</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0 20px 0; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            Your guide will contact you regarding payment instructions. Please wait for them to contact you. 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0 20px 0;">
+                            <b style="font-family: 'Nunito Sans', sans-serif;
+                            font-style: normal;
+                            font-weight: 700;
+                            font-size: 15px;
+                            line-height: 24px;">Your guide contact</b>
+                        </td>
+                    </tr>
+                    <tr >
+                        <td bgcolor="#E1FAFF" style="border-radius: .8rem;">
+                           <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                               <tr>
+                                   <td style="padding: 10px 20px 10px 20px;     border-bottom: 1px solid #E0E0E0;">
+                                       <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                           <tr>
+                                               <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                               font-style: normal;
+                                               font-weight: normal;
+                                               font-size: 15px;
+                                               line-height: 24px;">
+                                                Guide
+                                               </td>
+                                               <td align="right" style="color: #35405A;">
+                                               <b style="font-weight: 800 !important;font-family: 'Nunito Sans', sans-serif;
+                                               font-style: normal;
+                                               font-size: 15px;
+                                               line-height: 24px;">{{.userGuide}}</b>
+                                               </td>
+                                           </tr>
+                                       </table>
+                                   </td>
+                               </tr>
+                               <tr>
+                                   <td style="padding: 10px 20px 10px 20px;">
+                                       <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                           <tr>
+                                               <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                               font-style: normal;
+                                               font-weight: normal;
+                                               font-size: 15px;
+                                               line-height: 24px;">
+                                                Guide Contact
+                                               </td>
+                                               <td align="right" style="color: #35405A;">
+                                                   <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                                   font-style: normal;
+                                                   font-size: 15px;
+                                                   line-height: 24px;">{{.guideContact}}</b>
+                                               </td>
+                                           </tr>
+                                       </table>
+                                   </td>
+                               </tr>
+                              </table>
+                        </td>
+                       </tr>
+
+                    <tr>
+                        <td style="padding: 20px 0 20px 0; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            Do not hesitate to contact us if you have any questions or if you need additional information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            Kind regards,
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            cGO Indonesia
+                        </td>
+                    </tr>
+                   </table>
+             </td>
+            </tr>
+            <tr>
+             <td bgcolor="#E1FAFF" style="padding: 20px 30px 10px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td style="padding: 10px 20px 10px 20px; font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;">
+                            Please have your Order ID {{.orderId}} handy when contacting us.
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0px 20px 10px 20px;" >
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td width="35%">
+                                        <table  border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 10px 20px 10px 6px; color: #7A7A7A;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: normal;
+                                                line-height: 24px;">For Question</td>
+                                            </tr>
+                                            <tr>
+                                                <td >
+                                                    <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1637.png" alt="">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 10px 20px 10px 6px; color: #7A7A7A;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: normal;
+                                                line-height: 24px;">More Information</td>
+                                            </tr>
+                                            <tr>
+                                                <td >
+                                                    <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1638.png" alt="">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0px 20px 10px 20px;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        line-height: 24px;">Download cGO app</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0px 20px 0px 20px;">
+                            <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                 <td>
+                                  <a href="http://www.twitter.com/">
+                                   <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/en_badge_web_generic_1.png" alt="Twitter" style="display: block;" border="0" />
+                                  </a>
+                                 </td>
+                                 <td style="font-size: 0; line-height: 0;" width="20">&nbsp;</td>
+                                 <td>
+                                  <a href="http://www.twitter.com/">
+                                   <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/6341429_preview_1.png" alt="Twitter" style="display: block;" border="0" />
+                                  </a>
+                                 </td>
+                                </tr>
+                               </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 20px 10px 20px;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        line-height: 24px;">© 2019-2020, PT DTech Solusi Bisnis</td>
+                    </tr>
+                    </table>
+             </td>
+            </tr>
+           </table>
+      </td>
+     </tr>
+    </table>
+   </body>`
+
 	)
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
@@ -4461,59 +4794,18 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,exp.ExpDuration).Format("02 January 2006")
-				guestCount := len(bookingDetail.GuestDesc)
-
-				var tmpl *template.Template
-				var data map[string]interface{}
-				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00"){
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketDPWithoutMeetingPointAndTime))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-				}else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00"){
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketDPWithoutTime))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-				}else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketDPWithoutMeetingPoint))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"time":         bookingDetail.Experience[0].ExpPickupTime,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-				}else {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketDP))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-						"time":         bookingDetail.Experience[0].ExpPickupTime,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+				var data = map[string]interface{}{
+					"title":            bookingDetail.Experience[0].ExpTitle,
+					"user":             user,
+					"payment":          bookingDetail.TotalPrice,
+					"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+					"paymentDeadline":  bookingDetail.BookingDate.Format("02 January 2006"),
+					"orderId":          bookingDetail.OrderId,
+					"tripDate":         tripDate,
+					"userGuide":        bookingDetail.Experience[0].MerchantName,
+					"guideContact":     bookingDetail.Experience[0].MerchantPhone,
 				}
 				var tpl bytes.Buffer
 				err = tmpl.Execute(&tpl, data)
