@@ -3838,307 +3838,353 @@ If you wish your payment to be transmitted to credits, please click transmit to 
     </table>
    </body>`
 
-	templateTicketExperiencePDF string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+	templateTicketExperiencePDF string = `<html>
  <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" type="text/css">
 	<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" type="text/css">
-    <title>Ticket PDF Experience</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<style>
+	@page {
+		/*
+		 * Size can be a length (not a percentage) for width and height
+		 * or a standard page size such as: 
+		 * a4, a5, a3, b3, b4, letter, legal, ledger.
+		 * A standard page size can be followed by either 'portrait' or 'landscape'.
+		 *
+		 * In theory, you can use different page sizes in one document, but this renderer
+		 * currently uses the first page width as the width of the body. That means it
+		 * is only practical to use different page heights in the one document.
+		 * See danfickle/openhtmltopdf#176 or #119 for more information.
+		 */
+		size: A4 portrait !important;
+		
+		/*
+		 * Margin box for each page. Accepts one-to-four values, similar
+		 * to normal margin property.
+		 */
+		margin: 0px 0px 0px 0px !important;
+		padding: 0px 0px 0px 0px !important;
+	}
+	html{
+		margin: 0px 0px 0px 0px !important; 
+	}
+	body{
+		margin: 0px 0px 0px 0px !important; 
+	}
+	</style>
 </head>
-</html>
 <body style="margin: 0; padding: 0;">
-    <table bgcolor="#F2F2F2" border="0" cellpadding="0" cellspacing="0" width="100%">
-     <tr>
-      <td>
-        <table align="center" border="0" cellpadding="0" cellspacing="0" width="728">
-            <tr>
-                <td style="padding: 15px 30px 15px 30px; background:linear-gradient(90deg, rgba(35,62,152,1) 0%, rgba(35,62,152,1) 35%, rgba(53,116,222,1) 100%);">
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                        <tr>
-                         <td width="14%">
-                          <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
-                         </td>
-                         <td>
-                          <font color="#ffffff" style="font-size: 20px; font-family: 'Rubik', sans-serif;font-weight: normal !important;">E-Ticket</font>
-                         </td>
-                        </tr>
-                       </table>
-                </td>
-            </tr>
-            <tr>
-             <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tr style="background: url('https://cgostorage.blob.core.windows.net/cgo-storage/img/img/backgroundColorCGO.jpeg'); background-size: cover;">
+		<td style="padding: 15px 50px 15px 50px;">
+			<table border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+				 <td width="10%">
+				  <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
+				 </td>
+				 <td>
+				  <font color="#ffffff" style="font-size: 20px; font-family: 'Rubik', sans-serif;font-weight: normal !important;">E-Ticket</font>
+				 </td>
+				</tr>
+			   </table>
+		</td>
+	</tr>
+	<tr>
+	 <td bgcolor="#ffffff" style="padding: 50px 50px 15px 50px;">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
 
+			<tr >
+			 <td bgcolor="#ffffff">
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td style="padding: 20px;border-radius: .8rem; border: 1px solid #D1D1D1;vertical-align: initial;width: 55%;">
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										{{range .expType}}<a style="padding: 4px 1rem;
+										background: #e8e5e5;
+										border-radius: 1rem;
+										font-size: 10px;
+										font-family: 'Nunito Sans', sans-serif;
+										font-style: normal;
+										font-weight: 600;">{{.}}</a>{{end}}                                                
+									</td>
+								</tr>
+								<tr>
+									<td style="padding: 15px 0 10px 0;
+									font-size: 11px;
+									font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 600;
+									color: #35405A">
+										{{.tripDate}}
+									</td>
+								</tr>
+								<tr>
+									<td style="padding: 0px 0 10px 0; font-size: 12px; font-family: 'Rubik', sans-serif;font-weight: normal !important; color: #35405A;">
+										{{.title}
+									</td>
+								</tr>
+								<tr>
+									<td style="    border-bottom: 1px solid #efeaea !important;
+									padding-bottom: 1rem;">
+										<table  border="0" cellpadding="0" cellspacing="0" width="100%">
+											<td width="24">
+												<img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/pin-outline_3.png" alt="" width="14" height="14">
+											</td>
+											<td style="color: #8E8E8E;font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+											font-style: normal;
+											font-weight: 700;">
+												{{.city}}, {{.country}}
+											</td>
+											<td style="font-size: 0; line-height: 0;" width="120">
+												&nbsp;
+												</td>
+										</table>
+									</td>
+								</tr>
+								<tr>
+									<td style="padding: 10px 0px 6px 0px;">
+										<table border="0" cellpadding="0" cellspacing="0" width="100%">
+											<tr>
+												<td style="color:#7E7E7E; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+												font-style: normal;
+												font-weight: 600; padding-top: 10px;">Meeting Point</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr>
+									<td style="padding: 0 0 .6rem 0;">
+										<table >
+											<tr>
+												<td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+												font-style: normal;
+												font-weight: normal; padding-right: 1rem;">
+													Place
+												</td>
+												<td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+												font-style: normal;
+												font-weight: 600; color: #35405A;">
+													{{.meetingPoint}}
+												</td>
+											</tr>
+											<tr>
+												<td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+												font-style: normal;
+												font-weight: normal; padding-right: 1rem; padding-top: 6px;">
+													Time
+												</td>
+												<td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+												font-style: normal;
+												font-weight: 600; color: #35405A; padding-top: 6px;">
+													{{.time}}
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+
+								<tr>
+									<td  bgcolor="#E1FAFF" style="border: 1px solid #56CCF2; border-radius: .3rem; padding: 4px 7px;">
+										<table  border="0" cellpadding="0" cellspacing="0" width="100%">
+											<tr>
+												<td>
+													<img src="{{.merchantPicture}}" alt="">
+												</td>
+												<td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+												font-style: normal;
+												font-weight: 600; color: #35405A">
+													by {{.merchantName}}
+												</td>
+												<td align="right" style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+												font-style: normal;
+												font-weight: 600; color: #35405A">
+													Contact:   {{.merchantPhone}}
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td style="font-size: 0; line-height: 0;" width="5%">
+						&nbsp;
+						</td>
+						<td width="150" style="padding: 10px 20px 0px 20px; border-radius: .8rem; border: 1px solid #D1D1D1; width: 40%">
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td style="padding: 15px 0;text-align: center;">
+										<img src="{{.qrCode}}" alt="" width="154" height="154" style="object-fit: cover;" />
+									</td>
+								</tr>
+								<tr>
+									<td style="color: black;text-align: center; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: normal;">
+										Order ID
+									</td>
+								</tr>
+								<tr>
+									<td style="color: #3C7DF0;text-align: center; padding-bottom: 20px; font-size: 25px;font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 700;">
+										{{.orderId}}
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				   </table>
+			 </td>
+			</tr>
+			
+			<tr>
+				<td style="padding: 50px 0 20px 0;">
+					<table  border="0" cellpadding="4" cellspacing="0" width="100%">
+						<tr bgcolor="#e6e6e6">
+						  <th style="text-align: left; padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+						  font-style: normal;
+						  font-weight: 600; color: #35405A;">No</th>
+						  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+						  font-style: normal;
+						  font-weight: 600; color: #35405A;">Guest </th>
+						  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+						  font-style: normal;
+						  font-weight: 600; color: #35405A;">Type</th>
+						  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+						  font-style: normal;
+						  font-weight: 600; color: #35405A;">ID Type</th>
+						  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+						  font-style: normal;
+						  font-weight: 600; color: #35405A;">ID Number</th>
+						</tr>
+						{{range .guestDesc}}<tr>
+							{{range rangeStruct .}}<td style="padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+							 font-style: normal;
+							 font-weight: 600; color: #35405A;" >{{.}}</td>{{end}}
+						   </tr>{{end}}
+					  </table>
+				</td>
+			</tr>
+		   </table>
+	 </td>
+	</tr>
+	
+   </table>
+   <div style="width: 100%; position: fixed;bottom: 0">
+	   <table style="width: 100%">
+		<tr>
+			 <td bgcolor="#EFF3FF" style="padding: 20px 30px 40px 30px;">
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td>
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/jam_ticket.png" alt="" width="35" height="35">
+									</td>
+									<td style="font-size: 11px; line-height: normal; font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 600; color: #35405A;">Show e-ticket to check-in at <br//> your departure place </td>
+								</tr>
+							</table>
+							
+						</td>
+						<td>
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/fa-regular_address-card.png" alt="" width="35" height="29">
+									</td>
+									<td style="font-size: 11px; line-height: normal; padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 600; color: #35405A;">Bring your official identity <br/>document as used in your <br/>booking </td>
+								</tr>
+							</table>
+							
+						</td>
+						<td>
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1618.png" alt="" width="33" height="27">
+									</td>
+									<td style="font-size: 11px; line-height: normal;  padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 600; color: #35405A;">Please arrive at the harbour 60 <br/> minutes before departure </td>
+								</tr>
+							</table>
+							
+						</td>
+					</tr>
+				</table>
+			 </td>
+			</tr>
+	   </table>
+   </div>
+     
+</body>
+</html>`
+
+	templateTicketTransportationPDF string = `<html>
+ <head>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" type="text/css">
+	<style>
+	@page {
+		/*
+		 * Size can be a length (not a percentage) for width and height
+		 * or a standard page size such as: 
+		 * a4, a5, a3, b3, b4, letter, legal, ledger.
+		 * A standard page size can be followed by either 'portrait' or 'landscape'.
+		 *
+		 * In theory, you can use different page sizes in one document, but this renderer
+		 * currently uses the first page width as the width of the body. That means it
+		 * is only practical to use different page heights in the one document.
+		 * See danfickle/openhtmltopdf#176 or #119 for more information.
+		 */
+		size: A4 portrait !important;
+		
+		/*
+		 * Margin box for each page. Accepts one-to-four values, similar
+		 * to normal margin property.
+		 */
+		margin: 0px 0px 0px 0px !important;
+		padding: 0px 0px 0px 0px !important;
+	}
+	html{
+		margin: 0px 0px 0px 0px !important; 
+	}
+	body{
+		margin: 0px 0px 0px 0px !important; 
+	}
+	</style>
+</head>
+
+<body>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr style="background: url('https://cgostorage.blob.core.windows.net/cgo-storage/img/img/backgroundColorCGO.jpeg'); background-size: cover;">
+			<td style="padding: 15px 50px 15px 50px;">
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+					 <td width="10%">
+					  <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
+					 </td>
+					 <td>
+					  <font color="#ffffff" style="font-size: 20px; font-family: 'Rubik', sans-serif;font-weight: normal !important;">E-Ticket</font>
+					 </td>
+					</tr>
+				   </table>
+			</td>
+		</tr>
+            <tr>
+             <td bgcolor="#ffffff" style="padding: 50px 50px 15px 50px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr >
                      <td bgcolor="#ffffff">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
-                                <td style="padding: 20px; border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada; vertical-align: initial;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td>
-                                                {{range .expType}}<a style="padding: 4px 1rem;
-                                                background: #e8e5e5;
-                                                border-radius: 1rem;
-                                                font-size: 10px;
-                                                font-family: 'Nunito Sans', sans-serif;
-                                                font-style: normal;
-                                                font-weight: 600;">{{.}}</a>{{end}}                                                
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 15px 0 10px 0;
-                                            font-size: 11px;
-                                            font-family: 'Nunito Sans', sans-serif;
-                                            font-style: normal;
-                                            font-weight: 600;
-                                            color: #35405A">
-                                                {{.tripDate}}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 0px 0 10px 0; font-size: 12px; font-family: 'Rubik', sans-serif;font-weight: normal !important; color: #35405A;">
-                                                {{.title}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="    border-bottom: 1px solid #efeaea !important;
-                                            padding-bottom: 1rem;">
-                                                <table  border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                    <td width="24">
-                                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/pin-outline_3.png" alt="" width="14" height="14">
-                                                    </td>
-                                                    <td style="color: #8E8E8E;font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                                    font-style: normal;
-                                                    font-weight: 700;">
-                                                        {{.city}}, {{.country}}
-                                                    </td>
-                                                    <td style="font-size: 0; line-height: 0;" width="120">
-                                                        &nbsp;
-                                                        </td>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 10px 0px 6px 0px;">
-                                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                    <tr>
-                                                        <td style="color:#7E7E7E; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
-                                                        font-style: normal;
-                                                        font-weight: 600; padding-top: 10px;">Meeting Point</td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 0 0 .6rem 0;">
-                                                <table >
-                                                    <tr>
-                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                                        font-style: normal;
-                                                        font-weight: normal; padding-right: 1rem;">
-                                                            Place
-                                                        </td>
-                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                                        font-style: normal;
-                                                        font-weight: 600; color: #35405A;">
-                                                            {{.meetingPoint}}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                                        font-style: normal;
-                                                        font-weight: normal; padding-right: 1rem; padding-top: 6px;">
-                                                            Time
-                                                        </td>
-                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                                        font-style: normal;
-                                                        font-weight: 600; color: #35405A; padding-top: 6px;">
-                                                            {{.time}}
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td  bgcolor="#E1FAFF" style="border: 1px solid #56CCF2; border-radius: .3rem; padding: 4px 7px;">
-                                                <table  border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                    <tr>
-                                                        <td>
-                                                            <img src="{{.merchantPicture}}" alt="">
-                                                        </td>
-                                                        <td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                                        font-style: normal;
-                                                        font-weight: 600; color: #35405A">
-                                                            by {{.merchantName}}
-                                                        </td>
-                                                        <td align="right" style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                                        font-style: normal;
-                                                        font-weight: 600; color: #35405A">
-                                                            Contact:   {{.merchantPhone}}
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                                <td style="font-size: 0; line-height: 0;" width="20">
-                                &nbsp;
-                                </td>
-                                <td width="150" style="padding: 10px 20px 0px 20px; border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td style="padding: 15px 0;text-align: center;">
-                                                <img src="{{.qrCode}}" alt="" width="154" height="154" style="object-fit: cover;" />
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="color: black;text-align: center; font-size: 13px;font-family: 'Nunito Sans', sans-serif;
-                                            font-style: normal;
-                                            font-weight: normal;">
-                                                Order ID
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="color: #3C7DF0;text-align: center; padding-bottom: 20px; font-size: 25px;font-family: 'Nunito Sans', sans-serif;
-                                            font-style: normal;
-                                            font-weight: 700;">
-                                                {{.orderId}}
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                           </table>
-                     </td>
-                    </tr>
-                    
-                    <tr>
-                        <td style="padding: 50px 0 20px 0;">
-                            <table  border="0" cellpadding="4" cellspacing="0" width="100%">
-                                <tr bgcolor="#e6e6e6">
-                                  <th style="text-align: left; padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                  font-style: normal;
-                                  font-weight: 600; color: #35405A;">No</th>
-                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                  font-style: normal;
-                                  font-weight: 600; color: #35405A;">Guest </th>
-                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                  font-style: normal;
-                                  font-weight: 600; color: #35405A;">Type</th>
-                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                  font-style: normal;
-                                  font-weight: 600; color: #35405A;">ID Type</th>
-                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                  font-style: normal;
-                                  font-weight: 600; color: #35405A;">ID Number</th>
-                                </tr>
-                                {{range .guestDesc}}<tr>
-                                    {{range rangeStruct .}}<td style="padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
-                                     font-style: normal;
-                                     font-weight: 600; color: #35405A;" >{{.}}</td>{{end}}
-                                   </tr>{{end}}
-                              </table>
-                        </td>
-                    </tr>
-                   </table>
-             </td>
-            </tr>
-            <tr>
-             <td bgcolor="#EFF3FF" style="padding: 20px 30px 40px 30px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tr>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td>
-                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/jam_ticket.png" alt="" width="35" height="35">
-                                    </td>
-                                    <td style="font-size: 11px; line-height: normal; font-family: 'Nunito Sans', sans-serif;
-                                    font-style: normal;
-                                    font-weight: 600; color: #35405A;">Show e-ticket to check-in at <br//> your departure place </td>
-                                </tr>
-                            </table>
-                            
-                        </td>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td>
-                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/fa-regular_address-card.png" alt="" width="35" height="29">
-                                    </td>
-                                    <td style="font-size: 11px; line-height: normal; padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
-                                    font-style: normal;
-                                    font-weight: 600; color: #35405A;">Bring your official identity <br/>document as used in your <br/>booking </td>
-                                </tr>
-                            </table>
-                            
-                        </td>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td>
-                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1618.png" alt="" width="33" height="27">
-                                    </td>
-                                    <td style="font-size: 11px; line-height: normal;  padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
-                                    font-style: normal;
-                                    font-weight: 600; color: #35405A;">Please arrive at the harbour 60 <br/> minutes before departure </td>
-                                </tr>
-                            </table>
-                            
-                        </td>
-                    </tr>
-                </table>
-             </td>
-            </tr>
-           </table>
-      </td>
-     </tr>
-    </table>
-   </body>`
-
-	templateTicketTransportationPDF string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
- <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" type="text/css">
-	<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" type="text/css">
-    <title>Ticket PDF TRANSPORTATION</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-</head>
-</html>
-<body style="margin: 0; padding: 0;">
-    <table bgcolor="#F2F2F2" border="0" cellpadding="0" cellspacing="0" width="100%">
-     <tr>
-      <td>
-        <table align="center" border="0" cellpadding="0" cellspacing="0" width="728">
-            <tr>
-                <td style="padding: 15px 30px 15px 30px; background:linear-gradient(90deg, rgba(35,62,152,1) 0%, rgba(35,62,152,1) 35%, rgba(53,116,222,1) 100%);">
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                        <tr>
-                         <td width="14%">
-                          <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
-                         </td>
-                         <td>
-                          <font color="#ffffff" style="font-size: 20px; font-family: 'Rubik', sans-serif;font-weight: normal !important;">E-Ticket</font>
-                         </td>
-                        </tr>
-                       </table>
-                </td>
-            </tr>
-            <tr>
-             <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-
-                    <tr >
-                     <td bgcolor="#ffffff">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                            <tr>
-                                <td style="padding: 20px 20px 0px 20px;border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada; vertical-align: initial;">
+                                <td style="padding: 20px;border-radius: .8rem; border: 1px solid #D1D1D1;vertical-align: initial;width: 55%;">
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
                                             <td>
@@ -4217,10 +4263,10 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                                         </tr>
                                     </table>
                                 </td>
-                                <td style="font-size: 0; line-height: 0;" width="20">
-                                &nbsp;
-                                </td>
-                                <td width="200" style="padding: 10px 20px 0px 20px; border-radius: .8rem;box-shadow: 0 3px 9px 0px #dadada;">
+                                <td style="font-size: 0; line-height: 0;" width="5%">
+								&nbsp;
+								</td>
+                                <td width="150" style="padding: 10px 20px 0px 20px; border-radius: .8rem; border: 1px solid #D1D1D1; width: 40%">
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
                                             <td style="padding: 15px 0;text-align: center;">
@@ -4279,58 +4325,63 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                    </table>
              </td>
             </tr>
-            <tr>
-             <td bgcolor="#EFF3FF" style="padding: 20px 30px 40px 30px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tr>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td>
-                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/jam_ticket.png" alt="" width="35" height="35">
-                                    </td>
-                                    <td style="font-size: 8px; line-height: normal; font-family: 'Nunito Sans', sans-serif;
-                                    font-style: normal;
-                                    font-weight: 600; color: #35405A;">Show e-ticket to check-in at <br> your departure place </td>
-                                </tr>
-                            </table>
-                            
-                        </td>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td>
-                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/fa-regular_address-card.png" alt="" width="35" height="29">
-                                    </td>
-                                    <td style="font-size: 8px; line-height: normal; padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
-                                    font-style: normal;
-                                    font-weight: 600; color: #35405A;">Bring your official identity <br>document as used in your <br>booking </td>
-                                </tr>
-                            </table>
-                            
-                        </td>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td>
-                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1618.png" alt="" width="33" height="27">
-                                    </td>
-                                    <td style="font-size: 8px; line-height: normal;  padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
-                                    font-style: normal;
-                                    font-weight: 600; color: #35405A;">Please arrive at the harbour 60 <br> minutes before departure </td>
-                                </tr>
-                            </table>
-                            
-                        </td>
-                    </tr>
-                </table>
-             </td>
-            </tr>
            </table>
       </td>
      </tr>
     </table>
-   </body>`
+	<div style="width: 100%; position: fixed;bottom: 0">
+	   <table style="width: 100%">
+		<tr>
+			 <td bgcolor="#EFF3FF" style="padding: 20px 30px 40px 30px;">
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td>
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/jam_ticket.png" alt="" width="35" height="35">
+									</td>
+									<td style="font-size: 11px; line-height: normal; font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 600; color: #35405A;">Show e-ticket to check-in at <br//> your departure place </td>
+								</tr>
+							</table>
+							
+						</td>
+						<td>
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/fa-regular_address-card.png" alt="" width="35" height="29">
+									</td>
+									<td style="font-size: 11px; line-height: normal; padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 600; color: #35405A;">Bring your official identity <br/>document as used in your <br/>booking </td>
+								</tr>
+							</table>
+							
+						</td>
+						<td>
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1618.png" alt="" width="33" height="27">
+									</td>
+									<td style="font-size: 11px; line-height: normal;  padding-left: 10px; font-family: 'Nunito Sans', sans-serif;
+									font-style: normal;
+									font-weight: 600; color: #35405A;">Please arrive at the harbour 60 <br/> minutes before departure </td>
+								</tr>
+							</table>
+							
+						</td>
+					</tr>
+				</table>
+			 </td>
+			</tr>
+	   </table>
+   </div>
+   </body>
+</html>`
 
 	templateBookingApprovalDP string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
