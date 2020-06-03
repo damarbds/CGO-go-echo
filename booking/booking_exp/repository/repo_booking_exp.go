@@ -317,6 +317,7 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, booki
 		pm.desc AS account_bank,
 		pm.icon,
 		t.status AS transaction_status,
+		t.va_number,
 		t.created_date AS created_date_transaction,
 		m.merchant_name,
 		m.phone_number AS merchant_phone,
@@ -431,8 +432,7 @@ func (b bookingExpRepository) GetBookingCountByUserID(ctx context.Context, statu
 	SELECT COUNT(*) as count 
 	FROM
 		booking_exps a
-		JOIN experiences b ON a.exp_id = b.id
-		JOIN transactions t ON t.booking_exp_id = a.id
+		JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 	WHERE
 		a.is_active = 1
 		AND a.is_deleted = 0
@@ -479,8 +479,7 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 	query := `SELECT DISTINCT a.id
 					FROM 
 						booking_exps a
-					JOIN experiences b ON a.exp_id = b.id
-					JOIN transactions t ON t.booking_exp_id = a.id
+					JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					WHERE
 						a.is_active = 1
 					AND a.is_deleted = 0
@@ -501,7 +500,7 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 		query = query + ` 	AND t.status = 0 
 							AND DATE(a.booking_date) >= CURRENT_DATE`
 	}
-
+	query = query + ` ORDER BY t.created_date DESC `
 	if limit != 0 {
 		query = query + ` LIMIT ? OFFSET ?`
 
