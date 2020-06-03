@@ -5016,6 +5016,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				"source" : bookingDetail.Transportation[0].HarborSourceName,
 				"dest" : bookingDetail.Transportation[0].HarborDestName,
 				"class": bookingDetail.Transportation[0].TransClass,
+				"orderId" : bookingDetail.OrderId,
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)

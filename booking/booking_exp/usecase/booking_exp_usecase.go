@@ -5483,6 +5483,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				"source":     bookingDetail.Transportation[0].HarborSourceName,
 				"dest":       bookingDetail.Transportation[0].HarborDestName,
 				"class":      bookingDetail.Transportation[0].TransClass,
+				"orderId" : bookingDetail.OrderId,
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
@@ -5957,6 +5958,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				"source":     bookingDetail.Transportation[0].HarborSourceName,
 				"dest":       bookingDetail.Transportation[0].HarborDestName,
 				"class":      bookingDetail.Transportation[0].TransClass,
+				"orderId" : bookingDetail.OrderId,
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
