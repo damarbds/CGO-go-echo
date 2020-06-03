@@ -5501,14 +5501,18 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			guestCount := len(bookingDetail.GuestDesc)
 
+			layoutFormat := "15:04:05"
+			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
+
 			var tmpl = template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			var data = map[string]interface{}{
 				"title":      bookingDetail.Transportation[0].TransTitle,
 				"user":       user,
 				"tripDate":   tripDate,
 				"guestCount": strconv.Itoa(guestCount) + " Guest(s)",
-				"sourceTime": bookingDetail.Transportation[0].DepartureTime,
-				"desTime":    bookingDetail.Transportation[0].ArrivalTime,
+				"sourceTime": departureTime.Format("15:04"),
+				"desTime":    arrivalTime.Format("15:04"),
 				"duration":   bookingDetail.Transportation[0].TripDuration,
 				"source":     bookingDetail.Transportation[0].HarborSourceName,
 				"dest":       bookingDetail.Transportation[0].HarborDestName,
@@ -5539,8 +5543,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			dataMapping := map[string]interface{}{
 				"guestDesc":        guestDesc,
 				"tripDate" : tripDate,
-				"sourceTime" : bookingDetail.Transportation[0].DepartureTime,
-				"desTime" : bookingDetail.Transportation[0].ArrivalTime,
+				"sourceTime" : departureTime.Format("15:04"),
+				"desTime" : arrivalTime.Format("15:04"),
 				"duration" : bookingDetail.Transportation[0].TripDuration,
 				"source" : bookingDetail.Transportation[0].HarborSourceName,
 				"dest" : bookingDetail.Transportation[0].HarborDestName,
@@ -5995,6 +5999,9 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			guestCount := len(bookingDetail.GuestDesc)
+			layoutFormat := "15:04:05"
+			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
 
 			var tmpl = template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			var data = map[string]interface{}{
@@ -6002,8 +6009,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				"user":       user,
 				"tripDate":   tripDate,
 				"guestCount": strconv.Itoa(guestCount) + " Guest(s)",
-				"sourceTime": bookingDetail.Transportation[0].DepartureTime,
-				"desTime":    bookingDetail.Transportation[0].ArrivalTime,
+				"sourceTime": departureTime.Format("15:04"),
+				"desTime":    arrivalTime.Format("15:04"),
 				"duration":   bookingDetail.Transportation[0].TripDuration,
 				"source":     bookingDetail.Transportation[0].HarborSourceName,
 				"dest":       bookingDetail.Transportation[0].HarborDestName,
@@ -6034,8 +6041,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			dataMapping := map[string]interface{}{
 				"guestDesc":        guestDesc,
 				"tripDate" : tripDate,
-				"sourceTime" : bookingDetail.Transportation[0].DepartureTime,
-				"desTime" : bookingDetail.Transportation[0].ArrivalTime,
+				"sourceTime" : departureTime.Format("15:04"),
+				"desTime" : arrivalTime.Format("15:04"),
 				"duration" : bookingDetail.Transportation[0].TripDuration,
 				"source" : bookingDetail.Transportation[0].HarborSourceName,
 				"dest" : bookingDetail.Transportation[0].HarborDestName,
