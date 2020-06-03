@@ -45,7 +45,7 @@ func NewWishlistUsecase(
 	}
 }
 
-func (w wishListUsecase) List(ctx context.Context, token string,page int, limit int, offset int) (*models.WishlistOutWithPagination, error) {
+func (w wishListUsecase) List(ctx context.Context, token string,page int, limit int, offset int,expId string) (*models.WishlistOutWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, w.ctxTimeout)
 	defer cancel()
 
@@ -54,7 +54,7 @@ func (w wishListUsecase) List(ctx context.Context, token string,page int, limit 
 		return nil, err
 	}
 
-	wLists, err := w.wlRepo.List(ctx, currentUser.Id,limit,offset)
+	wLists, err := w.wlRepo.List(ctx, currentUser.Id,limit,offset,expId)
 	if err != nil {
 		return nil, err
 	}

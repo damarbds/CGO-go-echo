@@ -2,13 +2,14 @@ package http
 
 import (
 	"context"
+	"net/http"
+	"strconv"
+
 	"github.com/labstack/echo"
 	"github.com/models"
 	"github.com/profile/wishlists"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
-	"net/http"
-	"strconv"
 )
 
 // ResponseError represent the response error struct
@@ -26,6 +27,7 @@ func NewWishlistHandler(e *echo.Echo, wus wishlists.Usecase) {
 	}
 	e.POST("/profile/wishlists", handler.Create)
 	e.GET("/profile/wishlists", handler.List)
+	e.GET("/profile/check-wishlists", handler.CheckWishList)
 }
 
 func isRequestValid(m *models.WishlistIn) (bool, error) {
@@ -35,6 +37,34 @@ func isRequestValid(m *models.WishlistIn) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+func (w *wishlistHandler) CheckWishList(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	expId := c.QueryParam("exp_id")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	res, err := w.wlUsecase.List(ctx, token, 1, 1, 0, expId)
+	var response bool
+	if len(res.Data) != 0 {
+		response = true
+	} else {
+		response = false
+	}
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func (w *wishlistHandler) List(c echo.Context) error {
@@ -60,7 +90,7 @@ func (w *wishlistHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := w.wlUsecase.List(ctx, token,page,limit,offset)
+	res, err := w.wlUsecase.List(ctx, token, page, limit, offset, "")
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

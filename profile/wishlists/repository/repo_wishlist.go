@@ -79,9 +79,12 @@ func (m *wishListRepository) Count(ctx context.Context, userID string) (int, err
 	return count, nil
 }
 
-func (w wishListRepository) List(ctx context.Context, userID string, limit, offset int) ([]*models.WishlistObj, error) {
+func (w wishListRepository) List(ctx context.Context, userID string, limit, offset int,expId string) ([]*models.WishlistObj, error) {
 	res := make([]*models.WishlistObj, 0)
 	query := `SELECT * FROM wishlists WHERE user_id = ? AND is_deleted = 0 AND is_active = 1`
+	if expId != ""{
+		query = query + ` AND exp_id = '` + expId + `' `
+	}
 	if limit != 0 {
 		query = query + ` LIMIT ? OFFSET ?`
 		result, err := w.fetch(ctx, query, userID, limit, offset)
