@@ -1,27 +1,26 @@
 # Builder
-FROM golang:1.11.4-alpine3.8 as builder
+FROM golang:1.13-alpine3.10 as builder
 
 RUN apk update && apk upgrade && \
-    apk --update add git gcc make && \
-    go get -u github.com/golang/dep/cmd/dep
+    apk --update add git make
 
-WORKDIR /go/src/github.com/bxcodec/go-clean-arch
+WORKDIR /app
 
 COPY . .
 
 RUN make engine
 
-# Distribution
+# Distribution#
 FROM alpine:latest
 
 RUN apk update && apk upgrade && \
-    apk --update --no-cache add tzdata && \
-    mkdir /app 
+    apk --no-cache --update add ca-certificates tzdata && \
+    mkdir /app
 
 WORKDIR /app 
 
 EXPOSE 9090
 
-COPY --from=builder /go/src/github.com/bxcodec/go-clean-arch/engine /app
+COPY --from=builder /app/engine /app
 
 CMD /app/engine

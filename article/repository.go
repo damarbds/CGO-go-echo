@@ -6,7 +6,7 @@ import (
 	"github.com/bxcodec/go-clean-arch/models"
 )
 
-// Repository represent the article's repository contract
+// repository represent the article's repository contract
 type Repository interface {
 	Fetch(ctx context.Context, cursor string, num int64) (res []*models.Article, nextCursor string, err error)
 	GetByID(ctx context.Context, id int64) (*models.Article, error)
