@@ -6,6 +6,12 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
+	"html/template"
+	"net/http"
+	"reflect"
+	"strconv"
+	"time"
+
 	"github.com/auth/identityserver"
 	"github.com/booking/booking_exp"
 	"github.com/labstack/echo"
@@ -14,11 +20,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/third-party/midtrans"
 	"github.com/transactions/transaction"
-	"html/template"
-	"net/http"
-	"reflect"
-	"strconv"
-	"time"
 )
 
 type ResponseError struct {
@@ -32,6 +33,7 @@ type midtransHandler struct {
 	bookingUseCase  booking_exp.Usecase
 	isUsecase       identityserver.Usecase
 }
+
 func NewMidtransHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
 	handler := &midtransHandler{
 		bookingRepo:     br,
@@ -3922,7 +3924,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 								</tr>
 								<tr>
 									<td style="padding: 0px 0 10px 0; font-size: 12px; font-family: 'Rubik', sans-serif;font-weight: normal !important; color: #35405A;">
-										{{.title}
+										{{.title}}
 									</td>
 								</tr>
 								<tr>
@@ -4716,8 +4718,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
      </tr>
     </table>
    </body>`
-
-	)
+)
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
@@ -4778,33 +4779,33 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment"{
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 					duration := 0
 					if bookingDetail.Experience[0].ExpDuration != 0 {
 						duration = bookingDetail.Experience[0].ExpDuration - 1
 					}
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,duration).Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 					paymentDeadline := bookingDetail.BookingDate
-					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
+					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
 						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
-							paymentDeadline = paymentDeadline.AddDate(0,0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-						}else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
-							paymentDeadline = paymentDeadline.AddDate(0,0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount * 7)
-						}else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
-							paymentDeadline = paymentDeadline.AddDate(0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount,0)
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+							paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
 						}
 					}
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
 					var data = map[string]interface{}{
-						"title": exp.ExpTitle,
-						"user":  user,
-						"payment": bookingDetail.TotalPrice,
+						"title":            exp.ExpTitle,
+						"user":             user,
+						"payment":          bookingDetail.TotalPrice,
 						"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
-						"paymentDeadline" : paymentDeadline.Format("02 January 2006"),
-						"orderId" : bookingDetail.OrderId,
-						"tripDate" : tripDate,
+						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+						"orderId":          bookingDetail.OrderId,
+						"tripDate":         tripDate,
 					}
 					var tpl bytes.Buffer
 					err = tmpl.Execute(&tpl, data)
@@ -4824,20 +4825,20 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 						return nil
 					}
-				}else {
+				} else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 					duration := 0
 					if bookingDetail.Experience[0].ExpDuration != 0 {
 						duration = bookingDetail.Experience[0].ExpDuration - 1
 					}
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,duration).Format("02 January 2006")
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
 					var data = map[string]interface{}{
-						"title": exp.ExpTitle,
-						"user":  user,
-						"tripDate" : tripDate,
-						"orderId" : bookingDetail.OrderId,
+						"title":    exp.ExpTitle,
+						"user":     user,
+						"tripDate": tripDate,
+						"orderId":  bookingDetail.OrderId,
 					}
 					var tpl bytes.Buffer
 					err = tmpl.Execute(&tpl, data)
@@ -4870,13 +4871,13 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				}
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 				paymentDeadline := bookingDetail.BookingDate
-				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil{
+				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
 					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
-						paymentDeadline = paymentDeadline.AddDate(0,0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-					}else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
-						paymentDeadline = paymentDeadline.AddDate(0,0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount * 7)
-					}else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
-						paymentDeadline = paymentDeadline.AddDate(0,- *bookingDetail.Experience[0].ExpPaymentDeadlineAmount,0)
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
 					}
 				}
 				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
@@ -4900,8 +4901,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				//ticketPDF Bind HTML
 				var htmlPDFTicket bytes.Buffer
 
-				guestDesc := make([]*models.GuestDescObjForHTML,0)
-				for i,element := range bookingDetail.GuestDesc{
+				guestDesc := make([]*models.GuestDescObjForHTML, 0)
+				for i, element := range bookingDetail.GuestDesc {
 					guest := models.GuestDescObjForHTML{
 						No:       i + 1,
 						FullName: element.FullName,
@@ -4909,23 +4910,23 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 						IdType:   element.IdType,
 						IdNumber: element.IdNumber,
 					}
-					guestDesc = append(guestDesc,&guest)
+					guestDesc = append(guestDesc, &guest)
 				}
 
 				dataMapping := map[string]interface{}{
-					"guestDesc":        guestDesc,
-					"expType" : bookingDetail.Experience[0].ExpType,
-					"tripDate" : bookingDetail.BookingDate.Format("02 January 2006"),
-					"title" : bookingDetail.Experience[0].ExpTitle,
-					"city" : bookingDetail.Experience[0].City,
-					"country" : bookingDetail.Experience[0].CountryName,
-					"meetingPoint" : bookingDetail.Experience[0].ExpPickupPlace,
-					"time" : bookingDetail.Experience[0].ExpPickupTime,
-					"merchantName" : bookingDetail.Experience[0].MerchantName,
-					"merchantPhone" : bookingDetail.Experience[0].MerchantPhone,
-					"orderId" : bookingDetail.OrderId,
-					"qrCode" : bookingDetail.TicketQRCode,
-					"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+					"guestDesc":       guestDesc,
+					"expType":         bookingDetail.Experience[0].ExpType,
+					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+					"title":           bookingDetail.Experience[0].ExpTitle,
+					"city":            bookingDetail.Experience[0].City,
+					"country":         bookingDetail.Experience[0].CountryName,
+					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+					"time":            bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName":    bookingDetail.Experience[0].MerchantName,
+					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+					"orderId":         bookingDetail.OrderId,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
 				}
 				// We create the template and register out template function
 				t := template.New("t").Funcs(templateFuncs)
@@ -4940,14 +4941,14 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				}
 
 				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
+				// pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject:  "Ticket DP",
-					Message:  msg,
-					From:     "CGO Indonesia",
-					To:       bookedBy[0].Email,
-					FileName: "E-Ticket.pdf",
-					AttachmentFileUrl:pdf,
+					Subject: "Ticket DP",
+					Message: msg,
+					From:    "CGO Indonesia",
+					To:      bookedBy[0].Email,
+					// FileName:          "E-Ticket.pdf",
+					// AttachmentFileUrl: pdf,
 				}
 				if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
@@ -4961,12 +4962,12 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				if bookingDetail.Experience[0].ExpDuration != 0 {
 					duration = bookingDetail.Experience[0].ExpDuration - 1
 				}
-				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,duration).Format("02 January 2006")
+				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 				guestCount := len(bookingDetail.GuestDesc)
 
 				var tmpl *template.Template
 				var data map[string]interface{}
-				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00"){
+				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
 					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
 					data = map[string]interface{}{
 						"title":        exp.ExpTitle,
@@ -4977,7 +4978,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 						"guideContact": bookingDetail.Experience[0].MerchantPhone,
 						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 					}
-				}else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00"){
+				} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
 					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
 					data = map[string]interface{}{
 						"title":        exp.ExpTitle,
@@ -4989,7 +4990,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 						"guideContact": bookingDetail.Experience[0].MerchantPhone,
 						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 					}
-				}else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
+				} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
 					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
 					data = map[string]interface{}{
 						"title":        exp.ExpTitle,
@@ -5001,7 +5002,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 						"guideContact": bookingDetail.Experience[0].MerchantPhone,
 						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 					}
-				}else {
+				} else {
 					tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
 					data = map[string]interface{}{
 						"title":        exp.ExpTitle,
@@ -5024,8 +5025,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				//ticketPDF Bind HTML
 				var htmlPDFTicket bytes.Buffer
 
-				guestDesc := make([]*models.GuestDescObjForHTML,0)
-				for i,element := range bookingDetail.GuestDesc{
+				guestDesc := make([]*models.GuestDescObjForHTML, 0)
+				for i, element := range bookingDetail.GuestDesc {
 					guest := models.GuestDescObjForHTML{
 						No:       i + 1,
 						FullName: element.FullName,
@@ -5033,23 +5034,23 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 						IdType:   element.IdType,
 						IdNumber: element.IdNumber,
 					}
-					guestDesc = append(guestDesc,&guest)
+					guestDesc = append(guestDesc, &guest)
 				}
 
 				dataMapping := map[string]interface{}{
-					"guestDesc":        guestDesc,
-					"expType" : bookingDetail.Experience[0].ExpType,
-					"tripDate" : bookingDetail.BookingDate.Format("02 January 2006"),
-					"title" : bookingDetail.Experience[0].ExpTitle,
-					"city" : bookingDetail.Experience[0].City,
-					"country" : bookingDetail.Experience[0].CountryName,
-					"meetingPoint" : bookingDetail.Experience[0].ExpPickupPlace,
-					"time" : bookingDetail.Experience[0].ExpPickupTime,
-					"merchantName" : bookingDetail.Experience[0].MerchantName,
-					"merchantPhone" : bookingDetail.Experience[0].MerchantPhone,
-					"orderId" : bookingDetail.OrderId,
-					"qrCode" : bookingDetail.TicketQRCode,
-					"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
+					"guestDesc":       guestDesc,
+					"expType":         bookingDetail.Experience[0].ExpType,
+					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+					"title":           bookingDetail.Experience[0].ExpTitle,
+					"city":            bookingDetail.Experience[0].City,
+					"country":         bookingDetail.Experience[0].CountryName,
+					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+					"time":            bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName":    bookingDetail.Experience[0].MerchantName,
+					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+					"orderId":         bookingDetail.OrderId,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
 				}
 				// We create the template and register out template function
 				t := template.New("t").Funcs(templateFuncs)
@@ -5063,16 +5064,15 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					panic(err)
 				}
 
-
 				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
+				// pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject:  "Ticket FP",
-					Message:  msg,
-					From:     "CGO Indonesia",
-					To:       bookedBy[0].Email,
-					FileName: "E-Ticket.pdf",
-					AttachmentFileUrl:pdf,
+					Subject: "Ticket FP",
+					Message: msg,
+					From:    "CGO Indonesia",
+					To:      bookedBy[0].Email,
+					// FileName:          "E-Ticket.pdf",
+					// AttachmentFileUrl: pdf,
 				}
 
 				if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -5098,17 +5098,17 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 
 			var tmpl = template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			var data = map[string]interface{}{
-				"title": bookingDetail.Transportation[0].TransTitle,
-				"user":  user,
-				"tripDate" : tripDate,
-				"guestCount" : strconv.Itoa(guestCount) + " Guest(s)" ,
-				"sourceTime" : departureTime.Format("15:04"),
-				"desTime" : arrivalTime.Format("15:04"),
-				"duration" : bookingDetail.Transportation[0].TripDuration,
-				"source" : bookingDetail.Transportation[0].HarborSourceName,
-				"dest" : bookingDetail.Transportation[0].HarborDestName,
-				"class": bookingDetail.Transportation[0].TransClass,
-				"orderId" : bookingDetail.OrderId,
+				"title":      bookingDetail.Transportation[0].TransTitle,
+				"user":       user,
+				"tripDate":   tripDate,
+				"guestCount": strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTime": departureTime.Format("15:04"),
+				"desTime":    arrivalTime.Format("15:04"),
+				"duration":   bookingDetail.Transportation[0].TripDuration,
+				"source":     bookingDetail.Transportation[0].HarborSourceName,
+				"dest":       bookingDetail.Transportation[0].HarborDestName,
+				"class":      bookingDetail.Transportation[0].TransClass,
+				"orderId":    bookingDetail.OrderId,
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
@@ -5119,8 +5119,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			//ticketPDF Bind HTML
 			var htmlPDFTicket bytes.Buffer
 
-			guestDesc := make([]*models.GuestDescObjForHTML,0)
-			for i,element := range bookingDetail.GuestDesc{
+			guestDesc := make([]*models.GuestDescObjForHTML, 0)
+			for i, element := range bookingDetail.GuestDesc {
 				guest := models.GuestDescObjForHTML{
 					No:       i + 1,
 					FullName: element.FullName,
@@ -5128,21 +5128,21 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					IdType:   element.IdType,
 					IdNumber: element.IdNumber,
 				}
-				guestDesc = append(guestDesc,&guest)
+				guestDesc = append(guestDesc, &guest)
 			}
 
 			dataMapping := map[string]interface{}{
-				"guestDesc":        guestDesc,
-				"tripDate" : tripDate,
-				"sourceTime" : departureTime.Format("15:04"),
-				"desTime" : arrivalTime.Format("15:04"),
-				"duration" : bookingDetail.Transportation[0].TripDuration,
-				"source" : bookingDetail.Transportation[0].HarborSourceName,
-				"dest" : bookingDetail.Transportation[0].HarborDestName,
-				"class": bookingDetail.Transportation[0].TransClass,
-				"qrCode" : bookingDetail.TicketQRCode,
-				"merchantPicture" : bookingDetail.Experience[0].MerchantPicture,
-				"orderId" : bookingDetail.OrderId,
+				"guestDesc":       guestDesc,
+				"tripDate":        tripDate,
+				"sourceTime":      departureTime.Format("15:04"),
+				"desTime":         arrivalTime.Format("15:04"),
+				"duration":        bookingDetail.Transportation[0].TripDuration,
+				"source":          bookingDetail.Transportation[0].HarborSourceName,
+				"dest":            bookingDetail.Transportation[0].HarborDestName,
+				"class":           bookingDetail.Transportation[0].TransClass,
+				"qrCode":          bookingDetail.TicketQRCode,
+				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				"orderId":         bookingDetail.OrderId,
 			}
 			// We create the template and register out template function
 			t := template.New("t").Funcs(templateFuncs)
@@ -5156,16 +5156,15 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				panic(err)
 			}
 
-
 			msg := tpl.String()
-			pdf := htmlPDFTicket.String()
+			// pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:  "Ticket FP Transportation",
-				Message:  msg,
-				From:     "CGO Indonesia",
-				To:       bookedBy[0].Email,
-				FileName: "E-Ticket.pdf",
-				AttachmentFileUrl:pdf,
+				Subject: "Ticket FP Transportation",
+				Message: msg,
+				From:    "CGO Indonesia",
+				To:      bookedBy[0].Email,
+				// FileName:          "E-Ticket.pdf",
+				// AttachmentFileUrl: pdf,
 			}
 			if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
