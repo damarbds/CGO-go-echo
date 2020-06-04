@@ -5070,7 +5070,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					Subject:           "Ticket FP",
 					Message:           msg,
 					From:              "CGO Indonesia",
-					To:                "mohradyatama24@gmail.com",
+					To:                bookedBy[0].Email,
 					FileName:          "E-Ticket.pdf",
 					AttachmentFileUrl: pdf,
 				}
