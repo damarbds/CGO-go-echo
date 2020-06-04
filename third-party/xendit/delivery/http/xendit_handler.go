@@ -3591,7 +3591,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
                                             <td style="padding: 15px 0;">
-                                                <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Unknown.png" alt="" width="53" height="24" style="object-fit: cover;" />
+                                                <img src="{{.merchantPicture}}" alt="" width="53" height="24" style="object-fit: cover;" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -5083,6 +5083,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			"dest":       bookingDetail.Transportation[0].HarborDestName,
 			"class":      bookingDetail.Transportation[0].TransClass,
 			"orderId":    bookingDetail.OrderId,
+			"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
 		}
 		var tpl bytes.Buffer
 		err = tmpl.Execute(&tpl, data)
