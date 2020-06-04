@@ -4404,7 +4404,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                    <td style="padding: 50px 0 20px 0;">
                        <table  border="0" cellpadding="4" cellspacing="0" width="100%">
                            <tr bgcolor="#e6e6e6">
-                             <th style="text-align: left; padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                             <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
                              font-style: normal;
                              font-weight: 600; color: #35405A;">No</th>
                              <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
@@ -4421,7 +4421,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                              font-weight: 600; color: #35405A;">ID Number</th>
                            </tr>
                            {{range .guestDesc}}<tr>
-                               {{range rangeStruct .}}<td style="padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                               {{range rangeStruct .}}<td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
                                 font-style: normal;
                                 font-weight: 600; color: #35405A;" >{{.}}</td>{{end}}
                               </tr>{{end}}
@@ -4561,7 +4561,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                                         </tr>
                                         <tr>
                                             <td style="padding: 15px 0;">
-                                                <img src="{{.merchantPicture}}" alt="" width="53" height="24" style="object-fit: cover;" />
+                                                <img src="{{.merchantPicture}}" alt="" style="object-fit: cover; width: 53px;" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -4660,7 +4660,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                         <td style="padding: 50px 0 20px 0;">
                             <table  border="0" cellpadding="4" cellspacing="0" width="100%">
                                 <tr bgcolor="#e6e6e6">
-                                  <th style="text-align: left; padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                  <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
                                   font-style: normal;
                                   font-weight: 600; color: #35405A;">No</th>
                                   <th style="text-align: left; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
@@ -4677,7 +4677,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                                   font-weight: 600; color: #35405A;">ID Number</th>
                                 </tr>
                                 {{range .guestDesc}}<tr>
-                                    {{range rangeStruct .}}<td style="padding-left: 20px; font-size: 11px;font-family: 'Nunito Sans', sans-serif;
+                                    {{range rangeStruct .}}<td style="font-size: 11px;font-family: 'Nunito Sans', sans-serif;
                                      font-style: normal;
                                      font-weight: 600; color: #35405A;" >{{.}}</td>{{end}}
                                    </tr>{{end}}
@@ -5380,7 +5380,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				//ticketPDF Bind HTML
 				var htmlPDFTicket bytes.Buffer
 
-				guestDesc := make([]*models.GuestDescObjForHTML, 0)
+				var guestDesc []models.GuestDescObjForHTML
 				for i, element := range bookingDetail.GuestDesc {
 					guest := models.GuestDescObjForHTML{
 						No:       i + 1,
@@ -5389,7 +5389,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						IdType:   element.IdType,
 						IdNumber: element.IdNumber,
 					}
-					guestDesc = append(guestDesc, &guest)
+					guestDesc = append(guestDesc, guest)
 				}
 
 				dataMapping := map[string]interface{}{
@@ -5504,7 +5504,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				//ticketPDF Bind HTML
 				var htmlPDFTicket bytes.Buffer
 
-				guestDesc := make([]*models.GuestDescObjForHTML, 0)
+				var guestDesc []models.GuestDescObjForHTML
 				for i, element := range bookingDetail.GuestDesc {
 					guest := models.GuestDescObjForHTML{
 						No:       i + 1,
@@ -5513,7 +5513,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						IdType:   element.IdType,
 						IdNumber: element.IdNumber,
 					}
-					guestDesc = append(guestDesc, &guest)
+					guestDesc = append(guestDesc, guest)
 				}
 
 				dataMapping := map[string]interface{}{
@@ -5598,7 +5598,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			//ticketPDF Bind HTML
 			var htmlPDFTicket bytes.Buffer
 
-			guestDesc := make([]*models.GuestDescObjForHTML, 0)
+			var guestDesc []models.GuestDescObjForHTML
 			for i, element := range bookingDetail.GuestDesc {
 				guest := models.GuestDescObjForHTML{
 					No:       i + 1,
@@ -5607,7 +5607,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					IdType:   element.IdType,
 					IdNumber: element.IdNumber,
 				}
-				guestDesc = append(guestDesc, &guest)
+				guestDesc = append(guestDesc, guest)
 			}
 
 			dataMapping := map[string]interface{}{
@@ -5620,7 +5620,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				"dest":            bookingDetail.Transportation[0].HarborDestName,
 				"class":           bookingDetail.Transportation[0].TransClass,
 				"qrCode":          bookingDetail.TicketQRCode,
-				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
 				"orderId":         bookingDetail.OrderId,
 			}
 			// We create the template and register out template function
@@ -5895,7 +5895,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				//ticketPDF Bind HTML
 				var htmlPDFTicket bytes.Buffer
 
-				guestDesc := make([]*models.GuestDescObjForHTML, 0)
+				var guestDesc []models.GuestDescObjForHTML
 				for i, element := range bookingDetail.GuestDesc {
 					guest := models.GuestDescObjForHTML{
 						No:       i + 1,
@@ -5904,7 +5904,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						IdType:   element.IdType,
 						IdNumber: element.IdNumber,
 					}
-					guestDesc = append(guestDesc, &guest)
+					guestDesc = append(guestDesc, guest)
 				}
 
 				dataMapping := map[string]interface{}{
@@ -6019,7 +6019,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				//ticketPDF Bind HTML
 				var htmlPDFTicket bytes.Buffer
 
-				guestDesc := make([]*models.GuestDescObjForHTML, 0)
+				var guestDesc []models.GuestDescObjForHTML
 				for i, element := range bookingDetail.GuestDesc {
 					guest := models.GuestDescObjForHTML{
 						No:       i + 1,
@@ -6028,7 +6028,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						IdType:   element.IdType,
 						IdNumber: element.IdNumber,
 					}
-					guestDesc = append(guestDesc, &guest)
+					guestDesc = append(guestDesc, guest)
 				}
 
 				dataMapping := map[string]interface{}{
@@ -6112,7 +6112,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			//ticketPDF Bind HTML
 			var htmlPDFTicket bytes.Buffer
 
-			guestDesc := make([]*models.GuestDescObjForHTML, 0)
+			var guestDesc []models.GuestDescObjForHTML
 			for i, element := range bookingDetail.GuestDesc {
 				guest := models.GuestDescObjForHTML{
 					No:       i + 1,
@@ -6121,7 +6121,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					IdType:   element.IdType,
 					IdNumber: element.IdNumber,
 				}
-				guestDesc = append(guestDesc, &guest)
+				guestDesc = append(guestDesc, guest)
 			}
 
 			dataMapping := map[string]interface{}{
@@ -6134,7 +6134,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				"dest":            bookingDetail.Transportation[0].HarborDestName,
 				"class":           bookingDetail.Transportation[0].TransClass,
 				"qrCode":          bookingDetail.TicketQRCode,
-				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
 				"orderId":         bookingDetail.OrderId,
 			}
 			// We create the template and register out template function
