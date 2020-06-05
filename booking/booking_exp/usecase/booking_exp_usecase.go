@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	pdfcrowd "github.com/pdfcrowd/pdfcrowd-go"
 	"html/template"
 	"io/ioutil"
 	"math"
@@ -52,11 +53,16 @@ type bookingExpUsecase struct {
 	expRepo                   experience.Repository
 	transactionRepo           transaction.Repository
 	contextTimeout            time.Duration
+	usernamePDFrowd			string
+	accessKeyPDFcrowd		string
 }
 
+
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(usernamePDFrowd string,accessKeyPDFcrowd string,reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
+		usernamePDFrowd:usernamePDFrowd,
+		accessKeyPDFcrowd:accessKeyPDFcrowd,
 		reviewRepo:                reviewRepo,
 		adOnsRepo:                 adOnsRepo,
 		experiencePaymentTypeRepo: ept,
@@ -5602,6 +5608,287 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
+
+func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, orderId string) (*string, error) {
+	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId)
+	if bookingDetail != nil {
+		if err != nil {
+			return nil, err
+		}
+		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		layoutFormat := "15:04:05"
+		departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+		arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
+
+		//ticketPDF Bind HTML
+		var htmlPDFTicket bytes.Buffer
+
+		var guestDesc []models.GuestDescObjForHTML
+		for i, element := range bookingDetail.GuestDesc {
+			guest := models.GuestDescObjForHTML{
+				No:       i + 1,
+				FullName: element.FullName,
+				Type:     element.Type,
+				IdType:   element.IdType,
+				IdNumber: element.IdNumber,
+			}
+			guestDesc = append(guestDesc, guest)
+		}
+
+		dataMapping := map[string]interface{}{
+			"guestDesc":       guestDesc,
+			"tripDate":        tripDate,
+			"sourceTime":      departureTime.Format("15:04"),
+			"desTime":         arrivalTime.Format("15:04"),
+			"duration":        bookingDetail.Transportation[0].TripDuration,
+			"source":          bookingDetail.Transportation[0].HarborSourceName,
+			"dest":            bookingDetail.Transportation[0].HarborDestName,
+			"class":           bookingDetail.Transportation[0].TransClass,
+			"qrCode":          bookingDetail.TicketQRCode,
+			"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+			"orderId":         bookingDetail.OrderId,
+		}
+		// We create the template and register out template function
+		t := template.New("t").Funcs(templateFuncs)
+		t, err = t.Parse(templateTicketTransportationPDF)
+		if err != nil {
+			panic(err)
+		}
+
+		err = t.Execute(&htmlPDFTicket, dataMapping)
+		if err != nil {
+			panic(err)
+		}
+
+		pdf := htmlPDFTicket.String()
+
+		client := pdfcrowd.NewHtmlToPdfClient(b.usernamePDFrowd, b.accessKeyPDFcrowd)
+
+		// configure the conversion
+		client.SetNoMargins(true)
+
+		// run the conversion and write the result to a file
+		byte,err := client.ConvertString(pdf)
+
+		if err != nil {
+			return nil,err
+		}
+
+		url , err := b.isUsecase.UploadFilePDFToBlob(byte,"Ticket-Transportation")
+
+		if err != nil {
+			return nil,err
+		}
+		return &url,err
+	}else {
+		return nil,models.ErrNotFound
+	}
+}
+
+func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId string) (*string, error) {
+	bookingDetail, err := b.GetDetailBookingID(ctx, "", orderId)
+	if bookingDetail != nil{
+		if err != nil {
+			return nil,err
+		}
+		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		duration := 0
+		if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+			duration = bookingDetail.Experience[0].ExpDuration - 1
+			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+		}
+
+		var t *template.Template
+		var dataMapping map[string]interface{}
+		if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+
+			//for html pdf
+			var guestDesc []models.GuestDescObjForHTML
+			for i, element := range bookingDetail.GuestDesc {
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc, guest)
+			}
+
+			// We create the template and register out template function
+			temp := template.New("t").Funcs(templateFuncs)
+			temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+			if err != nil {
+				panic(err)
+			}
+
+			t = temp
+
+			dataMapping = map[string]interface{}{
+				"guestDesc":       guestDesc,
+				"expType":         bookingDetail.Experience[0].ExpType,
+				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+				"title":           bookingDetail.Experience[0].ExpTitle,
+				"city":            bookingDetail.Experience[0].City,
+				"country":         bookingDetail.Experience[0].CountryName,
+				"merchantName":    bookingDetail.Experience[0].MerchantName,
+				"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+				"orderId":         bookingDetail.OrderId,
+				"qrCode":          bookingDetail.TicketQRCode,
+				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+			}
+
+		} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+
+			//for html pdf
+			var guestDesc []models.GuestDescObjForHTML
+			for i, element := range bookingDetail.GuestDesc {
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc, guest)
+			}
+
+			// We create the template and register out template function
+			temp := template.New("t").Funcs(templateFuncs)
+			temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
+			if err != nil {
+				panic(err)
+			}
+
+			t = temp
+
+			dataMapping = map[string]interface{}{
+				"guestDesc":       guestDesc,
+				"expType":         bookingDetail.Experience[0].ExpType,
+				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+				"title":           bookingDetail.Experience[0].ExpTitle,
+				"city":            bookingDetail.Experience[0].City,
+				"country":         bookingDetail.Experience[0].CountryName,
+				"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+				"merchantName":    bookingDetail.Experience[0].MerchantName,
+				"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+				"orderId":         bookingDetail.OrderId,
+				"qrCode":          bookingDetail.TicketQRCode,
+				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+			}
+
+		} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
+
+			//for html pdf
+			var guestDesc []models.GuestDescObjForHTML
+			for i, element := range bookingDetail.GuestDesc {
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc, guest)
+			}
+
+			// We create the template and register out template function
+			temp := template.New("t").Funcs(templateFuncs)
+			temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+			if err != nil {
+				panic(err)
+			}
+
+			t = temp
+
+			dataMapping = map[string]interface{}{
+				"guestDesc":       guestDesc,
+				"expType":         bookingDetail.Experience[0].ExpType,
+				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+				"title":           bookingDetail.Experience[0].ExpTitle,
+				"city":            bookingDetail.Experience[0].City,
+				"country":         bookingDetail.Experience[0].CountryName,
+				"merchantName":    bookingDetail.Experience[0].MerchantName,
+				"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+				"orderId":         bookingDetail.OrderId,
+				"qrCode":          bookingDetail.TicketQRCode,
+				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+			}
+
+		} else {
+
+			//for html pdf
+			var guestDesc []models.GuestDescObjForHTML
+			for i, element := range bookingDetail.GuestDesc {
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc, guest)
+			}
+
+			// We create the template and register out template function
+			temp := template.New("t").Funcs(templateFuncs)
+			temp, err := temp.Parse(templateTicketExperiencePDF)
+			if err != nil {
+				panic(err)
+			}
+
+			t = temp
+
+			dataMapping = map[string]interface{}{
+				"guestDesc":       guestDesc,
+				"expType":         bookingDetail.Experience[0].ExpType,
+				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+				"title":           bookingDetail.Experience[0].ExpTitle,
+				"city":            bookingDetail.Experience[0].City,
+				"country":         bookingDetail.Experience[0].CountryName,
+				"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+				"time":            bookingDetail.Experience[0].ExpPickupTime,
+				"merchantName":    bookingDetail.Experience[0].MerchantName,
+				"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+				"orderId":         bookingDetail.OrderId,
+				"qrCode":          bookingDetail.TicketQRCode,
+				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+			}
+		}
+
+		//ticketPDF Bind HTML
+		var htmlPDFTicket bytes.Buffer
+
+		err = t.Execute(&htmlPDFTicket, dataMapping)
+		if err != nil {
+			panic(err)
+		}
+
+		pdf := htmlPDFTicket.String()
+
+		client := pdfcrowd.NewHtmlToPdfClient(b.usernamePDFrowd, b.accessKeyPDFcrowd)
+
+		// configure the conversion
+		client.SetNoMargins(true)
+
+		// run the conversion and write the result to a file
+		byte,err := client.ConvertString(pdf)
+
+		if err != nil {
+			return nil,err
+		}
+
+		url , err := b.isUsecase.UploadFilePDFToBlob(byte,"Ticket-Experience")
+
+		if err != nil {
+			return nil,err
+		}
+		return &url,err
+	}else {
+		return nil,models.ErrNotFound
+	}
+
+}
 
 func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
