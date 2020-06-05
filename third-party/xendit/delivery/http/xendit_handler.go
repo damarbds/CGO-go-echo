@@ -5493,11 +5493,12 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				}
 
 				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err := t.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+				temp := template.New("t").Funcs(templateFuncs)
+				temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
 				if err != nil {
 					panic(err)
 				}
+				t = temp
 
 				dataMapping = map[string]interface{}{
 					"guestDesc":       guestDesc,
@@ -5541,11 +5542,13 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				}
 
 				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err := t.Parse(templateTicketExperiencePDFWithoutTime)
+				temp := template.New("t").Funcs(templateFuncs)
+				temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
 				if err != nil {
 					panic(err)
 				}
+
+				t = temp
 
 				dataMapping = map[string]interface{}{
 					"guestDesc":       guestDesc,
@@ -5590,11 +5593,13 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				}
 
 				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err := t.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+				temp := template.New("t").Funcs(templateFuncs)
+				temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
 				if err != nil {
 					panic(err)
 				}
+
+				t = temp
 
 				dataMapping = map[string]interface{}{
 					"guestDesc":       guestDesc,
@@ -5639,11 +5644,13 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				}
 
 				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err := t.Parse(templateTicketExperiencePDF)
+				temp := template.New("t").Funcs(templateFuncs)
+				temp, err := temp.Parse(templateTicketExperiencePDF)
 				if err != nil {
 					panic(err)
 				}
+
+				t = temp
 
 				dataMapping = map[string]interface{}{
 					"guestDesc":       guestDesc,

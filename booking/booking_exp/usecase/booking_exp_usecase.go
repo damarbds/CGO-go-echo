@@ -5997,11 +5997,13 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
 					if err != nil {
 						panic(err)
 					}
+
+					t = temp
 
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
@@ -6044,11 +6046,13 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDFWithoutTime)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
 					if err != nil {
 						panic(err)
 					}
+
+					t = temp
 
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
@@ -6092,11 +6096,13 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
 					if err != nil {
 						panic(err)
 					}
+
+					t = temp
 
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
@@ -6140,11 +6146,13 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDF)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDF)
 					if err != nil {
 						panic(err)
 					}
+
+					t = temp
 
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
@@ -6623,11 +6631,13 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
 					if err != nil {
 						panic(err)
 					}
+
+					t = temp
 
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
@@ -6670,12 +6680,12 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDFWithoutTime)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
 					if err != nil {
 						panic(err)
 					}
-
+					t = temp
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
 						"expType":         bookingDetail.Experience[0].ExpType,
@@ -6718,12 +6728,12 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
 					if err != nil {
 						panic(err)
 					}
-
+					t = temp
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
 						"expType":         bookingDetail.Experience[0].ExpType,
@@ -6766,12 +6776,12 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					}
 
 					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDF)
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDF)
 					if err != nil {
 						panic(err)
 					}
-
+					t = temp
 					dataMapping = map[string]interface{}{
 						"guestDesc":       guestDesc,
 						"expType":         bookingDetail.Experience[0].ExpType,
