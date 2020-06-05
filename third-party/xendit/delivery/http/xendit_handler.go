@@ -5369,7 +5369,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			}
 			paymentDeadline := bookingDetail.BookingDate
-			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineType != nil {
+			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
 				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
 					paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
 				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
@@ -5439,14 +5439,14 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			}
 
 			msg := tpl.String()
-			pdf := htmlPDFTicket.String()
+			// pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:           "Ticket DP",
-				Message:           msg,
-				From:              "CGO Indonesia",
-				To:                bookedBy[0].Email,
-				FileName:          "E-Ticket.pdf",
-				AttachmentFileUrl: pdf,
+				Subject: "Ticket DP",
+				Message: msg,
+				From:    "CGO Indonesia",
+				To:      bookedBy[0].Email,
+				// FileName:          "E-Ticket.pdf",
+				// AttachmentFileUrl: pdf,
 			}
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil

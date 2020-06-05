@@ -5626,11 +5626,11 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 		}
 		paymentDeadline := element.BookingDate
 		if element.ExpPaymentDeadlineType != nil && element.ExpPaymentDeadlineAmount != nil {
-			if *element.ExpPaymentDeadlineType == "Days" && *element.ExpPaymentDeadlineType == "" {
+			if *element.ExpPaymentDeadlineType == "Days" {
 				paymentDeadline = paymentDeadline.AddDate(0, 0, -*element.ExpPaymentDeadlineAmount)
-			} else if *element.ExpPaymentDeadlineType == "Week" && *element.ExpPaymentDeadlineType == "" {
+			} else if *element.ExpPaymentDeadlineType == "Week" {
 				paymentDeadline = paymentDeadline.AddDate(0, 0, -*element.ExpPaymentDeadlineAmount*7)
-			} else if *element.ExpPaymentDeadlineType == "Month" && *element.ExpPaymentDeadlineType == "" {
+			} else if *element.ExpPaymentDeadlineType == "Month" {
 				paymentDeadline = paymentDeadline.AddDate(0, -*element.ExpPaymentDeadlineAmount, 0)
 			}
 		}
@@ -5942,14 +5942,14 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				}
 
 				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
+				// pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject:           "Ticket DP",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+					Subject: "Ticket DP",
+					Message: msg,
+					From:    "CGO Indonesia",
+					To:      bookedBy[0].Email,
+					// FileName:          "E-Ticket.pdf",
+					// AttachmentFileUrl: pdf,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
@@ -6576,14 +6576,14 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				}
 
 				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
+				// pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject:           "Ticket DP",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+					Subject: "Ticket DP",
+					Message: msg,
+					From:    "CGO Indonesia",
+					To:      bookedBy[0].Email,
+					// FileName:          "E-Ticket.pdf",
+					// AttachmentFileUrl: pdf,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil, nil

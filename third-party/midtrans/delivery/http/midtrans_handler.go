@@ -5463,14 +5463,14 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				}
 
 				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
+				// pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject:           "Ticket DP",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+					Subject: "Ticket DP",
+					Message: msg,
+					From:    "CGO Indonesia",
+					To:      bookedBy[0].Email,
+					// FileName:          "E-Ticket.pdf",
+					// AttachmentFileUrl: pdf,
 				}
 				if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
