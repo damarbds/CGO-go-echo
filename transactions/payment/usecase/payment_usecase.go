@@ -3,6 +3,8 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 	"html/template"
 	"reflect"
 	"strconv"
@@ -5594,8 +5596,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			var data = map[string]interface{}{
 				"title":            bookingDetail.Experience[0].ExpTitle,
 				"user":             user,
-				"payment":          bookingDetail.TotalPrice,
-				"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+				"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+				"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 				"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 				"orderId":          bookingDetail.OrderId,
 				"tripDate":         tripDate,

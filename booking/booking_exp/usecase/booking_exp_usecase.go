@@ -41,6 +41,9 @@ import (
 	"github.com/models"
 	"github.com/skip2/go-qrcode"
 	"golang.org/x/net/context"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 type bookingExpUsecase struct {
@@ -5923,11 +5926,12 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 		}
 		var tmpl = template.Must(template.New("main-template").Parse(templateWaitingRemainingDP))
 		remainingPayment := element.Price - element.TotalPrice
+
 		var data = map[string]interface{}{
 			"title":            element.ExpTitle,
 			"user":             user,
-			"payment":          element.TotalPrice,
-			"remainingPayment": remainingPayment,
+			"payment":          message.NewPrinter(language.German).Sprint(element.TotalPrice),
+			"remainingPayment": message.NewPrinter(language.German).Sprint(remainingPayment),
 			"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 			"orderId":          element.OrderId,
 			"tripDate":         tripDate,
@@ -6086,11 +6090,12 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						}
 					}
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
+
 					var data = map[string]interface{}{
 						"title":            exp.ExpTitle,
 						"user":             user,
-						"payment":          bookingDetail.TotalPrice,
-						"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+						"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 						"orderId":          bookingDetail.OrderId,
 						"tripDate":         tripDate,
@@ -6169,11 +6174,12 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					}
 				}
 				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+
 				var data = map[string]interface{}{
 					"title":            bookingDetail.Experience[0].ExpTitle,
 					"user":             user,
-					"payment":          bookingDetail.TotalPrice,
-					"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+					"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 					"orderId":          bookingDetail.OrderId,
 					"tripDate":         tripDate,
@@ -6720,11 +6726,12 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						}
 					}
 					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
+
 					var data = map[string]interface{}{
 						"title":            exp.ExpTitle,
 						"user":             user,
-						"payment":          bookingDetail.TotalPrice,
-						"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+						"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 						"orderId":          bookingDetail.OrderId,
 						"tripDate":         tripDate,
@@ -6806,8 +6813,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				var data = map[string]interface{}{
 					"title":            bookingDetail.Experience[0].ExpTitle,
 					"user":             user,
-					"payment":          bookingDetail.TotalPrice,
-					"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+					"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 					"orderId":          bookingDetail.OrderId,
 					"tripDate":         tripDate,
