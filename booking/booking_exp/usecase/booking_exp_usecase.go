@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	pdfcrowd "github.com/pdfcrowd/pdfcrowd-go"
 	"html/template"
 	"io/ioutil"
 	"math"
@@ -18,6 +17,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	pdfcrowd "github.com/pdfcrowd/pdfcrowd-go"
 
 	"github.com/product/reviews"
 
@@ -53,16 +54,15 @@ type bookingExpUsecase struct {
 	expRepo                   experience.Repository
 	transactionRepo           transaction.Repository
 	contextTimeout            time.Duration
-	usernamePDFrowd			string
-	accessKeyPDFcrowd		string
+	usernamePDFrowd           string
+	accessKeyPDFcrowd         string
 }
 
-
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(usernamePDFrowd string,accessKeyPDFcrowd string,reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
-		usernamePDFrowd:usernamePDFrowd,
-		accessKeyPDFcrowd:accessKeyPDFcrowd,
+		usernamePDFrowd:           usernamePDFrowd,
+		accessKeyPDFcrowd:         accessKeyPDFcrowd,
 		reviewRepo:                reviewRepo,
 		adOnsRepo:                 adOnsRepo,
 		experiencePaymentTypeRepo: ept,
@@ -5668,28 +5668,28 @@ func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, ord
 		client.SetNoMargins(true)
 
 		// run the conversion and write the result to a file
-		byte,err := client.ConvertString(pdf)
+		byte, err := client.ConvertString(pdf)
 
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
-		url , err := b.isUsecase.UploadFilePDFToBlob(byte,"Ticket-Transportation")
+		url, err := b.isUsecase.UploadFilePDFToBlob(byte, "Ticket-Transportation")
 
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
-		return &url,err
-	}else {
-		return nil,models.ErrNotFound
+		return &url, err
+	} else {
+		return nil, models.ErrNotFound
 	}
 }
 
 func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId string) (*string, error) {
 	bookingDetail, err := b.GetDetailBookingID(ctx, "", orderId)
-	if bookingDetail != nil{
+	if bookingDetail != nil {
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 		duration := 0
@@ -5729,7 +5729,7 @@ func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId
 				"expType":         bookingDetail.Experience[0].ExpType,
 				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 				"title":           bookingDetail.Experience[0].ExpTitle,
-				"city":            bookingDetail.Experience[0].City,
+				"city":            bookingDetail.Experience[0].HarborsName,
 				"country":         bookingDetail.Experience[0].CountryName,
 				"merchantName":    bookingDetail.Experience[0].MerchantName,
 				"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -5767,7 +5767,7 @@ func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId
 				"expType":         bookingDetail.Experience[0].ExpType,
 				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 				"title":           bookingDetail.Experience[0].ExpTitle,
-				"city":            bookingDetail.Experience[0].City,
+				"city":            bookingDetail.Experience[0].HarborsName,
 				"country":         bookingDetail.Experience[0].CountryName,
 				"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 				"merchantName":    bookingDetail.Experience[0].MerchantName,
@@ -5806,7 +5806,7 @@ func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId
 				"expType":         bookingDetail.Experience[0].ExpType,
 				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 				"title":           bookingDetail.Experience[0].ExpTitle,
-				"city":            bookingDetail.Experience[0].City,
+				"city":            bookingDetail.Experience[0].HarborsName,
 				"country":         bookingDetail.Experience[0].CountryName,
 				"merchantName":    bookingDetail.Experience[0].MerchantName,
 				"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -5844,7 +5844,7 @@ func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId
 				"expType":         bookingDetail.Experience[0].ExpType,
 				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 				"title":           bookingDetail.Experience[0].ExpTitle,
-				"city":            bookingDetail.Experience[0].City,
+				"city":            bookingDetail.Experience[0].HarborsName,
 				"country":         bookingDetail.Experience[0].CountryName,
 				"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 				"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -5872,20 +5872,20 @@ func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId
 		client.SetNoMargins(true)
 
 		// run the conversion and write the result to a file
-		byte,err := client.ConvertString(pdf)
+		byte, err := client.ConvertString(pdf)
 
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
-		url , err := b.isUsecase.UploadFilePDFToBlob(byte,"Ticket-Experience")
+		url, err := b.isUsecase.UploadFilePDFToBlob(byte, "Ticket-Experience")
 
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
-		return &url,err
-	}else {
-		return nil,models.ErrNotFound
+		return &url, err
+	} else {
+		return nil, models.ErrNotFound
 	}
 
 }
@@ -6206,7 +6206,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 					"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -6296,7 +6296,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"merchantName":    bookingDetail.Experience[0].MerchantName,
 						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -6345,7 +6345,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 						"merchantName":    bookingDetail.Experience[0].MerchantName,
@@ -6395,7 +6395,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"merchantName":    bookingDetail.Experience[0].MerchantName,
 						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -6445,7 +6445,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 						"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -6840,7 +6840,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 					"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -6930,7 +6930,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"merchantName":    bookingDetail.Experience[0].MerchantName,
 						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -6977,7 +6977,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 						"merchantName":    bookingDetail.Experience[0].MerchantName,
@@ -7025,7 +7025,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"merchantName":    bookingDetail.Experience[0].MerchantName,
 						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -7073,7 +7073,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						"expType":         bookingDetail.Experience[0].ExpType,
 						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].City,
+						"city":            bookingDetail.Experience[0].HarborsName,
 						"country":         bookingDetail.Experience[0].CountryName,
 						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 						"time":            bookingDetail.Experience[0].ExpPickupTime,
