@@ -144,6 +144,9 @@ import (
 	_exclusionServicesRepo "github.com/service/exclusion_service/repository"
 	_exclusionServicesUsecase "github.com/service/exclusion_service/usecase"
 
+	_includeHttpHandler "github.com/service/include/delivery/http"
+	_includeRepo "github.com/service/include/repository"
+	_includeUsecase "github.com/service/include/usecase"
 )
 
 // func init() {
@@ -266,6 +269,7 @@ func main() {
 	userMerchantRepo := _userMerchantRepo.NewuserMerchantRepository(dbConn)
 	currencyMasterRepo := _currencyMasterRepo.NewCurrencyRepository(dbConn)
 	exclusionServiceRepo := _exclusionServicesRepo.NewExclusionServiceRepository(dbConn)
+	includeRepo := _includeRepo.NewIncludeRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -314,6 +318,7 @@ func main() {
 	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase, cpcRepo, timeoutContext)
 	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo, timeoutContext)
 	exclusionServiceUsecase := _exclusionServicesUsecase.NewExclusionServicesUsecase(exclusionServiceRepo,adminUsecase,timeoutContext)
+	includeUsecase := _includeUsecase.NewIncludeUsecase(adminUsecase, includeRepo, timeoutContext)
 
 	_minimumBookingHttpHandler.NewminimumBookingHandler(e, minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
@@ -346,6 +351,7 @@ func main() {
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
 	_xenditHttpHandler.NewXenditHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 	_exclusionServicesHttpHandler.NewExclusionServicesHandler(e,exclusionServiceUsecase)
+	_includeHttpHandler.NewIncludeHandler(e, includeUsecase, isUsecase)
 	// go Scheduler(baseUrlLocal)
 
 	log.Fatal(e.Start(":9090"))

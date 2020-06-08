@@ -23,36 +23,36 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.Promo{}
+	user := model.Include{}
 	error := db.AutoMigrate(&user)
 	if error != nil {
 		migration := model.MigrationHistory{
-			DescMigration: "Alter_table_Promo Add column PromoProductType",
+			DescMigration: "Add Table include",
 			Date:          time.Now(),
 		}
 
 		db.Create(&migration)
 	}
-	transportationdestid := model.Transaction{}
-	errortransportationdestid := db.AutoMigrate(&transportationdestid)
-	if errortransportationdestid != nil {
-		migration := model.MigrationHistory{
-			DescMigration: "alter table currency add column exchange_rates and exchange_currency ",
-			Date:          time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	pointRules := model.Country{}
-	errorpointRules := db.AutoMigrate(&pointRules)
-	if errorpointRules != nil{
-		migration := model.MigrationHistory{
-			DescMigration:"Alter table country add columns",
-			Date:  time.Now(),
-		}
-
-		db.Create(&migration)
-	}
+	//transportationdestid := model.Transaction{}
+	//errortransportationdestid := db.AutoMigrate(&transportationdestid)
+	//if errortransportationdestid != nil {
+	//	migration := model.MigrationHistory{
+	//		DescMigration: "alter table currency add column exchange_rates and exchange_currency ",
+	//		Date:          time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	//pointRules := model.Country{}
+	//errorpointRules := db.AutoMigrate(&pointRules)
+	//if errorpointRules != nil{
+	//	migration := model.MigrationHistory{
+	//		DescMigration:"Alter table country add columns",
+	//		Date:  time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
 	//pointRuless := model.Wishlist{}
 	//errorpointRuless := db.Model(&pointRuless).AddForeignKey("exp_id","experiences(id)","RESTRICT", "RESTRICT")
 	//if errorpointRuless != nil{
