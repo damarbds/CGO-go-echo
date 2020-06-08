@@ -59,6 +59,7 @@ func (m *experienceRepository) GetExpCount(ctx context.Context, merchantId strin
 	WHERE
 		is_deleted = 0 AND
 		is_active = 1 AND
+		status = 2 AND
 		merchant_id = ?`
 
 	rows, err := m.Conn.QueryContext(ctx, query, merchantId)

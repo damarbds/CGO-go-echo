@@ -45,6 +45,7 @@ func (t transportationRepository) GetTransCount(ctx context.Context, merchantId 
 	WHERE 
 	is_deleted = 0 AND
 	is_active = 1 AND
+	trans_status = 2 AND
 	merchant_id = ?`
 
 	rows, err := t.Conn.QueryContext(ctx, query, merchantId)
