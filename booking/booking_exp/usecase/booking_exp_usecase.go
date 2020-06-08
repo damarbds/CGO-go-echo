@@ -6094,7 +6094,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					var data = map[string]interface{}{
 						"title":            exp.ExpTitle,
 						"user":             user,
-						"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
 						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 						"orderId":          bookingDetail.OrderId,
@@ -6178,7 +6178,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				var data = map[string]interface{}{
 					"title":            bookingDetail.Experience[0].ExpTitle,
 					"user":             user,
-					"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
 					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 					"orderId":          bookingDetail.OrderId,
@@ -6730,7 +6730,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					var data = map[string]interface{}{
 						"title":            exp.ExpTitle,
 						"user":             user,
-						"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
 						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 						"orderId":          bookingDetail.OrderId,
@@ -6813,7 +6813,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				var data = map[string]interface{}{
 					"title":            bookingDetail.Experience[0].ExpTitle,
 					"user":             user,
-					"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
 					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 					"orderId":          bookingDetail.OrderId,

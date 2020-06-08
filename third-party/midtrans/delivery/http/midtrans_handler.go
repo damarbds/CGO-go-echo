@@ -5325,7 +5325,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					var data = map[string]interface{}{
 						"title":            exp.ExpTitle,
 						"user":             user,
-						"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
 						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 						"orderId":          bookingDetail.OrderId,
@@ -5408,7 +5408,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				var data = map[string]interface{}{
 					"title":            bookingDetail.Experience[0].ExpTitle,
 					"user":             user,
-					"payment":          message.NewPrinter(language.German).Sprint(bookingDetail.TotalPrice),
+					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
 					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 					"orderId":          bookingDetail.OrderId,
