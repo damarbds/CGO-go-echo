@@ -194,13 +194,13 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string,promoType *
 					promos p
 				JOIN promo_merchants pm on pm.promo_id = p.id
 				WHERE 
-					p.promo_code = ? AND 
+					BINARY p.promo_code = ? AND 
 					p.promo_product_type = ? AND 
  					p.is_deleted = 0 AND 
 					p.is_active = 1 AND
 					pm.merchant_id = '` + merchantId  + `'`
 	}else {
-		query = `SELECT * FROM promos WHERE promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
+		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
 	}
 
 	res, err := m.fetch(ctx, query, code,promoType)
