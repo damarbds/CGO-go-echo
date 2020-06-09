@@ -286,6 +286,16 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			transactionStatus = 1
 		} else if status == "confirm" {
 			transactionStatus = 2
+			query = query + ` AND b.booking_date > CURRENT_DATE `
+			queryT = queryT + ` AND b.booking_date > CURRENT_DATE `
+		} else if status == "upcoming" {
+			transactionStatus = 2
+			query = query + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
+			queryT = queryT + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
+		} else if status == "finished"{
+			transactionStatus = 2
+			query = query + ` AND b.booking_date < CURRENT_DATE `
+			queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
 		}
 		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
@@ -504,7 +514,18 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 			transactionStatus = 1
 		} else if status == "confirm" {
 			transactionStatus = 2
+			query = query + ` AND b.booking_date > CURRENT_DATE `
+			queryT = queryT + ` AND b.booking_date > CURRENT_DATE `
+		} else if status == "upcoming" {
+			transactionStatus = 2
+			query = query + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
+			queryT = queryT + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
+		} else if status == "finished"{
+			transactionStatus = 2
+			query = query + ` AND b.booking_date < CURRENT_DATE `
+			queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
 		}
+
 		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		unionQuery = querySt + ` UNION ` + queryTSt
