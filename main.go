@@ -151,6 +151,10 @@ import (
 	_excludeHttpHandler	"github.com/service/exclude/delivery/http"
 	_excludeRepo "github.com/service/exclude/repository"
 	_excludeUsecase "github.com/service/exclude/usecase"
+
+	_ruleHttpHandler	"github.com/service/rule/delivery/http"
+	_ruleRepo "github.com/service/rule/repository"
+	_ruleUsecase "github.com/service/rule/usecase"
 )
 
 // func init() {
@@ -275,6 +279,7 @@ func main() {
 	exclusionServiceRepo := _exclusionServicesRepo.NewExclusionServiceRepository(dbConn)
 	includeRepo := _includeRepo.NewIncludeRepository(dbConn)
 	excludeRepo := _excludeRepo.NewExcludeRepository(dbConn)
+	ruleRepo := _ruleRepo.NewRuleRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -325,6 +330,7 @@ func main() {
 	exclusionServiceUsecase := _exclusionServicesUsecase.NewExclusionServicesUsecase(exclusionServiceRepo,adminUsecase,timeoutContext)
 	includeUsecase := _includeUsecase.NewIncludeUsecase(adminUsecase, includeRepo, timeoutContext)
 	excludeUsecase := _excludeUsecase.NewExcludeUsecase(adminUsecase, excludeRepo, timeoutContext)
+	ruleUsecase := _ruleUsecase.NewRuleUsecase(adminUsecase, ruleRepo, timeoutContext)
 
 	_minimumBookingHttpHandler.NewminimumBookingHandler(e, minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
@@ -359,6 +365,7 @@ func main() {
 	_exclusionServicesHttpHandler.NewExclusionServicesHandler(e,exclusionServiceUsecase)
 	_includeHttpHandler.NewIncludeHandler(e, includeUsecase, isUsecase)
 	_excludeHttpHandler.NewExcludeHandler(e, excludeUsecase, isUsecase)
+	_ruleHttpHandler.NewRuleHandler(e, ruleUsecase, isUsecase)
 	// go Scheduler(baseUrlLocal)
 
 	log.Fatal(e.Start(":9090"))
