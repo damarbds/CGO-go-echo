@@ -5316,7 +5316,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				//maxTime := time.Now().AddDate(0, 0, 1)
 				msg := tpl.String()
 				pushEmail := &models.SendingEmail{
-					Subject:  "Waiting Approval For Merchant DP",
+					Subject:  "Waiting for guide confirmation",
 					Message:  msg,
 					From:     "CGO Indonesia",
 					To:       bookedBy[0].Email,
@@ -5349,7 +5349,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				//maxTime := time.Now().AddDate(0, 0, 1)
 				msg := tpl.String()
 				pushEmail := &models.SendingEmail{
-					Subject:  "Waiting Approval For Merchant FP",
+					Subject:  "Waiting for guide confirmation",
 					Message:  msg,
 					From:     "CGO Indonesia",
 					To:       bookedBy[0].Email,
@@ -5443,7 +5443,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			msg := tpl.String()
 			// pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject: "Ticket DP",
+				Subject: "Experience E-Ticket",
 				Message: msg,
 				From:    "CGO Indonesia",
 				To:      bookedBy[0].Email,
@@ -5683,7 +5683,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			msg := tpl.String()
 			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:           "Ticket FP",
+				Subject:           "Experience E-Ticket",
 				Message:           msg,
 				From:              "CGO Indonesia",
 				To:                bookedBy[0].Email,
@@ -5775,7 +5775,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 		msg := tpl.String()
 		pdf := htmlPDFTicket.String()
 		pushEmail := &models.SendingEmail{
-			Subject:           "Ticket FP Transportation",
+			Subject:           "Transportation E-Ticket",
 			Message:           msg,
 			From:              "CGO Indonesia",
 			To:                bookedBy[0].Email,
