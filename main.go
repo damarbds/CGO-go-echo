@@ -184,6 +184,15 @@ func main() {
 	//local
 	// baseUrlLocal := "http://localhost:9090"
 
+	//pdfCrowdAccount
+	//dev
+	usernamePDF := "demo"
+	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
+
+	//prd
+	//usernamePDF := "cgoindonesia"
+	//accessKeyPDF := "cef1b4478dac7cf83c26cac11340fbd4"
+
 	//dev
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
 	dbPort := "3306"
@@ -313,7 +322,7 @@ func main() {
 	)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(usernamePDF,accessKeyPDF,reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)

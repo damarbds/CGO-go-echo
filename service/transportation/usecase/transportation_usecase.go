@@ -648,6 +648,13 @@ func (t transportationUsecase) FilterSearchTrans(
 			})
 		}
 	}
+	if sortBy != "" {
+		if sortBy == "newest" {
+			query = query + ` ORDER BY t.created_date DESC`
+		} else if sortBy == "latest" {
+			query = query + ` ORDER BY t.created_date ASC`
+		}
+	}
 	totalRecords, _ := t.transportationRepo.CountFilterSearch(ctx, queryCount)
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
 	prev := page

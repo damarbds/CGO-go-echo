@@ -6,6 +6,8 @@ import (
 )
 
 type Usecase interface {
+	DownloadTicketTransportation(ctx context.Context,orderId string)(*string, error)
+	DownloadTicketExperience(ctx context.Context,orderId string)(*string, error)
 	RemainingPaymentNotification(ctx context.Context)error
 	GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool, error)
 	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)

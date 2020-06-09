@@ -18,6 +18,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/third-party/xendit"
 	"github.com/transactions/transaction"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 type ResponseError struct {
@@ -5238,7 +5240,6 @@ If you wish your payment to be transmitted to credits, please click transmit to 
         
    </body>
    </html>`
-
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
@@ -5288,11 +5289,11 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				}
 				paymentDeadline := bookingDetail.BookingDate
 				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
 						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
 						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
 						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
 					}
 				}
@@ -5300,8 +5301,8 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				var data = map[string]interface{}{
 					"title":            exp.ExpTitle,
 					"user":             user,
-					"payment":          bookingDetail.TotalPrice,
-					"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 					"orderId":          bookingDetail.OrderId,
 					"tripDate":         tripDate,
@@ -5328,7 +5329,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 				duration := 0
-				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1{
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
 					duration = bookingDetail.Experience[0].ExpDuration - 1
 					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 				}
@@ -5370,12 +5371,12 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			}
 			paymentDeadline := bookingDetail.BookingDate
-			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineType != nil {
-				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
 					paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
 					paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
 					paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
 				}
 			}
@@ -5383,8 +5384,8 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			var data = map[string]interface{}{
 				"title":            bookingDetail.Experience[0].ExpTitle,
 				"user":             user,
-				"payment":          bookingDetail.TotalPrice,
-				"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+				"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+				"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 				"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 				"orderId":          bookingDetail.OrderId,
 				"tripDate":         tripDate,
@@ -5417,7 +5418,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				"expType":         bookingDetail.Experience[0].ExpType,
 				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 				"title":           bookingDetail.Experience[0].ExpTitle,
-				"city":            bookingDetail.Experience[0].City,
+				"city":            bookingDetail.Experience[0].HarborsName,
 				"country":         bookingDetail.Experience[0].CountryName,
 				"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 				"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -5440,14 +5441,14 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			}
 
 			msg := tpl.String()
-			pdf := htmlPDFTicket.String()
+			// pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:           "Ticket DP",
-				Message:           msg,
-				From:              "CGO Indonesia",
-				To:                bookedBy[0].Email,
-				FileName:          "E-Ticket.pdf",
-				AttachmentFileUrl: pdf,
+				Subject: "Ticket DP",
+				Message: msg,
+				From:    "CGO Indonesia",
+				To:      bookedBy[0].Email,
+				// FileName:          "E-Ticket.pdf",
+				// AttachmentFileUrl: pdf,
 			}
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
@@ -5457,7 +5458,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			duration := 0
-			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1{
+			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
 				duration = bookingDetail.Experience[0].ExpDuration - 1
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			}
@@ -5505,7 +5506,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"merchantName":    bookingDetail.Experience[0].MerchantName,
 					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -5526,7 +5527,6 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 					"guideContact": bookingDetail.Experience[0].MerchantPhone,
 					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
-
 
 				//for html pdf
 				var guestDesc []models.GuestDescObjForHTML
@@ -5555,7 +5555,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 					"merchantName":    bookingDetail.Experience[0].MerchantName,
@@ -5577,7 +5577,6 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 					"guideContact": bookingDetail.Experience[0].MerchantPhone,
 					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
-
 
 				//for html pdf
 				var guestDesc []models.GuestDescObjForHTML
@@ -5606,7 +5605,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"merchantName":    bookingDetail.Experience[0].MerchantName,
 					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -5628,7 +5627,6 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 					"guideContact": bookingDetail.Experience[0].MerchantPhone,
 					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
 				}
-
 
 				//for html pdf
 				var guestDesc []models.GuestDescObjForHTML
@@ -5657,7 +5655,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 					"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -5715,17 +5713,17 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 
 		var tmpl = template.Must(template.New("main-template").Parse(templateTicketTransportation))
 		var data = map[string]interface{}{
-			"title":      bookingDetail.Transportation[0].TransTitle,
-			"user":       user,
-			"tripDate":   tripDate,
-			"guestCount": strconv.Itoa(guestCount) + " Guest(s)",
-			"sourceTime": departureTime.Format("15:04"),
-			"desTime":    arrivalTime.Format("15:04"),
-			"duration":   bookingDetail.Transportation[0].TripDuration,
-			"source":     bookingDetail.Transportation[0].HarborSourceName,
-			"dest":       bookingDetail.Transportation[0].HarborDestName,
-			"class":      bookingDetail.Transportation[0].TransClass,
-			"orderId":    bookingDetail.OrderId,
+			"title":           bookingDetail.Transportation[0].TransTitle,
+			"user":            user,
+			"tripDate":        tripDate,
+			"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
+			"sourceTime":      departureTime.Format("15:04"),
+			"desTime":         arrivalTime.Format("15:04"),
+			"duration":        bookingDetail.Transportation[0].TripDuration,
+			"source":          bookingDetail.Transportation[0].HarborSourceName,
+			"dest":            bookingDetail.Transportation[0].HarborDestName,
+			"class":           bookingDetail.Transportation[0].TransClass,
+			"orderId":         bookingDetail.OrderId,
 			"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
 		}
 		var tpl bytes.Buffer

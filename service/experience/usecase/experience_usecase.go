@@ -572,6 +572,10 @@ func (m experienceUsecase) FilterSearchExp(
 			query = query + ` ORDER BY e.rating DESC`
 		} else if sortBy == "ratingdown" {
 			query = query + ` ORDER BY e.rating ASC`
+		} else if sortBy == "newest" {
+			query = query + ` ORDER BY e.created_date DESC`
+		} else if sortBy == "latest" {
+			query = query + ` ORDER BY e.created_date ASC`
 		}
 	}
 

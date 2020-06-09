@@ -3,6 +3,8 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 	"html/template"
 	"reflect"
 	"strconv"
@@ -5460,7 +5462,6 @@ If you wish your payment to be transmitted to credits, please click transmit to 
         
    </body>
    </html>`
-
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
@@ -5577,17 +5578,17 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			duration := 0
-			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1{
+			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
 				duration = bookingDetail.Experience[0].ExpDuration - 1
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			}
 			paymentDeadline := bookingDetail.BookingDate
 			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
 					paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
 					paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" && *bookingDetail.Experience[0].ExpPaymentDeadlineType == "" {
+				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
 					paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
 				}
 			}
@@ -5595,8 +5596,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			var data = map[string]interface{}{
 				"title":            bookingDetail.Experience[0].ExpTitle,
 				"user":             user,
-				"payment":          bookingDetail.TotalPrice,
-				"remainingPayment": bookingDetail.ExperiencePaymentType.RemainingPayment,
+				"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+				"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
 				"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
 				"orderId":          bookingDetail.OrderId,
 				"tripDate":         tripDate,
@@ -5629,7 +5630,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 				"expType":         bookingDetail.Experience[0].ExpType,
 				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 				"title":           bookingDetail.Experience[0].ExpTitle,
-				"city":            bookingDetail.Experience[0].City,
+				"city":            bookingDetail.Experience[0].HarborsName,
 				"country":         bookingDetail.Experience[0].CountryName,
 				"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 				"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -5669,7 +5670,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			duration := 0
-			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1{
+			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
 				duration = bookingDetail.Experience[0].ExpDuration - 1
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			}
@@ -5704,7 +5705,6 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					guestDesc = append(guestDesc, guest)
 				}
 
-
 				// We create the template and register out template function
 				temp := template.New("t").Funcs(templateFuncs)
 				temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
@@ -5719,7 +5719,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"merchantName":    bookingDetail.Experience[0].MerchantName,
 					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -5754,7 +5754,6 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					guestDesc = append(guestDesc, guest)
 				}
 
-
 				// We create the template and register out template function
 				temp := template.New("t").Funcs(templateFuncs)
 				temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
@@ -5769,7 +5768,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 					"merchantName":    bookingDetail.Experience[0].MerchantName,
@@ -5805,7 +5804,6 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					guestDesc = append(guestDesc, guest)
 				}
 
-
 				// We create the template and register out template function
 				temp := template.New("t").Funcs(templateFuncs)
 				temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
@@ -5820,7 +5818,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"merchantName":    bookingDetail.Experience[0].MerchantName,
 					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
@@ -5856,7 +5854,6 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					guestDesc = append(guestDesc, guest)
 				}
 
-
 				// We create the template and register out template function
 				temp := template.New("t").Funcs(templateFuncs)
 				temp, err := temp.Parse(templateTicketExperiencePDF)
@@ -5871,7 +5868,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					"expType":         bookingDetail.Experience[0].ExpType,
 					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
 					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].City,
+					"city":            bookingDetail.Experience[0].HarborsName,
 					"country":         bookingDetail.Experience[0].CountryName,
 					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
 					"time":            bookingDetail.Experience[0].ExpPickupTime,
@@ -5920,7 +5917,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		}
 		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 		duration := 0
-		if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1{
+		if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
 			duration = bookingDetail.Experience[0].ExpDuration - 1
 			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 		}
