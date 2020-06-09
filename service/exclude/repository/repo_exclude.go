@@ -89,7 +89,7 @@ func (m *excludeRepository) Fetch(ctx context.Context, limit,offset int) ([]*mod
 		return res, err
 
 	} else {
-		query := `Select * FROM includes where is_deleted = 0 AND is_active = 1 `
+		query := `Select * FROM excludes where is_deleted = 0 AND is_active = 1 `
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
