@@ -207,11 +207,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		JOIN harbors  h ON e.harbors_id = h.id
 		JOIN cities  c ON h.city_id = c.id
 		JOIN provinces p on c.province_id = p.id
-		JOIN countries co on p.country_id = co.id
-	WHERE 
-		t.is_deleted = 0
-		AND t.is_active = 1
-	`
+		JOIN countries co on p.country_id = co.id`
 
 	queryT := `
 	SELECT
@@ -239,10 +235,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN transportations tr ON b.trans_id = tr.id
-		JOIN merchants m ON tr.merchant_id = m.id
-	WHERE
-		t.is_deleted = 0
-		AND t.is_active = 1`
+		JOIN merchants m ON tr.merchant_id = m.id`
 
 	if merchantId != "" {
 		query = query + ` AND e.merchant_id = '` + merchantId + `' `
