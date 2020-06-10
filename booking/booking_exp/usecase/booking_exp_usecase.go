@@ -7633,7 +7633,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	}
 	var experiencePaymentType *models.ExperiencePaymentTypeDto
 	if getDetailBooking.ExperiencePaymentId != "" {
-		query, err := b.experiencePaymentTypeRepo.GetByExpID(ctx, *getDetailBooking.ExpId)
+		query, err := b.experiencePaymentTypeRepo.GetById(ctx, getDetailBooking.ExperiencePaymentId)
 		if err != nil {
 
 		}
@@ -7654,27 +7654,30 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 			}
 		}
 	}
+
 	expAddOns := make([]models.ExperienceAddOnObj, 0)
-	expAddOnsQuery, errorQuery := b.adOnsRepo.GetByExpId(ctx, *getDetailBooking.ExpId)
-	if errorQuery != nil {
-		return nil, err
-	}
-	if expAddOnsQuery != nil {
-		for _, element := range expAddOnsQuery {
-			var currency string
-			if element.Currency == 1 {
-				currency = "USD"
-			} else {
-				currency = "IDR"
+	if getDetailBooking.ExperienceAddOnId != nil {
+		expAddOnsQuery, errorQuery := b.adOnsRepo.GetById(ctx, *getDetailBooking.ExperienceAddOnId)
+		if errorQuery != nil {
+			return nil, err
+		}
+		if expAddOnsQuery != nil {
+			for _, element := range expAddOnsQuery {
+				var currency string
+				if element.Currency == 1 {
+					currency = "USD"
+				} else {
+					currency = "IDR"
+				}
+				addOns := models.ExperienceAddOnObj{
+					Id:       element.Id,
+					Name:     element.Name,
+					Desc:     element.Desc,
+					Currency: currency,
+					Amount:   element.Amount,
+				}
+				expAddOns = append(expAddOns, addOns)
 			}
-			addOns := models.ExperienceAddOnObj{
-				Id:       element.Id,
-				Name:     element.Name,
-				Desc:     element.Desc,
-				Currency: currency,
-				Amount:   element.Amount,
-			}
-			expAddOns = append(expAddOns, addOns)
 		}
 	}
 
