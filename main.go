@@ -199,6 +199,8 @@ func main() {
 	dbName := "cgo_indonesia"
 	//dev IS
 	baseUrlis := "http://identity-server-cgo-indonesia.azurewebsites.net"
+	//dev URL Forgot Password
+	urlForgotPassword := "http://cgo-web-api.azurewebsites.net/account/change-password"
 
 	// //prd pdfCrowdAccount
 	// usernamePDF := "cgoindonesia"
@@ -211,6 +213,8 @@ func main() {
 	// dbName := "cgo_indonesia"
 	// //prd IS
 	// baseUrlis := "https://identity-server-cgo-prod.azurewebsites.net"
+	// //prd URL Forgot Password
+	// urlForgotPassword := "http://api-cgo-prod.azurewebsites.net/account/change-password"
 
 	basicAuth := "cm9jbGllbnQ6c2VjcmV0"
 	accountStorage := "cgostorage"
@@ -294,7 +298,7 @@ func main() {
 	timeoutContext := time.Duration(30) * time.Second
 
 	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo, timeoutContext)
-	isUsecase := _isUcase.NewidentityserverUsecase(redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
+	isUsecase := _isUcase.NewidentityserverUsecase(urlForgotPassword, redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
 	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase, timeoutContext)

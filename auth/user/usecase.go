@@ -6,6 +6,7 @@ import (
 )
 
 type Usecase interface {
+	ChangePassword(ctx context.Context,token string,password string)(*models.ResponseDelete,error)
 	GetUserByEmail(ctx context.Context,email string)(*models.UserDto,error)
 	LoginByGoogle(ctx context.Context,code string)(*models.GetToken, error)
 	Delete(ctx context.Context,userId string,token string)(*models.ResponseDelete, error)

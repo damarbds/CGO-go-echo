@@ -5,6 +5,7 @@ import (
 )
 
 type Usecase interface {
+	ForgotPassword(email string,token string)(*models.ResponseDelete,error)
 	CallBackGoogle(code string)(*models.GetInfoUserGoogle,error)
 	DeleteUser(userId string)error
 	GetListOfRole(roleType int)([]*models.RolesPermissionIs,error)
