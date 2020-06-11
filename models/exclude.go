@@ -17,13 +17,13 @@ type Exclude struct {
 }
 
 type ExcludeDto struct {
-	Id 			int
+	Id 			int		`json:"id"`
 	ExcludeName	string	`json:"exclude_name"`
 	ExcludeIcon	string	`json:"exclude_icon"`
 }
 
 type NewCommandExclude struct {
-	Id 			int
+	Id 			int		`json:"id"`
 	ExcludeName	string	`json:"exclude_name"`
 	ExcludeIcon	string	`json:"exclude_icon"`
 }
