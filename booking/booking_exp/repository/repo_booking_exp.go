@@ -786,9 +786,7 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId,
 		a.is_active = 1
 		AND a.is_deleted = 0
 		AND(a.id = ?
-			OR a.order_id = ?)
-		AND c.is_active = 1
-        AND c.is_deleted = 0`
+			OR a.order_id = ?)`
 
 	list, err := b.fetch(ctx, query, bookingId, bookingCode)
 	if err != nil {
