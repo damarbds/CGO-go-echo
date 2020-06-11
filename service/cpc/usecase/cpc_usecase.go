@@ -354,6 +354,7 @@ func (c cPCUsecase) GetAllCountry(ctx context.Context, page, limit, offset int) 
 		dto := models.CountryDto{
 			Id:          element.Id,
 			CountryName: element.CountryName,
+			PhoneCode: element.PhoneCode,
 		}
 		countryDtos = append(countryDtos,&dto)
 	}
@@ -396,8 +397,9 @@ func (c cPCUsecase) GetCountryById(ctx context.Context, id int) (*models.Country
 	}
 
 	dto := models.CountryDto{
-		Id:           getById.Id,
-		CountryName:getById.CountryName,
+		Id:           	getById.Id,
+		CountryName:	getById.CountryName,
+		PhoneCode: 		getById.PhoneCode,
 	}
 	return &dto,nil
 }
@@ -421,6 +423,7 @@ func (c cPCUsecase) CreateCountry(ctx context.Context, p *models.NewCommandCount
 		IsDeleted:    0,
 		IsActive:     0,
 		CountryName:p.CountryName,
+		PhoneCode: p.PhoneCode,
 	}
 	countryId,err := c.cpcRepo.InsertCountry(ctx,&country)
 	if err != nil {
@@ -453,6 +456,7 @@ func (c cPCUsecase) UpdateCountry(ctx context.Context, p *models.NewCommandCount
 		IsDeleted:    0,
 		IsActive:     0,
 		CountryName:p.CountryName,
+		PhoneCode: p.PhoneCode,
 	}
 	err = c.cpcRepo.UpdateCountry(ctx,&country)
 	if err != nil {
