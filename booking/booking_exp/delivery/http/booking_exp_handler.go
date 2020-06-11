@@ -28,6 +28,7 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	handler := &booking_expHandler{
 		booking_expUsecase: us,
 	}
+	e.GET("booking/download-ticket", handler.DownloadTicketPDF)
 	e.POST("booking/remaining-payment-booking", handler.RemainingPaymentBooking)
 	e.POST("booking/checkout", handler.CreateBooking)
 	e.GET("booking/detail/:id", handler.GetDetail)
@@ -37,7 +38,30 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	e.GET("booking/count-month", handler.CountThisMonth)
 	e.GET("booking/check-experience", handler.CheckBookingCountGuest)
 }
+func (a *booking_expHandler) DownloadTicketPDF(c echo.Context) error {
 
+	orderId := c.QueryParam("order_id")
+	bookingType := c.QueryParam("type")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if bookingType == "experience"{
+		result, err := a.booking_expUsecase.DownloadTicketExperience(ctx,orderId)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, result)
+	}else if bookingType == "transportation"{
+		result, err := a.booking_expUsecase.DownloadTicketTransportation(ctx,orderId)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, result)
+	}
+	return nil
+}
 func (a *booking_expHandler) CountThisMonth(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

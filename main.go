@@ -155,6 +155,11 @@ import (
 	_ruleHttpHandler	"github.com/service/rule/delivery/http"
 	_ruleRepo "github.com/service/rule/repository"
 	_ruleUsecase "github.com/service/rule/usecase"
+
+	_versionAPPHttpHandler	"github.com/misc/version_app/delivery/http"
+	_versionAPPRepo "github.com/misc/version_app/repository"
+	_versionAPPUsecase "github.com/misc/version_app/usecase"
+
 )
 
 // func init() {
@@ -183,6 +188,15 @@ func main() {
 	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
 	//local
 	// baseUrlLocal := "http://localhost:9090"
+
+	//pdfCrowdAccount
+	//dev
+	usernamePDF := "demo"
+	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
+
+	//prd
+	//usernamePDF := "cgoindonesia"
+	//accessKeyPDF := "cef1b4478dac7cf83c26cac11340fbd4"
 
 	//dev
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
@@ -241,6 +255,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	versionAPPRepo := _versionAPPRepo.NewVersionAPPRepositoryRepository(dbConn)
 	minimumBookingRepo := _minimumBookingRepo.NewMinimumBookingRepository(dbConn)
 	tempUserPreferenceRepo := _tempUserPreferenceRepo.NewtempUserPreferencesRepository(dbConn)
 	promoMerchantRepo := _promoMerchantRepo.NewpromoMerchantRepository(dbConn)
@@ -283,6 +298,7 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo,timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
@@ -313,7 +329,7 @@ func main() {
 	)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(usernamePDF,accessKeyPDF,reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
@@ -332,6 +348,7 @@ func main() {
 	excludeUsecase := _excludeUsecase.NewExcludeUsecase(adminUsecase, excludeRepo, timeoutContext)
 	ruleUsecase := _ruleUsecase.NewRuleUsecase(adminUsecase, ruleRepo, timeoutContext)
 
+	_versionAPPHttpHandler.NewVersionAPPHandler(e,versionAPPUsecase)
 	_minimumBookingHttpHandler.NewminimumBookingHandler(e, minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
 	_currencyMasterHttpHandler.NewCurrencyHandler(e, currencyMasterUcase)
