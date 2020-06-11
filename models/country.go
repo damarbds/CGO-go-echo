@@ -23,10 +23,12 @@ type Country struct {
 type CountryDto struct {
 	Id           int        `json:"id"`
 	CountryName  string     `json:"country_name"`
+	PhoneCode	 *int		`json:"phone_code"`
 }
 type NewCommandCountry struct {
 	Id           int        `json:"id"`
 	CountryName  string     `json:"country_name"`
+	PhoneCode	 *int		`json:"phone_code"`
 }
 
 type CountryDtoWithPagination struct {
