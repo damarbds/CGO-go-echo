@@ -1507,18 +1507,23 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		//fmt.Println("Error : ",err.Error())
 		return nil, models.ErrInternalServerError
 	}
-	var expInclusion []models.ExpInclusionObject
-	errObject = json.Unmarshal([]byte(res.ExpInclusion), &expInclusion)
-	if errObject != nil {
-		//fmt.Println("Error : ",err.Error())
-		return nil, models.ErrInternalServerError
+	expInclusion := make([]models.ExpInclusionObject,0)
+	if res.ExpInclusion != ""{
+		errObject = json.Unmarshal([]byte(res.ExpInclusion), &expInclusion)
+		if errObject != nil {
+			//fmt.Println("Error : ",err.Error())
+			return nil, models.ErrInternalServerError
+		}
 	}
-	var expRules []models.ExpRulesObject
-	errObject = json.Unmarshal([]byte(res.ExpRules), &expRules)
-	if errObject != nil {
-		//fmt.Println("Error : ",err.Error())
-		return nil, models.ErrInternalServerError
+	expRules := make([]models.ExpRulesObject,0)
+	if res.ExpRules != "" {
+		errObject = json.Unmarshal([]byte(res.ExpRules), &expRules)
+		if errObject != nil {
+			//fmt.Println("Error : ",err.Error())
+			return nil, models.ErrInternalServerError
+		}
 	}
+
 	harbors, err := m.harborsRepo.GetByID(ctx, res.HarborsId)
 	city, err := m.cpcRepo.GetCityByID(ctx, harbors.CityId)
 	province, err := m.cpcRepo.GetProvinceByID(ctx, city.ProvinceId)
