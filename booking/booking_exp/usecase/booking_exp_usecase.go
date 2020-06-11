@@ -7493,6 +7493,8 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 					expGuest.Adult = expGuest.Adult + 1
 				} else if guest.Type == "Children" {
 					expGuest.Children = expGuest.Children + 1
+				} else if guest.Type == "Infant" {
+					expGuest.Infant = expGuest.Infant + 1
 				}
 			}
 		}
@@ -7529,6 +7531,8 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 					transGuest.Adult = transGuest.Adult + 1
 				} else if guest.Type == "Children" {
 					transGuest.Children = transGuest.Children + 1
+				}else if guest.Type == "Infant" {
+					transGuest.Infant = transGuest.Infant + 1
 				}
 			}
 		}
@@ -7990,6 +7994,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						expGuest.Adult = expGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						expGuest.Children = expGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						expGuest.Infant = expGuest.Infant + 1
 					}
 				}
 			}
@@ -8064,6 +8070,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						transGuest.Adult = transGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						transGuest.Children = transGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						transGuest.Infant = transGuest.Infant + 1
 					}
 				}
 			}
@@ -8169,6 +8177,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						expGuest.Adult = expGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						expGuest.Children = expGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						expGuest.Infant = expGuest.Infant + 1
 					}
 				}
 			}
@@ -8242,6 +8252,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						transGuest.Adult = transGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						transGuest.Children = transGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						transGuest.Infant = transGuest.Infant + 1
 					}
 				}
 			}
