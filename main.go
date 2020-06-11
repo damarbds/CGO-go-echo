@@ -155,6 +155,11 @@ import (
 	_ruleHttpHandler	"github.com/service/rule/delivery/http"
 	_ruleRepo "github.com/service/rule/repository"
 	_ruleUsecase "github.com/service/rule/usecase"
+
+	_versionAPPHttpHandler	"github.com/misc/version_app/delivery/http"
+	_versionAPPRepo "github.com/misc/version_app/repository"
+	_versionAPPUsecase "github.com/misc/version_app/usecase"
+
 )
 
 // func init() {
@@ -250,6 +255,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	versionAPPRepo := _versionAPPRepo.NewVersionAPPRepositoryRepository(dbConn)
 	minimumBookingRepo := _minimumBookingRepo.NewMinimumBookingRepository(dbConn)
 	tempUserPreferenceRepo := _tempUserPreferenceRepo.NewtempUserPreferencesRepository(dbConn)
 	promoMerchantRepo := _promoMerchantRepo.NewpromoMerchantRepository(dbConn)
@@ -292,6 +298,7 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo,timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
@@ -341,6 +348,7 @@ func main() {
 	excludeUsecase := _excludeUsecase.NewExcludeUsecase(adminUsecase, excludeRepo, timeoutContext)
 	ruleUsecase := _ruleUsecase.NewRuleUsecase(adminUsecase, ruleRepo, timeoutContext)
 
+	_versionAPPHttpHandler.NewVersionAPPHandler(e,versionAPPUsecase)
 	_minimumBookingHttpHandler.NewminimumBookingHandler(e, minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
 	_currencyMasterHttpHandler.NewCurrencyHandler(e, currencyMasterUcase)

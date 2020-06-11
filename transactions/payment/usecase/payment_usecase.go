@@ -5655,7 +5655,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			msg := tpl.String()
 			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:           "Ticket DP",
+				Subject:           "Your booking has been confirmed",
 				Message:           msg,
 				From:              "CGO Indonesia",
 				To:                bookingDetail.BookedBy[0].Email,
@@ -5896,7 +5896,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			msg := tpl.String()
 			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:           "Ticket FP",
+				Subject:           "Experience E-Ticket",
 				Message:           msg,
 				From:              "CGO Indonesia",
 				To:                bookingDetail.BookedBy[0].Email,
@@ -5937,7 +5937,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		msg := tpl.String()
 
 		pushEmail := &models.SendingEmail{
-			Subject:  "Booking Rejected",
+			Subject:  "Cancelled Booking",
 			Message:  msg,
 			From:     "CGO Indonesia",
 			To:       getTransaction.CreatedBy,

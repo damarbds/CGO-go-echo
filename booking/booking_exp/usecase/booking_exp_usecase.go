@@ -5947,7 +5947,7 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 		//maxTime := time.Now().AddDate(0, 0, 1)
 		msg := tpl.String()
 		pushEmail := &models.SendingEmail{
-			Subject:  "Waiting Remaining DP",
+			Subject:  "Please pay for your remaining payment",
 			Message:  msg,
 			From:     "CGO Indonesia",
 			To:       bookedBy[0].Email,
@@ -6109,7 +6109,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting Approval For Merchant",
+						Subject:  "Waiting for guide confirmation",
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
@@ -6142,7 +6142,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting Approval For Merchant",
+						Subject:  "Waiting for guide confirmation",
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
@@ -6237,7 +6237,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				msg := tpl.String()
 				// pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject: "Ticket DP",
+					Subject: "Experience E-Ticket",
 					Message: msg,
 					From:    "CGO Indonesia",
 					To:      bookedBy[0].Email,
@@ -6479,7 +6479,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject:           "Ticket FP",
+					Subject:           "Experience E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
@@ -6572,7 +6572,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			msg := tpl.String()
 			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:           "Ticket FP Transportation",
+				Subject:           "Transportation E-Ticket",
 				Message:           msg,
 				From:              "CGO Indonesia",
 				To:                bookedBy[0].Email,
@@ -6745,7 +6745,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting Approval For Merchant",
+						Subject:  "Waiting for guide confirmation",
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
@@ -6778,7 +6778,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting Approval For Merchant",
+						Subject:  "Waiting for guide confirmation",
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
@@ -6872,7 +6872,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				msg := tpl.String()
 				// pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject: "Ticket DP",
+					Subject: "Experience E-Ticket",
 					Message: msg,
 					From:    "CGO Indonesia",
 					To:      bookedBy[0].Email,
@@ -7108,7 +7108,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
 				pushEmail := &models.SendingEmail{
-					Subject:           "Ticket FP",
+					Subject:           "Experience E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
@@ -7200,7 +7200,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			msg := tpl.String()
 			pdf := htmlPDFTicket.String()
 			pushEmail := &models.SendingEmail{
-				Subject:           "Ticket FP Transportation",
+				Subject:           "Transportation E-Ticket",
 				Message:           msg,
 				From:              "CGO Indonesia",
 				To:                bookedBy[0].Email,
