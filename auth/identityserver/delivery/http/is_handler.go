@@ -43,6 +43,8 @@ func NewisHandler(e *echo.Echo, m merchant.Usecase, u user.Usecase, a admin.Usec
 	e.POST("/account/request-otp-tmp", handler.RequestOTPTmp)
 	e.GET("/account/verified-email", handler.VerifiedEmail)
 	e.GET("/account/callback", handler.CallBack)
+	e.GET("/account/forgot-password", handler.ForgotPassword)
+	e.GET("/account/change-password",handler.ChangePassword)
 }
 func (a *isHandler) AutoLogin(c echo.Context) error {
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -63,6 +65,48 @@ func (a *isHandler) AutoLogin(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, responseToken)
+}
+func (a *isHandler) ChangePassword(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	password := c.QueryParam("password")
+	responseOTP, err := a.userUsecase.ChangePassword(ctx,token,password)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, responseOTP)
+}
+func (a *isHandler) ForgotPassword(c echo.Context) error {
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	email := c.QueryParam("email")
+	getUser,err := a.userUsecase.GetUserByEmail(ctx,email)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, models.ErrNotFound)
+	}
+	getUserDetail , err := a.isUsecase.GetDetailUserById(getUser.Id,"","true")
+	if err != nil {
+		return c.JSON(http.StatusNotFound, models.ErrNotFound)
+	}
+	login, err := a.isUsecase.GetToken(email,getUserDetail.Password,"")
+	if err != nil {
+		return c.JSON(http.StatusNotFound, models.ErrNotFound)
+	}
+	responseOTP, err := a.isUsecase.ForgotPassword(email,login.RefreshToken)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, responseOTP)
 }
 func (a *isHandler) RequestOTP(c echo.Context) error {
 	var requestOTP models.RequestOTPNumber

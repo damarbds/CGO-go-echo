@@ -563,8 +563,8 @@ func (t transportationUsecase) FilterSearchTrans(
 
 		var tripDuration string
 		if element.DepartureTime != nil && element.ArrivalTime != nil {
-			departureTime, _ := time.Parse("15:04", *element.DepartureTime)
-			arrivalTime, _ := time.Parse("15:04", *element.ArrivalTime)
+			departureTime, _ := time.Parse("15:04:00", *element.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04:00", *element.ArrivalTime)
 
 			tripHour := arrivalTime.Hour() - departureTime.Hour()
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()

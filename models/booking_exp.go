@@ -310,6 +310,7 @@ type MyBooking struct {
 type TotalGuestTransportation struct {
 	Adult    int `json:"adult"`
 	Children int `json:"children"`
+	Infant 	 int 	`json:"infant"`
 }
 type BookingGrowth struct {
 	Date  time.Time `json:"date"`

@@ -86,6 +86,25 @@ func (e expPaymentRepository) GetByExpID(ctx context.Context, expID string) ([]*
 
 	return list, nil
 }
+
+func (m *expPaymentRepository) GetById(ctx context.Context, id string) ([]*models.ExperiencePaymentJoinType, error) {
+	query := `SELECT ep.*,ept.exp_payment_type_name as payment_type_name ,ept.exp_payment_type_desc as payment_type_desc 
+			FROM experience_payments ep
+			JOIN experience_payment_types ept on ept.id = ep.exp_payment_type_id
+			WHERE ep.id = ? `
+
+	list, err := m.fetch(ctx, query, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	} else if len(list) == 0 {
+		return nil, nil
+	}
+
+	return list, nil
+}
 func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePayment) (string, error) {
 	id := guuid.New()
 	a.Id = id.String()

@@ -20,6 +20,7 @@ type userUsecase struct {
 	contextTimeout   time.Duration
 }
 
+
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Usecase, timeout time.Duration) user.Usecase {
 	return &userUsecase{
@@ -28,6 +29,43 @@ func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Useca
 		adminUsecase:     au,
 		contextTimeout:   timeout,
 	}
+}
+func (m userUsecase) ChangePassword(c context.Context, token string, password string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	currentUsers, err := m.ValidateTokenUser(ctx, token)
+	getUser, err := m.userRepo.GetByUserEmail(ctx,currentUsers.UserEmail)
+	if err != nil{
+		return nil,models.ErrNotFound
+	}
+	updateUser := models.RegisterAndUpdateUser{
+		Id:            getUser.Id,
+		Username:      getUser.UserEmail,
+		Password:      password,
+		Name:          getUser.FullName,
+		GivenName:     "",
+		FamilyName:    "",
+		Email:         getUser.UserEmail,
+		EmailVerified: true,
+		Website:       "",
+		Address:       "",
+		OTP:           "",
+		UserType:      1,
+		PhoneNumber:   getUser.PhoneNumber,
+		UserRoles:     nil,
+	}
+
+	_,err = m.identityServerUc.UpdateUser(&updateUser)
+	if err != nil{
+		return nil,err
+	}
+
+	result := models.ResponseDelete{
+		Id:      getUser.Id,
+		Message: "Success Update Password",
+	}
+	return &result,nil
 }
 
 func (m userUsecase) GetUserByEmail(ctx context.Context, email string) (*models.UserDto, error) {

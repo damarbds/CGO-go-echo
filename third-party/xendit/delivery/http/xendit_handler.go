@@ -5455,6 +5455,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			}
 
 		} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
+			transactionStatus = 2
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			duration := 0

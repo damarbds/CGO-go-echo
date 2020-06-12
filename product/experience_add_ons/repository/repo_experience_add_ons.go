@@ -77,6 +77,15 @@ func (e experienceAddOnsRepository) GetByExpId(ctx context.Context, exp_id strin
 	}
 	return res, err
 }
+func (m *experienceAddOnsRepository) GetById(ctx context.Context, id string) ([]*models.ExperienceAddOn, error) {
+	query := `select * from experience_add_ons where id =? `
+
+	res, err := m.fetch(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	return res, err
+}
 
 func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.ExperienceAddOn) (string, error) {
 	id := guuid.New()
