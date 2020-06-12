@@ -148,18 +148,17 @@ import (
 	_includeRepo "github.com/service/include/repository"
 	_includeUsecase "github.com/service/include/usecase"
 
-	_excludeHttpHandler	"github.com/service/exclude/delivery/http"
+	_excludeHttpHandler "github.com/service/exclude/delivery/http"
 	_excludeRepo "github.com/service/exclude/repository"
 	_excludeUsecase "github.com/service/exclude/usecase"
 
-	_ruleHttpHandler	"github.com/service/rule/delivery/http"
+	_ruleHttpHandler "github.com/service/rule/delivery/http"
 	_ruleRepo "github.com/service/rule/repository"
 	_ruleUsecase "github.com/service/rule/usecase"
 
-	_versionAPPHttpHandler	"github.com/misc/version_app/delivery/http"
+	_versionAPPHttpHandler "github.com/misc/version_app/delivery/http"
 	_versionAPPRepo "github.com/misc/version_app/repository"
 	_versionAPPUsecase "github.com/misc/version_app/usecase"
-
 )
 
 // func init() {
@@ -189,33 +188,33 @@ func main() {
 	//local
 	// baseUrlLocal := "http://localhost:9090"
 
-	//pdfCrowdAccount
-	//dev
+	//dev pdfCrowdAccount
 	usernamePDF := "demo"
 	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
-
-	//prd
-	//usernamePDF := "cgoindonesia"
-	//accessKeyPDF := "cef1b4478dac7cf83c26cac11340fbd4"
-
-	//dev
+	//dev db
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
 	dbPort := "3306"
 	dbUser := "AdminCgo@api-blog-cgo-mysqldbserver"
 	dbPass := "Standar123."
 	dbName := "cgo_indonesia"
+	//dev IS
+	baseUrlis := "http://identity-server-cgo-indonesia.azurewebsites.net"
+	//dev URL Forgot Password
+	urlForgotPassword := "http://cgo-web-api.azurewebsites.net/account/change-password"
 
-	//prd db
+	// //prd pdfCrowdAccount
+	// usernamePDF := "cgoindonesia"
+	// accessKeyPDF := "cef1b4478dac7cf83c26cac11340fbd4"
+	// //prd db
 	// dbHost := "cgo-indonesia-prod.mysql.database.azure.com"
 	// dbPort := "3306"
 	// dbUser := "admincgo@cgo-indonesia-prod"
 	// dbPass := "k_)V/p53u9z.V{C,"
 	// dbName := "cgo_indonesia"
-
-	//dev
-	baseUrlis := "http://identity-server-cgo-indonesia.azurewebsites.net"
-	//prd
+	// //prd IS
 	// baseUrlis := "https://identity-server-cgo-prod.azurewebsites.net"
+	// //prd URL Forgot Password
+	// urlForgotPassword := "http://api-cgo-prod.azurewebsites.net/account/change-password"
 
 	basicAuth := "cm9jbGllbnQ6c2VjcmV0"
 	accountStorage := "cgostorage"
@@ -298,8 +297,8 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
-	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo,timeoutContext)
-	isUsecase := _isUcase.NewidentityserverUsecase(redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
+	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo, timeoutContext)
+	isUsecase := _isUcase.NewidentityserverUsecase(urlForgotPassword, redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
 	merchantUsecase := _merchantUcase.NewmerchantUsecase(userMerchantRepo, merchantRepo, experienceRepo, transportationRepo, isUsecase, adminUsecase, timeoutContext)
 	userUsecase := _userUcase.NewuserUsecase(userRepo, isUsecase, adminUsecase, timeoutContext)
@@ -329,7 +328,7 @@ func main() {
 	)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(usernamePDF,accessKeyPDF,reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(usernamePDF, accessKeyPDF, reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
@@ -343,12 +342,12 @@ func main() {
 	currencyMasterUcase := _currencyMasterUsecase.NewCurrencyUsecase(adminUsecase, currencyMasterRepo, timeoutContext)
 	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase, cpcRepo, timeoutContext)
 	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo, timeoutContext)
-	exclusionServiceUsecase := _exclusionServicesUsecase.NewExclusionServicesUsecase(exclusionServiceRepo,adminUsecase,timeoutContext)
+	exclusionServiceUsecase := _exclusionServicesUsecase.NewExclusionServicesUsecase(exclusionServiceRepo, adminUsecase, timeoutContext)
 	includeUsecase := _includeUsecase.NewIncludeUsecase(adminUsecase, includeRepo, timeoutContext)
 	excludeUsecase := _excludeUsecase.NewExcludeUsecase(adminUsecase, excludeRepo, timeoutContext)
 	ruleUsecase := _ruleUsecase.NewRuleUsecase(adminUsecase, ruleRepo, timeoutContext)
 
-	_versionAPPHttpHandler.NewVersionAPPHandler(e,versionAPPUsecase)
+	_versionAPPHttpHandler.NewVersionAPPHandler(e, versionAPPUsecase)
 	_minimumBookingHttpHandler.NewminimumBookingHandler(e, minimumBookingUsecase)
 	_cpcHttpDeliver.NewCPCHandler(e, cpcUsecase, isUsecase)
 	_currencyMasterHttpHandler.NewCurrencyHandler(e, currencyMasterUcase)
@@ -379,7 +378,7 @@ func main() {
 	_midtransHttpHandler.NewMidtransHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
 	_xenditHttpHandler.NewXenditHandler(e, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
-	_exclusionServicesHttpHandler.NewExclusionServicesHandler(e,exclusionServiceUsecase)
+	_exclusionServicesHttpHandler.NewExclusionServicesHandler(e, exclusionServiceUsecase)
 	_includeHttpHandler.NewIncludeHandler(e, includeUsecase, isUsecase)
 	_excludeHttpHandler.NewExcludeHandler(e, excludeUsecase, isUsecase)
 	_ruleHttpHandler.NewRuleHandler(e, ruleUsecase, isUsecase)

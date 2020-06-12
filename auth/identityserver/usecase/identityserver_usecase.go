@@ -31,12 +31,14 @@ type identityserverUsecase struct {
 	basicAuth          string
 	accountStorage     string
 	accessKeyStorage   string
+	urlRedirectForgotPassword string
 }
 
 
 // NewidentityserverUsecase will create new an identityserverUsecase object representation of identityserver.Usecase interface
-func NewidentityserverUsecase(redirectUrlGoogle string, clientIDGoogle string, clientSecretGoogle string, baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
+func NewidentityserverUsecase(urlRedirectForgotPassword string,redirectUrlGoogle string, clientIDGoogle string, clientSecretGoogle string, baseUrl string, basicAuth string, accountStorage string, accessKeyStorage string) identityserver.Usecase {
 	return &identityserverUsecase{
+		urlRedirectForgotPassword:urlRedirectForgotPassword,
 		redirectUrlGoogle:  redirectUrlGoogle,
 		clientIDGoogle:     clientIDGoogle,
 		clientSecretGoogle: clientSecretGoogle,
@@ -45,6 +47,27 @@ func NewidentityserverUsecase(redirectUrlGoogle string, clientIDGoogle string, c
 		accountStorage:     accountStorage,
 		accessKeyStorage:   accessKeyStorage,
 	}
+}
+
+func (m identityserverUsecase) ForgotPassword(email string,token string) (*models.ResponseDelete, error) {
+
+	redirect := m.urlRedirectForgotPassword + "?token=" + token
+	pushEmail := models.SendingEmail{
+		Subject: "Forgot Password",
+		Message: "Click this link : "+ redirect + " for Change Password",
+		From:    "CGO Indonesia",
+		To:      email,
+	}
+
+	_, err := m.SendingEmail(&pushEmail)
+	if err != nil {
+		return nil, err
+	}
+	result := models.ResponseDelete{
+		Id:      "",
+		Message: "Success Send Email Forgot Password",
+	}
+	return &result,nil
 }
 func (m identityserverUsecase) UploadFilePDFToBlob(bit []byte,folder string) (string, error) {
 	accountName, accountKey := m.accountStorage, m.accessKeyStorage

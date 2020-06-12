@@ -145,9 +145,13 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			status = "Pending"
 		} else if item.TransactionStatus == 1 {
 			status = "Waiting approval"
-		} else if item.TransactionStatus == 2 {
+		} else if item.TransactionStatus == 2 && item.CheckInDate.After(time.Now()){
 			status = "Confirm"
-		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
+		} else if item.TransactionStatus == 2 && (item.CheckInDate.AddDate(0,0,14).Format("02 January 2006") == time.Now().Format("02 January 2006")){
+			status = "Up coming"
+		}else if item.TransactionStatus == 2 && item.CheckInDate.Before(time.Now()){
+			status = "Finished"
+		}else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
 			status = "Failed"
 		} else if item.TransactionStatus == 2 && item.BookingStatus == 3 {
 			status = "Boarded"

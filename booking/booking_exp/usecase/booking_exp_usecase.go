@@ -7493,6 +7493,8 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 					expGuest.Adult = expGuest.Adult + 1
 				} else if guest.Type == "Children" {
 					expGuest.Children = expGuest.Children + 1
+				} else if guest.Type == "Infant" {
+					expGuest.Infant = expGuest.Infant + 1
 				}
 			}
 		}
@@ -7529,6 +7531,8 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 					transGuest.Adult = transGuest.Adult + 1
 				} else if guest.Type == "Children" {
 					transGuest.Children = transGuest.Children + 1
+				}else if guest.Type == "Infant" {
+					transGuest.Infant = transGuest.Infant + 1
 				}
 			}
 		}
@@ -7633,7 +7637,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	}
 	var experiencePaymentType *models.ExperiencePaymentTypeDto
 	if getDetailBooking.ExperiencePaymentId != "" {
-		query, err := b.experiencePaymentTypeRepo.GetByExpID(ctx, *getDetailBooking.ExpId)
+		query, err := b.experiencePaymentTypeRepo.GetById(ctx, getDetailBooking.ExperiencePaymentId)
 		if err != nil {
 
 		}
@@ -7654,27 +7658,30 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 			}
 		}
 	}
+
 	expAddOns := make([]models.ExperienceAddOnObj, 0)
-	expAddOnsQuery, errorQuery := b.adOnsRepo.GetByExpId(ctx, *getDetailBooking.ExpId)
-	if errorQuery != nil {
-		return nil, err
-	}
-	if expAddOnsQuery != nil {
-		for _, element := range expAddOnsQuery {
-			var currency string
-			if element.Currency == 1 {
-				currency = "USD"
-			} else {
-				currency = "IDR"
+	if getDetailBooking.ExperienceAddOnId != nil {
+		expAddOnsQuery, errorQuery := b.adOnsRepo.GetById(ctx, *getDetailBooking.ExperienceAddOnId)
+		if errorQuery != nil {
+			return nil, err
+		}
+		if expAddOnsQuery != nil {
+			for _, element := range expAddOnsQuery {
+				var currency string
+				if element.Currency == 1 {
+					currency = "USD"
+				} else {
+					currency = "IDR"
+				}
+				addOns := models.ExperienceAddOnObj{
+					Id:       element.Id,
+					Name:     element.Name,
+					Desc:     element.Desc,
+					Currency: currency,
+					Amount:   element.Amount,
+				}
+				expAddOns = append(expAddOns, addOns)
 			}
-			addOns := models.ExperienceAddOnObj{
-				Id:       element.Id,
-				Name:     element.Name,
-				Desc:     element.Desc,
-				Currency: currency,
-				Amount:   element.Amount,
-			}
-			expAddOns = append(expAddOns, addOns)
 		}
 	}
 
@@ -7987,6 +7994,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						expGuest.Adult = expGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						expGuest.Children = expGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						expGuest.Infant = expGuest.Infant + 1
 					}
 				}
 			}
@@ -8061,6 +8070,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						transGuest.Adult = transGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						transGuest.Children = transGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						transGuest.Infant = transGuest.Infant + 1
 					}
 				}
 			}
@@ -8166,6 +8177,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						expGuest.Adult = expGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						expGuest.Children = expGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						expGuest.Infant = expGuest.Infant + 1
 					}
 				}
 			}
@@ -8239,6 +8252,8 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 						transGuest.Adult = transGuest.Adult + 1
 					} else if guest.Type == "Children" {
 						transGuest.Children = transGuest.Children + 1
+					} else if guest.Type == "Infant" {
+						transGuest.Infant = transGuest.Infant + 1
 					}
 				}
 			}
