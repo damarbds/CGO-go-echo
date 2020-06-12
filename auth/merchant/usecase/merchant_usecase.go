@@ -303,7 +303,7 @@ func (m merchantUsecase) Create(c context.Context, ar *models.NewCommandMerchant
 		return err
 	}
 	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, ar.MerchantEmail)
-	if existedMerchant != nil {
+	if existedMerchant != nil && existedMerchant.IsDeleted != 1 {
 		return models.ErrConflict
 	}
 	//var roles []string
