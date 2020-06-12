@@ -7024,14 +7024,48 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					panic(err)
 				}
 
+				//ticketPDF Bind HTML is Return
+				var htmlPDFTicketReturn bytes.Buffer
+
+				dataMappingReturn := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDateReturn,
+					"sourceTime":      departureTimeReturn.Format("15:04"),
+					"desTime":         arrivalTimeReturn.Format("15:04"),
+					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
+					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
+					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
+					"class":           bookingDetailReturn.Transportation[0].TransClass,
+					"qrCode":          bookingDetailReturn.TicketQRCode,
+					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetailReturn.OrderId,
+				}
+				// We create the template and register out template function
+				tReturn := template.New("t").Funcs(templateFuncs)
+				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
+				if err != nil {
+					panic(err)
+				}
+
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				pdfReturn := htmlPDFTicketReturn.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
 					AttachmentFileUrl: "E-Ticket.pdf",
 					FileName:          pdf,
 				}
 				attachment = append(attachment,&eTicket)
+				eTicketReturn := models.Attachment{
+					AttachmentFileUrl: "E-Ticket-Return.pdf",
+					FileName:          pdfReturn,
+				}
+				attachment = append(attachment,&eTicketReturn)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Transportation E-Ticket",
 					Message:           msg,
@@ -7766,14 +7800,48 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					panic(err)
 				}
 
+				//ticketPDF Bind HTML is Return
+				var htmlPDFTicketReturn bytes.Buffer
+
+				dataMappingReturn := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDateReturn,
+					"sourceTime":      departureTimeReturn.Format("15:04"),
+					"desTime":         arrivalTimeReturn.Format("15:04"),
+					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
+					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
+					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
+					"class":           bookingDetailReturn.Transportation[0].TransClass,
+					"qrCode":          bookingDetailReturn.TicketQRCode,
+					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetailReturn.OrderId,
+				}
+				// We create the template and register out template function
+				tReturn := template.New("t").Funcs(templateFuncs)
+				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
+				if err != nil {
+					panic(err)
+				}
+
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				pdfReturn := htmlPDFTicketReturn.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
 					AttachmentFileUrl: "E-Ticket.pdf",
 					FileName:          pdf,
 				}
 				attachment = append(attachment,&eTicket)
+				eTicketReturn := models.Attachment{
+					AttachmentFileUrl: "E-Ticket-Return.pdf",
+					FileName:          pdfReturn,
+				}
+				attachment = append(attachment,&eTicketReturn)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Transportation E-Ticket",
 					Message:           msg,
