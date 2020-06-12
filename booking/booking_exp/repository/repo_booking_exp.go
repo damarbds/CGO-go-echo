@@ -48,7 +48,8 @@ func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, b
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -325,7 +326,8 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, booki
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -635,6 +637,7 @@ func (b bookingExpRepository) fetchDetailTransport(ctx context.Context, query st
 			&t.HarborDestName,
 			&t.ExChangeRates,
 			&t.ExChangeCurrency,
+			&t.ReturnTransId,
 		)
 
 		if err != nil {
@@ -971,7 +974,8 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -1030,7 +1034,8 @@ func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Cont
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
