@@ -5654,13 +5654,18 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 
 			msg := tpl.String()
 			pdf := htmlPDFTicket.String()
+			var attachment []*models.Attachment
+			eTicket := models.Attachment{
+				AttachmentFileUrl: "E-Ticket.pdf",
+				FileName:          pdf,
+			}
+			attachment = append(attachment,&eTicket)
 			pushEmail := &models.SendingEmail{
 				Subject:           "Your booking has been confirmed",
 				Message:           msg,
 				From:              "CGO Indonesia",
 				To:                bookingDetail.BookedBy[0].Email,
-				FileName:          "E-Ticket.pdf",
-				AttachmentFileUrl: pdf,
+				Attachment:attachment,
 			}
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
@@ -5895,13 +5900,18 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 
 			msg := tpl.String()
 			pdf := htmlPDFTicket.String()
+			var attachment []*models.Attachment
+			eTicket := models.Attachment{
+				AttachmentFileUrl: "E-Ticket.pdf",
+				FileName:          pdf,
+			}
+			attachment = append(attachment,&eTicket)
 			pushEmail := &models.SendingEmail{
 				Subject:           "Experience E-Ticket",
 				Message:           msg,
 				From:              "CGO Indonesia",
 				To:                bookingDetail.BookedBy[0].Email,
-				FileName:          "E-Ticket.pdf",
-				AttachmentFileUrl: pdf,
+		Attachment:attachment,
 			}
 
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -5941,7 +5951,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			Message:  msg,
 			From:     "CGO Indonesia",
 			To:       getTransaction.CreatedBy,
-			FileName: "",
+			Attachment: nil,
 		}
 		if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 			return nil

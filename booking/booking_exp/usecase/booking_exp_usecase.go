@@ -6381,7 +6381,7 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 			Message:  msg,
 			From:     "CGO Indonesia",
 			To:       bookedBy[0].Email,
-			FileName: "",
+			Attachment: nil,
 		}
 
 		_, err = b.isUsecase.SendingEmail(pushEmail)
@@ -6543,7 +6543,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
-						FileName: "",
+						Attachment: nil,
 					}
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 						return nil
@@ -6576,7 +6576,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
-						FileName: "",
+						Attachment: nil,
 					}
 
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -6908,13 +6908,18 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: "E-Ticket.pdf",
+					FileName:          pdf,
+				}
+				attachment = append(attachment,&eTicket)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Experience E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+					Attachment:        attachment,
 				}
 
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -7021,13 +7026,18 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: "E-Ticket.pdf",
+					FileName:          pdf,
+				}
+				attachment = append(attachment,&eTicket)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Transportation E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+					Attachment:attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
@@ -7097,13 +7107,18 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: "E-Ticket.pdf",
+					FileName:          pdf,
+				}
+				attachment = append(attachment,&eTicket)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Transportation E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+				Attachment:attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
@@ -7277,7 +7292,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
-						FileName: "",
+						Attachment: nil,
 					}
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 						return nil, nil
@@ -7310,7 +7325,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 						Message:  msg,
 						From:     "CGO Indonesia",
 						To:       bookedBy[0].Email,
-						FileName: "",
+						Attachment: nil,
 					}
 
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -7635,13 +7650,18 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: "E-Ticket.pdf",
+					FileName:          pdf,
+				}
+				attachment = append(attachment,&eTicket)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Experience E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+					Attachment:attachment,
 				}
 
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -7748,13 +7768,18 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: "E-Ticket.pdf",
+					FileName:          pdf,
+				}
+				attachment = append(attachment,&eTicket)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Transportation E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+					Attachment:attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil,err
@@ -7824,13 +7849,18 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 				msg := tpl.String()
 				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: "E-Ticket.pdf",
+					FileName:          pdf,
+				}
+				attachment = append(attachment,&eTicket)
 				pushEmail := &models.SendingEmail{
 					Subject:           "Transportation E-Ticket",
 					Message:           msg,
 					From:              "CGO Indonesia",
 					To:                bookedBy[0].Email,
-					FileName:          "E-Ticket.pdf",
-					AttachmentFileUrl: pdf,
+				Attachment:attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil,err

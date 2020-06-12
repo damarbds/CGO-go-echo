@@ -57,10 +57,13 @@ type Response struct {
 type SendingEmail struct {
 	Subject string `json:"subject"`
 	Message string `json:"message"`
-	AttachmentFileUrl string `json:"attachmentFileUrl"`
-	FileName string `json:"FileName"`
+	Attachment []*Attachment `json:"attachment"`
 	From    string `json:"from"`
 	To      string `json:"to"`
+}
+type Attachment struct {
+	AttachmentFileUrl string `json:"attachmentFileUrl"`
+	FileName string `json:"FileName"`
 }
 type SendingSMS struct {
 	Source      string `json:"source"`
