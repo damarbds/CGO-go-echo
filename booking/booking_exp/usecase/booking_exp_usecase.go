@@ -5780,7 +5780,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                      </td>
                     </tr>
 					<tr>
-						<td bgcolor="#FFFFF" width="200px">&nbsp</td>
+						<td bgcolor="#FFFFF" width="200px">&nbsp;</td>
 					</tr>
 					<tr >
                      <td bgcolor="#E1FAFF" style="border-radius: .8rem;">

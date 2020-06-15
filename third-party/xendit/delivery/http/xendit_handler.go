@@ -5412,7 +5412,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
                      </td>
                     </tr>
 					<tr>
-						<td bgcolor="#FFFFF" width="200px">&nbsp</td>
+						<td bgcolor="#FFFFF" width="200px">&nbsp;</td>
 					</tr>
 					<tr >
                      <td bgcolor="#E1FAFF" style="border-radius: .8rem;">
@@ -6346,7 +6346,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			pdf := htmlPDFTicket.String()
 			var attachment []*models.Attachment
 			eTicket := models.Attachment{
-				AttachmentFileUrl:pdf,
+				AttachmentFileUrl: pdf,
 				FileName:          "E-Ticket.pdf",
 			}
 			attachment = append(attachment, &eTicket)
