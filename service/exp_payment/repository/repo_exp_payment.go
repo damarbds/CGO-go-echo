@@ -70,9 +70,11 @@ func (m *expPaymentRepository) fetch(ctx context.Context, query string, args ...
 }
 
 func (e expPaymentRepository) GetByExpID(ctx context.Context, expID string) ([]*models.ExperiencePaymentJoinType, error) {
-	query := `SELECT ep.*,ept.exp_payment_type_name as payment_type_name ,ept.exp_payment_type_desc as payment_type_desc FROM experience_payments ep
+	query := `SELECT ep.*,ept.exp_payment_type_name as payment_type_name ,ept.exp_payment_type_desc as payment_type_desc 
+			FROM experience_payments ep
 			JOIN experience_payment_types ept on ept.id = ep.exp_payment_type_id
-			WHERE ep.exp_id = ? AND ep.is_deleted = 0 AND ep.is_active = 1`
+			WHERE ep.exp_id = ? AND ep.is_deleted = 0 AND ep.is_active = 1
+			ORDER BY exp_payment_type_id DESC`
 
 	list, err := e.fetch(ctx, query, expID)
 	if err != nil {
