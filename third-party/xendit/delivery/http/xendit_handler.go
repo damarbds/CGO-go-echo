@@ -5669,7 +5669,6 @@ If you wish your payment to be transmitted to credits, please click transmit to 
      </tr>
     </table>
    </body>`
-
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
@@ -5746,10 +5745,10 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				//maxTime := time.Now().AddDate(0, 0, 1)
 				msg := tpl.String()
 				pushEmail := &models.SendingEmail{
-					Subject:  "Waiting for guide confirmation",
-					Message:  msg,
-					From:     "CGO Indonesia",
-					To:       bookedBy[0].Email,
+					Subject:    "Waiting for guide confirmation",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
 					Attachment: nil,
 				}
 				if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -5779,10 +5778,10 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				//maxTime := time.Now().AddDate(0, 0, 1)
 				msg := tpl.String()
 				pushEmail := &models.SendingEmail{
-					Subject:  "Waiting for guide confirmation",
-					Message:  msg,
-					From:     "CGO Indonesia",
-					To:       bookedBy[0].Email,
+					Subject:    "Waiting for guide confirmation",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
 					Attachment: nil,
 				}
 
@@ -6118,13 +6117,13 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				AttachmentFileUrl: "E-Ticket.pdf",
 				FileName:          pdf,
 			}
-			attachment = append(attachment,&eTicket)
+			attachment = append(attachment, &eTicket)
 			pushEmail := &models.SendingEmail{
-				Subject:           "Experience E-Ticket",
-				Message:           msg,
-				From:              "CGO Indonesia",
-				To:                bookedBy[0].Email,
-		Attachment:attachment,
+				Subject:    "Experience E-Ticket",
+				Message:    msg,
+				From:       "CGO Indonesia",
+				To:         bookedBy[0].Email,
+				Attachment: attachment,
 			}
 
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -6135,7 +6134,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 	} else {
-		bookingDetail, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, booking.Id, "")
+		bookingDetail, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -6149,7 +6148,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 
 		if bookingDetail.Transportation[0].ReturnTransId != nil {
 
-			bookingDetailReturn, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, *bookingDetail.Transportation[0].ReturnTransId, "")
+			bookingDetailReturn, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
@@ -6160,26 +6159,26 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 
 			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
 			data := map[string]interface{}{
-				"title":           bookingDetail.Transportation[0].TransTitle,
-				"user":            user,
-				"tripDateDeparture":        tripDate,
-				"guestCountDeparture":      strconv.Itoa(guestCount) + " Guest(s)",
-				"sourceTimeDeparture":      departureTime.Format("15:04"),
-				"desTimeDeparture":         arrivalTime.Format("15:04"),
-				"durationDeparture":        bookingDetail.Transportation[0].TripDuration,
-				"sourceDeparture":          bookingDetail.Transportation[0].HarborSourceName,
-				"destDeparture":            bookingDetail.Transportation[0].HarborDestName,
-				"classDeparture":           bookingDetail.Transportation[0].TransClass,
-				"orderId":         bookingDetail.OrderId,
-				"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-				"tripDateReturn":        tripDateReturn,
-				"guestCountReturn":      strconv.Itoa(guestCount) + " Guest(s)",
-				"sourceTimeReturn":      departureTimeReturn.Format("15:04"),
-				"desTimeReturn":         arrivalTimeReturn.Format("15:04"),
-				"durationReturn":        bookingDetailReturn.Transportation[0].TripDuration,
-				"sourceReturn":          bookingDetailReturn.Transportation[0].HarborSourceName,
-				"destReturn":            bookingDetailReturn.Transportation[0].HarborDestName,
-				"classReturn":           bookingDetailReturn.Transportation[0].TransClass,
+				"title":               bookingDetail.Transportation[0].TransTitle,
+				"user":                user,
+				"tripDateDeparture":   tripDate,
+				"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTimeDeparture": departureTime.Format("15:04"),
+				"desTimeDeparture":    arrivalTime.Format("15:04"),
+				"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+				"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+				"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+				"classDeparture":      bookingDetail.Transportation[0].TransClass,
+				"orderId":             bookingDetail.OrderId,
+				"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+				"tripDateReturn":      tripDateReturn,
+				"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+				"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+				"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+				"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+				"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+				"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
 			}
 
 			var tpl bytes.Buffer
@@ -6228,7 +6227,6 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				panic(err)
 			}
 
-
 			//ticketPDF Bind HTML is Return
 			var htmlPDFTicketReturn bytes.Buffer
 
@@ -6262,27 +6260,27 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			pdfReturn := htmlPDFTicketReturn.String()
 			var attachment []*models.Attachment
 			eTicket := models.Attachment{
-				AttachmentFileUrl: "E-Ticket.pdf",
-				FileName:          pdf,
+				AttachmentFileUrl: pdf,
+				FileName:          "E-Ticket.pdf",
 			}
-			attachment = append(attachment,&eTicket)
+			attachment = append(attachment, &eTicket)
 			eTicketReturn := models.Attachment{
-				AttachmentFileUrl: "E-Ticket-Return.pdf",
-				FileName:          pdfReturn,
+				AttachmentFileUrl: pdfReturn,
+				FileName:          "E-Ticket-Return.pdf",
 			}
-			attachment = append(attachment,&eTicketReturn)
+			attachment = append(attachment, &eTicketReturn)
 			pushEmail := &models.SendingEmail{
-				Subject:           "Transportation E-Ticket",
-				Message:           msg,
-				From:              "CGO Indonesia",
-				To:                bookedBy[0].Email,
-				Attachment:attachment,
+				Subject:    "Transportation E-Ticket",
+				Message:    msg,
+				From:       "CGO Indonesia",
+				To:         bookedBy[0].Email,
+				Attachment: attachment,
 			}
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
 			}
 
-		}else {
+		} else {
 			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			data := map[string]interface{}{
 				"title":           bookingDetail.Transportation[0].TransTitle,
@@ -6348,16 +6346,16 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			pdf := htmlPDFTicket.String()
 			var attachment []*models.Attachment
 			eTicket := models.Attachment{
-				AttachmentFileUrl: "E-Ticket.pdf",
-				FileName:          pdf,
+				AttachmentFileUrl:pdf,
+				FileName:          "E-Ticket.pdf",
 			}
-			attachment = append(attachment,&eTicket)
+			attachment = append(attachment, &eTicket)
 			pushEmail := &models.SendingEmail{
-				Subject:           "Transportation E-Ticket",
-				Message:           msg,
-				From:              "CGO Indonesia",
-				To:                bookedBy[0].Email,
-			Attachment:attachment,
+				Subject:    "Transportation E-Ticket",
+				Message:    msg,
+				From:       "CGO Indonesia",
+				To:         bookedBy[0].Email,
+				Attachment: attachment,
 			}
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil

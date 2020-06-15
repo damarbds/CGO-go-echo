@@ -206,7 +206,7 @@ func (a *booking_expHandler) GetDetail(c echo.Context) error {
 	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id, id)
 	if err != nil {
 		if err == models.ErrNotFound {
-			result, err = a.booking_expUsecase.GetDetailTransportBookingID(ctx, id, id)
+			result, err = a.booking_expUsecase.GetDetailTransportBookingID(ctx, id, id,nil)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: "Get Booking Trans Detail Failed"})
 			}

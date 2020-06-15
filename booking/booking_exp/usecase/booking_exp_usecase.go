@@ -6037,13 +6037,12 @@ If you wish your payment to be transmitted to credits, please click transmit to 
      </tr>
     </table>
    </body>`
-
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
 func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, orderId string) (*string, error) {
-	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId)
+	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId, nil)
 	if bookingDetail != nil {
 		if err != nil {
 			return nil, err
@@ -6377,10 +6376,10 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 		//maxTime := time.Now().AddDate(0, 0, 1)
 		msg := tpl.String()
 		pushEmail := &models.SendingEmail{
-			Subject:  "Please pay for your remaining payment",
-			Message:  msg,
-			From:     "CGO Indonesia",
-			To:       bookedBy[0].Email,
+			Subject:    "Please pay for your remaining payment",
+			Message:    msg,
+			From:       "CGO Indonesia",
+			To:         bookedBy[0].Email,
 			Attachment: nil,
 		}
 
@@ -6539,10 +6538,10 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting for guide confirmation",
-						Message:  msg,
-						From:     "CGO Indonesia",
-						To:       bookedBy[0].Email,
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
 						Attachment: nil,
 					}
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -6572,10 +6571,10 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting for guide confirmation",
-						Message:  msg,
-						From:     "CGO Indonesia",
-						To:       bookedBy[0].Email,
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
 						Attachment: nil,
 					}
 
@@ -6913,13 +6912,13 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 					AttachmentFileUrl: "E-Ticket.pdf",
 					FileName:          pdf,
 				}
-				attachment = append(attachment,&eTicket)
+				attachment = append(attachment, &eTicket)
 				pushEmail := &models.SendingEmail{
-					Subject:           "Experience E-Ticket",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-					Attachment:        attachment,
+					Subject:    "Experience E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
 				}
 
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -6931,7 +6930,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				return err
 			}
 		} else {
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.Id, "")
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil)
 			if err != nil {
 				return err
 			}
@@ -6945,7 +6944,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 
 			if bookingDetail.Transportation[0].ReturnTransId != nil {
 
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, *bookingDetail.Transportation[0].ReturnTransId, "")
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
 				if err != nil {
 					return err
 				}
@@ -6956,26 +6955,26 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 
 				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
 				data := map[string]interface{}{
-					"title":           bookingDetail.Transportation[0].TransTitle,
-					"user":            user,
-					"tripDateDeparture":        tripDate,
-					"guestCountDeparture":      strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeDeparture":      departureTime.Format("15:04"),
-					"desTimeDeparture":         arrivalTime.Format("15:04"),
-					"durationDeparture":        bookingDetail.Transportation[0].TripDuration,
-					"sourceDeparture":          bookingDetail.Transportation[0].HarborSourceName,
-					"destDeparture":            bookingDetail.Transportation[0].HarborDestName,
-					"classDeparture":           bookingDetail.Transportation[0].TransClass,
-					"orderId":         bookingDetail.OrderId,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-					"tripDateReturn":        tripDateReturn,
-					"guestCountReturn":      strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeReturn":      departureTimeReturn.Format("15:04"),
-					"desTimeReturn":         arrivalTimeReturn.Format("15:04"),
-					"durationReturn":        bookingDetailReturn.Transportation[0].TripDuration,
-					"sourceReturn":          bookingDetailReturn.Transportation[0].HarborSourceName,
-					"destReturn":            bookingDetailReturn.Transportation[0].HarborDestName,
-					"classReturn":           bookingDetailReturn.Transportation[0].TransClass,
+					"title":               bookingDetail.Transportation[0].TransTitle,
+					"user":                user,
+					"tripDateDeparture":   tripDate,
+					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeDeparture": departureTime.Format("15:04"),
+					"desTimeDeparture":    arrivalTime.Format("15:04"),
+					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+					"classDeparture":      bookingDetail.Transportation[0].TransClass,
+					"orderId":             bookingDetail.OrderId,
+					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+					"tripDateReturn":      tripDateReturn,
+					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
 				}
 
 				var tpl bytes.Buffer
@@ -7057,27 +7056,27 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				pdfReturn := htmlPDFTicketReturn.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
-					AttachmentFileUrl: "E-Ticket.pdf",
-					FileName:          pdf,
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
 				}
-				attachment = append(attachment,&eTicket)
+				attachment = append(attachment, &eTicket)
 				eTicketReturn := models.Attachment{
-					AttachmentFileUrl: "E-Ticket-Return.pdf",
-					FileName:          pdfReturn,
+					AttachmentFileUrl: pdfReturn,
+					FileName:          "E-Ticket-Return.pdf",
 				}
-				attachment = append(attachment,&eTicketReturn)
+				attachment = append(attachment, &eTicketReturn)
 				pushEmail := &models.SendingEmail{
-					Subject:           "Transportation E-Ticket",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-					Attachment:attachment,
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
 				}
 
-			}else {
+			} else {
 				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 				data := map[string]interface{}{
 					"title":           bookingDetail.Transportation[0].TransTitle,
@@ -7143,16 +7142,16 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				pdf := htmlPDFTicket.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
-					AttachmentFileUrl: "E-Ticket.pdf",
-					FileName:          pdf,
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
 				}
-				attachment = append(attachment,&eTicket)
+				attachment = append(attachment, &eTicket)
 				pushEmail := &models.SendingEmail{
-					Subject:           "Transportation E-Ticket",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-				Attachment:attachment,
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
@@ -7322,10 +7321,10 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting for guide confirmation",
-						Message:  msg,
-						From:     "CGO Indonesia",
-						To:       bookedBy[0].Email,
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
 						Attachment: nil,
 					}
 					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -7355,10 +7354,10 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					//maxTime := time.Now().AddDate(0, 0, 1)
 					msg := tpl.String()
 					pushEmail := &models.SendingEmail{
-						Subject:  "Waiting for guide confirmation",
-						Message:  msg,
-						From:     "CGO Indonesia",
-						To:       bookedBy[0].Email,
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
 						Attachment: nil,
 					}
 
@@ -7689,13 +7688,13 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					AttachmentFileUrl: "E-Ticket.pdf",
 					FileName:          pdf,
 				}
-				attachment = append(attachment,&eTicket)
+				attachment = append(attachment, &eTicket)
 				pushEmail := &models.SendingEmail{
-					Subject:           "Experience E-Ticket",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-					Attachment:attachment,
+					Subject:    "Experience E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
 				}
 
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -7707,7 +7706,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			}
 		} else {
 
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.Id, "")
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -7718,12 +7717,11 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
 			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
 
-
 			if bookingDetail.Transportation[0].ReturnTransId != nil {
 
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, *bookingDetail.Transportation[0].ReturnTransId, "")
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
 				if err != nil {
-					return nil,err
+					return nil, err
 				}
 				tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
 
@@ -7732,26 +7730,26 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
 				data := map[string]interface{}{
-					"title":           bookingDetail.Transportation[0].TransTitle,
-					"user":            user,
-					"tripDateDeparture":        tripDate,
-					"guestCountDeparture":      strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeDeparture":      departureTime.Format("15:04"),
-					"desTimeDeparture":         arrivalTime.Format("15:04"),
-					"durationDeparture":        bookingDetail.Transportation[0].TripDuration,
-					"sourceDeparture":          bookingDetail.Transportation[0].HarborSourceName,
-					"destDeparture":            bookingDetail.Transportation[0].HarborDestName,
-					"classDeparture":           bookingDetail.Transportation[0].TransClass,
-					"orderId":         bookingDetail.OrderId,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-					"tripDateReturn":        tripDateReturn,
-					"guestCountReturn":      strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeReturn":      departureTimeReturn.Format("15:04"),
-					"desTimeReturn":         arrivalTimeReturn.Format("15:04"),
-					"durationReturn":        bookingDetailReturn.Transportation[0].TripDuration,
-					"sourceReturn":          bookingDetailReturn.Transportation[0].HarborSourceName,
-					"destReturn":            bookingDetailReturn.Transportation[0].HarborDestName,
-					"classReturn":           bookingDetailReturn.Transportation[0].TransClass,
+					"title":               bookingDetail.Transportation[0].TransTitle,
+					"user":                user,
+					"tripDateDeparture":   tripDate,
+					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeDeparture": departureTime.Format("15:04"),
+					"desTimeDeparture":    arrivalTime.Format("15:04"),
+					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+					"classDeparture":      bookingDetail.Transportation[0].TransClass,
+					"orderId":             bookingDetail.OrderId,
+					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+					"tripDateReturn":      tripDateReturn,
+					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
 				}
 
 				var tpl bytes.Buffer
@@ -7833,27 +7831,27 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				pdfReturn := htmlPDFTicketReturn.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
-					AttachmentFileUrl: "E-Ticket.pdf",
-					FileName:          pdf,
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
 				}
-				attachment = append(attachment,&eTicket)
+				attachment = append(attachment, &eTicket)
 				eTicketReturn := models.Attachment{
-					AttachmentFileUrl: "E-Ticket-Return.pdf",
-					FileName:          pdfReturn,
+					AttachmentFileUrl: pdfReturn,
+					FileName:          "E-Ticket-Return.pdf",
 				}
-				attachment = append(attachment,&eTicketReturn)
+				attachment = append(attachment, &eTicketReturn)
 				pushEmail := &models.SendingEmail{
-					Subject:           "Transportation E-Ticket",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-					Attachment:attachment,
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil,err
+					return nil, err
 				}
 
-			}else {
+			} else {
 				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 				data := map[string]interface{}{
 					"title":           bookingDetail.Transportation[0].TransTitle,
@@ -7919,19 +7917,19 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				pdf := htmlPDFTicket.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
-					AttachmentFileUrl: "E-Ticket.pdf",
-					FileName:          pdf,
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
 				}
-				attachment = append(attachment,&eTicket)
+				attachment = append(attachment, &eTicket)
 				pushEmail := &models.SendingEmail{
-					Subject:           "Transportation E-Ticket",
-					Message:           msg,
-					From:              "CGO Indonesia",
-					To:                bookedBy[0].Email,
-				Attachment:attachment,
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
 				}
 				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil,err
+					return nil, err
 				}
 
 			}
@@ -7963,11 +7961,11 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 	return result, nil
 }
 
-func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error) {
+func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string, transId *string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 
-	details, err := b.bookingExpRepo.GetDetailTransportBookingID(ctx, bookingId, bookingCode)
+	details, err := b.bookingExpRepo.GetDetailTransportBookingID(ctx, bookingId, bookingCode, transId)
 	if err != nil {
 		return nil, err
 	}
@@ -7998,7 +7996,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 			MerchantName:     detail.MerchantName.String,
 			MerchantPhone:    detail.MerchantPhone.String,
 			MerchantPicture:  detail.MerchantPicture.String,
-			ReturnTransId:	  detail.ReturnTransId,
+			ReturnTransId:    detail.ReturnTransId,
 		}
 	}
 
@@ -8257,7 +8255,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 					transGuest.Adult = transGuest.Adult + 1
 				} else if guest.Type == "Children" {
 					transGuest.Children = transGuest.Children + 1
-				}else if guest.Type == "Infant" {
+				} else if guest.Type == "Infant" {
 					transGuest.Infant = transGuest.Infant + 1
 				}
 			}

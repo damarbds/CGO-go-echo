@@ -24,7 +24,7 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }
 
-func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) ([]*models.BookingExpJoin, error) {
+func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string,transId *string) ([]*models.BookingExpJoin, error) {
 	q := `
 	SELECT
 		a.*,
@@ -66,6 +66,10 @@ func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, b
 		AND a.is_deleted = 0
 		AND(a.id = ?
 			OR a.order_id = ?)`
+	if transId != nil {
+		q = q + ` AND a.trans_id = '` + *transId + `'`
+	}
+	q = q + ` ORDER BY created_date asc `
 
 	list, err := b.fetchDetailTransport(ctx, q, bookingId, bookingCode)
 	if err != nil {
