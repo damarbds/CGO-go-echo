@@ -44,7 +44,7 @@ func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTr
 	return total, nil
 }
 
-func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int,token string,isAdmin bool,isTransportation bool,isExperience bool,isSchedule bool) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int,token string,isAdmin bool,isTransportation bool,isExperience bool,isSchedule bool,tripType,paymentType,activityType string,confirmType string) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	var merchantId string
@@ -59,7 +59,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,"",isTransportation,isExperience,isSchedule)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,"",isTransportation,isExperience,isSchedule,tripType,paymentType,activityType,confirmType)
 
 		if err != nil {
 			return nil, err
@@ -71,7 +71,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,merchantId,isTransportation,isExperience,isSchedule)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,merchantId,isTransportation,isExperience,isSchedule,tripType,paymentType,activityType,confirmType)
 
 		if err != nil {
 			return nil, err

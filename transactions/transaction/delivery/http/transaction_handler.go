@@ -67,7 +67,10 @@ func (t *transactionHandler) List(c echo.Context) error {
 	qSearch := c.QueryParam("search")
 	startDate := c.QueryParam("startDate")
 	endDate := c.QueryParam("endDate")
-
+	tripType := c.QueryParam("trip_type")
+	paymentType := c.QueryParam("payment_type")
+	activityType := c.QueryParam("activity_type")
+	confirmType := c.QueryParam("confirm_type")
 	isAdmin := c.QueryParam("isAdmin")
 	var admin bool
 	if isAdmin != ""{
@@ -112,13 +115,13 @@ func (t *transactionHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 	if qpage != "" && qperPage != ""{
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp,schedule)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, result)
 	}else {
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp,schedule)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -205,7 +208,7 @@ func (t *transactionHandler) ExportExcel(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false,false)
+	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false,false,"","","","")
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
