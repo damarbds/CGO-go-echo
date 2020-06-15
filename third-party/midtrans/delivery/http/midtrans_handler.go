@@ -6171,7 +6171,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
 			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
 
-			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 && len(bookingDetail.Transportation) > 1 {
+			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
 				bookingDetailReturn, err := m.bookingUseCase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
 				if err != nil {
