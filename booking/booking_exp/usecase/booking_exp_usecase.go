@@ -6942,7 +6942,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
 			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
 
-			if bookingDetail.Transportation[0].ReturnTransId != nil {
+			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
 				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
 				if err != nil {
@@ -7717,7 +7717,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
 			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
 
-			if bookingDetail.Transportation[0].ReturnTransId != nil {
+			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
 				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
 				if err != nil {
