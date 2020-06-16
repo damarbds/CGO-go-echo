@@ -24,7 +24,7 @@ func NewbookingExpRepository(Conn *sql.DB) booking_exp.Repository {
 	return &bookingExpRepository{Conn}
 }
 
-func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string) ([]*models.BookingExpJoin, error) {
+func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string,transId *string) ([]*models.BookingExpJoin, error) {
 	q := `
 	SELECT
 		a.*,
@@ -48,7 +48,8 @@ func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, b
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -65,6 +66,10 @@ func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, b
 		AND a.is_deleted = 0
 		AND(a.id = ?
 			OR a.order_id = ?)`
+	if transId != nil {
+		q = q + ` AND a.trans_id = '` + *transId + `'`
+	}
+	q = q + ` ORDER BY created_date asc `
 
 	list, err := b.fetchDetailTransport(ctx, q, bookingId, bookingCode)
 	if err != nil {
@@ -325,7 +330,8 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, booki
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -635,6 +641,7 @@ func (b bookingExpRepository) fetchDetailTransport(ctx context.Context, query st
 			&t.HarborDestName,
 			&t.ExChangeRates,
 			&t.ExChangeCurrency,
+			&t.ReturnTransId,
 		)
 
 		if err != nil {
@@ -971,7 +978,8 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -1030,7 +1038,8 @@ func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Cont
 		hs.harbors_name AS harbor_source_name,
 		h.harbors_name AS harbor_dest_name,
 		t.ex_change_rates,
-		t.ex_change_currency
+		t.ex_change_currency,
+		b.return_trans_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -1154,7 +1163,9 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status = 0
-					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR) `
+					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR) 
+				ORDER BY created_date DESC`
+
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
 			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date, userId, date, date, limit, offset)
@@ -1219,7 +1230,8 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
 					and t.status = 0 
-					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR)`
+					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR)
+					ORDER BY created_date DESC`
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
 			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, userId, limit, offset)

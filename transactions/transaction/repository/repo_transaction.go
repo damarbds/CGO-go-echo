@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"strconv"
 	"time"
 
@@ -173,7 +174,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool,tripType,paymentType,activityType string,confirmType string) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int
 
@@ -201,6 +202,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		co.country_name
 	FROM
 		transactions t
+		JOIN experience_payments ep ON t.experience_payment_id = ep.id
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
 		JOIN merchants m ON e.merchant_id = m.id
@@ -242,6 +244,55 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
 	}
 
+	if tripType == "0"{
+		query = query + ` AND e.exp_trip_type = 'Private Trip' `
+	}else if tripType == "1"{
+		query = query + ` AND e.exp_trip_type = 'Share Trip' `
+	}else if tripType == "2"{
+		query = query + ` AND (e.exp_trip_type = 'Share Trip' OR e.exp_trip_type = 'Private Trip') `
+	}
+
+	if paymentType == "0"{
+		query = query + ` AND ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' `
+	}else if paymentType == "1"{
+		query = query + ` AND ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' `
+	}else if paymentType == "2"{
+		query = query + ` AND (ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' 
+								OR ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633') `
+	}
+
+	if activityType != "[]" && activityType != ""{
+		var activityTypes []int
+		if activityType != "" {
+			if errUnmarshal := json.Unmarshal([]byte(activityType), &activityTypes); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+
+		if len(activityTypes) != 0 {
+			for index, id := range activityTypes {
+				if index == 0 && index != (len(activityTypes)-1) {
+					query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
+				} else if index == 0 && index == (len(activityTypes)-1) {
+					query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` ) `
+				} else if index == (len(activityTypes) - 1) {
+					query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` )`
+				} else {
+					query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
+				}
+			}
+
+		}
+	}
+
+	if confirmType == "0"{
+		query = query + ` AND t.status not in (1) `
+	}else if confirmType == "1"{
+		query = query + ` AND t.status not in (5)' `
+	}else if confirmType == "2"{
+
+	}
+
 	if search != "" {
 		keyword := `'%` + search + `%'`
 		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
@@ -264,13 +315,23 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		query = query + ` AND b.exp_id != '' `
 		queryT = queryT + ` AND b.exp_id != '' `
 	}
+	
 	unionQuery := query + ` UNION ` + queryT
+	if tripType != "" && activityType == ""{
+		unionQuery = query
+	} else if activityType != "" && tripType == ""{
+		unionQuery = query
+	} else if tripType != "" && activityType != ""{
+		unionQuery = query
+	}
+
 	if limit != nil && offset != nil {
 		unionQuery = unionQuery +
 			` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
 			` OFFSET ` + strconv.Itoa(*offset) + ` `
 
 	}
+
 	list, err := t.fetchWithJoin(ctx, unionQuery)
 	if status != "" {
 		if status == "pending" {
@@ -293,6 +354,14 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		unionQuery = querySt + ` UNION ` + queryTSt
+		if tripType != "" && activityType == ""{
+			unionQuery = querySt
+		} else if activityType != "" && tripType == ""{
+			unionQuery = querySt
+		} else if tripType != "" && activityType != ""{
+			unionQuery = querySt
+		}
+
 		if limit != nil && offset != nil {
 			unionQuery = unionQuery +
 				` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
@@ -307,6 +376,14 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
 			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
 			unionQuery = querySt + ` UNION ` + queryTSt
+			if tripType != "" && activityType == ""{
+				unionQuery = querySt
+			} else if activityType != "" && tripType == ""{
+				unionQuery = querySt
+			} else if tripType != "" && activityType != ""{
+				unionQuery = querySt
+			}
+
 			if limit != nil && offset != nil {
 				unionQuery = unionQuery +
 					` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
@@ -322,6 +399,14 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			unionQuery = querySt + ` UNION ` + queryTSt
+			if tripType != "" && activityType == ""{
+				unionQuery = querySt
+			} else if activityType != "" && tripType == ""{
+				unionQuery = querySt
+			} else if tripType != "" && activityType != ""{
+				unionQuery = querySt
+			}
+
 			if limit != nil && offset != nil {
 				unionQuery = unionQuery +
 					` ORDER BY booking_date DESC LIMIT ` + strconv.Itoa(*limit) +
