@@ -61,6 +61,7 @@ type bookingExpUsecase struct {
 	accessKeyPDFcrowd         string
 }
 
+
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -6040,6 +6041,22 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
+
+
+func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+	list, err := b.transactionRepo.GetIdTransactionExpired(ctx)
+	if err != nil {
+		return err
+	}
+	for _,id := range list{
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, 3, "", *id, ""); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, orderId string) (*string, error) {
 	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId, nil)

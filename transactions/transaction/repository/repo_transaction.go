@@ -17,8 +17,36 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
+}
+func (t transactionRepository) GetIdTransactionExpired(ctx context.Context) ([]*string, error) {
+	query := `SELECT t.id
+					FROM transactions t 
+					JOIN booking_exps b ON t.booking_exp_id = b.id
+					WHERE t.status = 0 
+					AND b.expired_date_payment <= ?
+					ORDER BY expired_date_payment DESC`
+
+	rows, err := t.Conn.QueryContext(ctx, query, time.Now())
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	var transactionIds []*string
+	for rows.Next() {
+		var transactionId string
+		err = rows.Scan(&transactionId)
+		if err != nil {
+			return nil, err
+		}
+
+		transactionIds = append(transactionIds,&transactionId)
+	}
+
+	return transactionIds, nil
 }
 
 func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Context) ([]*models.TransactionWithBooking, error) {
