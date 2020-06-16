@@ -34,9 +34,9 @@ func (m userUsecase) ChangePassword(c context.Context, token string, password st
 	defer cancel()
 
 	currentUsers, err := m.ValidateTokenUser(ctx, token)
-	getUser, err := m.userRepo.GetByUserEmail(ctx,currentUsers.UserEmail)
-	if err != nil{
-		return nil,models.ErrNotFound
+	getUser, err := m.userRepo.GetByUserEmail(ctx, currentUsers.UserEmail)
+	if err != nil {
+		return nil, models.ErrNotFound
 	}
 	updateUser := models.RegisterAndUpdateUser{
 		Id:            getUser.Id,
@@ -55,16 +55,16 @@ func (m userUsecase) ChangePassword(c context.Context, token string, password st
 		UserRoles:     nil,
 	}
 
-	_,err = m.identityServerUc.UpdateUser(&updateUser)
-	if err != nil{
-		return nil,err
+	_, err = m.identityServerUc.UpdateUser(&updateUser)
+	if err != nil {
+		return nil, err
 	}
 
 	result := models.ResponseDelete{
 		Id:      getUser.Id,
 		Message: "Success Update Password",
 	}
-	return &result,nil
+	return &result, nil
 }
 
 func (m userUsecase) GetUserByEmail(ctx context.Context, email string) (*models.UserDto, error) {
@@ -620,12 +620,10 @@ func (m userUsecase) Subscription(ctx context.Context, s *models.NewCommandSubsc
 	}
 
 	sendEmail := models.SendingEmail{
-		Subject:           s.SubscriberEmail + " has subscribed to your mailing list.",
-		Message:           s.SubscriberEmail + " has subscribed to cGO's mailing list. You can start sending latest news about cGO.",
-		AttachmentFileUrl: "",
-		FileName:          "",
-		From:              "",
-		To:                "info@cgo.co.id",
+		Subject: s.SubscriberEmail + " has subscribed to your mailing list.",
+		Message: s.SubscriberEmail + " has subscribed to cGO's mailing list. You can start sending latest news about cGO.",
+		From:    "",
+		To:      "info@cgo.co.id",
 	}
 	_, err = m.identityServerUc.SendingEmail(&sendEmail)
 	if err != nil {
