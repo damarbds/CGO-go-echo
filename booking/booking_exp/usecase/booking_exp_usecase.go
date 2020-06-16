@@ -61,7 +61,6 @@ type bookingExpUsecase struct {
 	accessKeyPDFcrowd         string
 }
 
-
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -6042,7 +6041,6 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
-
 func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
@@ -6050,7 +6048,7 @@ func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) e
 	if err != nil {
 		return err
 	}
-	for _,id := range list{
+	for _, id := range list {
 		if err := b.transactionRepo.UpdateAfterPayment(ctx, 3, "", *id, ""); err != nil {
 			return err
 		}
@@ -6926,8 +6924,8 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				pdf := htmlPDFTicket.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
-					AttachmentFileUrl: "E-Ticket.pdf",
-					FileName:          pdf,
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
 				}
 				attachment = append(attachment, &eTicket)
 				pushEmail := &models.SendingEmail{
@@ -7702,8 +7700,8 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 				pdf := htmlPDFTicket.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
-					AttachmentFileUrl: "E-Ticket.pdf",
-					FileName:          pdf,
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
 				}
 				attachment = append(attachment, &eTicket)
 				pushEmail := &models.SendingEmail{
