@@ -40,6 +40,7 @@ func NewuserHandler(e *echo.Echo, us user.Usecase, is identityserver.Usecase) {
 	e.GET("/users/:id/credit", handler.GetCreditByID)
 	e.GET("/users/:id", handler.GetDetailID)
 	e.GET("/users", handler.List)
+	e.POST("/subscribe", handler.Subscribe)
 }
 
 func isRequestValid(m *models.NewCommandUser) (bool, error) {
@@ -293,6 +294,21 @@ func (a *userHandler) UpdateUser(c echo.Context) error {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
 	}
 	return c.JSON(http.StatusOK, userCommand)
+}
+
+func (a *userHandler) Subscribe(c echo.Context) error {
+	subscribeCommand := models.NewCommandSubscribe{
+		SubscriberEmail: c.FormValue("subscriber_email"),
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	subscribe, error := a.userUsecase.Subscription(ctx, &subscribeCommand)
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, subscribe)
 }
 func getStatusCode(err error) int {
 	if err == nil {
