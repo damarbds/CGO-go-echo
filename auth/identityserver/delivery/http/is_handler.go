@@ -269,6 +269,7 @@ func (a *isHandler) GetInfo(c echo.Context) error {
 	}
 	token := c.Request().Header.Get("Authorization")
 	typeUser := c.QueryParam("type")
+
 	if typeUser == "user" {
 		response, err := a.userUsecase.GetUserInfo(ctx, token)
 

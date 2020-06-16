@@ -20,7 +20,6 @@ type userUsecase struct {
 	contextTimeout   time.Duration
 }
 
-
 // NewuserUsecase will create new an userUsecase object representation of user.Usecase interface
 func NewuserUsecase(a user.Repository, is identityserver.Usecase, au admin.Usecase, timeout time.Duration) user.Usecase {
 	return &userUsecase{
@@ -598,6 +597,47 @@ func (m userUsecase) Create(c context.Context, ar *models.NewCommandUser, isAdmi
 
 	ar.Token = &requestToken.AccessToken
 	return ar, nil
+}
+
+func (m userUsecase) Subscription(ctx context.Context, s *models.NewCommandSubscribe) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+	subs := models.Subscribe{
+		Id:              0,
+		CreatedBy:       s.SubscriberEmail,
+		CreatedDate:     time.Time{},
+		ModifiedBy:      nil,
+		ModifiedDate:    nil,
+		DeletedBy:       nil,
+		DeletedDate:     nil,
+		IsDeleted:       0,
+		IsActive:        0,
+		SubscriberEmail: s.SubscriberEmail,
+	}
+	err := m.userRepo.SubscriptionUser(ctx, &subs)
+	if err != nil {
+		return nil, err
+	}
+
+	sendEmail := models.SendingEmail{
+		Subject:           s.SubscriberEmail + " has subscribed to your mailing list.",
+		Message:           s.SubscriberEmail + " has subscribed to cGO's mailing list. You can start sending latest news about cGO.",
+		AttachmentFileUrl: "",
+		FileName:          "",
+		From:              "",
+		To:                "info@cgo.co.id",
+	}
+	_, err = m.identityServerUc.SendingEmail(&sendEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	result := models.ResponseDelete{
+		Id:      "",
+		Message: "Subscription Success",
+	}
+	//var roles []string
+	return &result, nil
 }
 
 func (m userUsecase) GetCreditByID(ctx context.Context, id string) (*models.UserPoint, error) {

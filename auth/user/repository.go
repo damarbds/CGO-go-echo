@@ -17,4 +17,5 @@ type Repository interface {
 	Count(ctx context.Context) (int, error)
 	List(ctx context.Context, limit, offset int, search string) ([]*models.User, error)
 	UpdatePointByID(ctx context.Context, point float64, id string) error
+	SubscriptionUser(ctx context.Context, s *models.Subscribe) error
 }
