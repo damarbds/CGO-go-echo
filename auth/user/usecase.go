@@ -20,4 +20,5 @@ type Usecase interface {
 	GetCreditByID(ctx context.Context, id string) (*models.UserPoint, error)
 	List(ctx context.Context, page, limit, offset int,search string) (*models.UserWithPagination, error)
 	GetUserDetailById(ctx context.Context,id string,token string)(*models.UserDto, error)
+	Subscription(ctx context.Context, s *models.NewCommandSubscribe) (*models.ResponseDelete, error)
 }

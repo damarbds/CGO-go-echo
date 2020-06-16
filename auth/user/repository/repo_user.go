@@ -22,10 +22,13 @@ type userRepository struct {
 	Conn *sql.DB
 }
 
+
+
 // NewuserRepository will create an object that represent the article.repository interface
 func NewuserRepository(Conn *sql.DB) user.Repository {
 	return &userRepository{Conn}
 }
+
 
 func (m *userRepository) UpdatePointByID(ctx context.Context, point float64, id string) error {
 	query := `UPDATE users SET points = points - ? WHERE id = ?`
@@ -266,6 +269,36 @@ func (m *userRepository) Insert(ctx context.Context, a *models.User) error {
 	if err != nil {
 		return err
 	}
+
+	//a.Id = lastID
+	return nil
+}
+
+func (m *userRepository) SubscriptionUser(ctx context.Context, s *models.Subscribe) error {
+	query := `INSERT subscribes SET  created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , subscriber_email=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx, s.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, s.SubscriberEmail)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//sendingEmail := models.SendingEmail{
+	//	Subject:           "Subscribe",
+	//	Message:           "Push",
+	//	AttachmentFileUrl: "",
+	//	FileName:          "",
+	//	From:              "cgo indonesia",
+	//	To:                email,
+	//}
+	//_,err := s.isUsecase.SendingEmail(&sendingEmail)
 
 	//a.Id = lastID
 	return nil
