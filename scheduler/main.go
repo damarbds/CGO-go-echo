@@ -3,15 +3,16 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/labstack/echo"
-	_echoMiddleware "github.com/labstack/echo/middleware"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/labstack/echo"
+	_echoMiddleware "github.com/labstack/echo/middleware"
 )
 
-func main(){
+func main() {
 	//dev
 	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//prd
@@ -33,9 +34,9 @@ func main(){
 	log.Fatal(e.Start(":9090"))
 
 }
-func UpdateStatusExpiredPaymentJob(baseUrl string){
+func UpdateStatusExpiredPaymentJob(baseUrl string) {
 	done := make(chan bool)
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(time.Hour)
 
 	go func() {
 		//time.Sleep(10 * time.Second) // wait for 10 seconds
@@ -74,7 +75,7 @@ func UpdateStatusExpiredPaymentJob(baseUrl string){
 
 func RemainingPaymentJob(baseUrl string) {
 	done := make(chan bool)
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(time.Hour * 24)
 
 	go func() {
 		//time.Sleep(10 * time.Second) // wait for 10 seconds
