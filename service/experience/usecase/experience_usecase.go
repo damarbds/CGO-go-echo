@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/booking/booking_exp"
@@ -445,6 +446,8 @@ func (m experienceUsecase) FilterSearchExp(
 	JOIN provinces p ON ci.province_id = p.id`
 
 	if bottomPrice != "" && upPrice != "" && qStatus != "draft" {
+		//query = ", ep.price" + query[:(strings.Index(query,"from"))]
+		//qCount = ", ep.price" + query[:(strings.Index(query,"from"))]
 		query = query + ` join experience_payments ep on ep.exp_id = e.id`
 		qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
 	}
@@ -569,13 +572,29 @@ func (m experienceUsecase) FilterSearchExp(
 	}
 	if sortBy != "" {
 		if sortBy == "ratingup" {
-			query = query + ` ORDER BY e.rating DESC`
+			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query[strings.Index(query, "join"):] + " ORDER BY e.rating desc"
 		} else if sortBy == "ratingdown" {
-			query = query + ` ORDER BY e.rating ASC`
+			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query[strings.Index(query, "join"):] + " ORDER BY e.rating asc"
 		} else if sortBy == "newest" {
 			query = query + ` ORDER BY e.created_date DESC`
 		} else if sortBy == "latest" {
 			query = query + ` ORDER BY e.created_date ASC`
+		} else if sortBy == "priceup" {
+			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			//qCount = qCount[:(strings.Index(qCount,"from"))] + ", ep.price " + qCount[(strings.Index(qCount,"from")):]
+			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query[strings.Index(query, "join"):] + " ORDER BY ep.price desc"
+			//qCount = qCount[:strings.Index(qCount, "join")]  + ` join experience_payments ep on ep.exp_id = e.id` + qCount[strings.Index(qCount, "join"):]
+		} else if sortBy == "pricedown" {
+			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			//qCount = qCount[:(strings.Index(qCount,"from"))] + ", ep.price " + qCount[(strings.Index(qCount,"from")):]
+			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query[strings.Index(query, "join"):] + " ORDER BY ep.price asc"
+			//qCount = qCount[:strings.Index(qCount, "join")]  + ` join experience_payments ep on ep.exp_id = e.id` + qCount[strings.Index(qCount, "join"):]
 		}
 	}
 

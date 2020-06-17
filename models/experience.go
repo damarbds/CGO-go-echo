@@ -251,6 +251,7 @@ type ExpSearch struct {
 	Longitude  float64 `json:"longitude"`
 	CoverPhoto string  `json:"cover_photo"`
 	Province   string  `json:"province"`
+	Price	   string   `json:"price"`
 }
 
 type ExpSearchObject struct {
