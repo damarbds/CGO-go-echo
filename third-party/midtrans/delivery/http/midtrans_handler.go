@@ -6138,8 +6138,8 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				pdf := htmlPDFTicket.String()
 				var attachment []*models.Attachment
 				eTicket := models.Attachment{
-					AttachmentFileUrl: "E-Ticket.pdf",
-					FileName:          pdf,
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
 				}
 				attachment = append(attachment, &eTicket)
 				pushEmail := &models.SendingEmail{

@@ -6,6 +6,8 @@ import (
 )
 
 type Usecase interface {
+	PaypalAutoComplete(ctx context.Context,bookingId string)(*models.ResponseDelete,error)
+	UpdateTransactionStatusExpired(ctx context.Context)error
 	DownloadTicketTransportation(ctx context.Context,orderId string)(*string, error)
 	DownloadTicketExperience(ctx context.Context,orderId string)(*string, error)
 	RemainingPaymentNotification(ctx context.Context)error
