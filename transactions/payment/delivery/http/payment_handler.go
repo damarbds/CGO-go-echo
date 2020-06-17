@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/booking/booking_exp"
 	"github.com/labstack/echo"
@@ -154,7 +155,14 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	}
 
 	var data map[string]interface{}
-	if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" {
+
+	if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal"  && strings.Contains(t.PaypalOrderId,"PAYID"){
+		response, err := p.bookingUsecase.PaypalAutoComplete(ctx, *tr.BookingExpId)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, response)
+	}else if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" {
 		data, err = p.bookingUsecase.Verify(ctx, t.PaypalOrderId, bookingCode)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
