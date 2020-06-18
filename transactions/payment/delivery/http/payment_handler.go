@@ -138,10 +138,17 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		ExChangeRates:		&t.ExChangeRates,
 		ExChangeCurrency:	&t.ExChangeCurrency,
 	}
+	if strings.Contains(t.PaypalOrderId,"PAYID"){
+		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points,true)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+	}else {
+		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points,false)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
 
-	_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points)
-	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	pm, err := p.paymentMethodRepo.GetByID(ctx, tr.PaymentMethodId)
