@@ -14,8 +14,25 @@ type facilityRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewFacilityRepository(Conn *sql.DB) facilities.Repository {
 	return &facilityRepository{Conn: Conn}
+}
+func (m facilityRepository) GetByName(ctx context.Context, name string) (res *models.Facilities,err error) {
+	query := `SELECT * FROM facilities WHERE facility_name = ?`
+
+	list, err := m.fetch(ctx, query, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return
 }
 
 func (f facilityRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Facilities, error) {
