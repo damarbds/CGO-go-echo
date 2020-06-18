@@ -491,7 +491,7 @@ func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string,
 			&t.Longitude,
 			&t.CoverPhoto,
 			&t.Province,
-			&t.Price,
+			//&t.Price,
 		)
 
 		if err != nil {
