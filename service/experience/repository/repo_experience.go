@@ -23,11 +23,35 @@ type experienceRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewexperienceRepository will create an object that represent the article.repository interface
 func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
 
+func (m *experienceRepository) GetExperienceByBookingId(ctx context.Context, bookingId, experiencePaymentId string) (*models.ExperienceWithExperiencePayment,error){
+	var experience *models.ExperienceWithExperiencePayment
+	query := `SELECT e.* ,ept.exp_payment_type_name
+					FROM cgo_indonesia.booking_exps b
+					JOIN cgo_indonesia.experiences e ON b.exp_id = e.id
+					JOIN cgo_indonesia.experience_payments ep ON e.id = ep.exp_id
+					JOIN cgo_indonesia.experience_payment_types ept ON ep.exp_payment_type_id = ept.id
+					WHERE b.id = ?
+							AND ep.id = ? `
+
+	list, err := m.fetchByBookingId(ctx, query, bookingId, experiencePaymentId)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		experience = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return experience, err
+}
 func (m *experienceRepository) UpdateRating(ctx context.Context, exp models.Experience) error {
 	query := `UPDATE experiences SET modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , rating=?,guide_review=?,activities_review=?,service_review =?,
@@ -541,6 +565,78 @@ func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query str
 			&t.IsCustomisedByUser,
 			&t.MinimumBookingAmount,
 			&t.MinimumBookingDesc,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+func (m *experienceRepository) fetchByBookingId(ctx context.Context, query string, args ...interface{}) ([]*models.ExperienceWithExperiencePayment, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.ExperienceWithExperiencePayment, 0)
+	for rows.Next() {
+		t := new(models.ExperienceWithExperiencePayment)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.ExpTitle,
+			&t.ExpType,
+			&t.ExpTripType,
+			&t.ExpBookingType,
+			&t.ExpDesc,
+			&t.ExpMaxGuest,
+			&t.ExpPickupPlace,
+			&t.ExpPickupTime,
+			&t.ExpPickupPlaceLongitude,
+			&t.ExpPickupPlaceLatitude,
+			&t.ExpPickupPlaceMapsName,
+			&t.ExpInternary,
+			&t.ExpFacilities,
+			&t.ExpInclusion,
+			&t.ExpRules,
+			&t.Status,
+			&t.Rating,
+			&t.ExpLocationLatitude,
+			&t.ExpLocationLongitude,
+			&t.ExpLocationName,
+			&t.ExpCoverPhoto,
+			&t.ExpDuration,
+			&t.MinimumBookingId,
+			&t.MerchantId,
+			&t.HarborsId,
+			&t.GuideReview,
+			&t.ActivitiesReview,
+			&t.ServiceReview,
+			&t.CleanlinessReview,
+			&t.ValueReview,
+			&t.ExpPaymentDeadlineAmount,
+			&t.ExpPaymentDeadlineType,
+			&t.IsCustomisedByUser,
+			&t.ExpPaymentTypeName,
 		)
 
 		if err != nil {

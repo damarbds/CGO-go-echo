@@ -3,6 +3,8 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"github.com/service/experience"
+	"github.com/service/transportation"
 	"html/template"
 	"reflect"
 	"strconv"
@@ -32,11 +34,15 @@ type paymentUsecase struct {
 	userRepo         user.Repository
 	contextTimeout   time.Duration
 	bookingUsecase   booking_exp.Usecase
+	expRepo 		experience.Repository
+	transportationRepo transportation.Repository
 }
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(		transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
+		transportationRepo:transportationRepo,
+		expRepo:expRepo,
 		bookingUsecase:   bookingUsecase,
 		isUsecase:        isUsecase,
 		transactionRepo:  t,
@@ -5467,7 +5473,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
-func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction, token string, points float64) (string, error) {
+func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction, token string, points float64,autoComplete bool) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
@@ -5519,7 +5525,25 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		ExChangeRates:       payment.ExChangeRates,
 		ExChangeCurrency:    payment.ExChangeCurrency,
 	}
+	if autoComplete == true {
+		exp, err := p.expRepo.GetExperienceByBookingId(ctx, *newData.BookingExpId,*newData.ExperiencePaymentId)
+		if err != models.ErrNotFound{
+			if exp.ExpBookingType == "No Instant Booking" {
+				newData.Status = 1
+			}else if exp.ExpBookingType == "Instant Booking" && exp.ExpPaymentTypeName == "Down Payment" {
+				newData.Status = 5
+			}else if exp.ExpBookingType == "Instant Booking" && exp.ExpPaymentTypeName == "Full Payment" {
+				newData.Status = 2
+			}
+		}else {
+			_ ,err := p.transportationRepo.GetTransportationByBookingId(ctx,*newData.BookingExpId)
+			if err == models.ErrNotFound{
 
+			}else {
+				newData.Status = 2
+			}
+		}
+	}
 	res, err := p.paymentRepo.Insert(ctx, newData)
 	if err != nil {
 		return "", models.ErrInternalServerError
