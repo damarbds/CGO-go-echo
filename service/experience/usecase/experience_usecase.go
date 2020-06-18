@@ -432,8 +432,7 @@ func (m experienceUsecase) FilterSearchExp(
 		e.exp_location_latitude as latitude,
 		e.exp_location_longitude as longitude,
 		e.exp_cover_photo as cover_photo,
-		province_name AS province,
-		ep.price
+		province_name AS province
 	from 
 		experiences e
 	JOIN harbors ha ON e.harbors_id = ha.id
