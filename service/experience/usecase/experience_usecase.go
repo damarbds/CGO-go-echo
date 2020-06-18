@@ -423,7 +423,7 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 	}
 	query := `
-	select
+	select distinct
 		e.id,
 		e.exp_title,
 		e.exp_type,
@@ -432,12 +432,14 @@ func (m experienceUsecase) FilterSearchExp(
 		e.exp_location_latitude as latitude,
 		e.exp_location_longitude as longitude,
 		e.exp_cover_photo as cover_photo,
-		province_name AS province
+		province_name AS province,
+		ep.price
 	from 
 		experiences e
 	JOIN harbors ha ON e.harbors_id = ha.id
 	JOIN cities ci ON ha.city_id = ci.id
-	JOIN provinces p ON ci.province_id = p.id`
+	JOIN provinces p ON ci.province_id = p.id
+	JOIN experience_payments ep on ep.exp_id = e.id`
 
 	qCount := `
 	select COUNT(*) from experiences e
@@ -572,28 +574,28 @@ func (m experienceUsecase) FilterSearchExp(
 	}
 	if sortBy != "" {
 		if sortBy == "ratingup" {
-			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
-			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query[strings.Index(query, "join"):] + " ORDER BY e.rating desc"
+			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query = query[:strings.Index(query, "join")] + query[strings.Index(query, "join"):] + " ORDER BY e.rating desc"
 		} else if sortBy == "ratingdown" {
-			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
-			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query[strings.Index(query, "join"):] + " ORDER BY e.rating asc"
+			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query = query[:strings.Index(query, "join")] + query[strings.Index(query, "join"):] + " ORDER BY e.rating asc"
 		} else if sortBy == "newest" {
 			query = query + ` ORDER BY e.created_date DESC`
 		} else if sortBy == "latest" {
 			query = query + ` ORDER BY e.created_date ASC`
 		} else if sortBy == "priceup" {
-			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
 			//qCount = qCount[:(strings.Index(qCount,"from"))] + ", ep.price " + qCount[(strings.Index(qCount,"from")):]
-			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query[strings.Index(query, "join"):] + " ORDER BY ep.price desc"
+			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query = query[:strings.Index(query, "join")] + query[strings.Index(query, "join"):] + " ORDER BY ep.price desc"
 			//qCount = qCount[:strings.Index(qCount, "join")]  + ` join experience_payments ep on ep.exp_id = e.id` + qCount[strings.Index(qCount, "join"):]
 		} else if sortBy == "pricedown" {
-			query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
+			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
 			//qCount = qCount[:(strings.Index(qCount,"from"))] + ", ep.price " + qCount[(strings.Index(qCount,"from")):]
-			query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query[strings.Index(query, "join"):] + " ORDER BY ep.price asc"
+			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
+				query = query[:strings.Index(query, "join")] + query[strings.Index(query, "join"):] + " ORDER BY ep.price asc"
 			//qCount = qCount[:strings.Index(qCount, "join")]  + ` join experience_payments ep on ep.exp_id = e.id` + qCount[strings.Index(qCount, "join"):]
 		}
 	}
