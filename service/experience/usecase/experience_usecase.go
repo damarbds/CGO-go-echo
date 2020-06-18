@@ -445,16 +445,19 @@ func (m experienceUsecase) FilterSearchExp(
 	select COUNT(*) from experiences e
 	JOIN harbors ha ON e.harbors_id = ha.id
 	JOIN cities ci ON ha.city_id = ci.id
-	JOIN provinces p ON ci.province_id = p.id`
+	JOIN provinces p ON ci.province_id = p.id
+	JOIN experience_payments ep on ep.exp_id = e.id`
 
 	if bottomPrice != "" && upPrice != "" && qStatus != "draft" {
 		//query = ", ep.price" + query[:(strings.Index(query,"from"))]
 		//qCount = ", ep.price" + query[:(strings.Index(query,"from"))]
-		query = query + ` join experience_payments ep on ep.exp_id = e.id`
-		qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
+		//query = query + ` join experience_payments ep on ep.exp_id = e.id`
+
+		//qCount = qCount + ` join experience_payments ep on ep.exp_id = e.id`
 	}
 	if startDate != "" && endDate != "" && qStatus != "draft" {
 		query = query + ` join exp_availabilities ead on ead.exp_id = e.id`
+		qCount = qCount + ` join exp_availabilities ead on ead.exp_id = e.id`
 	}
 	//if len(activityTypeArray) != 0 {
 	//	query = query + ` join filter_activity_types fat on fat.exp_id = e.id`
@@ -465,8 +468,8 @@ func (m experienceUsecase) FilterSearchExp(
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
 
-	query = query + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
-	qCount = qCount + ` WHERE e.is_deleted = 0 AND e.is_active = 1`
+	query = query + ` WHERE e.is_deleted = 0 AND e.is_active = 1 AND ep.price between ` + bottomPrice + ` and ` + upPrice
+	qCount = qCount + ` WHERE e.is_deleted = 0 AND e.is_active = 1 AND ep.price between ` + bottomPrice + ` and ` + upPrice
 
 	if isMerchant {
 		if token == "" {
@@ -523,8 +526,8 @@ func (m experienceUsecase) FilterSearchExp(
 	}
 	if guest != "" {
 		guests, _ := strconv.Atoi(guest)
-		query = query + ` AND e.exp_max_guest <=` + strconv.Itoa(guests)
-		qCount = qCount + ` AND e.exp_max_guest <=` + strconv.Itoa(guests)
+		query = query + ` AND e.exp_max_guest >=` + strconv.Itoa(guests)
+		qCount = qCount + ` AND e.exp_max_guest >=` + strconv.Itoa(guests)
 	}
 	if trip != "" {
 		trips, _ := strconv.Atoi(trip)
@@ -735,6 +738,7 @@ func (m experienceUsecase) FilterSearchExp(
 			ListPhoto:   listPhotos,
 		}
 	}
+	qCount = "select count(*) from (" + query + ") q"
 	totalRecords, _ := m.experienceRepo.CountFilterSearch(ctx, qCount)
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
 	prev := page
