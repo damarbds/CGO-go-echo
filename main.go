@@ -159,6 +159,10 @@ import (
 	_versionAPPHttpHandler "github.com/misc/version_app/delivery/http"
 	_versionAPPRepo "github.com/misc/version_app/repository"
 	_versionAPPUsecase "github.com/misc/version_app/usecase"
+
+	_expIncludeRepo "github.com/service/exp_Include/repository"
+	_expExcludeRepo "github.com/service/exp_exclude/repository"
+	_expFacilitiesRepo "github.com/service/exp_facilities/repository"
 )
 
 // func init() {
@@ -294,6 +298,9 @@ func main() {
 	includeRepo := _includeRepo.NewIncludeRepository(dbConn)
 	excludeRepo := _excludeRepo.NewExcludeRepository(dbConn)
 	ruleRepo := _ruleRepo.NewRuleRepository(dbConn)
+	expFacilitesRepo := _expFacilitiesRepo.NewExpFacilitiesRepository(dbConn)
+	expIncludeRepo := _expIncludeRepo.NewExpIncludeRepository(dbConn)
+	expExcludeRepo := _expExcludeRepo.NewExpExcludeRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -310,6 +317,12 @@ func main() {
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		expFacilitesRepo,
+		expIncludeRepo,
+		expExcludeRepo,
+		facilityRepo,
+		includeRepo,
+		excludeRepo,
 		bookingExpRepo,
 		tempUserPreferenceRepo,
 		filterActivityTypeRepo,
@@ -333,7 +346,7 @@ func main() {
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(adminUsecase, facilityRepo, timeoutContext)
-	transportationUcase := _transportationUcase.NewTransportationUsecase(transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
+	transportationUcase := _transportationUcase.NewTransportationUsecase(expFacilitesRepo,facilityRepo,transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(adminUsecase, merchantUsecase, paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo, adminUsecase, balanceHistoryRepo, merchantUsecase, timeoutContext)
