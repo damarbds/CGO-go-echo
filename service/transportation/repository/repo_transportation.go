@@ -19,8 +19,28 @@ type transportationRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
+}
+func (m transportationRepository) GetTransportationByBookingId(ctx context.Context, bookingIds string) (res *models.Transportation,err error) {
+	query := `SELECT t.* 
+				FROM booking_exps b 
+    			JOIN transportations t ON b.trans_id = t.id
+				WHERE b.id = ?`
+
+	list, err := m.fetch(ctx, query, bookingIds)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return
 }
 
 func (m transportationRepository) GetById(ctx context.Context, id string) (res *models.Transportation, err error) {

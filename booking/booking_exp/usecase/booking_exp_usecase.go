@@ -6046,7 +6046,7 @@ var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
-	var transactionStatus int
+	//var transactionStatus int
 	getDetailBookingID ,err := b.GetDetailBookingID(ctx,bookingId,bookingId)
 	if err == models.ErrNotFound {
 		bookingDetail, err := b.GetDetailTransportBookingID(ctx, bookingId, bookingId, nil)
@@ -6278,10 +6278,10 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 
 		}
 
-		transactionStatus = 2
-		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookingId); err != nil {
-			return nil,err
-		}
+		//transactionStatus = 2
+		//if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookingId); err != nil {
+		//	return nil,err
+		//}
 
 		result := models.ResponseDelete{
 			Id:      "",
@@ -6291,7 +6291,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 	}
 	exp, err := b.expRepo.GetByID(ctx, getDetailBookingID.Experience[0].ExpId)
 	if exp.ExpBookingType == "No Instant Booking" {
-		transactionStatus = 1
+		//transactionStatus = 1
 		if getDetailBookingID.ExperiencePaymentType.Name == "Down Payment" {
 			user := getDetailBookingID.BookedBy[0].Title + `.` + getDetailBookingID.BookedBy[0].FullName
 			tripDate := getDetailBookingID.BookingDate.Format("02 January 2006")
@@ -6376,7 +6376,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 		}
 
 	} else if exp.ExpBookingType == "Instant Booking" && getDetailBookingID.ExperiencePaymentType.Name == "Down Payment" {
-		transactionStatus = 5
+		//transactionStatus = 5
 		user := getDetailBookingID.BookedBy[0].Title + `.` + getDetailBookingID.BookedBy[0].FullName
 		tripDate := getDetailBookingID.BookingDate.Format("02 January 2006")
 		duration := 0
@@ -6470,7 +6470,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 		}
 
 	} else if exp.ExpBookingType == "Instant Booking" && getDetailBookingID.ExperiencePaymentType.Name == "Full Payment" {
-		transactionStatus = 2
+		//transactionStatus = 2
 		user := getDetailBookingID.BookedBy[0].Title + `.` + getDetailBookingID.BookedBy[0].FullName
 		tripDate := getDetailBookingID.BookingDate.Format("02 January 2006")
 		duration := 0
@@ -6718,9 +6718,9 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 		}
 
 	}
-	if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookingId); err != nil {
-		return nil,err
-	}
+	//if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookingId); err != nil {
+	//	return nil,err
+	//}
 	result := models.ResponseDelete{
 		Id:      "",
 		Message: "Success Payment With Paypal",
