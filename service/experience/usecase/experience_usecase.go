@@ -423,17 +423,17 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 	}
 	query := `
-	select
+	select distinct
 		e.id,
 		e.exp_title,
 		e.exp_type,
 		e.status as exp_status,
 		e.rating,
-		ep.price,
 		e.exp_location_latitude as latitude,
 		e.exp_location_longitude as longitude,
 		e.exp_cover_photo as cover_photo,
-		province_name AS province
+		province_name AS province,
+		ep.price
 	from 
 		experiences e
 	JOIN harbors ha ON e.harbors_id = ha.id
