@@ -26,11 +26,11 @@ func NewharborsUsecase(adminUsecase admin.Usecase,a harbors.Repository, timeout 
 		contextTimeout: timeout,
 	}
 }
-func (m harborsUsecase) GetAllWithJoinCPC(c context.Context, page *int, size *int, search string) ([]*models.HarborsWCPCDto, error) {
+func (m harborsUsecase) GetAllWithJoinCPC(c context.Context, page *int, size *int, search string,harborsType string) ([]*models.HarborsWCPCDto, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	res, err := m.harborsRepo.GetAllWithJoinCPC(ctx, page, size, search)
+	res, err := m.harborsRepo.GetAllWithJoinCPC(ctx, page, size, search,harborsType)
 	if err != nil {
 		return nil, err
 	}
