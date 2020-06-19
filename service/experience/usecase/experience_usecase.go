@@ -467,8 +467,8 @@ func (m experienceUsecase) FilterSearchExp(
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
 
-	query = query + ` WHERE e.is_deleted = 0 AND e.is_active = 1 AND ep.price between ` + bottomPrice + ` and ` + upPrice
-	qCount = qCount + ` WHERE e.is_deleted = 0 AND e.is_active = 1 AND ep.price between ` + bottomPrice + ` and ` + upPrice
+	query = query + ` WHERE ep.is_deleted = 0 AND ep.is_active AND e.is_deleted = 0 AND e.is_active = 1 `
+	qCount = qCount + ` WHERE ep.is_deleted = 0 AND ep.is_active AND e.is_deleted = 0 AND e.is_active = 1 `
 
 	if isMerchant {
 		if token == "" {
@@ -482,6 +482,11 @@ func (m experienceUsecase) FilterSearchExp(
 
 		query = query + ` AND e.merchant_id = '` + currentMerchant.Id + `'`
 		qCount = qCount + ` AND e.merchant_id = '` + currentMerchant.Id + `'`
+	}
+
+	if bottomPrice != "" && upPrice != "" {
+		query = query + `AND ep.price between ` + bottomPrice + ` and ` + upPrice
+		qCount = qCount + `AND ep.price between ` + bottomPrice + ` and ` + upPrice
 	}
 
 	if search != "" {
