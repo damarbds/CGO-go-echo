@@ -4,6 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/service/exclude"
+	"github.com/service/exp_Include"
+	"github.com/service/exp_exclude"
+	"github.com/service/exp_facilities"
+	"github.com/service/facilities"
+	"github.com/service/include"
 	"math"
 	"strconv"
 	"strings"
@@ -46,10 +52,22 @@ type experienceUsecase struct {
 	mUsecase         merchant.Usecase
 	contextTimeout   time.Duration
 	exp_availablitiy exp_availability.Repository
+	expFacilitiesRepo 	exp_facilities.Repository
+	expIncludeRepo 		exp_Include.Repository
+	expExcludeRepo 		exp_exclude.Repository
+	facilitiesRepo 		facilities.Repository
+	includeRepo 		include.Repository
+	excludeRepo 		exclude.Repository
 }
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
+	expFacilitiesRepo 	exp_facilities.Repository,
+expIncludeRepo 		exp_Include.Repository,
+expExcludeRepo 		exp_exclude.Repository,
+facilitiesRepo 		facilities.Repository,
+includeRepo 		include.Repository,
+excludeRepo 		exclude.Repository,
 	b booking_exp.Repository,
 	tup temp_user_preferences.Repository,
 	fac filter_activity_type.Repository,
@@ -67,6 +85,12 @@ func NewexperienceUsecase(
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
+		expFacilitiesRepo:expFacilitiesRepo,
+		expIncludeRepo:expIncludeRepo,
+		expExcludeRepo:expExcludeRepo,
+		facilitiesRepo:facilitiesRepo,
+		includeRepo:includeRepo,
+		excludeRepo:excludeRepo,
 		bookingRepo:      b,
 		tempUserPreRepo:  tup,
 		filterATRepo:     fac,
@@ -1123,6 +1147,56 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		element.Id = id
 	}
 
+	for _,element := range commandExperience.ExpFacilities{
+		getFacilitiesByName ,err := m.facilitiesRepo.GetByName(ctx,element.Name)
+		if err != nil {
+			return nil, err
+		}
+		facilities := models.ExperienceFacilities{
+			Id:           0,
+			ExpId:        insertToExperience,
+			TransId:      nil,
+			FacilitiesId: getFacilitiesByName.Id,
+			Amount:       element.Amount,
+		}
+		err = m.expFacilitiesRepo.Insert(ctx ,&facilities)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for _,element := range commandExperience.ExpInclusion {
+		if element.Type == 0 {
+			getIncludeById ,err := m.includeRepo.GetByName(ctx,element.Name)
+			if err != nil {
+				return nil, err
+			}
+			include := models.ExperienceInclude{
+				Id:        0,
+				ExpId:     *insertToExperience,
+				IncludeId: getIncludeById.Id,
+			}
+			err = m.expIncludeRepo.Insert(ctx,&include)
+			if err != nil {
+				return nil, err
+			}
+		}else if element.Type == 1 {
+			getExcludeById,err := m.excludeRepo.GetByName(ctx,element.Name)
+			if err != nil{
+				return nil,err
+			}
+			exclude := models.ExperienceExclude{
+				Id:        0,
+				ExpId:     *insertToExperience,
+				ExcludeId: getExcludeById.Id,
+			}
+			err = m.expExcludeRepo.Insert(ctx,&exclude)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	var status string
 	if commandExperience.Status == 1 {
 		status = "Draft"
@@ -1376,6 +1450,69 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		element.Id = id
 	}
 
+
+	err = m.expFacilitiesRepo.Delete(ctx ,*insertToExperience,"")
+	if err != nil {
+		return nil, err
+	}
+	for _,element := range commandExperience.ExpFacilities{
+		getFacilitiesByName ,err := m.facilitiesRepo.GetByName(ctx,element.Name)
+		if err != nil {
+			return nil, err
+		}
+		facilities := models.ExperienceFacilities{
+			Id:           0,
+			ExpId:        insertToExperience,
+			TransId:      nil,
+			FacilitiesId: getFacilitiesByName.Id,
+			Amount:       element.Amount,
+		}
+		err = m.expFacilitiesRepo.Insert(ctx ,&facilities)
+		if err != nil {
+			return nil, err
+		}
+	}
+	err = m.expIncludeRepo.Delete(ctx ,*insertToExperience)
+	if err != nil {
+		return nil, err
+	}
+	err = m.expExcludeRepo.Delete(ctx ,*insertToExperience)
+	if err != nil {
+		return nil, err
+	}
+	for _,element := range commandExperience.ExpInclusion {
+		if element.Type == 0 {
+			getIncludeById ,err := m.includeRepo.GetByName(ctx,element.Name)
+			if err != nil {
+				return nil, err
+			}
+			include := models.ExperienceInclude{
+				Id:        0,
+				ExpId:     *insertToExperience,
+				IncludeId: getIncludeById.Id,
+			}
+			err = m.expIncludeRepo.Insert(ctx,&include)
+			if err != nil {
+				return nil, err
+			}
+		}else if element.Type == 1 {
+			getExcludeById,err := m.excludeRepo.GetByName(ctx,element.Name)
+			if err != nil{
+				return nil,err
+			}
+			exclude := models.ExperienceExclude{
+				Id:        0,
+				ExpId:     *insertToExperience,
+				ExcludeId: getExcludeById.Id,
+			}
+			err = m.expExcludeRepo.Insert(ctx,&exclude)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+
 	var status string
 	if commandExperience.Status == 1 {
 		status = "Draft"
@@ -1543,19 +1680,44 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		//fmt.Println("Error : ",err.Error())
 		return nil, models.ErrInternalServerError
 	}
-	var expFacilities []models.ExpFacilitiesObject
-	errObject = json.Unmarshal([]byte(res.ExpFacilities), &expFacilities)
-	if errObject != nil {
-		//fmt.Println("Error : ",err.Error())
-		return nil, models.ErrInternalServerError
+	expFacilities := make( []models.ExpFacilitiesObject,0)
+	//errObject = json.Unmarshal([]byte(res.ExpFacilities), &expFacilities)
+	//if errObject != nil {
+	//	//fmt.Println("Error : ",err.Error())
+	//	return nil, models.ErrInternalServerError
+	//}
+	getFacilities,err := m.expFacilitiesRepo.GetJoin(ctx,res.Id,"")
+	for _,element := range getFacilities{
+		facility := models.ExpFacilitiesObject{
+			Name:   element.FacilityName,
+			Icon:   *element.FacilityIcon,
+			Amount: element.Amount,
+		}
+		expFacilities = append(expFacilities,facility)
 	}
 	expInclusion := make([]models.ExpInclusionObject,0)
-	if res.ExpInclusion != ""{
-		errObject = json.Unmarshal([]byte(res.ExpInclusion), &expInclusion)
-		if errObject != nil {
-			//fmt.Println("Error : ",err.Error())
-			return nil, models.ErrInternalServerError
+	//if res.ExpInclusion != ""{
+	//	errObject = json.Unmarshal([]byte(res.ExpInclusion), &expInclusion)
+	//	if errObject != nil {
+	//		//fmt.Println("Error : ",err.Error())
+	//		return nil, models.ErrInternalServerError
+	//	}
+	//}
+	getInclude,err := m.expIncludeRepo.GetByExpIdJoin(ctx, res.Id)
+	for _,element := range getInclude{
+		inclusion := models.ExpInclusionObject{
+			Name: element.IncludeName,
+			Type: 0,
 		}
+		expInclusion = append(expInclusion,inclusion)
+	}
+	getExclude,err := m.expExcludeRepo.GetByExpIdJoin(ctx ,res.Id)
+	for _,element := range getExclude{
+		inclusion := models.ExpInclusionObject{
+			Name: element.ExcludeName,
+			Type: 1,
+		}
+		expInclusion = append(expInclusion,inclusion)
 	}
 	expRules := make([]models.ExpRulesObject,0)
 	if res.ExpRules != "" {

@@ -239,6 +239,7 @@ func (m *cpcRepository) fetchProvince(ctx context.Context, query string, args ..
 			&t.IsActive,
 			&t.ProvinceName,
 			&t.CountryId,
+			&t.ProvinceNameTransportation,
 		)
 
 		if err != nil {

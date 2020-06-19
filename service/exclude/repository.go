@@ -6,6 +6,7 @@ import (
 )
 
 type Repository interface {
+	GetByName(ctx context.Context,name string)(*models.Exclude,error)
 	List(ctx context.Context) ([]*models.Exclude, error)
 	Fetch(ctx context.Context,limit,offset int)([]*models.Exclude, error)
 	GetById(ctx context.Context,id int)(res *models.Exclude, err error)

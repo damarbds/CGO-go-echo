@@ -13,10 +13,27 @@ type includeRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewIncludeRepository(Conn *sql.DB) include.Repository {
 	return &includeRepository{Conn: Conn}
 }
 
+func (m includeRepository) GetByName(ctx context.Context, name string) (res *models.Include,err error) {
+	query := `SELECT * FROM includes WHERE include_name = ?`
+
+	list, err := m.fetch(ctx, query, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return
+}
 func (f includeRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Include, error) {
 	rows, err := f.Conn.QueryContext(ctx, query, args...)
 	if err != nil {

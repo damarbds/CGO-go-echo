@@ -60,6 +60,7 @@ func (m *harborsRepository) fetch(ctx context.Context, query string, args ...int
 			&t.HarborsLatitude,
 			&t.HarborsImage,
 			&t.CityId,
+			&t.HarborsType,
 		)
 
 		if err != nil {
@@ -151,7 +152,7 @@ func (m *harborsRepository) Fetch(ctx context.Context, limit, offset int) ([]*mo
 	}
 }
 
-func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string) ([]*models.HarborsWCPC, error) {
+func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string,harborsType string) ([]*models.HarborsWCPC, error) {
 
 	search = "%" + search + "%"
 	if page != nil && size != nil && search != "" {

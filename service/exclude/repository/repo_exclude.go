@@ -13,10 +13,27 @@ type excludeRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewExcludeRepository(Conn *sql.DB) exclude.Repository {
 	return &excludeRepository{Conn: Conn}
 }
 
+func (m excludeRepository) GetByName(ctx context.Context, name string) (res *models.Exclude,err error) {
+	query := `SELECT * FROM excludes WHERE exclude_name = ?`
+
+	list, err := m.fetch(ctx, query, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+
+	return
+}
 func (f excludeRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Exclude, error) {
 	rows, err := f.Conn.QueryContext(ctx, query, args...)
 	if err != nil {

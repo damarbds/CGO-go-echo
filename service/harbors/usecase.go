@@ -6,7 +6,7 @@ import (
 )
 
 type Usecase interface {
-	GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string) ([]*models.HarborsWCPCDto, error)
+	GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string,harborsType string) ([]*models.HarborsWCPCDto, error)
 	GetAll(ctx context.Context,page,limit,size int)(*models.HarborsDtoWithPagination,error)
 	GetById(ctx context.Context,id string)(*models.HarborsDto,error)
 	Create(ctx context.Context,a *models.NewCommandHarbors,token string)(*models.ResponseDelete,error)
