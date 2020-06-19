@@ -60,6 +60,7 @@ func (m *harborsRepository) fetch(ctx context.Context, query string, args ...int
 			&t.HarborsLatitude,
 			&t.HarborsImage,
 			&t.CityId,
+			&t.HarborsType,
 		)
 
 		if err != nil {

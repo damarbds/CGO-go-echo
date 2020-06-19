@@ -14,6 +14,7 @@ type Province struct {
 	IsActive     int        `json:"is_active" validate:"required"`
 	ProvinceName string     `json:"province_name"`
 	CountryId    int        `json:"country_id"`
+	ProvinceNameTransportation *string `json:"province_name_transportation"`
 }
 type ProvinceDto struct {
 	Id           int        `json:"id"`

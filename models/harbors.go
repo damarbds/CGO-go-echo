@@ -17,6 +17,7 @@ type Harbors struct {
 	HarborsLatitude  float64    `json:"harbors_latitude"`
 	HarborsImage     string     `json:"harbors_image"`
 	CityId           int        `json:"city_id"`
+	HarborsType 	*int `json:"harbors_type"`
 }
 type HarborsDto struct {
 	Id               string     `json:"id" validate:"required"`
