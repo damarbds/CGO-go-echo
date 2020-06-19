@@ -491,8 +491,8 @@ func (m experienceUsecase) FilterSearchExp(
 		qCount = qCount + ` join harbors h on h.id = e.harbors_id`
 	}
 
-	query = query + ` WHERE e.is_deleted = 0 AND e.is_active = 1 AND ep.price between ` + bottomPrice + ` and ` + upPrice
-	qCount = qCount + ` WHERE e.is_deleted = 0 AND e.is_active = 1 AND ep.price between ` + bottomPrice + ` and ` + upPrice
+	query = query + ` WHERE ep.is_deleted = 0 AND ep.is_active AND e.is_deleted = 0 AND e.is_active = 1 `
+	qCount = qCount + ` WHERE ep.is_deleted = 0 AND ep.is_active AND e.is_deleted = 0 AND e.is_active = 1 `
 
 	if isMerchant {
 		if token == "" {
@@ -506,6 +506,11 @@ func (m experienceUsecase) FilterSearchExp(
 
 		query = query + ` AND e.merchant_id = '` + currentMerchant.Id + `'`
 		qCount = qCount + ` AND e.merchant_id = '` + currentMerchant.Id + `'`
+	}
+
+	if bottomPrice != "" && upPrice != "" {
+		query = query + `AND ep.price between ` + bottomPrice + ` and ` + upPrice
+		qCount = qCount + `AND ep.price between ` + bottomPrice + ` and ` + upPrice
 	}
 
 	if search != "" {
@@ -650,22 +655,34 @@ func (m experienceUsecase) FilterSearchExp(
 			startDates = append(startDates, start.String())
 			goto datess
 		}
-
+		tmpQFilterDate := ""
+		tmpQCount := ""
 		for index, id := range startDates {
+
 			if index == 0 && index != (len(startDates)-1) {
-				query = query + ` AND (ead.exp_availability_date like '%` + id + `%' `
-				qCount = qCount + ` AND (ead.exp_availability_date like '%` + id + `%' `
+				//query = query + ` AND (ead.exp_availability_date like '%` + id + `%' `
+				//qCount = qCount + ` AND (ead.exp_availability_date like '%` + id + `%' `
+				tmpQFilterDate = tmpQFilterDate + ` AND (ead.exp_availability_date like '%` + id + `%' `
+				tmpQCount = tmpQCount + ` AND (ead.exp_availability_date like '%` + id + `%' `
 			} else if index == 0 && index == (len(startDates)-1) {
-				query = query + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
-				qCount = qCount + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
+				//query = query + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
+				//qCount = qCount + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
+				tmpQFilterDate = tmpQFilterDate + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
+				tmpQCount = tmpQCount + ` AND (ead.exp_availability_date like '%` + id + `%' ) `
 			} else if index == (len(startDates) - 1) {
-				query = query + ` OR ead.exp_availability_date like '%` + id + `%' ) `
-				qCount = qCount + ` OR ead.exp_availability_date like '%` + id + `%' ) `
+				//query = query + ` OR ead.exp_availability_date like '%` + id + `%' ) `
+				//qCount = qCount + ` OR ead.exp_availability_date like '%` + id + `%' ) `
+				tmpQFilterDate = tmpQFilterDate + ` OR ead.exp_availability_date like '%` + id + `%' ) `
+				tmpQCount = tmpQCount + ` OR ead.exp_availability_date like '%` + id + `%' ) `
 			} else {
-				query = query + ` OR ead.exp_availability_date like '%` + id + `%' `
-				qCount = qCount + ` OR ead.exp_availability_date like '%` + id + `%' `
+				//query = query + ` OR ead.exp_availability_date like '%` + id + `%' `
+				//qCount = qCount + ` OR ead.exp_availability_date like '%` + id + `%' `
+				tmpQFilterDate = tmpQFilterDate + ` OR ead.exp_availability_date like '%` + id + `%' `
+				tmpQCount = tmpQCount + ` OR ead.exp_availability_date like '%` + id + `%' `
 			}
 		}
+		query = query[:strings.Index(query, "AND")] + tmpQFilterDate + query[strings.Index(query, "AND"):]
+		qCount = qCount[:strings.Index(qCount, "AND")] + tmpQCount + qCount[strings.Index(qCount, "AND"):]
 	}
 	expList, err := m.experienceRepo.QueryFilterSearch(ctx, query, limit, offset)
 	if err != nil {
