@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
-
 	"github.com/google/uuid"
 
 	"time"
@@ -156,13 +155,21 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 
 	search = "%" + search + "%"
 	if page != nil && size != nil && search != "" {
-		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
+		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name 
+			from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
 			where h.is_active = 1 and h.is_deleted = 0 
 			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?) 
-            ORDER BY h.created_date desc LIMIT ? OFFSET ? `
+            `
+
+		if harborsType != ""{
+			query = query + ` AND h.harbors_type = ` + harborsType
+		}
+
+		query = query + ` ORDER BY h.created_date desc LIMIT ? OFFSET ? `
+
 
 		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search, page, size)
 		if err != nil {
@@ -178,6 +185,11 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 			where h.is_active = 1 and h.is_deleted = 0 
 			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
 
+
+		if harborsType != ""{
+			query = query + ` AND h.harbors_type = ` + harborsType
+		}
+
 		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search)
 		if err != nil {
 			return nil, err
@@ -190,6 +202,10 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
 			where h.is_active = 1 and h.is_deleted = 0`
+
+		if harborsType != "" {
+			query = query + ` AND h.harbors_type = ` + harborsType
+		}
 
 		res, err := m.fetchWithJoinCPC(ctx, query)
 		if err != nil {
