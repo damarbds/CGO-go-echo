@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"encoding/json"
+	"github.com/service/exp_facilities"
+	"github.com/service/facilities"
 	"math"
 	"sort"
 	"strconv"
@@ -24,10 +26,14 @@ type transportationUsecase struct {
 	scheduleRepo       schedule.Repository
 	timeOptionsRepo    time_options.Repository
 	contextTimeout     time.Duration
+	expFacilitiesRepo 	exp_facilities.Repository
+	facilitiesRepo 		facilities.Repository
 }
 
-func NewTransportationUsecase(transr transaction.Repository, tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
+func NewTransportationUsecase(	expFacilitiesRepo exp_facilities.Repository,facilitiesRepo facilities.Repository,transr transaction.Repository, tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
 	return &transportationUsecase{
+		expFacilitiesRepo:expFacilitiesRepo,
+		facilitiesRepo:facilitiesRepo,
 		transactionRepo:    transr,
 		transportationRepo: tr,
 		merchantUsecase:    mr,
@@ -200,11 +206,20 @@ func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*model
 			return nil, errUnmarshal
 		}
 	}
-	var facilities []models.ExpFacilitiesObject
-	if getDetailTrans.TransFacilities != nil {
-		if errUnmarshal := json.Unmarshal([]byte(*getDetailTrans.TransFacilities), &facilities); errUnmarshal != nil {
-			return nil, errUnmarshal
+	facilities := make([]models.ExpFacilitiesObject,0)
+	//if getDetailTrans.TransFacilities != nil {
+	//	if errUnmarshal := json.Unmarshal([]byte(*getDetailTrans.TransFacilities), &facilities); errUnmarshal != nil {
+	//		return nil, errUnmarshal
+	//	}
+	//}
+	getFacilities,err := t.expFacilitiesRepo.GetJoin(ctx,"",getDetailTrans.Id)
+	for _,element := range getFacilities{
+		facility := models.ExpFacilitiesObject{
+			Name:   element.FacilityName,
+			Icon:   *element.FacilityIcon,
+			Amount: element.Amount,
 		}
+		facilities = append(facilities,facility)
 	}
 	var transImage []models.CoverPhotosObj
 	if getDetailTrans.TransImages != "" {
@@ -787,6 +802,24 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 				return nil, err
 			}
 
+			for _,element := range newCommandTransportation.Facilities{
+				getFacilitiesId,err := t.facilitiesRepo.GetByName(ctx , element.Name)
+				if err != nil {
+					return nil, err
+				}
+				facilities := models.ExperienceFacilities{
+					Id:           0,
+					ExpId:        nil,
+					TransId:      insertTransportationReturn,
+					FacilitiesId: getFacilitiesId.Id,
+					Amount:       element.Amount,
+				}
+				err = t.expFacilitiesRepo.Insert(ctx,&facilities)
+				if err != nil {
+					return nil, err
+				}
+			}
+
 			for _, year := range newCommandTransportation.ReturnRoute.Schedule {
 				for _, month := range year.Month {
 					for _, day := range month.DayPrice {
@@ -846,6 +879,24 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 	insertTransportation, err := t.transportationRepo.Insert(ctx, transportation)
 	if err != nil {
 		return nil, err
+	}
+
+	for _,element := range newCommandTransportation.Facilities{
+		getFacilitiesId,err := t.facilitiesRepo.GetByName(ctx , element.Name)
+		if err != nil {
+			return nil, err
+		}
+		facilities := models.ExperienceFacilities{
+			Id:           0,
+			ExpId:        nil,
+			TransId:      insertTransportation,
+			FacilitiesId: getFacilitiesId.Id,
+			Amount:       element.Amount,
+		}
+		err = t.expFacilitiesRepo.Insert(ctx,&facilities)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	for _, year := range newCommandTransportation.DepartureRoute.Schedule {
@@ -996,6 +1047,27 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 			if err != nil {
 				return nil, err
 			}
+			err = t.expFacilitiesRepo.Delete(ctx,"",*insertTransportationReturn)
+			if err != nil {
+				return nil, err
+			}
+			for _,element := range newCommandTransportation.Facilities{
+				getFacilitiesId,err := t.facilitiesRepo.GetByName(ctx , element.Name)
+				if err != nil {
+					return nil, err
+				}
+				facilities := models.ExperienceFacilities{
+					Id:           0,
+					ExpId:        nil,
+					TransId:      insertTransportationReturn,
+					FacilitiesId: getFacilitiesId.Id,
+					Amount:       element.Amount,
+				}
+				err = t.expFacilitiesRepo.Insert(ctx,&facilities)
+				if err != nil {
+					return nil, err
+				}
+			}
 			errorDelete := t.scheduleRepo.DeleteByTransId(ctx, insertTransportationReturn)
 			if errorDelete != nil {
 				return nil, errorDelete
@@ -1060,7 +1132,27 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 	if err != nil {
 		return nil, err
 	}
-
+	err = t.expFacilitiesRepo.Delete(ctx,"",*insertTransportation)
+	if err != nil {
+		return nil, err
+	}
+	for _,element := range newCommandTransportation.Facilities{
+		getFacilitiesId,err := t.facilitiesRepo.GetByName(ctx , element.Name)
+		if err != nil {
+			return nil, err
+		}
+		facilities := models.ExperienceFacilities{
+			Id:           0,
+			ExpId:        nil,
+			TransId:      insertTransportation,
+			FacilitiesId: getFacilitiesId.Id,
+			Amount:       element.Amount,
+		}
+		err = t.expFacilitiesRepo.Insert(ctx,&facilities)
+		if err != nil {
+			return nil, err
+		}
+	}
 	errorDelete := t.scheduleRepo.DeleteByTransId(ctx, insertTransportation)
 	if errorDelete != nil {
 		return nil, errorDelete
