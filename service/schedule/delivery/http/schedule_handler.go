@@ -28,14 +28,14 @@ func NewScheduleHandler(e *echo.Echo, us promo.Usecase,su schedule.Usecase) {
 		promoUsecase: us,
 		scheduleUsecase:su,
 	}
-	//e.POST("/promos", handler.Createpromo)
+	e.POST("service/schedule", handler.CreateSchedule)
 	//e.PUT("/promos/:id", handler.Updatepromo)
 	e.GET("service/schedule", handler.GetSchedule)
 	//e.GET("service/special-promo/:code", handler.GetPromoByCode)
 	//e.DELETE("/promos/:id", handler.Delete)
 }
 
-func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
+func isRequestValid(m *models.NewCommandSchedule) (bool, error) {
 	validate := validator.New()
 	err := validate.Struct(m)
 	if err != nil {
@@ -43,7 +43,27 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 	}
 	return true, nil
 }
+func (a *scheduleHandler) CreateSchedule(c echo.Context) error {
 
+	var scheduleCommand models.NewCommandSchedule
+	err := c.Bind(&scheduleCommand)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	if ok, err := isRequestValid(&scheduleCommand); !ok {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	response, error := a.scheduleUsecase.InsertSchedule(ctx,&scheduleCommand)
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, response)
+}
 // GetByID will get article by given id
 func (a *scheduleHandler) GetSchedule(c echo.Context) error {
 	merchantId := c.QueryParam("merchant_id")

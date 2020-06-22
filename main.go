@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"fmt"
+	"github.com/models"
+	"github.com/service/transportation/delivery/events"
 	"log"
 	"net/http"
 	"net/url"
@@ -186,11 +188,11 @@ func main() {
 	// baseUrlis := viper.GetString(`identityServer.baseUrl`)
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
 	//dev
-	// baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
+	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//prd
 	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
 	//local
-	// baseUrlLocal := "http://localhost:9090"
+	//baseUrlLocal := "http://localhost:9090"
 
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
@@ -303,6 +305,13 @@ func main() {
 	expExcludeRepo := _expExcludeRepo.NewExpExcludeRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
+
+	createNotifier := events.UserCreatedNotifier{
+		BaseUrl:baseUrlLocal,
+		Schedule:models.NewCommandSchedule{},
+	}
+
+	events.UserCreated.Register(createNotifier)
 
 	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(urlForgotPassword, redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
