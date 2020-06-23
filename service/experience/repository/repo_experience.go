@@ -189,11 +189,12 @@ func (m *experienceRepository) GetSuccessBookCount(ctx context.Context, merchant
 	FROM
 		experiences e
 		LEFT JOIN booking_exps b ON e.id = b.exp_id
+		JOIN transactions t ON t.booking_exp_id = b.id
 	WHERE
 		e.is_deleted = 0 AND
 		e.is_active = 1 AND
 		e.merchant_id = ? AND 
-		b.status = 1`
+		t.status = 2`
 
 	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
