@@ -325,7 +325,9 @@ func main() {
 	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase, harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
 	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
+	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		currencyUcase,
 		expFacilitesRepo,
 		expIncludeRepo,
 		expExcludeRepo,
@@ -360,7 +362,6 @@ func main() {
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo, adminUsecase, balanceHistoryRepo, merchantUsecase, timeoutContext)
 	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)
-	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 	currencyMasterUcase := _currencyMasterUsecase.NewCurrencyUsecase(adminUsecase, currencyMasterRepo, timeoutContext)
 	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase, cpcRepo, timeoutContext)
 	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo, timeoutContext)

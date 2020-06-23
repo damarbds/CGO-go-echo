@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/misc/currency"
 	"github.com/service/exclude"
 	"github.com/service/exp_Include"
 	"github.com/service/exp_exclude"
@@ -58,10 +59,12 @@ type experienceUsecase struct {
 	facilitiesRepo 		facilities.Repository
 	includeRepo 		include.Repository
 	excludeRepo 		exclude.Repository
+	currencyUsecase	currency.Usecase
 }
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
+	currencyUsecase	currency.Usecase,
 	expFacilitiesRepo 	exp_facilities.Repository,
 expIncludeRepo 		exp_Include.Repository,
 expExcludeRepo 		exp_exclude.Repository,
@@ -85,6 +88,7 @@ excludeRepo 		exclude.Repository,
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
+		currencyUsecase:currencyUsecase,
 		expFacilitiesRepo:expFacilitiesRepo,
 		expIncludeRepo:expIncludeRepo,
 		expExcludeRepo:expExcludeRepo,
@@ -252,7 +256,7 @@ func (m experienceUsecase) GetByCategoryID(ctx context.Context, categoryId int) 
 	return results, nil
 }
 
-func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreferenceDto, error) {
+func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *int, size *int,currencyPrice string) ([]*models.ExpUserDiscoverPreferenceDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -317,6 +321,22 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 					priceItemType = "Per Pax"
 				} else {
 					priceItemType = "Per Trip"
+				}
+
+				if currencyPrice == "USD"{
+					if currency == "IDR"{
+						convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+						calculatePrice := convertCurrency.Rates.USD * expPayment[0].Price
+						expPayment[0].Price = calculatePrice
+						currency = "USD"
+					}
+				}else if currencyPrice =="IDR"{
+					if currency == "USD"{
+						convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+						calculatePrice := convertCurrency.Rates.IDR * expPayment[0].Price
+						expPayment[0].Price = calculatePrice
+						currency = "IDR"
+					}
 				}
 			} else {
 				priceItemType = ""
@@ -436,6 +456,7 @@ func (m experienceUsecase) FilterSearchExp(
 	limit int,
 	offset int,
 	provinceId string,
+	currencyPrice string,
 ) (*models.FilterSearchWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -704,6 +725,7 @@ func (m experienceUsecase) FilterSearchExp(
 		var price float64
 		var priceItemType string
 
+
 		if expPayment != nil {
 
 			price = expPayment[0].Price
@@ -718,8 +740,24 @@ func (m experienceUsecase) FilterSearchExp(
 			} else {
 				priceItemType = "Per Trip"
 			}
-		}
 
+			if currencyPrice == "USD"{
+				if currency == "IDR"{
+					convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+					calculatePrice := convertCurrency.Rates.USD * price
+					price = calculatePrice
+					currency = "USD"
+				}
+			}else if currencyPrice =="IDR"{
+				if currency == "USD"{
+					convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+					calculatePrice := convertCurrency.Rates.IDR * price
+					price = calculatePrice
+					currency = "IDR"
+				}
+			}
+
+		}
 		countRating, err := m.reviewsRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
 			return nil, err
@@ -1545,7 +1583,7 @@ func (m experienceUsecase) PublishExperience(c context.Context, commandExperienc
 	}
 	return response, nil
 }
-func (m experienceUsecase) GetByID(c context.Context, id string) (*models.ExperienceDto, error) {
+func (m experienceUsecase) GetByID(c context.Context, id string,currencyPrice string) (*models.ExperienceDto, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
@@ -1617,6 +1655,40 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 				errObject := json.Unmarshal([]byte(*elementPayment.CustomPrice), &customPrice)
 				if errObject != nil {
 					return nil, models.ErrInternalServerError
+				}
+			}
+		}
+
+		if currencyPrice == "USD"{
+			if currency == "IDR"{
+				convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+				calculatePrice := convertCurrency.Rates.USD * elementPayment.Price
+				elementPayment.Price = calculatePrice
+				currency = "USD"
+			}
+		}else if currencyPrice =="IDR"{
+			if currency == "USD"{
+				convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+				calculatePrice := convertCurrency.Rates.IDR * elementPayment.Price
+				elementPayment.Price = calculatePrice
+				currency = "IDR"
+			}
+		}
+
+		for index,elementCustomPrice := range customPrice{
+			if currencyPrice == "USD"{
+				if elementCustomPrice.Currency == "IDR"{
+					convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+					calculatePrice := convertCurrency.Rates.USD * elementCustomPrice.Price
+					customPrice[index].Price = calculatePrice
+					customPrice[index].Currency = "USD"
+				}
+			}else if currencyPrice =="IDR"{
+				if elementCustomPrice.Currency == "USD"{
+					convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+					calculatePrice := convertCurrency.Rates.IDR * elementCustomPrice.Price
+					customPrice[index].Price = calculatePrice
+					customPrice[index].Currency = "IDR"
 				}
 			}
 		}

@@ -391,6 +391,9 @@ type ExpUserDiscoverPreference struct {
 	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
 	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
 }
 
 type ExpUserDiscoverPreferenceDto struct {

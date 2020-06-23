@@ -379,6 +379,9 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
 		)
 
 		if err != nil {
@@ -453,6 +456,9 @@ func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.C
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
 		)
 
 		if err != nil {
