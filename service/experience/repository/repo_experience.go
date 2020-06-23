@@ -564,6 +564,9 @@ func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query str
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
 			&t.MinimumBookingAmount,
 			&t.MinimumBookingDesc,
 		)
@@ -637,6 +640,9 @@ func (m *experienceRepository) fetchByBookingId(ctx context.Context, query strin
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
 			&t.ExpPaymentTypeName,
 		)
 
