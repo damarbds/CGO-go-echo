@@ -154,6 +154,12 @@ func (f includeUsecase) Update(ctx context.Context, inc *models.NewCommandInclud
 		return nil, err
 	}
 
+
+	if inc.IncludeIcon == ""{
+		getById,_:= f.includeRepo.GetById(ctx,inc.Id)
+		inc.IncludeIcon = getById.IncludeIcon
+	}
+
 	includes := models.Include{
 		Id:           inc.Id,
 		CreatedBy:    currentUser.Name,
