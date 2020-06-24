@@ -70,62 +70,64 @@ func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*model
 			Schedule:      schedules,
 		}
 		getScheduleTimeReturn, err := t.scheduleRepo.GetTimeByTransId(ctx, getreturnTrans.Id)
+
 		for _, element := range getScheduleTimeReturn {
 			timeObj := models.TimeObj{
 				DepartureTime: element.DepartureTime,
 				ArrivalTime:   element.ArrivalTime,
 			}
-			getScheduleYearReturn, err := t.scheduleRepo.GetYearByTransId(ctx, getreturnTrans.Id)
+			returnTrans.Time = append(returnTrans.Time, timeObj)
+		}
+
+		getScheduleYearReturn, err := t.scheduleRepo.GetYearByTransId(ctx, getreturnTrans.Id,returnTrans.Time[0].ArrivalTime,returnTrans.Time[0].DepartureTime)
+		if err != nil {
+			return nil, err
+		}
+		for _, year := range getScheduleYearReturn {
+			month := make([]models.MonthObj, 0)
+			schedule := models.YearObj{
+				Year:  year.Year,
+				Month: month,
+			}
+			getScheduleMonthReturn, err := t.scheduleRepo.GetMonthByTransId(ctx, getreturnTrans.Id, schedule.Year,returnTrans.Time[0].ArrivalTime,returnTrans.Time[0].DepartureTime)
 			if err != nil {
 				return nil, err
 			}
-			for _, year := range getScheduleYearReturn {
-				month := make([]models.MonthObj, 0)
-				schedule := models.YearObj{
-					Year:  year.Year,
-					Month: month,
+			for _, monthElement := range getScheduleMonthReturn {
+				day := make([]models.DayPriceObj, 0)
+				monthMap := models.MonthObj{
+					Month:    monthElement.Month,
+					DayPrice: day,
 				}
-				getScheduleMonthReturn, err := t.scheduleRepo.GetMonthByTransId(ctx, getreturnTrans.Id, schedule.Year)
+				getScheduleDayReturn, err := t.scheduleRepo.GetDayByTransId(ctx, getreturnTrans.Id, schedule.Year, monthMap.Month,returnTrans.Time[0].ArrivalTime,returnTrans.Time[0].DepartureTime)
 				if err != nil {
 					return nil, err
 				}
-				for _, monthElement := range getScheduleMonthReturn {
-					day := make([]models.DayPriceObj, 0)
-					monthMap := models.MonthObj{
-						Month:    monthElement.Month,
-						DayPrice: day,
-					}
-					getScheduleDayReturn, err := t.scheduleRepo.GetDayByTransId(ctx, getreturnTrans.Id, schedule.Year, monthMap.Month)
-					if err != nil {
-						return nil, err
-					}
-					for _, dayElement := range getScheduleDayReturn {
-						var price models.PriceObj
-						var currency string
-						if dayElement.Price != "" {
-							if errUnmarshal := json.Unmarshal([]byte(dayElement.Price), &price); errUnmarshal != nil {
-								return nil, errUnmarshal
-							}
+				for _, dayElement := range getScheduleDayReturn {
+					var price models.PriceObj
+					var currency string
+					if dayElement.Price != "" {
+						if errUnmarshal := json.Unmarshal([]byte(dayElement.Price), &price); errUnmarshal != nil {
+							return nil, errUnmarshal
 						}
-						if price.Currency == 1 {
-							currency = "USD"
-						} else {
-							currency = "IDR"
-						}
-						dayMap := models.DayPriceObj{
-							DepartureDate: dayElement.DepartureDate.Format("2006-01-02"),
-							Day:           dayElement.Day,
-							AdultPrice:    price.AdultPrice,
-							ChildrenPrice: price.ChildrenPrice,
-							Currency:      currency,
-						}
-						monthMap.DayPrice = append(monthMap.DayPrice, dayMap)
 					}
-					schedule.Month = append(schedule.Month, monthMap)
+					if price.Currency == 1 {
+						currency = "USD"
+					} else {
+						currency = "IDR"
+					}
+					dayMap := models.DayPriceObj{
+						DepartureDate: dayElement.DepartureDate.Format("2006-01-02"),
+						Day:           dayElement.Day,
+						AdultPrice:    price.AdultPrice,
+						ChildrenPrice: price.ChildrenPrice,
+						Currency:      currency,
+					}
+					monthMap.DayPrice = append(monthMap.DayPrice, dayMap)
 				}
-				returnTrans.Schedule = append(returnTrans.Schedule, schedule)
+				schedule.Month = append(schedule.Month, monthMap)
 			}
-			returnTrans.Time = append(returnTrans.Time, timeObj)
+			returnTrans.Schedule = append(returnTrans.Schedule, schedule)
 		}
 		returnTransObj = returnTrans
 	}
@@ -148,58 +150,59 @@ func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*model
 			DepartureTime: element.DepartureTime,
 			ArrivalTime:   element.ArrivalTime,
 		}
-		getScheduleYear, err := t.scheduleRepo.GetYearByTransId(ctx, getDetailTrans.Id)
+		trans.Time = append(trans.Time, timeObj)
+	}
+
+	getScheduleYear, err := t.scheduleRepo.GetYearByTransId(ctx, getDetailTrans.Id,trans.Time[0].ArrivalTime,trans.Time[0].DepartureTime)
+	if err != nil {
+		return nil, err
+	}
+	for _, year := range getScheduleYear {
+		month := make([]models.MonthObj, 0)
+		schedule := models.YearObj{
+			Year:  year.Year,
+			Month: month,
+		}
+		getScheduleMonth, err := t.scheduleRepo.GetMonthByTransId(ctx, getDetailTrans.Id, schedule.Year,trans.Time[0].ArrivalTime,trans.Time[0].DepartureTime)
 		if err != nil {
 			return nil, err
 		}
-		for _, year := range getScheduleYear {
-			month := make([]models.MonthObj, 0)
-			schedule := models.YearObj{
-				Year:  year.Year,
-				Month: month,
+		for _, monthElement := range getScheduleMonth {
+			day := make([]models.DayPriceObj, 0)
+			monthMap := models.MonthObj{
+				Month:    monthElement.Month,
+				DayPrice: day,
 			}
-			getScheduleMonth, err := t.scheduleRepo.GetMonthByTransId(ctx, getDetailTrans.Id, schedule.Year)
+			getScheduleDay, err := t.scheduleRepo.GetDayByTransId(ctx, getDetailTrans.Id, schedule.Year, monthMap.Month,trans.Time[0].ArrivalTime,trans.Time[0].DepartureTime)
 			if err != nil {
 				return nil, err
 			}
-			for _, monthElement := range getScheduleMonth {
-				day := make([]models.DayPriceObj, 0)
-				monthMap := models.MonthObj{
-					Month:    monthElement.Month,
-					DayPrice: day,
-				}
-				getScheduleDay, err := t.scheduleRepo.GetDayByTransId(ctx, getDetailTrans.Id, schedule.Year, monthMap.Month)
-				if err != nil {
-					return nil, err
-				}
-				for _, dayElement := range getScheduleDay {
-					var price models.PriceObj
-					var currency string
-					if dayElement.Price != "" {
-						if errUnmarshal := json.Unmarshal([]byte(dayElement.Price), &price); errUnmarshal != nil {
-							return nil, errUnmarshal
-						}
+			for _, dayElement := range getScheduleDay {
+				var price models.PriceObj
+				var currency string
+				if dayElement.Price != "" {
+					if errUnmarshal := json.Unmarshal([]byte(dayElement.Price), &price); errUnmarshal != nil {
+						return nil, errUnmarshal
 					}
-					if price.Currency == 1 {
-						currency = "USD"
-					} else {
-						currency = "IDR"
-					}
+				}
+				if price.Currency == 1 {
+					currency = "USD"
+				} else {
+					currency = "IDR"
+				}
 
-					dayMap := models.DayPriceObj{
-						DepartureDate: dayElement.DepartureDate.Format("2006-01-02"),
-						Day:           dayElement.Day,
-						AdultPrice:    price.AdultPrice,
-						ChildrenPrice: price.ChildrenPrice,
-						Currency:      currency,
-					}
-					monthMap.DayPrice = append(monthMap.DayPrice, dayMap)
+				dayMap := models.DayPriceObj{
+					DepartureDate: dayElement.DepartureDate.Format("2006-01-02"),
+					Day:           dayElement.Day,
+					AdultPrice:    price.AdultPrice,
+					ChildrenPrice: price.ChildrenPrice,
+					Currency:      currency,
 				}
-				schedule.Month = append(schedule.Month, monthMap)
+				monthMap.DayPrice = append(monthMap.DayPrice, dayMap)
 			}
-			trans.Schedule = append(trans.Schedule, schedule)
+			schedule.Month = append(schedule.Month, monthMap)
 		}
-		trans.Time = append(trans.Time, timeObj)
+		trans.Schedule = append(trans.Schedule, schedule)
 	}
 	transObj = trans
 	var boatDetails models.BoatDetailsObj
