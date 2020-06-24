@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"github.com/auth/user"
+	"github.com/transactions/transaction"
 	"math"
 	"time"
 
@@ -12,15 +14,18 @@ import (
 )
 
 type promoUsecase struct {
+	userUsecase 	user.Usecase
 	promoMerchant  promo_merchant.Repository
 	adminUsecase   admin.Usecase
 	promoRepo      promo.Repository
 	contextTimeout time.Duration
+	transactionRepo transaction.Repository
 }
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPromoUsecase(pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
+func NewPromoUsecase(userUsecase 	user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
 	return &promoUsecase{
+		transactionRepo:transactionRepo,
 		promoMerchant:  pm,
 		promoRepo:      p,
 		adminUsecase:   au,
@@ -296,32 +301,78 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	return promoDto, nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,merchantId string) (*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,merchantId string,token string) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
-
+	var userId string
+	if token != ""{
+		currentUser,err := p.userUsecase.ValidateTokenUser(ctx,token)
+		if err != nil{
+			return nil,models.ErrUnAuthorize
+		}
+		userId = currentUser.Id
+	}
 	promos, err := p.promoRepo.GetByCode(ctx, code,&promoType,merchantId)
 	if err != nil {
 		return nil, err
 	}
-	promoDto := make([]*models.PromoDto, len(promos))
-	for i, p := range promos {
-		promoDto[i] = &models.PromoDto{
-			Id:         p.Id,
-			PromoCode:  p.PromoCode,
-			PromoName:  p.PromoName,
-			PromoDesc:  p.PromoDesc,
-			PromoValue: p.PromoValue,
-			PromoType:  p.PromoType,
-			PromoImage: p.PromoImage,
-			StartDate:          p.StartDate,
-			EndDate:            p.EndDate,
-			Currency:           p.CurrencyId,
-			MaxUsage:           p.MaxUsage,
-			ProductionCapacity: p.ProductionCapacity,
-			PromoProductType:p.PromoProductType,
+	if userId != ""{
+		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+		if err != nil {
+			return nil, err
+		}
+		var productCapacity int
+		if promos[0].ProductionCapacity != nil {
+			productCapacity = *promos[0].ProductionCapacity
+		}
+		count := productCapacity - countAlreadyUse
+		if count < 1  {
+			return nil,models.ErrNotFound
+		}
+
+		countAlreadyUseWithCurrentUser ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,userId)
+		if err != nil {
+			return nil, err
+		}
+		var maxUsage int
+		if promos[0].MaxUsage != nil {
+			maxUsage = *promos[0].MaxUsage
+		}
+		countUsage := maxUsage - countAlreadyUseWithCurrentUser
+		if countUsage < 1  {
+			return nil,models.ErrNotFound
+		}
+
+	}else {
+		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+		if err != nil {
+			return nil, err
+		}
+		var productCapacity int
+		if promos[0].ProductionCapacity != nil {
+			productCapacity = *promos[0].ProductionCapacity
+		}
+		count := productCapacity - countAlreadyUse
+		if count < 1  {
+			return nil,models.ErrNotFound
 		}
 	}
+	promoDto := &models.PromoDto{
+			Id:         promos[0].Id,
+			PromoCode:  promos[0].PromoCode,
+			PromoName:  promos[0].PromoName,
+			PromoDesc:  promos[0].PromoDesc,
+			PromoValue: promos[0].PromoValue,
+			PromoType:  promos[0].PromoType,
+			PromoImage: promos[0].PromoImage,
+			StartDate:  promos[0].StartDate,
+			EndDate:    promos[0].EndDate,
+			Currency:   promos[0].CurrencyId,
+			MaxUsage:   promos[0].MaxUsage,
+			ProductionCapacity: promos[0].ProductionCapacity,
+			PromoProductType:promos[0].PromoProductType,
+		}
 
-	return promoDto[0], nil
+
+	return promoDto, nil
 }

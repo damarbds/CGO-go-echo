@@ -21,6 +21,33 @@ type transactionRepository struct {
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
+func (t transactionRepository) GetCountTransactionByPromoId(ctx context.Context,promoId string,userId string) (int, error) {
+	query := `select count(*) from transactions a
+											join booking_exps b on a.booking_exp_id = b.id 
+											where a.status in (0,1,2,5)
+												and a.promo_id = ? `
+
+	if userId != ""{
+		query = query + ` and b.user_id = '` + userId + `'`
+	}else {
+		query = query + ` and b.user_id != '' `
+	}
+
+	rows, err := t.Conn.QueryContext(ctx, query, promoId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (t transactionRepository) GetIdTransactionExpired(ctx context.Context) ([]*string, error) {
 	query := `SELECT t.id
 					FROM transactions t 

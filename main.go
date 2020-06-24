@@ -325,7 +325,7 @@ func main() {
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase, harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
-	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
 	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		currencyUcase,

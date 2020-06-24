@@ -310,6 +310,10 @@ func (a *promoHandler) GetDetailID(c echo.Context) error {
 }
 
 func (a *promoHandler) GetPromoByCode(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
 	code := c.Param("code")
 
 	promoProductType := c.QueryParam("promo_type")
@@ -322,7 +326,7 @@ func (a *promoHandler) GetPromoByCode(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	results, err := a.promoUsecase.GetByCode(ctx, code,promoType,merchantId)
+	results, err := a.promoUsecase.GetByCode(ctx, code,promoType,merchantId,token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
