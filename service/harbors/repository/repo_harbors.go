@@ -152,8 +152,9 @@ func (m *harborsRepository) Fetch(ctx context.Context, limit, offset int) ([]*mo
 }
 
 func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string,harborsType string) ([]*models.HarborsWCPC, error) {
-
-	search = "%" + search + "%"
+	if search != ""{
+		search = "%" + search + "%"
+	}
 	if page != nil && size != nil && search != "" {
 		query := `Select 
 				h.id, 
