@@ -325,13 +325,13 @@ func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*str
 	a.Id = uuid.New().String()
 	query := `INSERT harbors SET id=?,created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
-				harbors_image=?,city_id=?`
+				harbors_image=?,city_id=?,harbors_type=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.HarborsName, a.HarborsLongitude,
-		a.HarborsLatitude, a.HarborsImage, a.CityId)
+		a.HarborsLatitude, a.HarborsImage, a.CityId,a.HarborsType)
 	if err != nil {
 		return nil, err
 	}
@@ -346,7 +346,7 @@ func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*str
 }
 func (m *harborsRepository) Update(ctx context.Context, a *models.Harbors) error {
 	query := `UPDATE harbors set modified_by=?, modified_date=? ,  harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
-				harbors_image=?,city_id=? WHERE id = ?`
+				harbors_image=?,city_id=?,harbors_type=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -354,7 +354,7 @@ func (m *harborsRepository) Update(ctx context.Context, a *models.Harbors) error
 	}
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.HarborsName, a.HarborsLongitude,
-		a.HarborsLatitude, a.HarborsImage, a.CityId, a.Id)
+		a.HarborsLatitude, a.HarborsImage, a.CityId, a.HarborsType,a.Id)
 	if err != nil {
 		return err
 	}

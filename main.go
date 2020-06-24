@@ -4,13 +4,14 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"fmt"
-	"github.com/models"
-	"github.com/service/transportation/delivery/events"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/models"
+	"github.com/service/transportation/delivery/events"
 
 	_merchantUcase "github.com/auth/merchant/usecase"
 	_ "github.com/go-sql-driver/mysql"
@@ -192,7 +193,7 @@ func main() {
 	//prd
 	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
 	//local
-	//baseUrlLocal := "http://localhost:9090"
+	// baseUrlLocal := "http://localhost:9090"
 
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
@@ -307,8 +308,8 @@ func main() {
 	timeoutContext := time.Duration(30) * time.Second
 
 	createNotifier := events.UserCreatedNotifier{
-		BaseUrl:baseUrlLocal,
-		Schedule:models.NewCommandSchedule{},
+		BaseUrl:  baseUrlLocal,
+		Schedule: models.NewCommandSchedule{},
 	}
 
 	events.UserCreated.Register(createNotifier)
@@ -357,7 +358,7 @@ func main() {
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(adminUsecase, facilityRepo, timeoutContext)
-	transportationUcase := _transportationUcase.NewTransportationUsecase(expFacilitesRepo,facilityRepo,transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
+	transportationUcase := _transportationUcase.NewTransportationUsecase(expFacilitesRepo, facilityRepo, transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(adminUsecase, merchantUsecase, paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo, adminUsecase, balanceHistoryRepo, merchantUsecase, timeoutContext)

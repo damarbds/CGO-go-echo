@@ -822,22 +822,16 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 				}
 			}
 
-			for _, year := range newCommandTransportation.ReturnRoute.Schedule {
-				for _, month := range year.Month {
-					schedule := models.NewCommandSchedule{
-						TimeObj:   newCommandTransportation.ReturnRoute.Time,
-						CreatedBy: currentUserMerchant.MerchantEmail,
-						TransId:   *insertTransportationReturn,
-						DayPrice:  month.DayPrice,
-						Month:     month.Month,
-						Year:      year.Year,
-					}
-					events.UserCreated.Trigger(events.UserCreatedPayload{
-						Schedule: schedule,
-					})
-
-				}
+			schedule := models.NewCommandSchedule{
+				TimeObj:   newCommandTransportation.ReturnRoute.Time,
+				CreatedBy: currentUserMerchant.MerchantEmail,
+				TransId:   *insertTransportationReturn,
+				Schedule:  newCommandTransportation.ReturnRoute.Schedule,
 			}
+			events.UserCreated.Trigger(events.UserCreatedPayload{
+				Schedule: schedule,
+			})
+
 			transportation.ReturnTransId = insertTransportationReturn
 		}
 	}
@@ -864,21 +858,16 @@ func (t transportationUsecase) CreateTransportation(c context.Context, newComman
 		}
 	}
 
-	for _, year := range newCommandTransportation.DepartureRoute.Schedule {
-		for _, month := range year.Month {
-			schedule := models.NewCommandSchedule{
-				TimeObj:   newCommandTransportation.DepartureRoute.Time,
-				CreatedBy: currentUserMerchant.MerchantEmail,
-				TransId:   *insertTransportation,
-				Month:     month.Month,
-				Year:      year.Year,
-				DayPrice:  month.DayPrice,
-			}
-			events.UserCreated.Trigger(events.UserCreatedPayload{
-				Schedule: schedule,
-			})
-		}
+	schedule := models.NewCommandSchedule{
+		TimeObj:   newCommandTransportation.DepartureRoute.Time,
+		CreatedBy: currentUserMerchant.MerchantEmail,
+		TransId:   *insertTransportation,
+		Schedule:  newCommandTransportation.DepartureRoute.Schedule,
 	}
+	events.UserCreated.Trigger(events.UserCreatedPayload{
+		Schedule: schedule,
+	})
+
 	var status string
 	if newCommandTransportation.Status == 1 {
 		status = "Draft"
@@ -999,22 +988,16 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 			if errorDelete != nil {
 				return nil, errorDelete
 			}
-			for _, year := range newCommandTransportation.ReturnRoute.Schedule {
-				for _, month := range year.Month {
-					schedule := models.NewCommandSchedule{
-						TimeObj:   newCommandTransportation.ReturnRoute.Time,
-						CreatedBy: currentUserMerchant.MerchantEmail,
-						TransId:   *insertTransportationReturn,
-						DayPrice:  month.DayPrice,
-						Month:     month.Month,
-						Year:      year.Year,
-					}
-					events.UserCreated.Trigger(events.UserCreatedPayload{
-						Schedule: schedule,
-					})
-
-				}
+			schedule := models.NewCommandSchedule{
+				TimeObj:   newCommandTransportation.ReturnRoute.Time,
+				CreatedBy: currentUserMerchant.MerchantEmail,
+				TransId:   *insertTransportationReturn,
+				Schedule:  newCommandTransportation.ReturnRoute.Schedule,
 			}
+			events.UserCreated.Trigger(events.UserCreatedPayload{
+				Schedule: schedule,
+			})
+
 			transportation.ReturnTransId = insertTransportationReturn
 		}
 	}
@@ -1048,21 +1031,16 @@ func (t transportationUsecase) UpdateTransportation(c context.Context, newComman
 		return nil, errorDelete
 	}
 
-	for _, year := range newCommandTransportation.DepartureRoute.Schedule {
-		for _, month := range year.Month {
-			schedule := models.NewCommandSchedule{
-				TimeObj:   newCommandTransportation.DepartureRoute.Time,
-				CreatedBy: currentUserMerchant.MerchantEmail,
-				TransId:   *insertTransportation,
-				Month:     month.Month,
-				Year:      year.Year,
-				DayPrice:  month.DayPrice,
-			}
-			events.UserCreated.Trigger(events.UserCreatedPayload{
-				Schedule: schedule,
-			})
-		}
+	schedule := models.NewCommandSchedule{
+		TimeObj:   newCommandTransportation.DepartureRoute.Time,
+		CreatedBy: currentUserMerchant.MerchantEmail,
+		TransId:   *insertTransportation,
+		Schedule:  newCommandTransportation.DepartureRoute.Schedule,
 	}
+	events.UserCreated.Trigger(events.UserCreatedPayload{
+		Schedule: schedule,
+	})
+
 	var status string
 	if newCommandTransportation.Status == 0 {
 		status = "Draft"

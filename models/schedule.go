@@ -74,8 +74,6 @@ type NewCommandSchedule struct {
 	TimeObj []TimeObj `json:"time_obj"`
 	CreatedBy string	`json:"created_by"`
 	TransId string	`json:"trans_id"`
-	DayPrice 		[]DayPriceObj	`json:"day_price"`
-	Month         string     `json:"month"`
-	Year          int        `json:"year"`
+	Schedule      []YearObj `json:"schedule"`
 }
 

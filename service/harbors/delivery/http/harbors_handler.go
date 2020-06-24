@@ -1,12 +1,13 @@
 package http
 
 import (
-	"github.com/auth/identityserver"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/auth/identityserver"
 
 	"github.com/labstack/echo"
 	"github.com/models"
@@ -23,15 +24,15 @@ type ResponseError struct {
 
 // harborsHandler  represent the httphandler for harbors
 type harborsHandler struct {
-	isUsecase identityserver.Usecase
+	isUsecase      identityserver.Usecase
 	harborsUsecase harbors.Usecase
 }
 
 // NewharborsHandler will initialize the harborss/ resources endpoint
-func NewharborsHandler(e *echo.Echo, us harbors.Usecase,isUsecase identityserver.Usecase) {
+func NewharborsHandler(e *echo.Echo, us harbors.Usecase, isUsecase identityserver.Usecase) {
 	handler := &harborsHandler{
 		harborsUsecase: us,
-		isUsecase:isUsecase,
+		isUsecase:      isUsecase,
 	}
 	e.GET("service/exp-destination", handler.GetAllHarbors)
 	e.POST("master/harbors", handler.CreateHarbors)
@@ -63,13 +64,13 @@ func (a *harborsHandler) GetAllHarbors(c echo.Context) error {
 	if qpage != "" && qsize != "" {
 		page, _ := strconv.Atoi(qpage)
 		size, _ := strconv.Atoi(qsize)
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, &size, &page, search,harborsType)
+		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, &size, &page, search, harborsType)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
 	} else {
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, nil, nil, search,harborsType)
+		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, nil, nil, search, harborsType)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -115,13 +116,14 @@ func (a *harborsHandler) ListHarbors(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.harborsUsecase.GetAll(ctx, page,limit,offset)
+	art, err := a.harborsUsecase.GetAll(ctx, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, art)
 
 }
+
 // Store will store the user by given request body
 func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -161,10 +163,10 @@ func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 		}
 	}
 
-
 	cityId, _ := strconv.Atoi(c.FormValue("city_id"))
-	harborsLongitude,_ := strconv.ParseFloat(c.FormValue("harbors_longitude"),64)
-	harborsLatitude,_ := strconv.ParseFloat(c.FormValue("harbors_latitude"),64)
+	harborsLongitude, _ := strconv.ParseFloat(c.FormValue("harbors_longitude"), 64)
+	harborsLatitude, _ := strconv.ParseFloat(c.FormValue("harbors_latitude"), 64)
+	harborsType, _ := strconv.Atoi(c.FormValue("harbors_type"))
 	harborsCommand := models.NewCommandHarbors{
 		Id:               c.FormValue("id"),
 		HarborsName:      c.FormValue("harbors_name"),
@@ -172,13 +174,14 @@ func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 		HarborsLatitude:  harborsLatitude,
 		HarborsImage:     imagePath,
 		CityId:           cityId,
+		HarborsType:      harborsType,
 	}
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	harbors,error := a.harborsUsecase.Create(ctx,&harborsCommand,token)
+	harbors, error := a.harborsUsecase.Create(ctx, &harborsCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -224,10 +227,10 @@ func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
 		}
 	}
 
-
 	cityId, _ := strconv.Atoi(c.FormValue("city_id"))
-	harborsLongitude,_ := strconv.ParseFloat(c.FormValue("harbors_longitude"),64)
-	harborsLatitude,_ := strconv.ParseFloat(c.FormValue("harbors_latitude"),64)
+	harborsLongitude, _ := strconv.ParseFloat(c.FormValue("harbors_longitude"), 64)
+	harborsLatitude, _ := strconv.ParseFloat(c.FormValue("harbors_latitude"), 64)
+	harborsType, _ := strconv.Atoi(c.FormValue("harbors_type"))
 	harborsCommand := models.NewCommandHarbors{
 		Id:               c.FormValue("id"),
 		HarborsName:      c.FormValue("harbors_name"),
@@ -235,13 +238,14 @@ func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
 		HarborsLatitude:  harborsLatitude,
 		HarborsImage:     imagePath,
 		CityId:           cityId,
+		HarborsType:      harborsType,
 	}
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	harbors,error := a.harborsUsecase.Update(ctx,&harborsCommand,token)
+	harbors, error := a.harborsUsecase.Update(ctx, &harborsCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -256,7 +260,7 @@ func (a *harborsHandler) GetDetailHarborsID(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	result, err := a.harborsUsecase.GetById(ctx,id)
+	result, err := a.harborsUsecase.GetById(ctx, id)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

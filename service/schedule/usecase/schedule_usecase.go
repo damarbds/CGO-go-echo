@@ -37,57 +37,67 @@ func NewScheduleUsecase(tr transportation.Repository, mr merchant.Usecase, s sch
 }
 
 func (s scheduleUsecase) InsertSchedule(c context.Context, command *models.NewCommandSchedule) (*models.NewCommandSchedule, error) {
-	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	timeoutContext := time.Duration(3) * time.Hour
+	ctx, cancel := context.WithTimeout(c, timeoutContext)
 	defer cancel()
-
-	defer cancel()
-	//for _, month := range year.Month {
-	for _, day := range command.DayPrice {
-		for _, times := range command.TimeObj {
-			var currency int
-			if day.Currency == "USD" {
-				currency = 1
-			} else {
-				currency = 0
-			}
-			priceObj := models.PriceObj{
-				AdultPrice:    day.AdultPrice,
-				ChildrenPrice: day.ChildrenPrice,
-				Currency:      currency,
-			}
-			departureTimeOption, err := s.timeOptionsRepo.GetByTime(ctx, times.DepartureTime)
-			if err != nil {
-				//return nil, err
-			}
-			arrivalTimeOption, err := s.timeOptionsRepo.GetByTime(ctx, times.ArrivalTime)
-			if err != nil {
-				//return nil, err
-			}
-			price, _ := json.Marshal(priceObj)
-			schedule := models.Schedule{
-				Id:                    "",
-				CreatedBy:             command.CreatedBy,
-				CreatedDate:           time.Time{},
-				ModifiedBy:            nil,
-				ModifiedDate:          nil,
-				DeletedBy:             nil,
-				DeletedDate:           nil,
-				IsDeleted:             0,
-				IsActive:              0,
-				TransId:               command.TransId,
-				DepartureTime:         times.DepartureTime,
-				ArrivalTime:           times.ArrivalTime,
-				Day:                   day.Day,
-				Month:                 command.Month,
-				Year:                  command.Year,
-				DepartureDate:         day.DepartureDate,
-				Price:                 string(price),
-				DepartureTimeoptionId: &departureTimeOption.Id,
-				ArrivalTimeoptionId:   &arrivalTimeOption.Id,
-			}
-			_, err = s.scheduleRepo.Insert(ctx, schedule)
-			if err != nil {
-				//return nil, err
+	for _, year := range command.Schedule {
+		for _, month := range year.Month {
+			for _, day := range month.DayPrice {
+				for _, times := range command.TimeObj {
+					var currency int
+					if day.Currency == "USD" {
+						currency = 1
+					} else {
+						currency = 0
+					}
+					priceObj := models.PriceObj{
+						AdultPrice:    day.AdultPrice,
+						ChildrenPrice: day.ChildrenPrice,
+						Currency:      currency,
+					}
+					departureTimeOption, err := s.timeOptionsRepo.GetByTime(ctx, times.DepartureTime)
+					if err != nil {
+						//return nil, err
+					}
+					arrivalTimeOption, err := s.timeOptionsRepo.GetByTime(ctx, times.ArrivalTime)
+					if err != nil {
+						//return nil, err
+					}
+					var departureTimeId *int
+					var arrivalTImeId *int
+					if departureTimeOption != nil {
+						departureTimeId = &departureTimeOption.Id
+					}
+					if arrivalTimeOption != nil {
+						arrivalTImeId = &arrivalTimeOption.Id
+					}
+					price, _ := json.Marshal(priceObj)
+					schedule := models.Schedule{
+						Id:                    "",
+						CreatedBy:             command.CreatedBy,
+						CreatedDate:           time.Time{},
+						ModifiedBy:            nil,
+						ModifiedDate:          nil,
+						DeletedBy:             nil,
+						DeletedDate:           nil,
+						IsDeleted:             0,
+						IsActive:              0,
+						TransId:               command.TransId,
+						DepartureTime:         times.DepartureTime,
+						ArrivalTime:           times.ArrivalTime,
+						Day:                   day.Day,
+						Month:                 month.Month,
+						Year:                  year.Year,
+						DepartureDate:         day.DepartureDate,
+						Price:                 string(price),
+						DepartureTimeoptionId: departureTimeId,
+						ArrivalTimeoptionId:   arrivalTImeId,
+					}
+					_, err = s.scheduleRepo.Insert(ctx, schedule)
+					if err != nil {
+						//return nil, err
+					}
+				}
 			}
 		}
 	}

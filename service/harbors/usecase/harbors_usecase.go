@@ -73,6 +73,7 @@ func (m harborsUsecase) GetAll(c context.Context, page, limit, size int) (*model
 			HarborsLatitude:  element.HarborsLatitude,
 			HarborsImage:     element.HarborsImage,
 			CityId:           element.CityId,
+			HarborsType:element.HarborsType,
 		}
 
 		harborsDtos = append(harborsDtos,&dto)
@@ -123,6 +124,7 @@ func (m harborsUsecase) GetById(c context.Context, id string) (*models.HarborsDt
 		HarborsLatitude:  getById.HarborsLatitude,
 		HarborsImage:     getById.HarborsImage,
 		CityId:           getById.CityId,
+		HarborsType:getById.HarborsType,
 	}
 
 	return &result,nil
@@ -152,6 +154,7 @@ func (m harborsUsecase) Create(ctx context.Context, p *models.NewCommandHarbors,
 		HarborsLatitude:  p.HarborsLatitude,
 		HarborsImage:     p.HarborsImage,
 		CityId:           p.CityId,
+		HarborsType:		&p.HarborsType,
 	}
 	harborsId,err := m.harborsRepo.Insert(ctx,&harbors)
 	if err != nil {
@@ -188,6 +191,7 @@ func (m harborsUsecase) Update(ctx context.Context, p *models.NewCommandHarbors,
 		HarborsLatitude:  p.HarborsLatitude,
 		HarborsImage:     p.HarborsImage,
 		CityId:           p.CityId,
+		HarborsType:		&p.HarborsType,
 	}
 	err = m.harborsRepo.Update(ctx,&harbors)
 	if err != nil {
