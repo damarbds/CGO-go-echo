@@ -1029,6 +1029,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
 		ExpPaymentDeadlineType:   &commandExperience.ExpPaymentDeadlineType,
 		IsCustomisedByUser:       &commandExperience.IsCustomisedByUser,
+		ExpLocationMapName: commandExperience.ExpLocationMapName 	,
+		ExpLatitudeMap 		:commandExperience.ExpLatitudeMap,
+		ExpLongitudeMap		:commandExperience.ExpLongitudeMap,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1300,6 +1303,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
 		ExpPaymentDeadlineType:   &commandExperience.ExpPaymentDeadlineType,
 		IsCustomisedByUser:       &commandExperience.IsCustomisedByUser,
+		ExpLocationMapName: commandExperience.ExpLocationMapName 	,
+		ExpLatitudeMap 		:commandExperience.ExpLatitudeMap,
+		ExpLongitudeMap		:commandExperience.ExpLongitudeMap,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1623,6 +1629,21 @@ func (m experienceUsecase) GetByID(c context.Context, id string,currencyPrice st
 			} else {
 				currency = "IDR"
 			}
+			if currencyPrice == "USD"{
+				if currency == "IDR"{
+					convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+					calculatePrice := convertCurrency.Rates.USD * element.Amount
+					element.Amount = calculatePrice
+					currency = "USD"
+				}
+			}else if currencyPrice =="IDR"{
+				if currency == "USD"{
+					convertCurrency ,_ := m.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+					calculatePrice := convertCurrency.Rates.IDR * element.Amount
+					element.Amount = calculatePrice
+					currency = "IDR"
+				}
+			}
 			addOns := models.ExperienceAddOnObj{
 				Id:       element.Id,
 				Name:     element.Name,
@@ -1850,6 +1871,9 @@ func (m experienceUsecase) GetByID(c context.Context, id string,currencyPrice st
 		ExpPaymentDeadlineAmount: res.ExpPaymentDeadlineAmount,
 		ExpPaymentDeadlineType:   res.ExpPaymentDeadlineType,
 		IsCustomisedByUser:       res.IsCustomisedByUser,
+		ExpLocationMapName 	: res.ExpLocationMapName,
+		ExpLatitudeMap 	:res.ExpLatitudeMap,
+		ExpLongitudeMap	:res.ExpLongitudeMap,
 	}
 	return &experiences, nil
 }

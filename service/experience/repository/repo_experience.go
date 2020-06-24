@@ -955,7 +955,8 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 				exp_pickup_place_latitude=?,exp_pickup_place_maps_name=?,exp_itinerary=?,exp_facilities=?,exp_inclusion=?,
 				exp_rules=?,status=?,rating=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
 				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=?,exp_payment_deadline_amount=?,
-				exp_payment_deadline_type=?,is_customised_by_user=?`
+				exp_payment_deadline_type=?,is_customised_by_user=?,exp_location_map_name=?,exp_latitude_map=?,
+				exp_longitude_map = ?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -965,7 +966,7 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.Rating, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
 		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType, a.IsCustomisedByUser)
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser,a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap)
 	if err != nil {
 		return nil, err
 	}
@@ -1007,7 +1008,8 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 				exp_pickup_place_latitude=?,exp_pickup_place_maps_name=?,exp_itinerary=?,exp_facilities=?,exp_inclusion=?,
 				exp_rules=?,status=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
 				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=? ,exp_payment_deadline_amount=?,
-				exp_payment_deadline_type=?,is_customised_by_user=? WHERE id=?`
+				exp_payment_deadline_type=?,is_customised_by_user=? ,exp_location_map_name=?,exp_latitude_map=?,
+				exp_longitude_map = ? WHERE id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -1017,7 +1019,7 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
 		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType, a.IsCustomisedByUser, a.Id)
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser, a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap,a.Id)
 	if err != nil {
 		return nil, err
 	}
