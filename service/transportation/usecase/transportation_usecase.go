@@ -46,7 +46,7 @@ func NewTransportationUsecase(expFacilitiesRepo exp_facilities.Repository, facil
 	}
 }
 
-func (t transportationUsecase) GetPublishedTransCount(ctx context.Context, token string) (*int, error) {
+func (t transportationUsecase) GetPublishedTransCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
@@ -58,7 +58,7 @@ func (t transportationUsecase) GetPublishedTransCount(ctx context.Context, token
 	if err != nil {
 		return nil, err
 	}
-	return &count,nil
+	return &models.Count{Count: count}, nil
 
 }
 func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*models.TransportationDto, error) {
