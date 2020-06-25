@@ -83,12 +83,15 @@ func (m merchantUsecase) ServiceCount(ctx context.Context, token string) (*model
 
 	getInfoToIs, err := m.identityServerUc.GetUserInfo(token)
 	if err != nil {
-		return nil, err
+		return nil, models.ErrUnAuthorize
 	}
-
-	existedMerchant, _ := m.merchantRepo.GetByMerchantEmail(ctx, getInfoToIs.Email)
+	existedUserMerchant,_:= m.userMerchantRepo.GetByUserEmail(ctx,getInfoToIs.Email)
+	if existedUserMerchant == nil {
+		return nil, models.ErrUnAuthorize
+	}
+	existedMerchant, _ := m.merchantRepo.GetByID(ctx, existedUserMerchant.MerchantId)
 	if existedMerchant == nil {
-		return nil, models.ErrNotFound
+		return nil, models.ErrUnAuthorize
 	}
 
 	expCount, err := m.expRepo.GetExpCount(ctx, existedMerchant.Id)
