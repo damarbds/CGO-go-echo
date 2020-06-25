@@ -395,8 +395,6 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			transactionStatus = 0
 		} else if status == "waitingApproval" {
 			transactionStatus = 1
-			query = query + ` t.status = 5 `
-			queryT = queryT + ` t.status = 5 `
 		} else if status == "confirm" {
 			transactionStatus = 2
 			query = query + ` AND b.booking_date > CURRENT_DATE `
@@ -410,8 +408,15 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			query = query + ` AND b.booking_date < CURRENT_DATE `
 			queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
 		}
-		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
-		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		var querySt string
+		var queryTSt string
+		if status == "waitingApproval"{
+			querySt = query + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
+			queryTSt = queryT + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
+		}else {
+			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		}
 		unionQuery = querySt + ` UNION ` + queryTSt
 		if tripType != "" && activityType == ""{
 			unionQuery = querySt
