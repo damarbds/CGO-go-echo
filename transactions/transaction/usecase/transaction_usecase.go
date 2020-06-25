@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/auth/admin"
 	"github.com/auth/merchant"
+	"github.com/service/promo"
 	"math"
 	"strings"
 	"time"
@@ -20,10 +21,12 @@ type transactionUsecase struct {
 	experiencePaymentTypeRepo exp_payment.Repository
 	transactionRepo           transaction.Repository
 	contextTimeout            time.Duration
+	promoRepo 				promo.Repository
 }
 
-func NewTransactionUsecase(au admin.Usecase,mu merchant.Usecase,ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
+func NewTransactionUsecase(promoRepo promo.Repository,au admin.Usecase,mu merchant.Usecase,ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
 	return &transactionUsecase{
+		promoRepo:promoRepo,
 		adminUsecase:au,
 		merchantUsecase:mu,
 		experiencePaymentTypeRepo: ep,
@@ -80,6 +83,14 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 
 	transactions := make([]*models.TransactionDto, len(list))
 	for i, item := range list {
+		var promo *models.PromoTransaction
+		if item.PromoId != nil {
+			getPromo,_:= t.promoRepo.GetById(ctx,*item.PromoId)
+			promo = &models.PromoTransaction{
+				PromoValue: getPromo.PromoValue,
+				PromoType:  getPromo.PromoType,
+			}
+		}
 		var expType []string
 		if item.ExpType != "" {
 			if !strings.Contains(item.ExpType, "]") {
@@ -175,6 +186,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			Merchant:              item.MerchantName,
 			OrderId:			   item.OrderId,
 			GuestCount:expGuest,
+			Promo:promo,
 		}
 		if expType[0] != "Transportation"{
 			transactions[i].ExpDuration  = *item.ExpDuration

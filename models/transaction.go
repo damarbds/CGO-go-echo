@@ -130,6 +130,7 @@ type TransactionOut struct {
 	ExpDuration 		*int 		`json:"exp_duration"`
 	ProvinceName 		*string		`json:"province_name"`
 	CountryName 		*string 		`json:"country_name"`
+	PromoId 			*string		`json:"promo_id"`
 }
 
 type TransactionDto struct {
@@ -153,8 +154,12 @@ type TransactionDto struct {
 	ExpDuration 			int 		`json:"exp_duration"`
 	ProvinceName 			string		`json:"province_name"`
 	CountryName 		string			`json:"country_name"`
+	Promo				*PromoTransaction `json:"promo"`
 }
-
+type PromoTransaction struct {
+	PromoValue 			float64	`json:"promo_value"`
+	PromoType 			int	`json:"promo_type"`
+}
 type TransactionWithPagination struct {
 	Data []*TransactionDto `json:"data"`
 	Meta *MetaPagination   `json:"meta"`
