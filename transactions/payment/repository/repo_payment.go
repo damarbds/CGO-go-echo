@@ -13,9 +13,43 @@ type paymentRepository struct {
 	Conn *sql.DB
 }
 
+
 // NewPaymentRepository will create an object that represent the article.repository interface
 func NewPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &paymentRepository{Conn}
+}
+func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment *models.ConfirmTransactionPayment)error {
+	query := `
+	UPDATE
+		transactions,
+		booking_exps
+	SET
+		transactions.status = ?,
+		booking_exps.status = ?
+	WHERE
+		booking_exp_id = booking_exps.id
+		AND DATE(booking_exps.booking_date) = ? `
+
+	if payment.TransId != ""{
+		query = query + ` AND booking_exps.trans_id = '` + payment.TransId + `'`
+	}else if payment.ExpId != ""{
+		query = query + ` AND booking_exps.exp_id = '` + payment.ExpId + `'`
+	}
+	stmt, err := p.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx,
+		payment.TransactionStatus,
+		payment.BookingStatus,
+		payment.BookingDate,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p paymentRepository) Insert(ctx context.Context, pay *models.Transaction) (*models.Transaction, error) {

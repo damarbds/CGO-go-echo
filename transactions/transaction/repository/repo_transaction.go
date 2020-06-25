@@ -695,6 +695,27 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 
 	return count, nil
 }
+func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate string, transId string, expId string) ([]*models.TransactionWMerchant, error) {
+	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title,b.booking_date 
+				FROM transactions t
+				join booking_exps b on t.booking_exp_id = b.id
+				join experiences e on b.exp_id = e.id 
+				WHERE DATE(b.booking_date) = ?`
+	if expId != ""{
+		query = query + ` AND b.exp_id != '' `
+	}
+	list, err := m.fetch(ctx, query, bookingDate)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) > 0 {
+		return list, nil
+	} else {
+		return make([]*models.TransactionWMerchant,0), models.ErrNotFound
+	}
+	return nil, nil
+}
 
 func (m transactionRepository) GetById(ctx context.Context, id string) (*models.TransactionWMerchant, error) {
 	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title,b.booking_date FROM transactions t

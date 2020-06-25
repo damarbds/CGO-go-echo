@@ -73,7 +73,11 @@ type PaymentTransaction struct {
 	Message       string `json:"message"`
 	TransactionID string `json:"transaction_id"`
 }
-
+type PaymentTransactionBookingDate struct {
+	Status        int    `json:"status"`
+	Message       string `json:"message"`
+	BookingDate string `json:"transaction_id"`
+}
 type TransactionIn struct {
 	BookingType         int     `json:"booking_type,omitempty"`
 	BookingId           string  `json:"booking_id"`
@@ -96,6 +100,13 @@ type ConfirmPaymentIn struct {
 	TransactionID     string `json:"transaction_id"`
 	TransactionStatus int    `json:"transaction_status,omitempty"`
 	BookingStatus     int    `json:"booking_status,omitempty"`
+}
+type ConfirmTransactionPayment struct {
+	ExpId 	string	`json:"exp_id"`
+	TransId string	`json:"trans_id"`
+	TransactionStatus int 	`json:"transaction_status"`
+	BookingStatus int `json:"booking_status"`
+	BookingDate string `json:"booking_date"`
 }
 
 type TransactionOut struct {
