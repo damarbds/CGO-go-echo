@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	"github.com/misc/currency"
 	"math"
 	"sort"
 	"strconv"
@@ -30,11 +31,13 @@ type transportationUsecase struct {
 	contextTimeout     time.Duration
 	expFacilitiesRepo  exp_facilities.Repository
 	facilitiesRepo     facilities.Repository
+	currencyUsecase	currency.Usecase
 }
 
 
-func NewTransportationUsecase(expFacilitiesRepo exp_facilities.Repository, facilitiesRepo facilities.Repository, transr transaction.Repository, tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
+func NewTransportationUsecase(currencyUsecase	currency.Usecase,expFacilitiesRepo exp_facilities.Repository, facilitiesRepo facilities.Repository, transr transaction.Repository, tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
 	return &transportationUsecase{
+		currencyUsecase:currencyUsecase,
 		expFacilitiesRepo:  expFacilitiesRepo,
 		facilitiesRepo:     facilitiesRepo,
 		transactionRepo:    transr,
@@ -304,6 +307,7 @@ func (t transportationUsecase) FilterSearchTrans(
 	offset int,
 	returnTransId string,
 	notReturn string,
+	currencyPrice string,
 ) (*models.FilterSearchTransWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
@@ -594,6 +598,25 @@ func (t transportationUsecase) FilterSearchTrans(
 				transPrice.CurrencyLabel = "USD"
 			} else {
 				transPrice.CurrencyLabel = "IDR"
+			}
+			if currencyPrice == "USD"{
+				if transPrice.CurrencyLabel == "IDR"{
+					convertCurrency ,_ := t.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+					calculatePriceAdult := convertCurrency.Rates.USD * transPrice.AdultPrice
+					transPrice.AdultPrice = calculatePriceAdult
+					calculatePriceChildren := convertCurrency.Rates.USD * transPrice.ChildrenPrice
+					transPrice.ChildrenPrice = calculatePriceChildren
+					transPrice.CurrencyLabel = "USD"
+				}
+			}else if currencyPrice =="IDR"{
+				if transPrice.CurrencyLabel == "USD"{
+					convertCurrency ,_ := t.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+					calculatePriceAdult := convertCurrency.Rates.USD * transPrice.AdultPrice
+					transPrice.AdultPrice = calculatePriceAdult
+					calculatePriceChildren := convertCurrency.Rates.USD * transPrice.ChildrenPrice
+					transPrice.ChildrenPrice = calculatePriceChildren
+					transPrice.CurrencyLabel = "IDR"
+				}
 			}
 		}
 
