@@ -35,7 +35,7 @@ func NewPaymentHandler(e *echo.Echo, pus payment.Usecase, bus booking_exp.Usecas
 	}
 	e.POST("/transaction/payments", handler.CreatePayment)
 	e.PUT("/transaction/payments/confirm", handler.ConfirmPayment)
-	e.PUT("/transaction/payments/confirm", handler.ConfirmPaymentByDate)
+	e.PUT("/transaction/payments/confirm-by-date", handler.ConfirmPaymentByDate)
 }
 
 func isRequestValid(m *models.TransactionIn) (bool, error) {
@@ -71,8 +71,8 @@ func (p *paymentHandler) ConfirmPaymentByDate(c echo.Context) error {
 	}
 
 	response := &models.PaymentTransactionBookingDate{
-		Status:        http.StatusOK,
-		Message:       "Confirm Payment Succeeds",
+		Status:      http.StatusOK,
+		Message:     "Confirm Payment Succeeds",
 		BookingDate: cp.BookingDate,
 	}
 
@@ -168,16 +168,16 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		Status:              t.Status,
 		TotalPrice:          t.TotalPrice,
 		Currency:            t.Currency,
-		ExChangeRates:		&t.ExChangeRates,
-		ExChangeCurrency:	&t.ExChangeCurrency,
+		ExChangeRates:       &t.ExChangeRates,
+		ExChangeCurrency:    &t.ExChangeCurrency,
 	}
-	if strings.Contains(t.PaypalOrderId,"PAYID"){
-		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points,true)
+	if strings.Contains(t.PaypalOrderId, "PAYID") {
+		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points, true)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
-	}else {
-		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points,false)
+	} else {
+		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points, false)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -196,13 +196,13 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 
 	var data map[string]interface{}
 
-	if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal"  && strings.Contains(t.PaypalOrderId,"PAYID"){
+	if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" && strings.Contains(t.PaypalOrderId, "PAYID") {
 		response, err := p.bookingUsecase.PaypalAutoComplete(ctx, *tr.BookingExpId)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, response)
-	}else if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" {
+	} else if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" {
 		data, err = p.bookingUsecase.Verify(ctx, t.PaypalOrderId, bookingCode)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
