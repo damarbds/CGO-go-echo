@@ -188,13 +188,12 @@ func main() {
 	// dbName := viper.GetString(`database.name`)
 	// baseUrlis := viper.GetString(`identityServer.baseUrl`)
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
-	//dev
-	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
-	//prd
-	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
+
 	//local
 	// baseUrlLocal := "http://localhost:9090"
 
+	//dev env
+	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
 	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
@@ -209,6 +208,8 @@ func main() {
 	//dev URL Forgot Password
 	urlForgotPassword := "http://cgo-web-api.azurewebsites.net/account/change-password"
 
+	// //prd env
+	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
 	// //prd pdfCrowdAccount
 	// usernamePDF := "cgoindonesia"
 	// accessKeyPDF := "cef1b4478dac7cf83c26cac11340fbd4"
