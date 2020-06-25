@@ -54,11 +54,11 @@ func (t transportationUsecase) GetPublishedTransCount(ctx context.Context, token
 		return nil, models.ErrUnAuthorize
 	}
 
-	count, err := t.transactionRepo.GetTransCount(ctx, currentMerchant.Id)
+	count, err := t.transportationRepo.GetTransCount(ctx, currentMerchant.Id)
 	if err != nil {
 		return nil, err
 	}
-	return count,nil
+	return &count,nil
 
 }
 func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*models.TransportationDto, error) {

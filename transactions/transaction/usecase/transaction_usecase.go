@@ -101,7 +101,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 					Desc: "Full Payment",
 				}
 			} else {
-				query, err := t.experiencePaymentTypeRepo.GetByExpID(ctx, item.ExpId)
+				query, err := t.experiencePaymentTypeRepo.GetById(ctx, *item.ExperiencePaymentId)
 				if err != nil {
 					return nil, err
 				}
