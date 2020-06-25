@@ -32,6 +32,7 @@ type transportationUsecase struct {
 	facilitiesRepo     facilities.Repository
 }
 
+
 func NewTransportationUsecase(expFacilitiesRepo exp_facilities.Repository, facilitiesRepo facilities.Repository, transr transaction.Repository, tr transportation.Repository, mr merchant.Usecase, s schedule.Repository, tmo time_options.Repository, timeout time.Duration) transportation.Usecase {
 	return &transportationUsecase{
 		expFacilitiesRepo:  expFacilitiesRepo,
@@ -45,6 +46,21 @@ func NewTransportationUsecase(expFacilitiesRepo exp_facilities.Repository, facil
 	}
 }
 
+func (t transportationUsecase) GetPublishedTransCount(ctx context.Context, token string) (*int, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, models.ErrUnAuthorize
+	}
+
+	count, err := t.transactionRepo.GetTransCount(ctx, currentMerchant.Id)
+	if err != nil {
+		return nil, err
+	}
+	return count,nil
+
+}
 func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*models.TransportationDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()

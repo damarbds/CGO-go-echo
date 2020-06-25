@@ -165,7 +165,9 @@ func (m *experienceRepository) GetPublishedExpCount(ctx context.Context, merchan
 		experiences
 	WHERE
 		merchant_id = ?
-		AND status = 2`
+		AND status = 2
+		AND is_deleted = 0 
+		AND is_active = 1`
 
 	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
