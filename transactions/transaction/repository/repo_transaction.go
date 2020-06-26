@@ -576,6 +576,7 @@ func (t transactionRepository) fetch(ctx context.Context, query string, args ...
 			&t.VaNumber,
 			&t.ExChangeRates,
 			&t.ExChangeCurrency,
+			&t.Points,
 			&t.MerchantId,
 			&t.OrderIdBook,
 			&t.BookedBy,

@@ -24,6 +24,7 @@ type Transaction struct {
 	VaNumber            *string    `json:"va_number"`
 	ExChangeRates 		*float64	`json:"ex_change_rates"`
 	ExChangeCurrency 	*string		`json:"ex_change_currency"`
+	Points 				*float64	`json:"points"`
 }
 type TransactionWithBooking struct {
 	ExpTitle 		string 		`json:"exp_title"`
@@ -61,6 +62,7 @@ type TransactionWMerchant struct {
 	VaNumber            *string    `json:"va_number"`
 	ExChangeRates 		*float64	`json:"ex_change_rates"`
 	ExChangeCurrency 	*string		`json:"ex_change_currency"`
+	Points 			*float64		`json:"points"`
 	MerchantId          string     `json:"merchant_id"`
 	OrderIdBook         string     `json:"order_id_book"`
 	BookedBy            string     `json:"booked_by"`

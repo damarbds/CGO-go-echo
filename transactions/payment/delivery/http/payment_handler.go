@@ -170,6 +170,7 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		Currency:            t.Currency,
 		ExChangeRates:       &t.ExChangeRates,
 		ExChangeCurrency:    &t.ExChangeCurrency,
+		Points:&t.Points,
 	}
 	if strings.Contains(t.PaypalOrderId, "PAYID") {
 		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points, true)
