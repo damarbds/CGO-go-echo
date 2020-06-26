@@ -195,7 +195,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
             `
 		}
 		if harborsType != "" && harborsType != "2"{
-			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type = '')`
+			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null)`
 		}
 
 		query = query + ` ORDER BY h.created_date desc LIMIT ? OFFSET ? `
@@ -247,7 +247,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 		}
 
 		if harborsType != ""&& harborsType != "2"{
-			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type = '')`
+			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null )`
 		}
 
 		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search)
@@ -294,7 +294,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 		}
 
 		if harborsType != "" && harborsType != "2"{
-			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type = '')`
+			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null )`
 		}
 
 		res, err := m.fetchWithJoinCPC(ctx, query)
