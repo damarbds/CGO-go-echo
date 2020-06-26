@@ -567,6 +567,13 @@ func (t transportationUsecase) FilterSearchTrans(
 		queryCount = queryCount + ` AND s.departure_timeoption_id =` + strconv.Itoa(arrTimeOptions)
 	}
 
+	if sortBy != "" {
+		if sortBy == "newest" {
+			query = query + ` ORDER BY t.created_date DESC`
+		} else if sortBy == "latest" {
+			query = query + ` ORDER BY t.created_date ASC`
+		}
+	}
 	transList, err := t.transportationRepo.FilterSearch(ctx, query, limit, offset, isMerchant, qStatus)
 	if err != nil {
 		return nil, err
@@ -705,13 +712,6 @@ func (t transportationUsecase) FilterSearchTrans(
 			sort.SliceStable(trans, func(i, j int) bool {
 				return trans[i].Price.ChildrenPrice < trans[j].Price.ChildrenPrice
 			})
-		}
-	}
-	if sortBy != "" {
-		if sortBy == "newest" {
-			query = query + ` ORDER BY t.created_date DESC`
-		} else if sortBy == "latest" {
-			query = query + ` ORDER BY t.created_date ASC`
 		}
 	}
 	totalRecords, _ := t.transportationRepo.CountFilterSearch(ctx, queryCount)
