@@ -187,6 +187,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			OrderId:			   item.OrderId,
 			GuestCount:expGuest,
 			Promo:promo,
+			Points:item.Points,
 		}
 		if expType[0] != "Transportation"{
 			transactions[i].ExpDuration  = *item.ExpDuration

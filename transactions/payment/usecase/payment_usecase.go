@@ -5525,6 +5525,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		OrderId:             payment.OrderId,
 		ExChangeRates:       payment.ExChangeRates,
 		ExChangeCurrency:    payment.ExChangeCurrency,
+		Points:payment.Points,
 	}
 	if autoComplete == true {
 		exp, err := p.expRepo.GetExperienceByBookingId(ctx, *newData.BookingExpId,*newData.ExperiencePaymentId)

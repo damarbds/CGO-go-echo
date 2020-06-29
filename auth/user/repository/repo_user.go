@@ -38,19 +38,19 @@ func (m *userRepository) UpdatePointByID(ctx context.Context, point float64, id 
 		return nil
 	}
 
-	res, err := stmt.ExecContext(ctx, point, id)
+	_, err = stmt.ExecContext(ctx, point, id)
 	if err != nil {
 		return err
 	}
-	affect, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if affect != 1 {
-		err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
-
-		return err
-	}
+	//affect, err := res.RowsAffected()
+	//if err != nil {
+	//	return err
+	//}
+	//if affect != 1 {
+	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+	//
+	//	return err
+	//}
 
 	return nil
 }
