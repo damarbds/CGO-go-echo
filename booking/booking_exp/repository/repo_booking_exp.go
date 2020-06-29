@@ -721,6 +721,7 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.ExChangeCurrency,
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
+			&t.OriginalPrice,
 		)
 
 		if err != nil {
@@ -777,7 +778,8 @@ func (b bookingExpRepository) GetDetailBookingID(ctx context.Context, bookingId,
 		t.ex_change_rates,
 		t.ex_change_currency,
 		b.exp_payment_deadline_amount,
-		b.exp_payment_deadline_type
+		b.exp_payment_deadline_type,
+		t.original_price
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id

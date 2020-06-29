@@ -9075,8 +9075,14 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 					Desc: element.ExpPaymentTypeDesc,
 				}
 				if paymentType.Name == "Down Payment" {
-					remainingPayment := element.Price - *getDetailBooking.TotalPrice
-					paymentType.RemainingPayment = remainingPayment
+					if getDetailBooking.OriginalPrice != nil{
+						paymentType.OriginalPrice = getDetailBooking.OriginalPrice
+						remainingPayment := *getDetailBooking.OriginalPrice - *getDetailBooking.TotalPrice
+						paymentType.RemainingPayment = remainingPayment
+					}else {
+						remainingPayment := element.Price - *getDetailBooking.TotalPrice
+						paymentType.RemainingPayment = remainingPayment
+					}
 				} else {
 					paymentType.RemainingPayment = 0
 				}
