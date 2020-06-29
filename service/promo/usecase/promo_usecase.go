@@ -25,6 +25,7 @@ type promoUsecase struct {
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewPromoUsecase(userUsecase 	user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
 	return &promoUsecase{
+		userUsecase:userUsecase,
 		transactionRepo:transactionRepo,
 		promoMerchant:  pm,
 		promoRepo:      p,
