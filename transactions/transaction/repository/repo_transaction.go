@@ -17,19 +17,18 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
-
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
-func (t transactionRepository) GetCountTransactionByPromoId(ctx context.Context,promoId string,userId string) (int, error) {
+func (t transactionRepository) GetCountTransactionByPromoId(ctx context.Context, promoId string, userId string) (int, error) {
 	query := `select count(*) from transactions a
 											join booking_exps b on a.booking_exp_id = b.id 
 											where a.status in (0,1,2,5)
 												and a.promo_id = ? `
 
-	if userId != ""{
+	if userId != "" {
 		query = query + ` and b.user_id = '` + userId + `'`
-	}else {
+	} else {
 		query = query + ` and b.user_id != '' `
 	}
 
@@ -70,7 +69,7 @@ func (t transactionRepository) GetIdTransactionExpired(ctx context.Context) ([]*
 			return nil, err
 		}
 
-		transactionIds = append(transactionIds,&transactionId)
+		transactionIds = append(transactionIds, &transactionId)
 	}
 
 	return transactionIds, nil
@@ -229,7 +228,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool,tripType,paymentType,activityType string,confirmType string) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	var bookingStatus int
 
@@ -266,7 +265,10 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		JOIN harbors  h ON e.harbors_id = h.id
 		JOIN cities  c ON h.city_id = c.id
 		JOIN provinces p on c.province_id = p.id
-		JOIN countries co on p.country_id = co.id`
+		JOIN countries co on p.country_id = co.id
+		WHERE 
+		t.is_deleted = 0 AND
+		t.is_active = 1 `
 
 	queryT := `
 	SELECT
@@ -296,31 +298,34 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN transportations tr ON b.trans_id = tr.id
-		JOIN merchants m ON tr.merchant_id = m.id`
+		JOIN merchants m ON tr.merchant_id = m.id
+		WHERE 
+		t.is_deleted = 0 AND
+		t.is_active = 1 `
 
 	if merchantId != "" {
 		query = query + ` AND e.merchant_id = '` + merchantId + `' `
 		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
 	}
 
-	if tripType == "0"{
+	if tripType == "0" {
 		query = query + ` AND e.exp_trip_type = 'Private Trip' `
-	}else if tripType == "1"{
+	} else if tripType == "1" {
 		query = query + ` AND e.exp_trip_type = 'Share Trip' `
-	}else if tripType == "2"{
+	} else if tripType == "2" {
 		query = query + ` AND (e.exp_trip_type = 'Share Trip' OR e.exp_trip_type = 'Private Trip') `
 	}
 
-	if paymentType == "0"{
+	if paymentType == "0" {
 		query = query + ` AND ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' `
-	}else if paymentType == "1"{
+	} else if paymentType == "1" {
 		query = query + ` AND ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' `
-	}else if paymentType == "2"{
+	} else if paymentType == "2" {
 		query = query + ` AND (ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' 
 								OR ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633') `
 	}
 
-	if activityType != "[]" && activityType != ""{
+	if activityType != "[]" && activityType != "" {
 		var activityTypes []int
 		if activityType != "" {
 			if errUnmarshal := json.Unmarshal([]byte(activityType), &activityTypes); errUnmarshal != nil {
@@ -344,11 +349,11 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		}
 	}
 
-	if confirmType == "0"{
+	if confirmType == "0" {
 		query = query + ` AND t.status not in (1) `
-	}else if confirmType == "1"{
+	} else if confirmType == "1" {
 		query = query + ` AND t.status not in (5)' `
-	}else if confirmType == "2"{
+	} else if confirmType == "2" {
 
 	}
 
@@ -374,13 +379,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		query = query + ` AND b.exp_id != '' `
 		queryT = queryT + ` AND b.exp_id != '' `
 	}
-	
+
 	unionQuery := query + ` UNION ` + queryT
-	if tripType != "" && activityType == ""{
+	if tripType != "" && activityType == "" {
 		unionQuery = query
-	} else if activityType != "" && tripType == ""{
+	} else if activityType != "" && tripType == "" {
 		unionQuery = query
-	} else if tripType != "" && activityType != ""{
+	} else if tripType != "" && activityType != "" {
 		unionQuery = query
 	}
 
@@ -405,26 +410,26 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			transactionStatus = 2
 			query = query + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
 			queryT = queryT + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
-		} else if status == "finished"{
+		} else if status == "finished" {
 			transactionStatus = 2
 			query = query + ` AND b.booking_date < CURRENT_DATE `
 			queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
 		}
 		var querySt string
 		var queryTSt string
-		if status == "waitingApproval"{
+		if status == "waitingApproval" {
 			querySt = query + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
 			queryTSt = queryT + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
-		}else {
+		} else {
 			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		}
 		unionQuery = querySt + ` UNION ` + queryTSt
-		if tripType != "" && activityType == ""{
+		if tripType != "" && activityType == "" {
 			unionQuery = querySt
-		} else if activityType != "" && tripType == ""{
+		} else if activityType != "" && tripType == "" {
 			unionQuery = querySt
-		} else if tripType != "" && activityType != ""{
+		} else if tripType != "" && activityType != "" {
 			unionQuery = querySt
 		}
 
@@ -442,11 +447,11 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
 			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
 			unionQuery = querySt + ` UNION ` + queryTSt
-			if tripType != "" && activityType == ""{
+			if tripType != "" && activityType == "" {
 				unionQuery = querySt
-			} else if activityType != "" && tripType == ""{
+			} else if activityType != "" && tripType == "" {
 				unionQuery = querySt
-			} else if tripType != "" && activityType != ""{
+			} else if tripType != "" && activityType != "" {
 				unionQuery = querySt
 			}
 
@@ -465,11 +470,11 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			unionQuery = querySt + ` UNION ` + queryTSt
-			if tripType != "" && activityType == ""{
+			if tripType != "" && activityType == "" {
 				unionQuery = querySt
-			} else if activityType != "" && tripType == ""{
+			} else if activityType != "" && tripType == "" {
 				unionQuery = querySt
-			} else if tripType != "" && activityType != ""{
+			} else if tripType != "" && activityType != "" {
 				unionQuery = querySt
 			}
 
@@ -580,6 +585,7 @@ func (t transactionRepository) fetch(ctx context.Context, query string, args ...
 			&t.ExChangeRates,
 			&t.ExChangeCurrency,
 			&t.Points,
+			&t.OriginalPrice,
 			&t.MerchantId,
 			&t.OrderIdBook,
 			&t.BookedBy,
@@ -667,7 +673,7 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 			transactionStatus = 2
 			query = query + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
 			queryT = queryT + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
-		} else if status == "finished"{
+		} else if status == "finished" {
 			transactionStatus = 2
 			query = query + ` AND b.booking_date < CURRENT_DATE `
 			queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
@@ -715,7 +721,7 @@ func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate
 				join booking_exps b on t.booking_exp_id = b.id
 				join experiences e on b.exp_id = e.id 
 				WHERE DATE(b.booking_date) = ?`
-	if expId != ""{
+	if expId != "" {
 		query = query + ` AND b.exp_id != '' `
 	}
 	list, err := m.fetch(ctx, query, bookingDate)
@@ -726,7 +732,7 @@ func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate
 	if len(list) > 0 {
 		return list, nil
 	} else {
-		return make([]*models.TransactionWMerchant,0), models.ErrNotFound
+		return make([]*models.TransactionWMerchant, 0), models.ErrNotFound
 	}
 	return nil, nil
 }

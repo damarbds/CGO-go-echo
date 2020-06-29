@@ -25,6 +25,7 @@ type Transaction struct {
 	ExChangeRates 		*float64	`json:"ex_change_rates"`
 	ExChangeCurrency 	*string		`json:"ex_change_currency"`
 	Points 				*float64	`json:"points"`
+	OriginalPrice 		*float64	`json:"original_price"`
 }
 type TransactionWithBooking struct {
 	ExpTitle 		string 		`json:"exp_title"`
@@ -63,6 +64,7 @@ type TransactionWMerchant struct {
 	ExChangeRates 		*float64	`json:"ex_change_rates"`
 	ExChangeCurrency 	*string		`json:"ex_change_currency"`
 	Points 			*float64		`json:"points"`
+	OriginalPrice 		*float64	`json:"original_price"`
 	MerchantId          string     `json:"merchant_id"`
 	OrderIdBook         string     `json:"order_id_book"`
 	BookedBy            string     `json:"booked_by"`
@@ -96,6 +98,7 @@ type TransactionIn struct {
 	Points              float64 `json:"points"`
 	ExChangeRates 		float64	`json:"ex_change_rates"`
 	ExChangeCurrency 	string		`json:"ex_change_currency"`
+	OriginalPrice 		*float64	`json:"original_price"`
 }
 
 type ConfirmPaymentIn struct {

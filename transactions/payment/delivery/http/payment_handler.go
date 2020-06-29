@@ -121,10 +121,10 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	if err := c.Bind(t); err != nil {
 		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
 	}
-
-	if ok, err := isRequestValid(t); !ok {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
+	//
+	//if ok, err := isRequestValid(t); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
 
 	ctx := c.Request().Context()
 	if ctx == nil {
@@ -171,6 +171,7 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		ExChangeRates:       &t.ExChangeRates,
 		ExChangeCurrency:    &t.ExChangeCurrency,
 		Points:&t.Points,
+		OriginalPrice:t.OriginalPrice,
 	}
 	if strings.Contains(t.PaypalOrderId, "PAYID") {
 		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points, true)
