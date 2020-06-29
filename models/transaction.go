@@ -133,6 +133,7 @@ type TransactionOut struct {
 	ProvinceName 		*string		`json:"province_name"`
 	CountryName 		*string 		`json:"country_name"`
 	PromoId 			*string		`json:"promo_id"`
+	Points 				*float64	`json:"points"`
 }
 
 type TransactionDto struct {
@@ -157,6 +158,7 @@ type TransactionDto struct {
 	ProvinceName 			string		`json:"province_name"`
 	CountryName 		string			`json:"country_name"`
 	Promo				*PromoTransaction `json:"promo"`
+	Points 			*float64	`json:"points"`
 }
 type PromoTransaction struct {
 	PromoValue 			float64	`json:"promo_value"`
