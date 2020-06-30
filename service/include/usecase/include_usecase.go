@@ -123,7 +123,7 @@ func (f includeUsecase) Create(ctx context.Context, inc *models.NewCommandInclud
 	includes := models.Include{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
