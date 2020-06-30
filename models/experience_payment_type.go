@@ -21,4 +21,5 @@ type ExperiencePaymentTypeDto struct {
 	Name string `json:"name"`
 	Desc string `json:"desc"`
 	RemainingPayment float64	`json:"remaining_payment"`
+	OriginalPrice 	*float64	`json:"original_price"`
 }

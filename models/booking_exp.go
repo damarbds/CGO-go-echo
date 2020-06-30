@@ -165,6 +165,7 @@ type BookingExpJoin struct {
 	ExpPaymentDeadlineAmount *int 		`json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType 	*string		`json:"exp_payment_deadline_type"`
 	ReturnTransId			*string `json:"return_trans_id"`
+	OriginalPrice 		*float64	`json:"original_price"`
 }
 
 type BookingTransportationDetail struct {
