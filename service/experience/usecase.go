@@ -10,7 +10,7 @@ type Usecase interface {
 	PublishExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
 	CreateExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
 	UpdateExperience(ctx context.Context, commandExperience models.NewCommandExperience, token string) (*models.ResponseCreateExperience, error)
-	GetByID(ctx context.Context, id string,currency string) (*models.ExperienceDto, error)
+	GetByID(ctx context.Context, id string,currency string,isMerchant string) (*models.ExperienceDto, error)
 	SearchExp(ctx context.Context, harborID, cityID string) ([]*models.ExpSearchObject, error)
 	FilterSearchExp(ctx context.Context, isMerchant bool, search, token, status, cityID string, harborsId string, expTypeId string, startDate string, endDate string, guest string, trip string, bottomPrice string, upPrice string, sortBy string, page, limit, offset int,provinceId string,currency string) (*models.FilterSearchWithPagination, error)
 	GetUserDiscoverPreference(ctx context.Context, page *int, size *int,currency string) ([]*models.ExpUserDiscoverPreferenceDto, error)

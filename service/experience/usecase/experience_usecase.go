@@ -1038,6 +1038,8 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		ExpLocationMapName:       commandExperience.ExpLocationMapName,
 		ExpLatitudeMap:           commandExperience.ExpLatitudeMap,
 		ExpLongitudeMap:          commandExperience.ExpLongitudeMap,
+		ExpMaximumBookingAmount:commandExperience.ExpMaximumBookingAmount,
+		ExpMaximumBookingType:commandExperience.ExpMaximumBookingType,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1312,6 +1314,8 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		ExpLocationMapName:       commandExperience.ExpLocationMapName,
 		ExpLatitudeMap:           commandExperience.ExpLatitudeMap,
 		ExpLongitudeMap:          commandExperience.ExpLongitudeMap,
+		ExpMaximumBookingAmount:commandExperience.ExpMaximumBookingAmount,
+		ExpMaximumBookingType:commandExperience.ExpMaximumBookingType,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1593,7 +1597,7 @@ func (m experienceUsecase) PublishExperience(c context.Context, commandExperienc
 	}
 	return response, nil
 }
-func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice string) (*models.ExperienceDto, error) {
+func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice string,isMerchant string) (*models.ExperienceDto, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
@@ -1748,18 +1752,70 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 			if errObject != nil {
 				return nil, models.ErrInternalServerError
 			}
-			if res.ExpTripType == "Private Trip" {
-				for _, date := range dates {
-					checkBookingCount, err := m.bookingRepo.GetCountByBookingDateExp(ctx, date, element.ExpId)
-					if err != nil {
-						return nil, err
+			if isMerchant == "true"{
+				expA.Date = dates
+			}else {
+				if res.ExpTripType == "Private Trip" {
+					for _, date := range dates {
+						checkBookingCount, err := m.bookingRepo.GetCountByBookingDateExp(ctx, date, element.ExpId)
+						if err != nil {
+							return nil, err
+						}
+						if res.ExpMaximumBookingType != nil && res.ExpMaximumBookingAmount != nil{
+							if *res.ExpMaximumBookingType == "Days"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount)
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0{
+									expA.Date = append(expA.Date, date)
+								}
+
+							}else if *res.ExpMaximumBookingType == "Week"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount * 7)
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0{
+									expA.Date = append(expA.Date, date)
+								}
+							}else if *res.ExpMaximumBookingType == "Month"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,*res.ExpMaximumBookingAmount,0 )
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0{
+									expA.Date = append(expA.Date, date)
+								}
+							}
+						}else {
+							if checkBookingCount == 0 {
+								expA.Date = append(expA.Date, date)
+							}
+						}
 					}
-					if checkBookingCount == 0 {
-						expA.Date = append(expA.Date, date)
+				} else {
+					if res.ExpMaximumBookingType != nil && res.ExpMaximumBookingAmount != nil{
+						for _,date := range dates{
+							if *res.ExpMaximumBookingType == "Days"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount)
+								if convertDate.After(now) || convertDate.Equal(now){
+									expA.Date = append(expA.Date, date)
+								}
+
+							}else if *res.ExpMaximumBookingType == "Week"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount * 7)
+								if convertDate.After(now) || convertDate.Equal(now){
+									expA.Date = append(expA.Date, date)
+								}
+							}else if *res.ExpMaximumBookingType == "Month"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,*res.ExpMaximumBookingAmount,0 )
+								if convertDate.After(now) || convertDate.Equal(now){
+									expA.Date = append(expA.Date, date)
+								}
+							}
+						}
+					}else {
+						expA.Date = dates
 					}
 				}
-			} else {
-				expA.Date = dates
 			}
 			expAvailability = append(expAvailability, expA)
 		}
@@ -1878,6 +1934,8 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 		ExpLocationMapName:       res.ExpLocationMapName,
 		ExpLatitudeMap:           res.ExpLatitudeMap,
 		ExpLongitudeMap:          res.ExpLongitudeMap,
+		ExpMaximumBookingAmount:res.ExpMaximumBookingAmount,
+		ExpMaximumBookingType:res.ExpMaximumBookingType,
 	}
 	return &experiences, nil
 }

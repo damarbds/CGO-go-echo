@@ -174,9 +174,9 @@ func (a *experienceHandler) CreateExperiences(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
-	if ok, err := isRequestValid(&experienceCommand); !ok {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
+	//if ok, err := isRequestValid(&experienceCommand); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -263,12 +263,13 @@ func (a *experienceHandler) GetByID(c echo.Context) error {
 	//	return c.JSON(http.StatusNotFound, models.ErrNotFound.Error())
 	//}
 	currency := c.QueryParam("currency")
+	isMerchant := c.QueryParam("is_merchant")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	art, err := a.experienceUsecase.GetByID(ctx, id,currency)
+	art, err := a.experienceUsecase.GetByID(ctx, id,currency,isMerchant)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

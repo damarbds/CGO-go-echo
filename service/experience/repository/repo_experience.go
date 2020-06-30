@@ -391,6 +391,8 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 			&t.ExpLocationMapName,
 			&t.ExpLatitudeMap ,
 			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 		)
 
 		if err != nil {
@@ -468,6 +470,8 @@ func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.C
 			&t.ExpLocationMapName,
 			&t.ExpLatitudeMap ,
 			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 		)
 
 		if err != nil {
@@ -585,6 +589,8 @@ func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query str
 			&t.ExpLocationMapName,
 			&t.ExpLatitudeMap ,
 			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 			&t.MinimumBookingAmount,
 			&t.MinimumBookingDesc,
 		)
@@ -661,6 +667,8 @@ func (m *experienceRepository) fetchByBookingId(ctx context.Context, query strin
 			&t.ExpLocationMapName,
 			&t.ExpLatitudeMap ,
 			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 			&t.ExpPaymentTypeName,
 		)
 
@@ -968,7 +976,7 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 				exp_rules=?,status=?,rating=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
 				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=?,exp_payment_deadline_amount=?,
 				exp_payment_deadline_type=?,is_customised_by_user=?,exp_location_map_name=?,exp_latitude_map=?,
-				exp_longitude_map = ?`
+				exp_longitude_map = ?,exp_maximum_booking_amount=?,exp_maximum_booking_type=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -978,7 +986,8 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.Rating, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
 		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType, a.IsCustomisedByUser,a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap)
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser,a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap,
+		a.ExpMaximumBookingAmount,a.ExpMaximumBookingType)
 	if err != nil {
 		return nil, err
 	}
@@ -1021,7 +1030,7 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 				exp_rules=?,status=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
 				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=? ,exp_payment_deadline_amount=?,
 				exp_payment_deadline_type=?,is_customised_by_user=? ,exp_location_map_name=?,exp_latitude_map=?,
-				exp_longitude_map = ? WHERE id=?`
+				exp_longitude_map = ? ,exp_maximum_booking_amount =? ,exp_maximum_booking_type=? WHERE id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -1031,7 +1040,8 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
 		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType, a.IsCustomisedByUser, a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap,a.Id)
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser, a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap,
+		a.ExpMaximumBookingAmount,a.ExpMaximumBookingType,a.Id)
 	if err != nil {
 		return nil, err
 	}

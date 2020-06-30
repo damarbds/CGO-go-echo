@@ -48,6 +48,8 @@ type Experience struct {
 	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
 	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 type ExperienceWithExperiencePayment struct {
 
@@ -96,6 +98,8 @@ type ExperienceWithExperiencePayment struct {
 	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
 	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 	ExpPaymentTypeName	string 	`json:"exp_payment_type_name"`
 }
 type ExperienceJoinForegnKey struct {
@@ -144,6 +148,8 @@ type ExperienceJoinForegnKey struct {
 	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
 	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 	MinimumBookingAmount    *int       `json:"minimum_booking_amount"`
 	MinimumBookingDesc      string     `json:"minimum_booking_desc"`
 }
@@ -192,6 +198,8 @@ type ExperienceDto struct {
 	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
 	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 type ResponseCreateExperience struct {
 	Id      string `json:"id"`
@@ -237,7 +245,8 @@ type NewCommandExperience struct {
 	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
 	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
-	
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 type CustomPrice struct {
 	Currency	string 		`json:"currency"`
@@ -407,6 +416,8 @@ type ExpUserDiscoverPreference struct {
 	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
 	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 
 type ExpUserDiscoverPreferenceDto struct {
