@@ -5603,7 +5603,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 			}
 			if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 				//confirm
-				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
+				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
@@ -5951,7 +5951,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 
 			} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
 				//cancelled
-				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
+				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 				if err != nil {
 					return err
 				}
@@ -6025,7 +6025,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 	}
 	if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 		//confirm
-		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
+		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 		if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
@@ -6373,7 +6373,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 
 	} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
 		//cancelled
-		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
+		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 		if err != nil {
 			return err
 		}

@@ -12,8 +12,8 @@ type Usecase interface {
 	DownloadTicketExperience(ctx context.Context,orderId string)(*string, error)
 	RemainingPaymentNotification(ctx context.Context)error
 	GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool, error)
-	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error)
-	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string,transId *string) (*models.BookingExpDetailDto, error)
+	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string,currency string) (*models.BookingExpDetailDto, error)
+	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string,transId *string,currency string) (*models.BookingExpDetailDto, error)
 	GetHistoryBookingByUserId(ctx context.Context, token string, monthType string, page, limit, offset int) (*models.BookingHistoryDtoWithPagination, error)
 	Insert(ctx context.Context, booking *models.NewBookingExpCommand, transReturnId, scheduleReturnId, token string) ([]*models.NewBookingExpCommand, error, error)
 	GetByUserID(ctx context.Context, status string, token string, page, limit, offset int) (*models.MyBookingWithPagination, error)

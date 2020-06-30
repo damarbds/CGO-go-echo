@@ -5726,7 +5726,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
-			bookingDetail, err := m.bookingUseCase.GetDetailBookingID(ctx, booking.Id, "")
+			bookingDetail, err := m.bookingUseCase.GetDetailBookingID(ctx, booking.Id, "","")
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
@@ -6159,7 +6159,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			}
 		} else {
 
-			bookingDetail, err := m.bookingUseCase.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil)
+			bookingDetail, err := m.bookingUseCase.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil,"")
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
@@ -6173,7 +6173,7 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 
 			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-				bookingDetailReturn, err := m.bookingUseCase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
+				bookingDetailReturn, err := m.bookingUseCase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
 				if err != nil {
 					return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 				}

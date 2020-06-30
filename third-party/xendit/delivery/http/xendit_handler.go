@@ -5702,7 +5702,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
-		bookingDetail, err := x.bookingUseCase.GetDetailBookingID(ctx, booking.Id, "")
+		bookingDetail, err := x.bookingUseCase.GetDetailBookingID(ctx, booking.Id, "","")
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -6134,7 +6134,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 	} else {
-		bookingDetail, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil)
+		bookingDetail, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil,"")
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -6148,7 +6148,7 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 
 		if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-			bookingDetailReturn, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
+			bookingDetailReturn, err := x.bookingUseCase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}

@@ -198,16 +198,16 @@ func (a *booking_expHandler) GetHistoryBookingByUser(c echo.Context) error {
 }
 func (a *booking_expHandler) GetDetail(c echo.Context) error {
 	id := c.Param("id")
-
+	currency := c.QueryParam("currency")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id, id)
+	result, err := a.booking_expUsecase.GetDetailBookingID(ctx, id, id,currency)
 	if err != nil {
 		if err == models.ErrNotFound {
-			result, err = a.booking_expUsecase.GetDetailTransportBookingID(ctx, id, id,nil)
+			result, err = a.booking_expUsecase.GetDetailTransportBookingID(ctx, id, id,nil,currency)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: "Get Booking Trans Detail Failed"})
 			}
