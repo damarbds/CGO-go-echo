@@ -232,7 +232,11 @@ func (m *experienceRepository) GetByCategoryID(ctx context.Context, categoryId i
 		e.exp_location_latitude as latitude ,
 		e.exp_location_longitude as longitude, 
 		rating,
-		exp_cover_photo as cover_photo
+		exp_cover_photo as cover_photo,
+		exp_cover_photo as province,
+		e.exp_location_map_name,
+		e.exp_latitude_map,
+		e.exp_longitude_map
 	FROM
 		filter_activity_types f
 		JOIN experiences e ON f.exp_id = e.id
@@ -291,7 +295,10 @@ func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID s
 		exp_location_longitude as longitude, 
 		rating,
 		exp_cover_photo as cover_photo,
-		p.province_name as province
+		p.province_name as province,
+		e.exp_location_map_name,
+		e.exp_latitude_map,
+		e.exp_longitude_map
 	FROM
 		experiences exp
 		JOIN harbors ON harbors.id = harbors_id
@@ -500,6 +507,9 @@ func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string,
 			&t.Longitude,
 			&t.CoverPhoto,
 			&t.Province,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap,
+			&t.ExpLongitudeMap,
 			//&t.Price,
 		)
 

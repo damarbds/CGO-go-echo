@@ -312,6 +312,9 @@ type ExpSearch struct {
 	Longitude  float64 `json:"longitude"`
 	CoverPhoto string  `json:"cover_photo"`
 	Province   string  `json:"province"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
 	//Price	   string   `json:"price"`
 }
 
@@ -330,6 +333,10 @@ type ExpSearchObject struct {
 	Province    string         `json:"province"`
 	CoverPhoto  CoverPhotosObj `json:"cover_photo"`
 	ListPhoto   []ExpPhotosObj `json:"list_photo"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+
 }
 type ExperienceUserDiscoverPreferenceDto struct {
 	Id           string         `json:"id" validate:"required"`
