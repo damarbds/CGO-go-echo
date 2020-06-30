@@ -184,7 +184,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 				h.city_id , 
 				c.city_name,
 				p.id as province_id,
-				p.province_name_transportation,
+				p.province_name,
 				co.country_name 
 			from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
@@ -236,7 +236,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 				h.city_id , 
 				c.city_name,
 				p.id as province_id,
-				p.province_name_transportation,
+				p.province_name,
 				co.country_name 
 			from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
@@ -284,7 +284,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 				h.city_id ,
 				c.city_name,
 				p.id as province_id,
-				p.province_name_transportation,
+				p.province_name,
 				co.country_name 
 			from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
