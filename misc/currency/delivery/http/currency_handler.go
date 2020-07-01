@@ -22,6 +22,19 @@ type currencyHandler struct {
 func NewCurrencyHandler(e *echo.Echo, cu currency.Usecase) {
 	handler := &currencyHandler{currencyUsecase: cu}
 	e.GET("/misc/exchange-rate", handler.ExchangeRate)
+	e.POST("/misc/exchange-rate", handler.CreateExChange)
+}
+func (a *currencyHandler) CreateExChange(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	error := a.currencyUsecase.Insert(ctx)
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, nil)
 }
 
 func (cu *currencyHandler) ExchangeRate(c echo.Context) error {

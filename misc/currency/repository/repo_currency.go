@@ -58,6 +58,26 @@ func (m *exChangeRatesRepository) fetch(ctx context.Context, query string, args 
 }
 
 
+func (m *exChangeRatesRepository) Insert(ctx context.Context, a *models.ExChangeRate) error {
+	query := `INSERT ex_change_rates SET ex_change_rates.date=? , ex_change_rates.from=? , ex_change_rates.to=?, rates=?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx,a.Date, a.From,a.To,a.Rates)
+	if err != nil {
+		return err
+	}
+
+	//
+	//lastID, err := res.LastInsertId()
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	//a.Id = int(lastID)
+	return nil
+}
 func (m exChangeRatesRepository) GetByDate(ctx context.Context, from, to string) (res *models.ExChangeRate,err error) {
 	query := `SELECT e.* FROM ex_change_rates e WHERE e.from = ? AND e.to =? order by e.date desc LIMIT 1`
 

@@ -30,6 +30,37 @@ func NewCurrencyUsecase(currencyRepo currency.Repository,timeout time.Duration) 
 	}
 }
 
+func (c currencyUsecase) Insert(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+	defer cancel()
+
+	getCurrencyNowFromIDR ,err := c.ExchangeRatesWithApi(ctx,"IDR","USD")
+	if err != nil {
+		return err
+	}
+	idr := models.ExChangeRate{
+		Id:    0,
+		Date:  getCurrencyNowFromIDR.Date,
+		From:  getCurrencyNowFromIDR.Base,
+		To:    "USD",
+		Rates: getCurrencyNowFromIDR.Rates.USD,
+	}
+	_ = c.currencyRepo.Insert(ctx, &idr)
+
+	getCurrencyNowFromUSD ,err := c.ExchangeRatesWithApi(ctx,"USD","IDR")
+	if err != nil {
+		return err
+	}
+	usd := models.ExChangeRate{
+		Id:    0,
+		Date:  getCurrencyNowFromUSD.Date,
+		From:  getCurrencyNowFromUSD.Base,
+		To:    "IDR",
+		Rates: getCurrencyNowFromUSD.Rates.IDR,
+	}
+	_ = c.currencyRepo.Insert(ctx, &usd)
+	return nil
+}
 func (c currencyUsecase) Exchange(ctx context.Context, exchangeKey string) (map[string]interface{}, error) {
 	client := &http.Client{}
 
