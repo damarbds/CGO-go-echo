@@ -131,6 +131,7 @@ import (
 	_filterActivityTypeRepo "github.com/service/filter_activity_type/repository"
 
 	_currencyHttpHandler "github.com/misc/currency/delivery/http"
+	_currencyRepo "github.com/misc/currency/repository"
 	_currencyUsecase "github.com/misc/currency/usecase"
 
 	_currencyMasterHttpHandler "github.com/service/currency/delivery/http"
@@ -262,6 +263,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	currencyRepo := _currencyRepo.NewExChangeRatesRepository(dbConn)
 	versionAPPRepo := _versionAPPRepo.NewVersionAPPRepositoryRepository(dbConn)
 	minimumBookingRepo := _minimumBookingRepo.NewMinimumBookingRepository(dbConn)
 	tempUserPreferenceRepo := _tempUserPreferenceRepo.NewtempUserPreferencesRepository(dbConn)
@@ -323,7 +325,7 @@ func main() {
 	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(experienceRepo, userUsecase, reviewsRepo, userRepo, timeoutContext)
-	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
+	currencyUcase := _currencyUsecase.NewCurrencyUsecase(currencyRepo,timeoutContext)
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(currencyUcase,experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase, harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)

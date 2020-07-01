@@ -19,11 +19,13 @@ var (
 
 type currencyUsecase struct {
 	contextTimeout time.Duration
+	currencyRepo currency.Repository
 }
 
 
-func NewCurrencyUsecase(timeout time.Duration) currency.Usecase {
+func NewCurrencyUsecase(currencyRepo currency.Repository,timeout time.Duration) currency.Usecase {
 	return &currencyUsecase{
+		currencyRepo:currencyRepo,
 		contextTimeout: timeout,
 	}
 }
@@ -60,6 +62,25 @@ func (c currencyUsecase) Exchange(ctx context.Context, exchangeKey string) (map[
 
 
 func (c currencyUsecase) ExchangeRatesApi(ctx context.Context, base string , symbols string) (models.CurrencyExChangeRate, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+	defer cancel()
+	var data models.CurrencyExChangeRate
+	getExChangeRates ,err:=c.currencyRepo.GetByDate(ctx,base,symbols)
+	if err != nil {
+		return data, err
+	}
+	if symbols == "IDR" {
+		data.Rates.IDR = getExChangeRates.Rates
+		data.Date = getExChangeRates.Date
+		data.Base = getExChangeRates.From
+	}else if symbols == "USD" {
+		data.Rates.USD = getExChangeRates.Rates
+		data.Date = getExChangeRates.Date
+		data.Base = getExChangeRates.From
+	}
+	return data,nil
+}
+func (c currencyUsecase) ExchangeRatesWithApi(ctx context.Context, base string , symbols string) (models.CurrencyExChangeRate, error) {
 	client := &http.Client{}
 
 	var data models.CurrencyExChangeRate
@@ -87,7 +108,6 @@ func (c currencyUsecase) ExchangeRatesApi(ctx context.Context, base string , sym
 		return data, err
 	}
 }
-
 func (c currencyUsecase) ExchangeFreeCurrconv(ctx context.Context, exchangeKey string) (map[string]interface{}, error) {
 	client := &http.Client{}
 
