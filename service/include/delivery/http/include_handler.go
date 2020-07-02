@@ -18,15 +18,15 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type includeHandler struct {
+type IncludeHandler struct {
 	isUsecase identityserver.Usecase
-	includeUsecase include.Usecase
+	IncludeUsecase include.Usecase
 }
 
 func NewIncludeHandler(e *echo.Echo, us include.Usecase,isUsecase identityserver.Usecase) {
-	handler := &includeHandler{
+	handler := &IncludeHandler{
 		isUsecase:      isUsecase,
-		includeUsecase: us,
+		IncludeUsecase: us,
 	}
 	e.POST("master/include", handler.CreateInclude)
 	e.PUT("master/include/:id", handler.UpdateInclude)
@@ -36,7 +36,7 @@ func NewIncludeHandler(e *echo.Echo, us include.Usecase,isUsecase identityserver
 	e.GET("service/include", handler.List)
 }
 
-func (f *includeHandler) List(c echo.Context) error {
+func (f *IncludeHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -50,13 +50,13 @@ func (f *includeHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	list, err := f.includeUsecase.List(ctx)
+	list, err := f.IncludeUsecase.List(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, list)
 }
-func (a *includeHandler) DeleteInclude(c echo.Context) error {
+func (a *IncludeHandler) DeleteInclude(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -71,7 +71,7 @@ func (a *includeHandler) DeleteInclude(c echo.Context) error {
 		ctx = context.Background()
 	}
 	includeId,_:= strconv.Atoi(id)
-	result, err := a.includeUsecase.Delete(ctx, includeId, token)
+	result, err := a.IncludeUsecase.Delete(ctx, includeId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -79,7 +79,7 @@ func (a *includeHandler) DeleteInclude(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *includeHandler) GetAllInclude(c echo.Context) error {
+func (a *IncludeHandler) GetAllInclude(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -94,7 +94,7 @@ func (a *includeHandler) GetAllInclude(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.includeUsecase.GetAll(ctx, page,limit,offset)
+	art, err := a.IncludeUsecase.GetAll(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -102,7 +102,7 @@ func (a *includeHandler) GetAllInclude(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *includeHandler) CreateInclude(c echo.Context) error {
+func (a *IncludeHandler) CreateInclude(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -150,7 +150,7 @@ func (a *includeHandler) CreateInclude(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	include,error := a.includeUsecase.Create(ctx,&includeCommand,token)
+	include,error := a.IncludeUsecase.Create(ctx,&includeCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -158,7 +158,7 @@ func (a *includeHandler) CreateInclude(c echo.Context) error {
 	return c.JSON(http.StatusOK, include)
 }
 
-func (a *includeHandler) UpdateInclude(c echo.Context) error {
+func (a *IncludeHandler) UpdateInclude(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -206,7 +206,7 @@ func (a *includeHandler) UpdateInclude(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	include,error := a.includeUsecase.Update(ctx,&includeCommand,token)
+	include,error := a.IncludeUsecase.Update(ctx,&includeCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -214,7 +214,7 @@ func (a *includeHandler) UpdateInclude(c echo.Context) error {
 	return c.JSON(http.StatusOK, include)
 }
 
-func (a *includeHandler) GetDetailIncludeID(c echo.Context) error {
+func (a *IncludeHandler) GetDetailIncludeID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -222,7 +222,7 @@ func (a *includeHandler) GetDetailIncludeID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	includeID ,_:= strconv.Atoi(id)
-	result, err := a.includeUsecase.GetById(ctx,includeID)
+	result, err := a.IncludeUsecase.GetById(ctx,includeID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
