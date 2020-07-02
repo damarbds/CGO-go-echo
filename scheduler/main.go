@@ -34,7 +34,7 @@ func main() {
 	go UpdateStatusExpiredPaymentJobPRD(baseUrlLocalPRD)
 	go RemainingPaymentJobPRD(baseUrlLocalPRD)
 	go CreateExChangeJob(baseUrlLocal)
-	//go CreateExChangeJobPRD(baseUrlLocalPRD)
+	go CreateExChangeJobPRD(baseUrlLocalPRD)
 	log.Fatal(e.Start(":9090"))
 
 }
