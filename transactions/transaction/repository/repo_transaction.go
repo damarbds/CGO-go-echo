@@ -50,7 +50,7 @@ func (t transactionRepository) GetCountTransactionByPromoId(ctx context.Context,
 func (t transactionRepository) GetIdTransactionExpired(ctx context.Context) ([]*string, error) {
 	query := `SELECT t.id
 					FROM transactions t 
-					JOIN booking_exps b ON t.booking_exp_id = b.id
+					JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
 					WHERE t.status = 0 
 					AND b.expired_date_payment <= ?
 					ORDER BY expired_date_payment DESC`
