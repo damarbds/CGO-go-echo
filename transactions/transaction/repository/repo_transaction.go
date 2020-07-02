@@ -53,9 +53,9 @@ func (t transactionRepository) GetIdTransactionExpired(ctx context.Context) ([]*
 					JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
 					WHERE t.status = 0 
 					AND b.expired_date_payment <= ?
-					ORDER BY expired_date_payment DESC`
+					ORDER BY b.expired_date_payment DESC`
 
-	rows, err := t.Conn.QueryContext(ctx, query, time.Now())
+	rows, err := t.Conn.QueryContext(ctx, query,time.Now())
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
