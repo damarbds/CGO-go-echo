@@ -98,7 +98,36 @@ func (p paymentRepository) Insert(ctx context.Context, pay *models.Transaction) 
 }
 
 func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models.ConfirmPaymentIn) error {
-	query := `
+	if confirmIn.Amount != nil{
+		query := `
+	UPDATE
+		transactions,
+		booking_exps
+	SET
+		transactions.status = ?,
+		transactions.total_price = ?,
+		booking_exps.status = ?
+	WHERE
+		booking_exp_id = booking_exps.id
+		AND transactions.id = ?`
+
+		stmt, err := p.Conn.PrepareContext(ctx, query)
+		if err != nil {
+			return err
+		}
+
+		_, err = stmt.ExecContext(ctx,
+			confirmIn.TransactionStatus,
+			confirmIn.Amount,
+			confirmIn.BookingStatus,
+			confirmIn.TransactionID,
+		)
+		if err != nil {
+			return err
+		}
+
+	}else {
+		query := `
 	UPDATE
 		transactions,
 		booking_exps
@@ -109,18 +138,20 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 		booking_exp_id = booking_exps.id
 		AND transactions.id = ?`
 
-	stmt, err := p.Conn.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
+		stmt, err := p.Conn.PrepareContext(ctx, query)
+		if err != nil {
+			return err
+		}
 
-	_, err = stmt.ExecContext(ctx,
-		confirmIn.TransactionStatus,
-		confirmIn.BookingStatus,
-		confirmIn.TransactionID,
-	)
-	if err != nil {
-		return err
+		_, err = stmt.ExecContext(ctx,
+			confirmIn.TransactionStatus,
+			confirmIn.BookingStatus,
+			confirmIn.TransactionID,
+		)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil

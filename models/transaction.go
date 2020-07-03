@@ -105,6 +105,7 @@ type ConfirmPaymentIn struct {
 	TransactionID     string `json:"transaction_id"`
 	TransactionStatus int    `json:"transaction_status,omitempty"`
 	BookingStatus     int    `json:"booking_status,omitempty"`
+	Amount 			 *float64	`json:"amount"`
 }
 type ConfirmTransactionPayment struct {
 	ExpId 	string	`json:"exp_id"`
