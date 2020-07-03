@@ -177,8 +177,8 @@ func TestFetch(t *testing.T) {
 	offset := 0
 	anArticle, err := a.Fetch(context.TODO(), limit,offset)
 	//assert.NotEmpty(t, nextCursor)
-	//assert.NoError(t, err)
-	assert.Len(t, anArticle, 0)
+	assert.NoError(t, err)
+	assert.Len(t, anArticle, 2)
 }
 
 func TestGetByID(t *testing.T) {
