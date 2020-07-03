@@ -230,7 +230,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 
 func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string) ([]*models.TransactionOut, error) {
 	var transactionStatus int
-	var bookingStatus int
+	//var bookingStatus int
 
 	query := `
 	SELECT
@@ -411,9 +411,9 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			query = query + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
 			queryT = queryT + ` AND date_add(b.booking_date, interval + 14 DAY) = DATE(CURRENT_DATE) `
 		} else if status == "finished" {
-			transactionStatus = 2
-			query = query + ` AND b.booking_date < CURRENT_DATE `
-			queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
+			transactionStatus = 7
+			//query = query + ` AND b.booking_date < CURRENT_DATE `
+			//queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
 		}
 		var querySt string
 		var queryTSt string
@@ -465,10 +465,14 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		}
 
 		if status == "boarded" {
-			transactionStatus = 2
-			bookingStatus = 3
-			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
-			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
+			//transactionStatus = 2
+			//bookingStatus = 3
+			//querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
+			//queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
+			transactionStatus = 6
+			//bookingStatus = 3
+			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 			unionQuery = querySt + ` UNION ` + queryTSt
 			if tripType != "" && activityType == "" {
 				unionQuery = querySt
