@@ -25,6 +25,7 @@ func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment 
 		booking_exps
 	SET
 		transactions.status = ?,
+		transactions.remarks = ?,
 		booking_exps.status = ?
 	WHERE
 		booking_exp_id = booking_exps.id
@@ -42,6 +43,7 @@ func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment 
 
 	_, err = stmt.ExecContext(ctx,
 		payment.TransactionStatus,
+		payment.Remarks,
 		payment.BookingStatus,
 		payment.BookingDate,
 	)
@@ -106,6 +108,7 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 	SET
 		transactions.status = ?,
 		transactions.total_price = ?,
+		transactions.remarks = ?,
 		booking_exps.status = ?
 	WHERE
 		booking_exp_id = booking_exps.id
@@ -119,6 +122,7 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 		_, err = stmt.ExecContext(ctx,
 			confirmIn.TransactionStatus,
 			confirmIn.Amount,
+			confirmIn.Remarks,
 			confirmIn.BookingStatus,
 			confirmIn.TransactionID,
 		)
@@ -133,6 +137,7 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 		booking_exps
 	SET
 		transactions.status = ?,
+		transactions.remarks = ?,
 		booking_exps.status = ?
 	WHERE
 		booking_exp_id = booking_exps.id
@@ -145,6 +150,7 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 
 		_, err = stmt.ExecContext(ctx,
 			confirmIn.TransactionStatus,
+			confirmIn.Remarks,
 			confirmIn.BookingStatus,
 			confirmIn.TransactionID,
 		)
