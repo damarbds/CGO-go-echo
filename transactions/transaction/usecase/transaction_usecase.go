@@ -3,12 +3,13 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"github.com/auth/admin"
-	"github.com/auth/merchant"
-	"github.com/service/promo"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/auth/admin"
+	"github.com/auth/merchant"
+	"github.com/service/promo"
 
 	"github.com/models"
 	"github.com/service/exp_payment"
@@ -16,19 +17,19 @@ import (
 )
 
 type transactionUsecase struct {
-	adminUsecase 			admin.Usecase
-	merchantUsecase 		 merchant.Usecase
+	adminUsecase              admin.Usecase
+	merchantUsecase           merchant.Usecase
 	experiencePaymentTypeRepo exp_payment.Repository
 	transactionRepo           transaction.Repository
 	contextTimeout            time.Duration
-	promoRepo 				promo.Repository
+	promoRepo                 promo.Repository
 }
 
-func NewTransactionUsecase(promoRepo promo.Repository,au admin.Usecase,mu merchant.Usecase,ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
+func NewTransactionUsecase(promoRepo promo.Repository, au admin.Usecase, mu merchant.Usecase, ep exp_payment.Repository, t transaction.Repository, timeout time.Duration) transaction.Usecase {
 	return &transactionUsecase{
-		promoRepo:promoRepo,
-		adminUsecase:au,
-		merchantUsecase:mu,
+		promoRepo:                 promoRepo,
+		adminUsecase:              au,
+		merchantUsecase:           mu,
 		experiencePaymentTypeRepo: ep,
 		transactionRepo:           t,
 		contextTimeout:            timeout,
@@ -47,34 +48,33 @@ func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTr
 	return total, nil
 }
 
-func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int,token string,isAdmin bool,isTransportation bool,isExperience bool,isSchedule bool,tripType,paymentType,activityType string,confirmType string) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int, token string, isAdmin bool, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	var merchantId string
 
-	list := make([]*models.TransactionOut,0)
+	list := make([]*models.TransactionOut, 0)
 
-
-	if token != "" && isAdmin == true{
-		currentMerchant, err := t.adminUsecase.ValidateTokenAdmin(ctx,token)
+	if token != "" && isAdmin == true {
+		currentMerchant, err := t.adminUsecase.ValidateTokenAdmin(ctx, token)
 		if err != nil {
-			return nil,models.ErrUnAuthorize
+			return nil, models.ErrUnAuthorize
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,"",isTransportation,isExperience,isSchedule,tripType,paymentType,activityType,confirmType)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType)
 
 		if err != nil {
 			return nil, err
 		}
-	}else if token != ""{
-		currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx,token)
+	} else if token != "" {
+		currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
 		if err != nil {
-			return nil,models.ErrUnAuthorize
+			return nil, models.ErrUnAuthorize
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset,merchantId,isTransportation,isExperience,isSchedule,tripType,paymentType,activityType,confirmType)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType)
 
 		if err != nil {
 			return nil, err
@@ -85,7 +85,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 	for i, item := range list {
 		var promo *models.PromoTransaction
 		if item.PromoId != nil {
-			getPromo,_:= t.promoRepo.GetById(ctx,*item.PromoId)
+			getPromo, _ := t.promoRepo.GetById(ctx, *item.PromoId)
 			promo = &models.PromoTransaction{
 				PromoValue: getPromo.PromoValue,
 				PromoType:  getPromo.PromoType,
@@ -123,6 +123,16 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 							Name: element.ExpPaymentTypeName,
 							Desc: element.ExpPaymentTypeDesc,
 						}
+						if paymentType.Name == "Down Payment" {
+							if item.OriginalPrice != nil {
+								paymentType.OriginalPrice = item.OriginalPrice
+								remainingPayment := *item.OriginalPrice - item.TotalPrice
+								paymentType.RemainingPayment = remainingPayment
+							} else {
+								remainingPayment := element.Price - item.TotalPrice
+								paymentType.RemainingPayment = remainingPayment
+							}
+						}
 						experiencePaymentType = &paymentType
 					}
 				}
@@ -156,13 +166,13 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			status = "Pending"
 		} else if item.TransactionStatus == 1 {
 			status = "Waiting approval"
-		} else if item.TransactionStatus == 2 && item.CheckInDate.After(time.Now()){
+		} else if item.TransactionStatus == 2 && item.CheckInDate.After(time.Now()) {
 			status = "Confirm"
-		} else if item.TransactionStatus == 2 && (item.CheckInDate.AddDate(0,0,14).Format("02 January 2006") == time.Now().Format("02 January 2006")){
+		} else if item.TransactionStatus == 2 && (item.CheckInDate.AddDate(0, 0, 14).Format("02 January 2006") == time.Now().Format("02 January 2006")) {
 			status = "Up coming"
-		}else if item.TransactionStatus == 2 && item.CheckInDate.Before(time.Now()){
+		} else if item.TransactionStatus == 2 && item.CheckInDate.Before(time.Now()) {
 			status = "Finished"
-		}else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
+		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
 			status = "Failed"
 		} else if item.TransactionStatus == 2 && item.BookingStatus == 3 {
 			status = "Boarded"
@@ -184,25 +194,25 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			TotalPrice:            item.TotalPrice,
 			ExperiencePaymentType: experiencePaymentType,
 			Merchant:              item.MerchantName,
-			OrderId:			   item.OrderId,
-			GuestCount:expGuest,
-			Promo:promo,
-			Points:item.Points,
+			OrderId:               item.OrderId,
+			GuestCount:            expGuest,
+			Promo:                 promo,
+			Points:                item.Points,
 		}
-		if expType[0] != "Transportation"{
-			transactions[i].ExpDuration  = *item.ExpDuration
+		if expType[0] != "Transportation" {
+			transactions[i].ExpDuration = *item.ExpDuration
 			transactions[i].ProvinceName = *item.ProvinceName
 			transactions[i].CountryName = *item.CountryName
 		}
 	}
 	var totalRecords int
-	if token != "" && isAdmin == true{
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status,"")
-	}else {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status,merchantId)
+	if token != "" && isAdmin == true {
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "")
+	} else {
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId)
 	}
 
-	if limit == nil{
+	if limit == nil {
 		limit = &totalRecords
 	}
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(*limit)))
