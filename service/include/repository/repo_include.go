@@ -157,16 +157,13 @@ func (m *includeRepository) Insert(ctx context.Context, a *models.Include) (*int
 
 
 	lastID, err := res.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
 
 	a.Id = int(lastID)
 	return &a.Id,nil
 }
 
 func (m *includeRepository) Update(ctx context.Context, a *models.Include) error {
-	query := `UPDATE includes set modified_by=?, modified_date=? ,include_name=?,include_icon=?  WHERE id = ?`
+	query := `UPDATE includes set modified_by=?, modified_date=? ,include_name=?,include_icon=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -189,10 +186,6 @@ func (m *includeRepository) Delete(ctx context.Context, id int, deletedBy string
 	}
 
 	_, err = stmt.ExecContext(ctx, deletedBy, time.Now(), 1, 0,id)
-	if err != nil {
-		return err
-	}
-
 	if err != nil {
 		return err
 	}

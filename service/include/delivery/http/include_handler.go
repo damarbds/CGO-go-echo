@@ -19,13 +19,13 @@ type ResponseError struct {
 }
 
 type IncludeHandler struct {
-	isUsecase identityserver.Usecase
+	IsUsecase identityserver.Usecase
 	IncludeUsecase include.Usecase
 }
 
 func NewIncludeHandler(e *echo.Echo, us include.Usecase,isUsecase identityserver.Usecase) {
 	handler := &IncludeHandler{
-		isUsecase:      isUsecase,
+		IsUsecase:      isUsecase,
 		IncludeUsecase: us,
 	}
 	e.POST("master/include", handler.CreateInclude)
@@ -131,7 +131,7 @@ func (a *IncludeHandler) CreateInclude(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Include")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Include")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -187,7 +187,7 @@ func (a *IncludeHandler) UpdateInclude(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Include")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Include")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -230,9 +230,9 @@ func (a *IncludeHandler) GetDetailIncludeID(c echo.Context) error {
 }
 
 func getStatusCode(err error) int {
-	if err == nil {
-		return http.StatusOK
-	}
+	//if err == nil {
+	//	return http.StatusOK
+	//}
 	logrus.Error(err)
 	switch err {
 	case models.ErrInternalServerError:
