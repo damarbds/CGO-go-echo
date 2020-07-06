@@ -256,7 +256,9 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		co.country_name,
 		t.promo_id,
 		t.points,
-		t.original_price
+		t.original_price,
+		null as arrival_time,
+		null as departure_time
 	FROM
 		transactions t
 		JOIN experience_payments ep ON t.experience_payment_id = ep.id
@@ -274,7 +276,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 	queryT := `
 	SELECT
 		t.id AS transaction_id,
-		trans_id,
+		b.trans_id,
 		trans_name,
 		trans_title,
 		booking_exp_id,
@@ -295,7 +297,9 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		h.harbors_name AS country_name,
 		t.promo_id,
 		t.points,
-		t.original_price
+		t.original_price,
+		s.arrival_time,
+		s.departure_time
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
@@ -303,6 +307,7 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		JOIN merchants m ON tr.merchant_id = m.id
 		JOIN harbors h ON tr.harbors_dest_id = h.id
 		JOIN harbors hs ON tr.harbors_source_id = hs.id
+		JOIN schedules s ON b.schedule_id = s.id
 		WHERE 
 		t.is_deleted = 0 AND
 		t.is_active = 1 `
@@ -543,6 +548,8 @@ func (t transactionRepository) fetchWithJoin(ctx context.Context, query string, 
 			&t.PromoId,
 			&t.Points,
 			&t.OriginalPrice,
+			&t.ArrivalTime,
+			&t.DepartureTime,
 		)
 
 		if err != nil {

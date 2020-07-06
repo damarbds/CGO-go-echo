@@ -143,6 +143,8 @@ type TransactionOut struct {
 	PromoId 			*string		`json:"promo_id"`
 	Points 				*float64	`json:"points"`
 	OriginalPrice 		*float64	`json:"original_price"`
+	DepartureTime 		*string 	`json:"departure_time"`
+	ArrivalTime 		*string 	`json:"arrival_time"`
 }
 
 type TransactionDto struct {
@@ -170,6 +172,8 @@ type TransactionDto struct {
 	Points 			*float64	`json:"points"`
 	TransFrom          string                   `json:"trans_from"`
 	TransTo            string                   `json:"trans_to"`
+	DepartureTime 		*string 	`json:"departure_time"`
+	ArrivalTime 		*string 	`json:"arrival_time"`
 }
 type PromoTransaction struct {
 	PromoValue 			float64	`json:"promo_value"`
@@ -179,7 +183,9 @@ type TransactionWithPagination struct {
 	Data []*TransactionDto `json:"data"`
 	Meta *MetaPagination   `json:"meta"`
 }
+type TransactionByDateDto struct {
 
+}
 type TotalTransaction struct {
 	TransactionCount      int     `json:"transaction_count"`
 	TransactionValueTotal float64 `json:"transaction_value_total"`
