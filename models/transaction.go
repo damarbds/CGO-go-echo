@@ -28,6 +28,42 @@ type Transaction struct {
 	OriginalPrice 		*float64	`json:"original_price"`
 	Remarks				*string 	`json:"remarks"`
 }
+type TransactionBooked struct {
+	BookedBy 		string	`json:"booked_by"`
+	GuestCount 		int 	`json:"guest_count"`
+	BookingExpId 	*string	`json:"booking_exp_id"`
+	OrderId 		*string `json:"order_id"`
+	TransactionId 	*string	`json:"transaction_id"`
+	TransactionStatus string `json:"transaction_status"`
+}
+type TransactionScheduleDto struct {
+	ExpId 			*string `json:"exp_id"`
+	ExpTitle 		*string `json:"exp_title"`
+	TransId 		*string `json:"trans_id"`
+	DepartureTime 	*string `json:"departure_time"`
+	ArrivalTime 	*string `json:"arrival_time"`
+	TransTo 	*string `json:"trans_to"`
+	TransFrom *string `json:"trans_from"`
+	Transactions []TransactionBooked	`json:"transactions"`
+}
+type TransactionByDate struct {
+	ExpId 			*string `json:"exp_id"`
+	ExpTitle 		*string `json:"exp_title"`
+	TransId 		*string `json:"trans_id"`
+	DepartureTime 	*string `json:"departure_time"`
+	ArrivalTime 	*string `json:"arrival_time"`
+	HarborsDest 	*string `json:"harbors_dest"`
+	HarborsSource *string `json:"harbors_source"`
+}
+type TransactionByDateDto struct {
+	ExpId 			*string `json:"exp_id"`
+	ExpTitle 		*string `json:"exp_title"`
+	TransId 		*string `json:"trans_id"`
+	DepartureTime 	*string `json:"departure_time"`
+	ArrivalTime 	*string `json:"arrival_time"`
+	TransTo 	*string `json:"trans_to"`
+	TransFrom *string `json:"trans_from"`
+}
 type TransactionWithBooking struct {
 	ExpTitle 		string 		`json:"exp_title"`
 	BookedBy 		string 		`json:"booked_by"`
@@ -182,9 +218,6 @@ type PromoTransaction struct {
 type TransactionWithPagination struct {
 	Data []*TransactionDto `json:"data"`
 	Meta *MetaPagination   `json:"meta"`
-}
-type TransactionByDateDto struct {
-
 }
 type TotalTransaction struct {
 	TransactionCount      int     `json:"transaction_count"`

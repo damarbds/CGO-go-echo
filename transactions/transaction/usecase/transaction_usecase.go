@@ -36,6 +36,111 @@ func NewTransactionUsecase(promoRepo promo.Repository, au admin.Usecase, mu merc
 	}
 }
 
+func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, date string, transId string, expId string, token string) (*models.TransactionScheduleDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, models.ErrUnAuthorize
+	}
+	listTransactions ,err := t.transactionRepo.GetTransactionByExpIdORTransId(ctx,date,expId,transId,currentMerchant.Id)
+	if err != nil {
+		return nil,err
+	}
+	if len(listTransactions) == 0 {
+		return nil,models.ErrNotFound
+	}
+	var expType []string
+	if listTransactions[0].ExpType != "" {
+		if !strings.Contains(listTransactions[0].ExpType, "]") {
+			// Default type for Transportation
+			expType = []string{"Transportation"}
+		} else {
+			if errUnmarshal := json.Unmarshal([]byte(listTransactions[0].ExpType), &expType); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+	}
+	var result models.TransactionScheduleDto
+	if expType[0] == "Transportation" {
+		result.TransId = &listTransactions[0].ExpId
+		result.TransTo = listTransactions[0].CountryName
+		result.TransFrom = listTransactions[0].ProvinceName
+		result.ArrivalTime = listTransactions[0].ArrivalTime
+		result.DepartureTime = listTransactions[0].DepartureTime
+	}else {
+		result.ExpId = &listTransactions[0].ExpId
+		result.ExpTitle = &listTransactions[0].ExpTitle
+	}
+	result.Transactions = make([]models.TransactionBooked,len(listTransactions))
+	for i, item := range listTransactions {
+		var status string
+		if item.TransactionStatus == 0 {
+			status = "Pending"
+		} else if item.TransactionStatus == 1 {
+			status = "Waiting approval"
+		} else if item.TransactionStatus == 2 && item.CheckInDate.After(time.Now()) {
+			status = "Confirm"
+		} else if item.TransactionStatus == 2 && (item.CheckInDate.AddDate(0, 0, 14).Format("02 January 2006") == time.Now().Format("02 January 2006")) {
+			status = "Up coming"
+		} else if item.TransactionStatus == 2 && item.CheckInDate.Before(time.Now()) {
+			status = "Finished"
+		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
+			status = "Failed"
+		} else if item.TransactionStatus == 2 && item.BookingStatus == 3 {
+			status = "Boarded"
+		}
+		var guestDesc []models.GuestDescObj
+		if item.GuestDesc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(item.GuestDesc), &guestDesc); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+		var bookedBy []models.BookedByObj
+		if item.BookedBy != "" {
+			if errUnmarshal := json.Unmarshal([]byte(item.BookedBy), &bookedBy); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+		result.Transactions[i] = models.TransactionBooked{
+			BookedBy:          bookedBy[0].FullName,
+			GuestCount:        len(guestDesc),
+			BookingExpId:      item.BookingExpId,
+			OrderId:           item.OrderId,
+			TransactionId:     &item.TransactionId,
+			TransactionStatus: status,
+		}
+	}
+	return &result,nil
+}
+
+func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date string, isTransportation bool, isExperience bool, token string) ([]*models.TransactionByDateDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, models.ErrUnAuthorize
+	}
+
+	listTransactions ,err := t.transactionRepo.GetTransactionByDate(ctx,date,isTransportation,isExperience,currentMerchant.Id)
+	if err != nil {
+		return nil,err
+	}
+	result := make([]*models.TransactionByDateDto,len(listTransactions))
+	for i, item := range listTransactions {
+		result[i] = &models.TransactionByDateDto{
+			ExpId:         item.ExpId,
+			ExpTitle:      item.ExpTitle,
+			TransId:       item.TransId,
+			DepartureTime: item.DepartureTime,
+			ArrivalTime:   item.ArrivalTime,
+			TransTo:   item.HarborsDest,
+			TransFrom: item.HarborsSource,
+		}
+	}
+	return result,nil
+}
+
 func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTransaction, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()

@@ -17,8 +17,190 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
+
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
+}
+
+func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Context, date string, expId string, transId string, merchantId string) ([]*models.TransactionOut, error) {
+	var query string
+	queryExp := `
+	SELECT
+		t.id as transaction_id,
+		e.id as exp_id,
+		e.exp_type,
+		e.exp_title,
+		booking_exp_id,
+		b.order_id as booking_code,
+		b.created_date as booking_date,
+		b.booking_date as check_in_date,
+		b.booked_by,
+		guest_desc,
+		b.booked_by_email as email,
+		t.status as transaction_status,
+		b.status as booking_status,
+		t.total_price,
+		t.experience_payment_id as experience_payment_id,
+		merchant_name,
+		b.order_id,
+		e.exp_duration,
+		p.province_name,
+		co.country_name,
+		t.promo_id,
+		t.points,
+		t.original_price,
+		null as arrival_time,
+		null as departure_time
+	FROM
+		transactions t
+		JOIN experience_payments ep ON t.experience_payment_id = ep.id
+		JOIN booking_exps b ON t.booking_exp_id = b.id
+		JOIN experiences e ON b.exp_id = e.id
+		JOIN merchants m ON e.merchant_id = m.id
+		JOIN harbors  h ON e.harbors_id = h.id
+		JOIN cities  c ON h.city_id = c.id
+		JOIN provinces p on c.province_id = p.id
+		JOIN countries co on p.country_id = co.id
+		WHERE 
+		t.is_deleted = 0 AND
+		t.is_active = 1 `
+
+	queryTrans := `
+	SELECT
+		t.id AS transaction_id,
+		b.trans_id,
+		trans_name,
+		trans_title,
+		booking_exp_id,
+		b.order_id AS booking_code,
+		b.created_date AS booking_date,
+		b.booking_date AS check_in_date,
+		b.booked_by,
+		guest_desc,
+		b.booked_by_email AS email,
+		t.status AS transaction_status,
+		b.status AS booking_status,
+		t.total_price,
+		tr.class as trans_class,
+		merchant_name,
+		b.order_id,
+		tr.trans_capacity as exp_duration,
+		hs.harbors_name AS province_name,
+		h.harbors_name AS country_name,
+		t.promo_id,
+		t.points,
+		t.original_price,
+		s.arrival_time,
+		s.departure_time
+	FROM
+		transactions t
+		JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
+		JOIN transportations tr ON b.trans_id = tr.id
+		JOIN merchants m ON tr.merchant_id = m.id
+		JOIN harbors h ON tr.harbors_dest_id = h.id
+		JOIN harbors hs ON tr.harbors_source_id = hs.id
+		JOIN schedules s ON b.schedule_id = s.id
+		WHERE 
+		t.is_deleted = 0 AND
+		t.is_active = 1 `
+
+	if merchantId != "" {
+		queryExp = queryExp + ` AND e.merchant_id = '` + merchantId + `' `
+		queryTrans = queryTrans + ` AND tr.merchant_id = '` + merchantId + `' `
+	}
+	if date != ""{
+		queryExp = queryExp + ` AND DATE(b.booking_date) = '` + date + `' `
+		queryTrans = queryTrans + ` AND DATE(b.booking_date) = '` + date + `' `
+	}
+	if expId != ""{
+		query = queryExp + ` AND b.exp_id = '` + expId + `' `
+	}else if transId != ""{
+		query = queryTrans + ` AND b.trans_id = '` + transId + `' `
+	}
+
+	list, err := t.fetchWithJoin(ctx, query)
+	if err != nil {
+		return nil,err
+	}
+
+	return list,nil
+}
+func (t transactionRepository) GetTransactionByDate(ctx context.Context, date string, isExperience bool, isTransportation bool,merchantId string) ([]*models.TransactionByDate, error) {
+	queryExp := `SELECT DISTINCT
+				b.exp_id,
+				e.exp_title,
+				null as trans_id,
+				null as departure_time,
+				null as arrival_time,
+				null as harbors_dest,
+				null as harbors_source
+
+				FROM transactions t 
+				JOIN booking_exps b ON t.booking_exp_id = b.id
+				JOIN experiences e ON b.exp_id = e.id
+				WHERE t.is_deleted = 0 
+					AND t.is_active = 1
+					AND t.status IN (0,1,2,5)
+					AND DATE(b.booking_date) = '` + date + `' `
+
+	queryTrans := `SELECT DISTINCT
+				null as exp_id,
+				null as exp_title,
+				b.trans_id,
+				s.departure_time,
+				s.arrival_time,
+				h.harbors_name as harbors_dest,
+				hs.harbors_name as harbors_source
+				
+				FROM transactions t 
+				JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
+				JOIN transportations trans ON b.trans_id = trans_id
+				JOIN schedules s ON b.schedule_id = s.id
+				JOIN harbors h ON trans.harbors_dest_id = h.id
+				JOIN harbors hs ON trans.harbors_source_id = hs.id
+
+				WHERE t.is_deleted = 0 
+					AND t.is_active = 1
+					AND t.status IN (0,1,2,5)
+					AND DATE(b.booking_date) = '` + date + `' `
+	var query string
+	if merchantId != ""{
+		queryExp = queryExp + ` AND e.merchant_id = '` + merchantId + `' `
+		queryTrans = queryTrans + ` AND trans.merchant_id = '` + merchantId + `' `
+	}
+	if isTransportation == true && isExperience == false {
+		query = queryTrans
+	} else if isExperience == true && isTransportation == false {
+		query = queryExp
+	}else {
+		query = queryExp + ` UNION ` + queryTrans
+	}
+	rows, err := t.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	result := make([]*models.TransactionByDate, 0)
+	for rows.Next() {
+		t := new(models.TransactionByDate)
+		err = rows.Scan(
+			&t.ExpId,
+			&t.ExpTitle ,
+			&t.TransId 	,
+			&t.DepartureTime,
+			&t.ArrivalTime ,
+			&t.HarborsDest ,
+			&t.HarborsSource,
+		)
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
 }
 func (t transactionRepository) GetCountTransactionByPromoId(ctx context.Context, promoId string, userId string) (int, error) {
 	query := `select count(*) from transactions a
