@@ -124,7 +124,7 @@ type TransactionOut struct {
 	ExpId               string    `json:"exp_id"`
 	ExpType             string    `json:"exp_type"`
 	ExpTitle            string    `json:"exp_title"`
-	BookingExpId        string    `json:"booking_exp_id"`
+	BookingExpId        *string    `json:"booking_exp_id"`
 	BookingCode         string    `json:"booking_code"`
 	BookingDate         time.Time `json:"booking_date"`
 	CheckInDate         time.Time `json:"check_in_date"`
@@ -150,7 +150,7 @@ type TransactionDto struct {
 	ExpId                 string                    `json:"exp_id"`
 	ExpTitle              string                    `json:"exp_title"`
 	ExpType               []string                  `json:"exp_type"`
-	BookingExpId          string                    `json:"booking_exp_id"`
+	BookingExpId          *string                    `json:"booking_exp_id"`
 	BookingCode           string                    `json:"booking_code"`
 	BookingDate           time.Time                 `json:"booking_date"`
 	CheckInDate           time.Time                 `json:"check_in_date"`
