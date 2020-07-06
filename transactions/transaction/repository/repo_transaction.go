@@ -291,8 +291,8 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		merchant_name,
 		b.order_id,
 		tr.trans_capacity as exp_duration,
-		trans_name as province_name,
-		trans_title as country_name,
+		hs.harbors_name AS province_name,
+		h.harbors_name AS country_name,
 		t.promo_id,
 		t.points,
 		t.original_price
@@ -301,6 +301,8 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
 		JOIN transportations tr ON b.trans_id = tr.id
 		JOIN merchants m ON tr.merchant_id = m.id
+		JOIN harbors h ON tr.harbors_dest_id = h.id
+		JOIN harbors hs ON tr.harbors_source_id = hs.id
 		WHERE 
 		t.is_deleted = 0 AND
 		t.is_active = 1 `

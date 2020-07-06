@@ -203,6 +203,9 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			transactions[i].ExpDuration = *item.ExpDuration
 			transactions[i].ProvinceName = *item.ProvinceName
 			transactions[i].CountryName = *item.CountryName
+		}else {
+			transactions[i].TransTo = *item.CountryName
+			transactions[i].TransFrom = *item.ProvinceName
 		}
 	}
 	var totalRecords int

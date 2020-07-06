@@ -168,6 +168,8 @@ type TransactionDto struct {
 	CountryName 		string			`json:"country_name"`
 	Promo				*PromoTransaction `json:"promo"`
 	Points 			*float64	`json:"points"`
+	TransFrom          string                   `json:"trans_from"`
+	TransTo            string                   `json:"trans_to"`
 }
 type PromoTransaction struct {
 	PromoValue 			float64	`json:"promo_value"`
