@@ -741,7 +741,7 @@ func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate
 				join experiences e on b.exp_id = e.id 
 				WHERE DATE(b.booking_date) = ?`
 	if expId != "" {
-		query = query + ` AND b.exp_id != '' `
+		query = query + ` AND b.exp_id = '` + expId + `' `
 	}
 	list, err := m.fetch(ctx, query, bookingDate)
 	if err != nil {
