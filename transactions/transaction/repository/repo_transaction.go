@@ -17,7 +17,6 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
-
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
@@ -108,24 +107,24 @@ func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Contex
 		queryExp = queryExp + ` AND e.merchant_id = '` + merchantId + `' `
 		queryTrans = queryTrans + ` AND tr.merchant_id = '` + merchantId + `' `
 	}
-	if date != ""{
+	if date != "" {
 		queryExp = queryExp + ` AND DATE(b.booking_date) = '` + date + `' `
 		queryTrans = queryTrans + ` AND DATE(b.booking_date) = '` + date + `' `
 	}
-	if expId != ""{
+	if expId != "" {
 		query = queryExp + ` AND b.exp_id = '` + expId + `' `
-	}else if transId != ""{
+	} else if transId != "" {
 		query = queryTrans + ` AND b.trans_id = '` + transId + `' `
 	}
 
 	list, err := t.fetchWithJoin(ctx, query)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	return list,nil
+	return list, nil
 }
-func (t transactionRepository) GetTransactionByDate(ctx context.Context, date string, isExperience bool, isTransportation bool,merchantId string) ([]*models.TransactionByDate, error) {
+func (t transactionRepository) GetTransactionByDate(ctx context.Context, date string, isExperience bool, isTransportation bool, merchantId string) ([]*models.TransactionByDate, error) {
 	queryExp := `SELECT DISTINCT
 				b.exp_id,
 				e.exp_title,
@@ -164,7 +163,7 @@ func (t transactionRepository) GetTransactionByDate(ctx context.Context, date st
 					AND t.status IN (0,1,2,5)
 					AND DATE(b.booking_date) = '` + date + `' `
 	var query string
-	if merchantId != ""{
+	if merchantId != "" {
 		queryExp = queryExp + ` AND e.merchant_id = '` + merchantId + `' `
 		queryTrans = queryTrans + ` AND trans.merchant_id = '` + merchantId + `' `
 	}
@@ -172,7 +171,7 @@ func (t transactionRepository) GetTransactionByDate(ctx context.Context, date st
 		query = queryTrans
 	} else if isExperience == true && isTransportation == false {
 		query = queryExp
-	}else {
+	} else {
 		query = queryExp + ` UNION ` + queryTrans
 	}
 	rows, err := t.Conn.QueryContext(ctx, query)
@@ -186,11 +185,11 @@ func (t transactionRepository) GetTransactionByDate(ctx context.Context, date st
 		t := new(models.TransactionByDate)
 		err = rows.Scan(
 			&t.ExpId,
-			&t.ExpTitle ,
-			&t.TransId 	,
+			&t.ExpTitle,
+			&t.TransId,
 			&t.DepartureTime,
-			&t.ArrivalTime ,
-			&t.HarborsDest ,
+			&t.ArrivalTime,
+			&t.HarborsDest,
 			&t.HarborsSource,
 		)
 		if err != nil {
@@ -237,7 +236,7 @@ func (t transactionRepository) GetIdTransactionExpired(ctx context.Context) ([]*
 					AND b.expired_date_payment <= ?
 					ORDER BY b.expired_date_payment DESC`
 
-	rows, err := t.Conn.QueryContext(ctx, query,time.Now())
+	rows, err := t.Conn.QueryContext(ctx, query, time.Now())
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
@@ -822,7 +821,7 @@ func (t transactionRepository) CountSuccess(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string, merchantId string,isTransportation bool,isExperience bool) (int, error) {
+func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string, merchantId string, isTransportation bool, isExperience bool) (int, error) {
 	query := `
 	SELECT
 		count(*) as count
@@ -936,8 +935,8 @@ func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate
 	if expId != "" {
 		query = query + ` AND b.exp_id = '` + expId + `' `
 	}
-	list, err := m.fetch(ctx, query, bookingDate)
-	if len(list) == 0 {
+	var list []*models.TransactionWMerchant
+	if transId != "" {
 		query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.trans_title,b.booking_date,b.exp_id,b.trans_id
 				FROM transactions t
 				join booking_exps b on t.booking_exp_id = b.id OR t.order_id = b.order_id
@@ -947,10 +946,12 @@ func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate
 			query = query + ` AND b.trans_id = '` + transId + `' `
 		}
 		list, _ = m.fetch(ctx, query, bookingDate)
+	} else {
+		list, _ = m.fetch(ctx, query, bookingDate)
 	}
-	if err != nil {
-		return nil, err
-	}
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	if len(list) > 0 {
 		return list, nil
