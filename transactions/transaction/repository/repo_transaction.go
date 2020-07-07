@@ -272,7 +272,7 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 		t.total_price,
 		ep.price ,
 		e.exp_duration,
-		t.order_id,
+		be.order_id,
 		m.merchant_name,
 		m.phone_number as merchant_phone,
 		e.exp_payment_deadline_amount,
