@@ -13,12 +13,11 @@ type paymentRepository struct {
 	Conn *sql.DB
 }
 
-
 // NewPaymentRepository will create an object that represent the article.repository interface
 func NewPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &paymentRepository{Conn}
 }
-func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment *models.ConfirmTransactionPayment)error {
+func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment *models.ConfirmTransactionPayment) error {
 	query := `
 	UPDATE
 		transactions,
@@ -28,12 +27,12 @@ func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment 
 		transactions.remarks = ?,
 		booking_exps.status = ?
 	WHERE
-		booking_exp_id = booking_exps.id
+		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id)
 		AND DATE(booking_exps.booking_date) = ? `
 
-	if payment.TransId != ""{
+	if payment.TransId != "" {
 		query = query + ` AND booking_exps.trans_id = '` + payment.TransId + `'`
-	}else if payment.ExpId != ""{
+	} else if payment.ExpId != "" {
 		query = query + ` AND booking_exps.exp_id = '` + payment.ExpId + `'`
 	}
 	stmt, err := p.Conn.PrepareContext(ctx, query)
@@ -100,7 +99,7 @@ func (p paymentRepository) Insert(ctx context.Context, pay *models.Transaction) 
 }
 
 func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models.ConfirmPaymentIn) error {
-	if confirmIn.Amount != nil{
+	if confirmIn.Amount != nil {
 		query := `
 	UPDATE
 		transactions,
@@ -111,7 +110,7 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 		transactions.remarks = ?,
 		booking_exps.status = ?
 	WHERE
-		booking_exp_id = booking_exps.id
+		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id)
 		AND transactions.id = ?`
 
 		stmt, err := p.Conn.PrepareContext(ctx, query)
@@ -130,7 +129,7 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 			return err
 		}
 
-	}else {
+	} else {
 		query := `
 	UPDATE
 		transactions,
@@ -140,7 +139,7 @@ func (p paymentRepository) ConfirmPayment(ctx context.Context, confirmIn *models
 		transactions.remarks = ?,
 		booking_exps.status = ?
 	WHERE
-		booking_exp_id = booking_exps.id
+		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id)
 		AND transactions.id = ?`
 
 		stmt, err := p.Conn.PrepareContext(ctx, query)
