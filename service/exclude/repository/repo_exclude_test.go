@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/models"
 	excludeRepo "github.com/service/exclude/repository"
-	includeRepo "github.com/service/include/repository"
 	"testing"
 	"time"
 
@@ -78,10 +77,10 @@ func TestCountFetch(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"count"}).
 		AddRow("test")
 
-	query := `SELECT count\(\*\) AS count FROM includes WHERE is_deleted = 0 and is_active = 1`
+	query := `SELECT count\(\*\) AS count FROM excludes WHERE is_deleted = 0 and is_active = 1`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	_, err = a.GetCount(context.TODO())
 	assert.Error(t, err)
@@ -97,8 +96,8 @@ func TestList(t *testing.T) {
 	//	err = db.Close()
 	//	require.NoError(t, err)
 	//}()
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -108,10 +107,10 @@ func TestList(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -121,23 +120,23 @@ func TestList(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IsActive,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IsActive,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+		mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+		mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+		mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+		mockExclude[1].IsActive,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT                                         \*\                                               FROM includes WHERE is_deleted = 0 and is_active = 1`
+	query := `SELECT                                         \*\                                               FROM excludes WHERE is_deleted = 0 and is_active = 1`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	anArticle, err := a.List(context.TODO())
 	//assert.NotEmpty(t, nextCursor)
@@ -155,8 +154,8 @@ func TestListError(t *testing.T) {
 	//	err = db.Close()
 	//	require.NoError(t, err)
 	//}()
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -166,10 +165,10 @@ func TestListError(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -179,23 +178,22 @@ func TestListError(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IncludeName,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IncludeName,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
-
-	query := `SELECT                                         \*\                                               FROM includes WHERE is_deleted = 0 and is_active = 1`
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].ExcludeName,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
+	query := `SELECT                                         \*\                                               FROM excludes WHERE is_deleted = 0 and is_active = 1`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	anArticle, err := a.List(context.TODO())
 	//assert.NotEmpty(t, nextCursor)
@@ -213,8 +211,8 @@ func TestFetchWithPagination(t *testing.T) {
 	//	err = db.Close()
 	//	require.NoError(t, err)
 	//}()
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -224,10 +222,10 @@ func TestFetchWithPagination(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -237,23 +235,23 @@ func TestFetchWithPagination(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IsActive,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IsActive,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].IsActive,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc LIMIT \? OFFSET \?`
+	query := `SELECT \*\ FROM excludes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc LIMIT \? OFFSET \?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	limit := 10
 	offset := 0
@@ -273,8 +271,8 @@ func TestFetchWithoutPagination(t *testing.T) {
 	//	err = db.Close()
 	//	require.NoError(t, err)
 	//}()
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -284,10 +282,10 @@ func TestFetchWithoutPagination(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -297,23 +295,24 @@ func TestFetchWithoutPagination(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IsActive,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IsActive,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].IsActive,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc`
+
+	query := `SELECT \*\ FROM excludes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	//limit := 10
 	//offset := 0
@@ -333,8 +332,8 @@ func TestFetchWithPaginationErrorFetch(t *testing.T) {
 	//	err = db.Close()
 	//	require.NoError(t, err)
 	//}()
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -344,10 +343,10 @@ func TestFetchWithPaginationErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -357,23 +356,23 @@ func TestFetchWithPaginationErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IncludeIcon,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IncludeIcon,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].ExcludeIcon,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].ExcludeIcon,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc LIMIT \? OFFSET \?`
+	query := `SELECT \*\ FROM excludes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc LIMIT \? OFFSET \?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	limit := 10
 	offset := 0
@@ -394,8 +393,8 @@ func TestFetchWithoutPaginationErrorFetch(t *testing.T) {
 	//	err = db.Close()
 	//	require.NoError(t, err)
 	//}()
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -405,10 +404,10 @@ func TestFetchWithoutPaginationErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -418,23 +417,24 @@ func TestFetchWithoutPaginationErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IncludeIcon,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IncludeIcon,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].ExcludeIcon,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].ExcludeIcon,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc`
+
+	query := `SELECT \*\ FROM excludes where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	//limit := 10
 	//offset := 0
@@ -453,8 +453,8 @@ func TestGetByID(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -464,11 +464,11 @@ func TestGetByID(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
-			Id:           2,
+		models.Exclude{
+			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
 			ModifiedBy:   nil,
@@ -477,20 +477,20 @@ func TestGetByID(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IsActive,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes WHERE id = \\?`
+	query := `SELECT \*\ FROM excludes WHERE id = \\?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	num := 1
 	anArticle, err := a.GetById(context.TODO(), num)
@@ -509,12 +509,12 @@ func TestGetByIDNotfound(t *testing.T) {
 	//}()
 
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"})
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"})
 
-	query := `SELECT \*\ FROM includes WHERE id = \\?`
+	query := `SELECT \*\ FROM excludes WHERE id = \\?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	num := 4
 	anArticle, err := a.GetById(context.TODO(), num)
@@ -532,8 +532,8 @@ func TestGetByIDErrorFetch(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -543,11 +543,11 @@ func TestGetByIDErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
-			Id:           2,
+		models.Exclude{
+			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
 			ModifiedBy:   nil,
@@ -556,20 +556,24 @@ func TestGetByIDErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IncludeName,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].ExcludeIcon,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes WHERE id = \\?`
+
+	query := `SELECT \*\ FROM excludes WHERE id = \\?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	num := 1
 	anArticle, err := a.GetById(context.TODO(), num)
@@ -587,8 +591,8 @@ func TestGetByName(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -598,10 +602,10 @@ func TestGetByName(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -611,23 +615,24 @@ func TestGetByName(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IsActive,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IsActive,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].IsActive,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes WHERE include_name = \\?`
+
+	query := `SELECT \*\ FROM excludes WHERE exclude_name = \\?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	includeName := "Test Include 2"
 	anArticle, err := a.GetByName(context.TODO(), includeName)
@@ -645,13 +650,15 @@ func TestGetByNameNotFound(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"})
 
-	query := `SELECT \*\ FROM includes WHERE include_name = \\?`
+	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"})
+
+
+	query := `SELECT \*\ FROM excludes WHERE exclude_name = \\?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	includeName := "Test Include 2"
 	anArticle, err := a.GetByName(context.TODO(), includeName)
@@ -669,8 +676,8 @@ func TestGetByNameErrorFetch(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	mockInclude := []models.Include{
-		models.Include{
+	mockExclude := []models.Exclude{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -680,10 +687,10 @@ func TestGetByNameErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 1",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 1",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
-		models.Include{
+		models.Exclude{
 			Id:           1,
 			CreatedBy:    "test",
 			CreatedDate:  time.Now(),
@@ -693,23 +700,24 @@ func TestGetByNameErrorFetch(t *testing.T) {
 			DeletedDate:  nil,
 			IsDeleted:    0,
 			IsActive:     1,
-			IncludeName:  "Test Include 2",
-			IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+			ExcludeName:  "Test Include 2",
+			ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 		},
 	}
 	rows := sqlmock.NewRows([]string{"id", "created_by", "created_date", "modified_by", "modified_date", "deleted_by",
-		"deleted_date","is_deleted","is_active","include_name","include_icon"}).
-		AddRow(mockInclude[0].Id, mockInclude[0].CreatedBy,mockInclude[0].CreatedDate,mockInclude[0].ModifiedBy,
-			mockInclude[0].ModifiedDate,mockInclude[0].DeletedBy,mockInclude[0].DeletedDate,mockInclude[0].IsDeleted,
-			mockInclude[0].IncludeName,mockInclude[0].IncludeName,mockInclude[0].IncludeIcon).
-		AddRow(mockInclude[1].Id, mockInclude[1].CreatedBy,mockInclude[1].CreatedDate,mockInclude[1].ModifiedBy,
-			mockInclude[1].ModifiedDate,mockInclude[1].DeletedBy,mockInclude[1].DeletedDate,mockInclude[1].IsDeleted,
-			mockInclude[1].IncludeName,mockInclude[1].IncludeName,mockInclude[1].IncludeIcon)
+		"deleted_date","is_deleted","is_active","exclude_name","exclude_icon"}).
+		AddRow(mockExclude[0].Id, mockExclude[0].CreatedBy,mockExclude[0].CreatedDate,mockExclude[0].ModifiedBy,
+			mockExclude[0].ModifiedDate,mockExclude[0].DeletedBy,mockExclude[0].DeletedDate,mockExclude[0].IsDeleted,
+			mockExclude[0].IsActive,mockExclude[0].ExcludeName,mockExclude[0].ExcludeIcon).
+		AddRow(mockExclude[1].Id, mockExclude[1].CreatedBy,mockExclude[1].CreatedDate,mockExclude[1].ModifiedBy,
+			mockExclude[1].ModifiedDate,mockExclude[1].DeletedBy,mockExclude[1].DeletedDate,mockExclude[1].IsDeleted,
+			mockExclude[1].ExcludeIcon,mockExclude[1].ExcludeName,mockExclude[1].ExcludeIcon)
 
-	query := `SELECT \*\ FROM includes WHERE include_name = \\?`
+
+	query := `SELECT \*\ FROM excludes WHERE exclude_name = \\?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	includeName := "Test Include 2"
 	anArticle, err := a.GetByName(context.TODO(), includeName)
@@ -726,13 +734,13 @@ func TestDelete(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	query := "UPDATE includes SET deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? WHERE id =\\?"
+	query := "UPDATE excludes SET deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? WHERE id =\\?"
 	id := 2
 	deletedBy := "test"
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectExec().WithArgs(deletedBy, time.Now(), 1, 0,id).WillReturnResult(sqlmock.NewResult(2, 1))
 
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	err = a.Delete(context.TODO(), id,deletedBy)
 	assert.NoError(t, err)
@@ -747,13 +755,13 @@ func TestDeleteErrorExec(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	query := "UPDATE includes SET deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? WHERE id =\\?"
+	query := "UPDATE excludes SET deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? WHERE id =\\?"
 	id := 2
 	deletedBy := "test"
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectExec().WithArgs(deletedBy, time.Now(), 1, 0,id,id).WillReturnResult(sqlmock.NewResult(2, 1))
 
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	err = a.Delete(context.TODO(), id,deletedBy)
 	assert.Error(t, err)
@@ -761,7 +769,7 @@ func TestDeleteErrorExec(t *testing.T) {
 func TestInsert(t *testing.T) {
 	user := "test"
 	now := time.Now()
-	a := models.Include{
+	a := models.Exclude{
 		Id:           1,
 		CreatedBy:    user,
 		CreatedDate:  now,
@@ -771,8 +779,8 @@ func TestInsert(t *testing.T) {
 		DeletedDate:  &now,
 		IsDeleted:    0,
 		IsActive:     0,
-		IncludeName:  "test include 1",
-		IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+		ExcludeName:  "test include 1",
+		ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 	}
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -783,12 +791,12 @@ func TestInsert(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	query := "INSERT includes SET created_by=\\? , created_date=\\? , modified_by=\\?, modified_date=\\? , 				deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? , include_name=\\?,  				include_icon=\\? "
+	query := "INSERT excludes SET created_by=\\? , created_date=\\? , modified_by=\\?, modified_date=\\? , 				deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? , exclude_name=\\?,  				exclude_icon=\\? "
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.IncludeName,
-		a.IncludeIcon).WillReturnResult(sqlmock.NewResult(1, 1))
+	prep.ExpectExec().WithArgs(a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.ExcludeName,
+		a.ExcludeIcon).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	i := includeRepo.NewIncludeRepository(db)
+	i := excludeRepo.NewExcludeRepository(db)
 
 	id, err := i.Insert(context.TODO(), &a)
 	assert.NoError(t, err)
@@ -797,7 +805,7 @@ func TestInsert(t *testing.T) {
 func TestInsertErrorExec(t *testing.T) {
 	user := "test"
 	now := time.Now()
-	a := models.Include{
+	a := models.Exclude{
 		Id:           1,
 		CreatedBy:    user,
 		CreatedDate:  now,
@@ -807,8 +815,8 @@ func TestInsertErrorExec(t *testing.T) {
 		DeletedDate:  &now,
 		IsDeleted:    0,
 		IsActive:     0,
-		IncludeName:  "test include 1",
-		IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+		ExcludeName:  "test include 1",
+		ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 	}
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -819,12 +827,12 @@ func TestInsertErrorExec(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	query := "INSERT includes SET created_by=\\? , created_date=\\? , modified_by=\\?, modified_date=\\? , 				deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? , include_name=\\?,  				include_icon=\\? "
+	query := "INSERT excludes SET created_by=\\? , created_date=\\? , modified_by=\\?, modified_date=\\? , 				deleted_by=\\? , deleted_date=\\? , is_deleted=\\? , is_active=\\? , exclude_name=\\?,  				exclude_icon=\\? "
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.IncludeName,
-		a.IncludeIcon,a.Id).WillReturnResult(sqlmock.NewResult(1, 1))
+	prep.ExpectExec().WithArgs(a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.ExcludeName,
+		a.ExcludeIcon,a.Id).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	i := includeRepo.NewIncludeRepository(db)
+	i := excludeRepo.NewExcludeRepository(db)
 
 	_, err = i.Insert(context.TODO(), &a)
 	assert.Error(t, err)
@@ -832,7 +840,7 @@ func TestInsertErrorExec(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	now := time.Now()
 	modifyBy := "test"
-	ar := models.Include{
+	ar := models.Exclude{
 		Id:           1,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
@@ -842,8 +850,8 @@ func TestUpdate(t *testing.T) {
 		DeletedDate:  nil,
 		IsDeleted:    0,
 		IsActive:     0,
-		IncludeName:  "test include 1",
-		IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+		ExcludeName:  "test include 1",
+		ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 	}
 
 	db, mock, err := sqlmock.New()
@@ -855,13 +863,13 @@ func TestUpdate(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	query := `UPDATE includes set modified_by=\?, modified_date=\? ,include_name=\?,include_icon=\? WHERE id = \?`
+	query := `UPDATE excludes set modified_by=\?, modified_date=\? ,exclude_name=\?,exclude_icon=\? WHERE id = \?`
 
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(ar.ModifiedBy, ar.ModifiedDate, ar.IncludeName, ar.IncludeIcon, ar.Id).
+	prep.ExpectExec().WithArgs(ar.ModifiedBy, ar.ModifiedDate, ar.ExcludeName, ar.ExcludeIcon, ar.Id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	err = a.Update(context.TODO(), &ar)
 	assert.NoError(t, err)
@@ -870,7 +878,7 @@ func TestUpdate(t *testing.T) {
 func TestUpdateErrorExec(t *testing.T) {
 	now := time.Now()
 	modifyBy := "test"
-	ar := models.Include{
+	ar := models.Exclude{
 		Id:           1,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
@@ -880,8 +888,8 @@ func TestUpdateErrorExec(t *testing.T) {
 		DeletedDate:  nil,
 		IsDeleted:    0,
 		IsActive:     0,
-		IncludeName:  "test include 1",
-		IncludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
+		ExcludeName:  "test include 1",
+		ExcludeIcon:  "https://cgostorage.blob.core.windows.net/cgo-storage/Master/Include/8941695193938718058.jpg",
 	}
 
 	db, mock, err := sqlmock.New()
@@ -893,13 +901,13 @@ func TestUpdateErrorExec(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	query := `UPDATE includes set modified_by=\?, modified_date=\? ,include_name=\?,include_icon=\? WHERE id = \?`
+	query := `UPDATE excludes set modified_by=\?, modified_date=\? ,exclude_name=\?,exclude_icon=\? WHERE id = \?`
 
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(ar.ModifiedBy, ar.ModifiedDate, ar.IncludeName, ar.IncludeIcon, ar.Id,ar.Id).
+	prep.ExpectExec().WithArgs(ar.ModifiedBy, ar.ModifiedDate, ar.ExcludeName, ar.ExcludeIcon, ar.Id,ar.Id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	a := includeRepo.NewIncludeRepository(db)
+	a := excludeRepo.NewExcludeRepository(db)
 
 	err = a.Update(context.TODO(), &ar)
 	assert.Error(t, err)
