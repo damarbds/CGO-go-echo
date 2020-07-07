@@ -108,6 +108,8 @@ type TransactionWMerchant struct {
 	BookedBy            string     `json:"booked_by"`
 	ExpTitle            string     `json:"exp_title"`
 	BookingDate         time.Time  `json:"booking_date"`
+	ExpId 				*string		`json:"exp_id"`
+	TransId 			*string 	`json:"trans_id"`
 }
 
 type PaymentTransaction struct {
