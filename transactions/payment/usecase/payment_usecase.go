@@ -6676,7 +6676,12 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.ConfirmPaymentIn) error {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
-
+	if confirmIn.BookingStatus == 0 {
+		transaction ,_:= p.transactionRepo.GetById(ctx,confirmIn.TransactionID)
+		if transaction != nil{
+			confirmIn.BookingStatus = *transaction.BookingStatus
+		}
+	}
 	err := p.paymentRepo.ConfirmPayment(ctx, confirmIn)
 	if err != nil {
 		return err
