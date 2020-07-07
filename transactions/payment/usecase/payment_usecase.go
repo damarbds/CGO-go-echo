@@ -6418,6 +6418,258 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 			}
 
 		}
+	}else if confirmIn.TransId != ""{
+		listTransaction , _ := p.transactionRepo.GetByBookingDate(ctx,confirmIn.BookingDate,confirmIn.TransId,"")
+		for _,getTransaction := range listTransaction{
+			notif := models.Notification{
+				Id:           "",
+				CreatedBy:    getTransaction.CreatedBy,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   getTransaction.MerchantId,
+				Type:         0,
+				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+			}
+			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			bookingDetail, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, *getTransaction.OrderId, *getTransaction.OrderId, nil,"")
+			if err != nil {
+				return err
+			}
+			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			guestCount := len(bookingDetail.GuestDesc)
+
+			layoutFormat := "15:04:05"
+			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
+
+			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
+
+				bookingDetailReturn, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
+				if err != nil {
+					return err
+				}
+				tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
+
+				departureTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].DepartureTime)
+				arrivalTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].ArrivalTime)
+
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
+				data := map[string]interface{}{
+					"title":               bookingDetail.Transportation[0].TransTitle,
+					"user":                user,
+					"tripDateDeparture":   tripDate,
+					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeDeparture": departureTime.Format("15:04"),
+					"desTimeDeparture":    arrivalTime.Format("15:04"),
+					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+					"classDeparture":      bookingDetail.Transportation[0].TransClass,
+					"orderId":             bookingDetail.OrderId,
+					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+					"tripDateReturn":      tripDateReturn,
+					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
+				}
+
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				//ticketPDF Bind HTML is Return
+				var htmlPDFTicketReturn bytes.Buffer
+
+				dataMappingReturn := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDateReturn,
+					"sourceTime":      departureTimeReturn.Format("15:04"),
+					"desTime":         arrivalTimeReturn.Format("15:04"),
+					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
+					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
+					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
+					"class":           bookingDetailReturn.Transportation[0].TransClass,
+					"qrCode":          bookingDetailReturn.TicketQRCode,
+					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetailReturn.OrderId,
+				}
+				// We create the template and register out template function
+				tReturn := template.New("t").Funcs(templateFuncs)
+				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				pdfReturn := htmlPDFTicketReturn.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				eTicketReturn := models.Attachment{
+					AttachmentFileUrl: pdfReturn,
+					FileName:          "E-Ticket-Return.pdf",
+				}
+				attachment = append(attachment, &eTicketReturn)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookingDetail.BookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
+			} else {
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
+				data := map[string]interface{}{
+					"title":           bookingDetail.Transportation[0].TransTitle,
+					"user":            user,
+					"tripDate":        tripDate,
+					"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"orderId":         bookingDetail.OrderId,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:        bookingDetail.BookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return err
+				}
+
+			}
+
+		}
 	}
 	return nil
 }

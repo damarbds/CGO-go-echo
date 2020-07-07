@@ -937,6 +937,17 @@ func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate
 		query = query + ` AND b.exp_id = '` + expId + `' `
 	}
 	list, err := m.fetch(ctx, query, bookingDate)
+	if len(list) == 0 {
+		query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.trans_title,b.booking_date,b.exp_id,b.trans_id
+				FROM transactions t
+				join booking_exps b on t.booking_exp_id = b.id OR t.order_id = b.order_id
+				join transportations e on b.trans_id = e.id 
+				WHERE DATE(b.booking_date) = ?`
+		if transId != "" {
+			query = query + ` AND b.trans_id = '` + transId + `' `
+		}
+		list, _ = m.fetch(ctx, query, bookingDate)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -950,13 +961,15 @@ func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate
 }
 
 func (m transactionRepository) GetById(ctx context.Context, id string) (*models.TransactionWMerchant, error) {
-	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title,b.booking_date,b.exp_id,b.trans_id FROM transactions t
+	query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.exp_title,b.booking_date,b.exp_id,b.trans_id 
+				FROM transactions t
 				join booking_exps b on t.booking_exp_id = b.id
 				join experiences e on b.exp_id = e.id WHERE t.id = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if len(list) == 0 {
-		query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.trans_title,b.booking_date,b.exp_id,b.trans_id FROM transactions t
+		query := `SELECT t.*,e.merchant_id,b.order_id as order_id_book,b.booked_by,e.trans_title,b.booking_date,b.exp_id,b.trans_id 
+				FROM transactions t
 				join booking_exps b on t.booking_exp_id = b.id OR t.order_id = b.order_id
 				join transportations e on b.trans_id = e.id WHERE t.id = ?`
 
