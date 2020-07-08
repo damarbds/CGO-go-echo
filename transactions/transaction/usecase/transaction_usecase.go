@@ -317,9 +317,9 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 	}
 	var totalRecords int
 	if token != "" && isAdmin == true {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "",isTransportation,isExperience)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "",isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
 	} else {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId,isTransportation,isExperience)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId,isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
 	}
 
 	if limit == nil {

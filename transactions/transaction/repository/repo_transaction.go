@@ -838,14 +838,20 @@ func (t transactionRepository) CountSuccess(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string, merchantId string, isTransportation bool, isExperience bool) (int, error) {
+func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string, merchantId string, isTransportation bool, isExperience bool,isSchedule bool,tripType,paymentType,activityType string,confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string) (int, error) {
 	query := `
 	SELECT
 		count(*) as count
 	FROM 
 		transactions t
+		JOIN experience_payments ep ON t.experience_payment_id = ep.id
 		JOIN booking_exps b ON t.booking_exp_id = b.id
 		JOIN experiences e ON b.exp_id = e.id
+		JOIN merchants m ON e.merchant_id = m.id
+		JOIN harbors  h ON e.harbors_id = h.id
+		JOIN cities  c ON h.city_id = c.id
+		JOIN provinces p on c.province_id = p.id
+		JOIN countries co on p.country_id = co.id
 	WHERE
 		t.is_deleted = 0
 		AND t.is_active = 1`
@@ -855,8 +861,12 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		count(*) as count
 	FROM
 		transactions t
-		JOIN booking_exps b ON t.booking_exp_id = b.id or t.order_id = b.order_id
+		JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
 		JOIN transportations tr ON b.trans_id = tr.id
+		JOIN merchants m ON tr.merchant_id = m.id
+		JOIN harbors h ON tr.harbors_dest_id = h.id
+		JOIN harbors hs ON tr.harbors_source_id = hs.id
+		JOIN schedules s ON b.schedule_id = s.id
 	WHERE
 		t.is_deleted = 0
 		AND t.is_active = 1`
@@ -865,6 +875,77 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		query = query + ` AND e.merchant_id = '` + merchantId + `' `
 		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
 	}
+	if tripType == "0" {
+		query = query + ` AND e.exp_trip_type = 'Private Trip' `
+	} else if tripType == "1" {
+		query = query + ` AND e.exp_trip_type = 'Share Trip' `
+	} else if tripType == "2" {
+		query = query + ` AND (e.exp_trip_type = 'Share Trip' OR e.exp_trip_type = 'Private Trip') `
+	}
+
+	if paymentType == "0" {
+		query = query + ` AND ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' `
+	} else if paymentType == "1" {
+		query = query + ` AND ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' `
+	} else if paymentType == "2" {
+		query = query + ` AND (ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' 
+								OR ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633') `
+	}
+
+	if activityType != "[]" && activityType != "" {
+		var activityTypes []int
+		if activityType != "" {
+			if errUnmarshal := json.Unmarshal([]byte(activityType), &activityTypes); errUnmarshal != nil {
+				return 0, errUnmarshal
+			}
+		}
+
+		if len(activityTypes) != 0 {
+			for index, id := range activityTypes {
+				if index == 0 && index != (len(activityTypes)-1) {
+					query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
+				} else if index == 0 && index == (len(activityTypes)-1) {
+					query = query + ` AND (e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` ) `
+				} else if index == (len(activityTypes) - 1) {
+					query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )` + ` )`
+				} else {
+					query = query + ` OR e.id = (SELECT distinct exp_id FROM filter_activity_types where exp_id = e.id and exp_type_id = ` + strconv.Itoa(id) + ` )`
+				}
+			}
+
+		}
+	}
+
+	if confirmType == "0" {
+		query = query + ` AND t.status not in (1) `
+	} else if confirmType == "1" {
+		query = query + ` AND t.status not in (5)' `
+	} else if confirmType == "2" {
+
+	}
+
+	if isTransportation == true && isExperience == false {
+		query = query + ` AND b.trans_id != '' `
+		queryT = queryT + ` AND b.trans_id != '' `
+
+		if class == "0"{
+			queryT = queryT + ` AND tr.class = 'Economy' `
+		}else if class == "1"{
+			queryT = queryT + ` AND tr.class = 'Executive' `
+		}
+
+		if departureTimeStart != "" && departureTimeEnd != ""{
+			queryT = queryT + ` AND s.departure_time between '` +  departureTimeStart + `' AND '` + departureTimeEnd + `' `
+		}
+		if arrivalTimeStart != "" && arrivalTimeEnd != ""{
+			queryT = queryT + ` AND s.arrival_time between '` +  arrivalTimeStart + `' AND '` + arrivalTimeEnd + `' `
+		}
+
+	} else if isExperience == true && isTransportation == false {
+		query = query + ` AND b.exp_id != '' `
+		queryT = queryT + ` AND b.exp_id != '' `
+	}
+
 	if search != "" {
 		keyword := `'%` + search + `%'`
 		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
