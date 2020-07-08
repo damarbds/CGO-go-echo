@@ -153,7 +153,7 @@ func (t transactionRepository) GetTransactionByDate(ctx context.Context, date st
 				
 				FROM transactions t 
 				JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
-				JOIN transportations trans ON b.trans_id = trans_id
+				JOIN transportations trans ON b.trans_id = trans.id
 				JOIN schedules s ON b.schedule_id = s.id
 				JOIN harbors h ON trans.harbors_dest_id = h.id
 				JOIN harbors hs ON trans.harbors_source_id = hs.id
