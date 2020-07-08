@@ -72,7 +72,9 @@ func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date stri
 	WHERE
 		DATE (b.booking_date) = ? AND 
 		t.status = 2 AND 
-		e.merchant_id = ?`
+		e.merchant_id = ? AND 
+		t.is_deleted = 0 AND 
+		t.is_active = 1 `
 	//
 	//for index, id := range expId {
 	//	if index == 0 && index != (len(expId)-1) {
