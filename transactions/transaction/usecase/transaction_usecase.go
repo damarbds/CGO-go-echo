@@ -48,7 +48,7 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 		return nil,err
 	}
 	if len(listTransactions) == 0 {
-		return nil,models.ErrNotFound
+		return nil,nil
 	}
 	var expType []string
 	if listTransactions[0].ExpType != "" {
