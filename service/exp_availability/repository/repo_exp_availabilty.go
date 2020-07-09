@@ -71,7 +71,7 @@ func (m *exp_availabilityRepository) GetCountDate(ctx context.Context, date stri
 	JOIN merchants m on m.id = e.merchant_id
 	WHERE
 		DATE (b.booking_date) = ? AND 
-		t.status = 2 AND 
+		t.status in (0,1,2,5) AND 
 		e.merchant_id = ? AND 
 		t.is_deleted = 0 AND 
 		t.is_active = 1 `

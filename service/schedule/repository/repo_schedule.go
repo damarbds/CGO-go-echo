@@ -340,7 +340,7 @@ func (m scheduleRepository) GetCountSchedule(ctx context.Context, merchantId str
 	JOIN merchants m on m.id = trans.merchant_id
 	WHERE
 		DATE (b.booking_date) = ? AND 
-		t.status = 2 AND 
+		t.status in (0,1,2,5) AND 
 		trans.merchant_id = ? AND
 		t.is_deleted = 0 AND
 		t.is_active = 1 `
