@@ -217,10 +217,10 @@ func (t scheduleRepository) GetTimeByTransId(ctx context.Context, transId string
 	return result, nil
 }
 
-func (t scheduleRepository) GetYearByTransId(ctx context.Context, transId string) ([]*models.ScheduleYear, error) {
-	query := `SELECT DISTINCT year FROM schedules WHERE trans_id = ?`
+func (t scheduleRepository) GetYearByTransId(ctx context.Context, transId string,arrivalTime string ,departureTime string) ([]*models.ScheduleYear, error) {
+	query := `SELECT DISTINCT year FROM schedules WHERE trans_id = ? AND arrival_time = ? AND departure_time = ?`
 
-	rows, err := t.Conn.QueryContext(ctx, query, transId)
+	rows, err := t.Conn.QueryContext(ctx, query, transId,arrivalTime,departureTime)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
@@ -250,10 +250,10 @@ func (t scheduleRepository) GetYearByTransId(ctx context.Context, transId string
 	return result, nil
 }
 
-func (t scheduleRepository) GetMonthByTransId(ctx context.Context, transId string, year int) ([]*models.ScheduleMonth, error) {
-	query := `SELECT DISTINCT year,month FROM schedules WHERE trans_id = ? AND year =?`
+func (t scheduleRepository) GetMonthByTransId(ctx context.Context, transId string, year int,arrivalTime string ,departureTime string) ([]*models.ScheduleMonth, error) {
+	query := `SELECT DISTINCT year,month FROM schedules WHERE trans_id = ? AND year =? AND arrival_time = ? AND departure_time = ?`
 
-	rows, err := t.Conn.QueryContext(ctx, query, transId, year)
+	rows, err := t.Conn.QueryContext(ctx, query, transId, year,arrivalTime,departureTime)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
@@ -284,10 +284,10 @@ func (t scheduleRepository) GetMonthByTransId(ctx context.Context, transId strin
 	return result, nil
 }
 
-func (t scheduleRepository) GetDayByTransId(ctx context.Context, transId string, year int, month string) ([]*models.ScheduleDay, error) {
-	query := `SELECT DISTINCT year,month,day,departure_date,price FROM schedules WHERE trans_id = ? AND year =? AND month=?`
+func (t scheduleRepository) GetDayByTransId(ctx context.Context, transId string, year int, month string,arrivalTime string ,departureTime string) ([]*models.ScheduleDay, error) {
+	query := `SELECT DISTINCT year,month,day,departure_date,price FROM schedules WHERE trans_id = ? AND year =? AND month=? AND arrival_time = ? AND departure_time = ?`
 
-	rows, err := t.Conn.QueryContext(ctx, query, transId, year, month)
+	rows, err := t.Conn.QueryContext(ctx, query, transId, year, month,arrivalTime,departureTime)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
@@ -335,13 +335,15 @@ func (m scheduleRepository) GetCountSchedule(ctx context.Context, merchantId str
 		count(DISTINCT b.booking_date,b.trans_id) AS count
 	FROM
 		transactions t
-	JOIN booking_exps b on b.id = t.booking_exp_id
+	JOIN booking_exps b on b.id = t.booking_exp_id OR b.order_id = t.order_id
 	JOIN transportations trans on trans.id = b.trans_id
 	JOIN merchants m on m.id = trans.merchant_id
 	WHERE
 		DATE (b.booking_date) = ? AND 
-		t.status = 2 AND 
-		trans.merchant_id = ?`
+		t.status in (0,1,2,5) AND 
+		trans.merchant_id = ? AND
+		t.is_deleted = 0 AND
+		t.is_active = 1 `
 	//
 	//for index, id := range transId {
 	//	if index == 0 && index != (len(transId)-1) {

@@ -159,6 +159,11 @@ func (f facilityUsecase) Update(ctx context.Context, fac *models.NewCommandFacil
 		return nil, err
 	}
 
+	if fac.FacilityIcon == ""{
+		getFacilities ,_ := f.facilityRepo.GetById(ctx,fac.Id)
+		fac.FacilityIcon = *getFacilities.FacilityIcon
+	}
+
 	facilities := models.Facilities{
 		Id:           fac.Id,
 		CreatedBy:    "",

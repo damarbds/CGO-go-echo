@@ -154,6 +154,10 @@ func (f excludeUsecase) Update(ctx context.Context, exc *models.NewCommandExclud
 		return nil, err
 	}
 
+	if exc.ExcludeIcon == ""{
+		getById ,_ := f.excludeRepo.GetById(ctx,exc.Id)
+		exc.ExcludeIcon = getById.ExcludeIcon
+	}
 	excludes := models.Exclude{
 		Id:           exc.Id,
 		CreatedBy:    currentUser.Name,

@@ -165,7 +165,9 @@ func (m *experienceRepository) GetPublishedExpCount(ctx context.Context, merchan
 		experiences
 	WHERE
 		merchant_id = ?
-		AND status = 2`
+		AND status = 2
+		AND is_deleted = 0 
+		AND is_active = 1`
 
 	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
@@ -189,11 +191,12 @@ func (m *experienceRepository) GetSuccessBookCount(ctx context.Context, merchant
 	FROM
 		experiences e
 		LEFT JOIN booking_exps b ON e.id = b.exp_id
+		JOIN transactions t ON t.booking_exp_id = b.id
 	WHERE
 		e.is_deleted = 0 AND
 		e.is_active = 1 AND
 		e.merchant_id = ? AND 
-		b.status = 1`
+		t.status = 2`
 
 	rows, err := m.Conn.QueryContext(ctx, query, merchantId)
 	if err != nil {
@@ -229,7 +232,11 @@ func (m *experienceRepository) GetByCategoryID(ctx context.Context, categoryId i
 		e.exp_location_latitude as latitude ,
 		e.exp_location_longitude as longitude, 
 		rating,
-		exp_cover_photo as cover_photo
+		exp_cover_photo as cover_photo,
+		exp_cover_photo as province,
+		e.exp_location_map_name,
+		e.exp_latitude_map,
+		e.exp_longitude_map
 	FROM
 		filter_activity_types f
 		JOIN experiences e ON f.exp_id = e.id
@@ -288,7 +295,10 @@ func (m *experienceRepository) SearchExp(ctx context.Context, harborID, cityID s
 		exp_location_longitude as longitude, 
 		rating,
 		exp_cover_photo as cover_photo,
-		p.province_name as province
+		p.province_name as province,
+		e.exp_location_map_name,
+		e.exp_latitude_map,
+		e.exp_longitude_map
 	FROM
 		experiences exp
 		JOIN harbors ON harbors.id = harbors_id
@@ -378,6 +388,11 @@ func (m *experienceRepository) fetchUserDiscoverPreference(ctx context.Context, 
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 		)
 
 		if err != nil {
@@ -452,6 +467,11 @@ func (m *experienceRepository) fetchUserDiscoverPreferenceProvince(ctx context.C
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 		)
 
 		if err != nil {
@@ -491,6 +511,9 @@ func (m *experienceRepository) fetchSearchExp(ctx context.Context, query string,
 			&t.Longitude,
 			&t.CoverPhoto,
 			&t.Province,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap,
+			&t.ExpLongitudeMap,
 			//&t.Price,
 		)
 
@@ -563,6 +586,11 @@ func (m *experienceRepository) fetchJoinForegnKey(ctx context.Context, query str
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 			&t.MinimumBookingAmount,
 			&t.MinimumBookingDesc,
 		)
@@ -636,6 +664,11 @@ func (m *experienceRepository) fetchByBookingId(ctx context.Context, query strin
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.IsCustomisedByUser,
+			&t.ExpLocationMapName,
+			&t.ExpLatitudeMap ,
+			&t.ExpLongitudeMap	,
+			&t.ExpMaximumBookingAmount,
+			&t.ExpMaximumBookingType,
 			&t.ExpPaymentTypeName,
 		)
 
@@ -942,7 +975,8 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 				exp_pickup_place_latitude=?,exp_pickup_place_maps_name=?,exp_itinerary=?,exp_facilities=?,exp_inclusion=?,
 				exp_rules=?,status=?,rating=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
 				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=?,exp_payment_deadline_amount=?,
-				exp_payment_deadline_type=?,is_customised_by_user=?`
+				exp_payment_deadline_type=?,is_customised_by_user=?,exp_location_map_name=?,exp_latitude_map=?,
+				exp_longitude_map = ?,exp_maximum_booking_amount=?,exp_maximum_booking_type=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -952,7 +986,8 @@ func (m *experienceRepository) Insert(ctx context.Context, a *models.Experience)
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.Rating, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
 		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType, a.IsCustomisedByUser)
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser,a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap,
+		a.ExpMaximumBookingAmount,a.ExpMaximumBookingType)
 	if err != nil {
 		return nil, err
 	}
@@ -994,7 +1029,8 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 				exp_pickup_place_latitude=?,exp_pickup_place_maps_name=?,exp_itinerary=?,exp_facilities=?,exp_inclusion=?,
 				exp_rules=?,status=?,exp_location_latitude=?,exp_location_longitude=?,exp_location_name=?,
 				exp_cover_photo=?,exp_duration=?,minimum_booking_id=?,merchant_id=?,harbors_id=? ,exp_payment_deadline_amount=?,
-				exp_payment_deadline_type=?,is_customised_by_user=? WHERE id=?`
+				exp_payment_deadline_type=?,is_customised_by_user=? ,exp_location_map_name=?,exp_latitude_map=?,
+				exp_longitude_map = ? ,exp_maximum_booking_amount =? ,exp_maximum_booking_type=? WHERE id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -1004,7 +1040,8 @@ func (m *experienceRepository) Update(ctx context.Context, a *models.Experience)
 		a.ExpPickupPlaceLatitude, a.ExpPickupPlaceMapsName, a.ExpInternary, a.ExpFacilities, a.ExpInclusion,
 		a.ExpRules, a.Status, a.ExpLocationLatitude, a.ExpLocationLongitude, a.ExpLocationName,
 		a.ExpCoverPhoto, a.ExpDuration, a.MinimumBookingId, a.MerchantId, a.HarborsId, a.ExpPaymentDeadlineAmount,
-		a.ExpPaymentDeadlineType, a.IsCustomisedByUser, a.Id)
+		a.ExpPaymentDeadlineType, a.IsCustomisedByUser, a.ExpLocationMapName,a.ExpLatitudeMap,a.ExpLongitudeMap,
+		a.ExpMaximumBookingAmount,a.ExpMaximumBookingType,a.Id)
 	if err != nil {
 		return nil, err
 	}

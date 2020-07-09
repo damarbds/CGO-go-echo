@@ -33,14 +33,15 @@ func main() {
 	go RemainingPaymentJob(baseUrlLocal)
 	go UpdateStatusExpiredPaymentJobPRD(baseUrlLocalPRD)
 	go RemainingPaymentJobPRD(baseUrlLocalPRD)
-	
+	go CreateExChangeJob(baseUrlLocal)
+	go CreateExChangeJobPRD(baseUrlLocalPRD)
 	log.Fatal(e.Start(":9090"))
 
 }
-func UpdateStatusExpiredPaymentJob(baseUrl string) {
+func CreateExChangeJob(baseUrl string) {
 	done := make(chan bool)
-	ticker := time.NewTicker(time.Hour)
-
+	//ticker := time.NewTicker(time.Hour * 3)
+	ticker := time.NewTicker(time.Second * 1)
 	go func() {
 		//time.Sleep(10 * time.Second) // wait for 10 seconds
 		//done <- true
@@ -52,6 +53,47 @@ func UpdateStatusExpiredPaymentJob(baseUrl string) {
 			ticker.Stop()
 			return
 		case t := <-ticker.C:
+			time.Sleep(3 * time.Hour)
+			req, err := http.NewRequest("POST", baseUrl+"/misc/exchange-rate", nil)
+
+			if err != nil {
+				fmt.Println("Error : ", err.Error())
+				os.Exit(1)
+			}
+
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+
+			client := &http.Client{Transport: tr}
+
+			resp, err := client.Do(req)
+			if err != nil {
+				fmt.Println("Error : ", err.Error())
+				os.Exit(1)
+			}
+			fmt.Println(resp.Body)
+			fmt.Println("Current time: ", t.String())
+		}
+	}
+}
+
+func UpdateStatusExpiredPaymentJob(baseUrl string) {
+	done := make(chan bool)
+	//ticker := time.NewTicker(time.Hour)
+	ticker := time.NewTicker(time.Second * 1)
+	go func() {
+		//time.Sleep(10 * time.Second) // wait for 10 seconds
+		//done <- true
+	}()
+
+	for {
+		select {
+		case <-done:
+			ticker.Stop()
+			return
+		case t := <-ticker.C:
+			time.Sleep(1 * time.Hour) // wait for 10 seconds
 			req, err := http.NewRequest("POST", baseUrl+"/booking/update-expired-payment", nil)
 
 			if err != nil {
@@ -78,8 +120,8 @@ func UpdateStatusExpiredPaymentJob(baseUrl string) {
 
 func RemainingPaymentJob(baseUrl string) {
 	done := make(chan bool)
-	ticker := time.NewTicker(time.Hour * 24)
-
+	//ticker := time.NewTicker(time.Hour * 24)
+	ticker := time.NewTicker(time.Second * 1)
 	go func() {
 		//time.Sleep(10 * time.Second) // wait for 10 seconds
 		//done <- true
@@ -91,7 +133,48 @@ func RemainingPaymentJob(baseUrl string) {
 			ticker.Stop()
 			return
 		case t := <-ticker.C:
+			time.Sleep(24 * time.Hour) // wait for 10 seconds
 			req, err := http.NewRequest("POST", baseUrl+"/booking/remaining-payment-booking", nil)
+
+			if err != nil {
+				fmt.Println("Error : ", err.Error())
+				os.Exit(1)
+			}
+
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+
+			client := &http.Client{Transport: tr}
+
+			resp, err := client.Do(req)
+			if err != nil {
+				fmt.Println("Error : ", err.Error())
+				os.Exit(1)
+			}
+			fmt.Println(resp.Body)
+			fmt.Println("Current time: ", t.String())
+		}
+	}
+}
+
+func CreateExChangeJobPRD(baseUrl string) {
+	done := make(chan bool)
+	//ticker := time.NewTicker(time.Hour * 4)
+	ticker := time.NewTicker(time.Second * 1)
+	go func() {
+		//time.Sleep(10 * time.Second) // wait for 10 seconds
+		//done <- true
+	}()
+
+	for {
+		select {
+		case <-done:
+			ticker.Stop()
+			return
+		case t := <-ticker.C:
+			time.Sleep(4 * time.Hour) // wait for 10 seconds
+			req, err := http.NewRequest("POST", baseUrl+"/misc/exchange-rate", nil)
 
 			if err != nil {
 				fmt.Println("Error : ", err.Error())
@@ -117,7 +200,8 @@ func RemainingPaymentJob(baseUrl string) {
 
 func UpdateStatusExpiredPaymentJobPRD(baseUrl string) {
 	done := make(chan bool)
-	ticker := time.NewTicker(time.Hour * 2)
+	//ticker := time.NewTicker(time.Hour * 2)
+	ticker := time.NewTicker(time.Second * 1)
 
 	go func() {
 		//time.Sleep(10 * time.Second) // wait for 10 seconds
@@ -130,6 +214,7 @@ func UpdateStatusExpiredPaymentJobPRD(baseUrl string) {
 			ticker.Stop()
 			return
 		case t := <-ticker.C:
+			time.Sleep(2 * time.Hour) // wait for 10 seconds
 			req, err := http.NewRequest("POST", baseUrl+"/booking/update-expired-payment", nil)
 
 			if err != nil {
@@ -156,8 +241,8 @@ func UpdateStatusExpiredPaymentJobPRD(baseUrl string) {
 
 func RemainingPaymentJobPRD(baseUrl string) {
 	done := make(chan bool)
-	ticker := time.NewTicker(time.Hour * 25)
-
+	//ticker := time.NewTicker(time.Hour * 25)
+	ticker := time.NewTicker(time.Second * 1)
 	go func() {
 		//time.Sleep(10 * time.Second) // wait for 10 seconds
 		//done <- true
@@ -169,6 +254,7 @@ func RemainingPaymentJobPRD(baseUrl string) {
 			ticker.Stop()
 			return
 		case t := <-ticker.C:
+			time.Sleep(25 * time.Hour) // wait for 10 seconds
 			req, err := http.NewRequest("POST", baseUrl+"/booking/remaining-payment-booking", nil)
 
 			if err != nil {

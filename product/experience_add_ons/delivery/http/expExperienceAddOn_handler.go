@@ -43,12 +43,13 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 // GetByID will get article by given id
 func (a *experience_add_onsHandler) GetallexperienceAddOns(c echo.Context) error {
 	expId := c.QueryParam("exp_id")
+	currency := c.QueryParam("currency")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	art, err := a.experience_add_onsUsecase.GetByExpId(ctx, expId)
+	art, err := a.experience_add_onsUsecase.GetByExpId(ctx, expId,currency)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

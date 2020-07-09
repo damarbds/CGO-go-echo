@@ -87,18 +87,10 @@ func (f includeRepository) List(ctx context.Context) ([]*models.Include, error) 
 }
 
 func (m *includeRepository) Fetch(ctx context.Context, limit,offset int) ([]*models.Include, error) {
-	if limit != 0 {
-		query := `Select * FROM includes where is_deleted = 0 AND is_active = 1 `
 
-		//if search != ""{
-		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
-		//		`OR promo_desc LIKE '%` + search + `%' ` +
-		//		`OR start_date LIKE '%` + search + `%' ` +
-		//		`OR end_date LIKE '%` + search + `%' ` +
-		//		`OR promo_code LIKE '%` + search + `%' ` +
-		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
-		//}
-		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
+	query := `SELECT * FROM includes where is_deleted = 0 AND is_active = 1 `
+	if limit != 0 {
+		query = query + `ORDER BY created_date desc LIMIT ? OFFSET ?`
 		res, err := m.fetch(ctx, query, limit, offset)
 		if err != nil {
 			return nil, err
@@ -106,17 +98,7 @@ func (m *includeRepository) Fetch(ctx context.Context, limit,offset int) ([]*mod
 		return res, err
 
 	} else {
-		query := `Select * FROM includes where is_deleted = 0 AND is_active = 1 `
-
-		//if search != ""{
-		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
-		//		`OR promo_desc LIKE '%` + search + `%' ` +
-		//		`OR start_date LIKE '%` + search + `%' ` +
-		//		`OR end_date LIKE '%` + search + `%' ` +
-		//		`OR promo_code LIKE '%` + search + `%' ` +
-		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
-		//}
-		query = query + ` ORDER BY created_date desc `
+		query = query + `ORDER BY created_date desc`
 		res, err := m.fetch(ctx, query)
 		if err != nil {
 			return nil, err
@@ -167,7 +149,7 @@ func (m *includeRepository) Insert(ctx context.Context, a *models.Include) (*int
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.IncludeName,
+	res, err := stmt.ExecContext(ctx,a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.IncludeName,
 		a.IncludeIcon)
 	if err != nil {
 		return nil,err
@@ -175,16 +157,13 @@ func (m *includeRepository) Insert(ctx context.Context, a *models.Include) (*int
 
 
 	lastID, err := res.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
 
 	a.Id = int(lastID)
 	return &a.Id,nil
 }
 
 func (m *includeRepository) Update(ctx context.Context, a *models.Include) error {
-	query := `UPDATE includes set modified_by=?, modified_date=? ,include_name=?,include_icon=?  WHERE id = ?`
+	query := `UPDATE includes set modified_by=?, modified_date=? ,include_name=?,include_icon=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -195,15 +174,6 @@ func (m *includeRepository) Update(ctx context.Context, a *models.Include) error
 	if err != nil {
 		return err
 	}
-	//affect, err := res.RowsAffected()
-	//if err != nil {
-	//	return err
-	//}
-	//if affect != 1 {
-	//	err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
-	//
-	//	return err
-	//}
 
 	return nil
 }
@@ -220,12 +190,6 @@ func (m *includeRepository) Delete(ctx context.Context, id int, deletedBy string
 		return err
 	}
 
-	//lastID, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	//a.Id = lastID
 	return nil
 }
 

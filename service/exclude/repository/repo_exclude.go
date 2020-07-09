@@ -88,7 +88,7 @@ func (f excludeRepository) List(ctx context.Context) ([]*models.Exclude, error) 
 
 func (m *excludeRepository) Fetch(ctx context.Context, limit,offset int) ([]*models.Exclude, error) {
 	if limit != 0 {
-		query := `Select * FROM excludes where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM excludes where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -98,7 +98,7 @@ func (m *excludeRepository) Fetch(ctx context.Context, limit,offset int) ([]*mod
 		//		`OR promo_code LIKE '%` + search + `%' ` +
 		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
 		//}
-		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
+		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ?`
 		res, err := m.fetch(ctx, query, limit, offset)
 		if err != nil {
 			return nil, err
@@ -106,7 +106,7 @@ func (m *excludeRepository) Fetch(ctx context.Context, limit,offset int) ([]*mod
 		return res, err
 
 	} else {
-		query := `Select * FROM excludes where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM excludes where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -116,7 +116,7 @@ func (m *excludeRepository) Fetch(ctx context.Context, limit,offset int) ([]*mod
 		//		`OR promo_code LIKE '%` + search + `%' ` +
 		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
 		//}
-		query = query + ` ORDER BY created_date desc `
+		query = query + ` ORDER BY created_date desc`
 		res, err := m.fetch(ctx, query)
 		if err != nil {
 			return nil, err
@@ -145,10 +145,10 @@ func (m *excludeRepository) GetCount(ctx context.Context) (int, error) {
 	query := `SELECT count(*) AS count FROM excludes WHERE is_deleted = 0 and is_active = 1`
 
 	rows, err := m.Conn.QueryContext(ctx, query)
-	if err != nil {
-		logrus.Error(err)
-		return 0, err
-	}
+	//if err != nil {
+	//	logrus.Error(err)
+	//	return 0, err
+	//}
 
 	count, err := checkCount(rows)
 	if err != nil {
@@ -175,9 +175,9 @@ func (m *excludeRepository) Insert(ctx context.Context, a *models.Exclude) (*int
 
 
 	lastID, err := res.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	a.Id = int(lastID)
 	return &a.Id,nil

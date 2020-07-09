@@ -123,7 +123,7 @@ func (f includeUsecase) Create(ctx context.Context, inc *models.NewCommandInclud
 	includes := models.Include{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
@@ -152,6 +152,12 @@ func (f includeUsecase) Update(ctx context.Context, inc *models.NewCommandInclud
 	currentUser, err := f.adminUsecase.ValidateTokenAdmin(ctx, token)
 	if err != nil {
 		return nil, err
+	}
+
+
+	if inc.IncludeIcon == ""{
+		getById,_:= f.includeRepo.GetById(ctx,inc.Id)
+		inc.IncludeIcon = getById.IncludeIcon
 	}
 
 	includes := models.Include{

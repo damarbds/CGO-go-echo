@@ -26,6 +26,7 @@ type HarborsDto struct {
 	HarborsLatitude  float64    `json:"harbors_latitude"`
 	HarborsImage     string    `json:"harbors_image"`
 	CityId           int        `json:"city_id"`
+	HarborsType 	*int `json:"harbors_type"`
 }
 type NewCommandHarbors struct {
 	Id               string     `json:"id" validate:"required"`
@@ -34,6 +35,7 @@ type NewCommandHarbors struct {
 	HarborsLatitude  float64    `json:"harbors_latitude"`
 	HarborsImage    string    `json:"harbors_image"`
 	CityId           int        `json:"city_id"`
+	HarborsType 	int `json:"harbors_type"`
 }
 type HarborsDtoWithPagination struct {
 	Data []*HarborsDto `json:"data"`
@@ -48,7 +50,7 @@ type HarborsWCPC struct {
 	CityId           int     `json:"city_id"`
 	CityName         string  `json:"city_name"`
 	ProvinceId		int 	`json:"province_id"`
-	ProvinceName     string  `json:"province_name"`
+	ProvinceName     *string  `json:"province_name"`
 	CountryName      string  `json:"country_name"`
 }
 type HarborsWCPCDto struct {
@@ -60,6 +62,6 @@ type HarborsWCPCDto struct {
 	CityId           int     `json:"city_id"`
 	City             string  `json:"city"`
 	ProvinceId 		 int 	`json:"province_id"`
-	Province         string  `json:"province"`
+	Province         *string  `json:"province"`
 	Country          string  `json:"country"`
 }

@@ -25,6 +25,8 @@ func NewTransactionHandler(e *echo.Echo, us transaction.Usecase) {
 	handler := &transactionHandler{
 		TransUsecase: us,
 	}
+	e.GET("/transaction/schedule-detail", handler.ListTransactionScheduleDetail)
+	e.GET("/transaction/schedule", handler.ListTransactionSchedule)
 	e.GET("/transaction/export-excel", handler.ExportExcel)
 	e.GET("/transaction/count-success", handler.CountSuccess)
 	e.GET("/transaction", handler.List)
@@ -51,7 +53,71 @@ func (t *transactionHandler) CountThisMonth(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, result)
 }
+func (t *transactionHandler) ListTransactionScheduleDetail(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
 
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	date := c.QueryParam("date")
+	transId := c.QueryParam("trans_id")
+	expId := c.QueryParam("exp_id")
+
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := t.TransUsecase.GetDetailTransactionSchedule(ctx, date,transId,expId,token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+
+}
+func (t *transactionHandler) ListTransactionSchedule(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+
+	date := c.QueryParam("date")
+	isTrans := c.QueryParam("isTransportation")
+	var trans bool
+	if isTrans != "true"{
+		trans = true
+	}else {
+		trans = false
+	}
+
+	isExp := c.QueryParam("isExperience")
+	var exp bool
+	if isExp != "true"{
+		exp = true
+	}else {
+		exp = false
+	}
+
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := t.TransUsecase.GetTransactionByDate(ctx, date,trans,exp,token)
+	if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, result)
+
+}
 func (t *transactionHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -72,6 +138,12 @@ func (t *transactionHandler) List(c echo.Context) error {
 	activityType := c.QueryParam("activity_type")
 	confirmType := c.QueryParam("confirm_type")
 	isAdmin := c.QueryParam("isAdmin")
+	class := c.QueryParam("class")
+	departureTimeStart := c.QueryParam("departure_time_start")
+	departureTimeEnd := c.QueryParam("departure_time_end")
+	arrivalTimeStart := c.QueryParam("arrival_time_start")
+	arrivalTimeEnd := c.QueryParam("arrival_time_end")
+
 	var admin bool
 	if isAdmin != ""{
 		admin = true
@@ -115,13 +187,13 @@ func (t *transactionHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 	if qpage != "" && qperPage != ""{
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, result)
 	}else {
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -208,7 +280,7 @@ func (t *transactionHandler) ExportExcel(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false,false,"","","","")
+	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false,false,"","","","","","","","","")
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

@@ -18,15 +18,15 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type excludeHandler struct {
-	isUsecase identityserver.Usecase
-	excludeUsecase exclude.Usecase
+type ExcludeHandler struct {
+	IsUsecase identityserver.Usecase
+	ExcludeUsecase exclude.Usecase
 }
 
 func NewExcludeHandler(e *echo.Echo, us exclude.Usecase,isUsecase identityserver.Usecase) {
-	handler := &excludeHandler{
-		isUsecase:      isUsecase,
-		excludeUsecase: us,
+	handler := &ExcludeHandler{
+		IsUsecase:      isUsecase,
+		ExcludeUsecase: us,
 	}
 	e.POST("master/exclude", handler.CreateExclude)
 	e.PUT("master/exclude/:id", handler.UpdateExclude)
@@ -36,7 +36,7 @@ func NewExcludeHandler(e *echo.Echo, us exclude.Usecase,isUsecase identityserver
 	e.GET("service/exclude", handler.List)
 }
 
-func (f *excludeHandler) List(c echo.Context) error {
+func (f *ExcludeHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -50,13 +50,13 @@ func (f *excludeHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	list, err := f.excludeUsecase.List(ctx)
+	list, err := f.ExcludeUsecase.List(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, list)
 }
-func (a *excludeHandler) DeleteExclude(c echo.Context) error {
+func (a *ExcludeHandler) DeleteExclude(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -71,7 +71,7 @@ func (a *excludeHandler) DeleteExclude(c echo.Context) error {
 		ctx = context.Background()
 	}
 	excludeId,_:= strconv.Atoi(id)
-	result, err := a.excludeUsecase.Delete(ctx, excludeId, token)
+	result, err := a.ExcludeUsecase.Delete(ctx, excludeId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -79,7 +79,7 @@ func (a *excludeHandler) DeleteExclude(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *excludeHandler) GetAllExclude(c echo.Context) error {
+func (a *ExcludeHandler) GetAllExclude(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -94,7 +94,7 @@ func (a *excludeHandler) GetAllExclude(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.excludeUsecase.GetAll(ctx, page,limit,offset)
+	art, err := a.ExcludeUsecase.GetAll(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -102,7 +102,7 @@ func (a *excludeHandler) GetAllExclude(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *excludeHandler) CreateExclude(c echo.Context) error {
+func (a *ExcludeHandler) CreateExclude(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -131,7 +131,7 @@ func (a *excludeHandler) CreateExclude(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Exclude")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Exclude")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -150,7 +150,7 @@ func (a *excludeHandler) CreateExclude(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	exclude,error := a.excludeUsecase.Create(ctx,&excludeCommand,token)
+	exclude,error := a.ExcludeUsecase.Create(ctx,&excludeCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -158,7 +158,7 @@ func (a *excludeHandler) CreateExclude(c echo.Context) error {
 	return c.JSON(http.StatusOK, exclude)
 }
 
-func (a *excludeHandler) UpdateExclude(c echo.Context) error {
+func (a *ExcludeHandler) UpdateExclude(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -187,7 +187,7 @@ func (a *excludeHandler) UpdateExclude(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Exclude")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Exclude")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -206,7 +206,7 @@ func (a *excludeHandler) UpdateExclude(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	exclude,error := a.excludeUsecase.Update(ctx,&excludeCommand,token)
+	exclude,error := a.ExcludeUsecase.Update(ctx,&excludeCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -214,7 +214,7 @@ func (a *excludeHandler) UpdateExclude(c echo.Context) error {
 	return c.JSON(http.StatusOK, exclude)
 }
 
-func (a *excludeHandler) GetDetailExcludeID(c echo.Context) error {
+func (a *ExcludeHandler) GetDetailExcludeID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -222,7 +222,7 @@ func (a *excludeHandler) GetDetailExcludeID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	excludeID ,_:= strconv.Atoi(id)
-	result, err := a.excludeUsecase.GetById(ctx,excludeID)
+	result, err := a.ExcludeUsecase.GetById(ctx,excludeID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

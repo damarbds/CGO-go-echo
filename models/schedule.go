@@ -70,3 +70,10 @@ type ScheduleDtoObj struct {
 	ScheduleDate 	[]ScheduleObjDate `json:"schedule_date"`
 }
 
+type NewCommandSchedule struct {
+	TimeObj []TimeObj `json:"time_obj"`
+	CreatedBy string	`json:"created_by"`
+	TransId string	`json:"trans_id"`
+	Schedule      []YearObj `json:"schedule"`
+}
+

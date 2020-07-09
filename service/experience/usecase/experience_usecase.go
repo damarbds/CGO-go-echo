@@ -4,16 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/misc/currency"
 	"github.com/service/exclude"
 	"github.com/service/exp_Include"
 	"github.com/service/exp_exclude"
 	"github.com/service/exp_facilities"
 	"github.com/service/facilities"
 	"github.com/service/include"
-	"math"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/booking/booking_exp"
 	"github.com/service/temp_user_preferences"
@@ -37,37 +39,39 @@ import (
 )
 
 type experienceUsecase struct {
-	bookingRepo      booking_exp.Repository
-	tempUserPreRepo  temp_user_preferences.Repository
-	filterATRepo     filter_activity_type.Repository
-	adOnsRepo        experience_add_ons.Repository
-	experienceRepo   experience.Repository
-	harborsRepo      harbors.Repository
-	cpcRepo          cpc.Repository
-	paymentRepo      payment.Repository
-	reviewsRepo      reviews.Repository
-	typesRepo        types.Repository
-	inspirationRepo  inspiration.Repository
-	expPhotos        exp_photos.Repository
-	mUsecase         merchant.Usecase
-	contextTimeout   time.Duration
-	exp_availablitiy exp_availability.Repository
-	expFacilitiesRepo 	exp_facilities.Repository
-	expIncludeRepo 		exp_Include.Repository
-	expExcludeRepo 		exp_exclude.Repository
-	facilitiesRepo 		facilities.Repository
-	includeRepo 		include.Repository
-	excludeRepo 		exclude.Repository
+	bookingRepo       booking_exp.Repository
+	tempUserPreRepo   temp_user_preferences.Repository
+	filterATRepo      filter_activity_type.Repository
+	adOnsRepo         experience_add_ons.Repository
+	experienceRepo    experience.Repository
+	harborsRepo       harbors.Repository
+	cpcRepo           cpc.Repository
+	paymentRepo       payment.Repository
+	reviewsRepo       reviews.Repository
+	typesRepo         types.Repository
+	inspirationRepo   inspiration.Repository
+	expPhotos         exp_photos.Repository
+	mUsecase          merchant.Usecase
+	contextTimeout    time.Duration
+	exp_availablitiy  exp_availability.Repository
+	expFacilitiesRepo exp_facilities.Repository
+	expIncludeRepo    exp_Include.Repository
+	expExcludeRepo    exp_exclude.Repository
+	facilitiesRepo    facilities.Repository
+	includeRepo       include.Repository
+	excludeRepo       exclude.Repository
+	currencyUsecase   currency.Usecase
 }
 
 // NewexperienceUsecase will create new an experienceUsecase object representation of experience.Usecase interface
 func NewexperienceUsecase(
-	expFacilitiesRepo 	exp_facilities.Repository,
-expIncludeRepo 		exp_Include.Repository,
-expExcludeRepo 		exp_exclude.Repository,
-facilitiesRepo 		facilities.Repository,
-includeRepo 		include.Repository,
-excludeRepo 		exclude.Repository,
+	currencyUsecase currency.Usecase,
+	expFacilitiesRepo exp_facilities.Repository,
+	expIncludeRepo exp_Include.Repository,
+	expExcludeRepo exp_exclude.Repository,
+	facilitiesRepo facilities.Repository,
+	includeRepo include.Repository,
+	excludeRepo exclude.Repository,
 	b booking_exp.Repository,
 	tup temp_user_preferences.Repository,
 	fac filter_activity_type.Repository,
@@ -85,27 +89,28 @@ excludeRepo 		exclude.Repository,
 	timeout time.Duration,
 ) experience.Usecase {
 	return &experienceUsecase{
-		expFacilitiesRepo:expFacilitiesRepo,
-		expIncludeRepo:expIncludeRepo,
-		expExcludeRepo:expExcludeRepo,
-		facilitiesRepo:facilitiesRepo,
-		includeRepo:includeRepo,
-		excludeRepo:excludeRepo,
-		bookingRepo:      b,
-		tempUserPreRepo:  tup,
-		filterATRepo:     fac,
-		adOnsRepo:        adOns,
-		exp_availablitiy: ea,
-		experienceRepo:   a,
-		harborsRepo:      h,
-		cpcRepo:          c,
-		paymentRepo:      p,
-		reviewsRepo:      r,
-		typesRepo:        t,
-		inspirationRepo:  i,
-		mUsecase:         m,
-		contextTimeout:   timeout,
-		expPhotos:        ps,
+		currencyUsecase:   currencyUsecase,
+		expFacilitiesRepo: expFacilitiesRepo,
+		expIncludeRepo:    expIncludeRepo,
+		expExcludeRepo:    expExcludeRepo,
+		facilitiesRepo:    facilitiesRepo,
+		includeRepo:       includeRepo,
+		excludeRepo:       excludeRepo,
+		bookingRepo:       b,
+		tempUserPreRepo:   tup,
+		filterATRepo:      fac,
+		adOnsRepo:         adOns,
+		exp_availablitiy:  ea,
+		experienceRepo:    a,
+		harborsRepo:       h,
+		cpcRepo:           c,
+		paymentRepo:       p,
+		reviewsRepo:       r,
+		typesRepo:         t,
+		inspirationRepo:   i,
+		mUsecase:          m,
+		contextTimeout:    timeout,
+		expPhotos:         ps,
 	}
 }
 
@@ -252,7 +257,7 @@ func (m experienceUsecase) GetByCategoryID(ctx context.Context, categoryId int) 
 	return results, nil
 }
 
-func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *int, size *int) ([]*models.ExpUserDiscoverPreferenceDto, error) {
+func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *int, size *int, currencyPrice string) ([]*models.ExpUserDiscoverPreferenceDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 
@@ -317,6 +322,22 @@ func (m experienceUsecase) GetUserDiscoverPreference(ctx context.Context, page *
 					priceItemType = "Per Pax"
 				} else {
 					priceItemType = "Per Trip"
+				}
+
+				if currencyPrice == "USD" {
+					if currency == "IDR" {
+						convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+						calculatePrice := convertCurrency.Rates.USD * expPayment[0].Price
+						expPayment[0].Price = calculatePrice
+						currency = "USD"
+					}
+				} else if currencyPrice == "IDR" {
+					if currency == "USD" {
+						convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+						calculatePrice := convertCurrency.Rates.IDR * expPayment[0].Price
+						expPayment[0].Price = calculatePrice
+						currency = "IDR"
+					}
 				}
 			} else {
 				priceItemType = ""
@@ -436,6 +457,7 @@ func (m experienceUsecase) FilterSearchExp(
 	limit int,
 	offset int,
 	provinceId string,
+	currencyPrice string,
 ) (*models.FilterSearchWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -456,7 +478,10 @@ func (m experienceUsecase) FilterSearchExp(
 		e.exp_location_latitude as latitude,
 		e.exp_location_longitude as longitude,
 		e.exp_cover_photo as cover_photo,
-		province_name AS province
+		province_name AS province,
+		e.exp_location_map_name,
+		e.exp_latitude_map,
+		e.exp_longitude_map
 	from 
 		experiences e
 	JOIN harbors ha ON e.harbors_id = ha.id
@@ -608,11 +633,11 @@ func (m experienceUsecase) FilterSearchExp(
 		if sortBy == "ratingup" {
 			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
 			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY e.rating desc"
+			query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY e.rating desc"
 		} else if sortBy == "ratingdown" {
 			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
 			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY e.rating asc"
+			query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY e.rating asc"
 		} else if sortBy == "newest" {
 			query = query + ` ORDER BY e.created_date DESC`
 		} else if sortBy == "latest" {
@@ -621,13 +646,13 @@ func (m experienceUsecase) FilterSearchExp(
 			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
 			//qCount = qCount[:(strings.Index(qCount,"from"))] + ", ep.price " + qCount[(strings.Index(qCount,"from")):]
 			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY ep.price desc"
+			query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY ep.price desc"
 			//qCount = qCount[:strings.Index(qCount, "join")]  + ` join experience_payments ep on ep.exp_id = e.id` + qCount[strings.Index(qCount, "join"):]
 		} else if sortBy == "pricedown" && isOrderBy == -1 {
 			//query = query[:(strings.Index(query,"from"))] + ", ep.price " + query[(strings.Index(query,"from")):]
 			//qCount = qCount[:(strings.Index(qCount,"from"))] + ", ep.price " + qCount[(strings.Index(qCount,"from")):]
 			//query = query[:strings.Index(query, "join")] + ` join experience_payments ep on ep.exp_id = e.id ` +
-				query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY ep.price asc"
+			query = query[:strings.Index(query, "JOIN")] + query[strings.Index(query, "JOIN"):] + " ORDER BY ep.price asc"
 			//qCount = qCount[:strings.Index(qCount, "join")]  + ` join experience_payments ep on ep.exp_id = e.id` + qCount[strings.Index(qCount, "join"):]
 		}
 	}
@@ -718,8 +743,24 @@ func (m experienceUsecase) FilterSearchExp(
 			} else {
 				priceItemType = "Per Trip"
 			}
-		}
 
+			if currencyPrice == "USD" {
+				if currency == "IDR" {
+					convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+					calculatePrice := convertCurrency.Rates.USD * price
+					price = calculatePrice
+					currency = "USD"
+				}
+			} else if currencyPrice == "IDR" {
+				if currency == "USD" {
+					convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+					calculatePrice := convertCurrency.Rates.IDR * price
+					price = calculatePrice
+					currency = "IDR"
+				}
+			}
+
+		}
 		countRating, err := m.reviewsRepo.CountRating(ctx, 0, exp.Id)
 		if err != nil {
 			return nil, err
@@ -763,20 +804,23 @@ func (m experienceUsecase) FilterSearchExp(
 		}
 
 		results[i] = &models.ExpSearchObject{
-			Id:          exp.Id,
-			ExpTitle:    exp.ExpTitle,
-			ExpType:     expType,
-			ExpStatus:   transStatus,
-			Rating:      exp.Rating,
-			CountRating: countRating,
-			Currency:    currency,
-			Price:       price,
-			PaymentType: priceItemType,
-			Longitude:   exp.Longitude,
-			Latitude:    exp.Latitude,
-			Province:    exp.Province,
-			CoverPhoto:  coverPhoto,
-			ListPhoto:   listPhotos,
+			Id:                 exp.Id,
+			ExpTitle:           exp.ExpTitle,
+			ExpType:            expType,
+			ExpStatus:          transStatus,
+			Rating:             exp.Rating,
+			CountRating:        countRating,
+			Currency:           currency,
+			Price:              price,
+			PaymentType:        priceItemType,
+			Longitude:          exp.Longitude,
+			Latitude:           exp.Latitude,
+			Province:           exp.Province,
+			CoverPhoto:         coverPhoto,
+			ListPhoto:          listPhotos,
+			ExpLocationMapName: exp.ExpLocationMapName,
+			ExpLatitudeMap:     exp.ExpLatitudeMap,
+			ExpLongitudeMap:    exp.ExpLongitudeMap,
 		}
 	}
 	qCount = "select count(*) from (" + query + ") q"
@@ -991,6 +1035,11 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
 		ExpPaymentDeadlineType:   &commandExperience.ExpPaymentDeadlineType,
 		IsCustomisedByUser:       &commandExperience.IsCustomisedByUser,
+		ExpLocationMapName:       commandExperience.ExpLocationMapName,
+		ExpLatitudeMap:           commandExperience.ExpLatitudeMap,
+		ExpLongitudeMap:          commandExperience.ExpLongitudeMap,
+		ExpMaximumBookingAmount:commandExperience.ExpMaximumBookingAmount,
+		ExpMaximumBookingType:commandExperience.ExpMaximumBookingType,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1147,8 +1196,8 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		element.Id = id
 	}
 
-	for _,element := range commandExperience.ExpFacilities{
-		getFacilitiesByName ,err := m.facilitiesRepo.GetByName(ctx,element.Name)
+	for _, element := range commandExperience.ExpFacilities {
+		getFacilitiesByName, err := m.facilitiesRepo.GetByName(ctx, element.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -1159,15 +1208,15 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 			FacilitiesId: getFacilitiesByName.Id,
 			Amount:       element.Amount,
 		}
-		err = m.expFacilitiesRepo.Insert(ctx ,&facilities)
+		err = m.expFacilitiesRepo.Insert(ctx, &facilities)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	for _,element := range commandExperience.ExpInclusion {
+	for _, element := range commandExperience.ExpInclusion {
 		if element.Type == 0 {
-			getIncludeById ,err := m.includeRepo.GetByName(ctx,element.Name)
+			getIncludeById, err := m.includeRepo.GetByName(ctx, element.Name)
 			if err != nil {
 				return nil, err
 			}
@@ -1176,21 +1225,21 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 				ExpId:     *insertToExperience,
 				IncludeId: getIncludeById.Id,
 			}
-			err = m.expIncludeRepo.Insert(ctx,&include)
+			err = m.expIncludeRepo.Insert(ctx, &include)
 			if err != nil {
 				return nil, err
 			}
-		}else if element.Type == 1 {
-			getExcludeById,err := m.excludeRepo.GetByName(ctx,element.Name)
-			if err != nil{
-				return nil,err
+		} else if element.Type == 1 {
+			getExcludeById, err := m.excludeRepo.GetByName(ctx, element.Name)
+			if err != nil {
+				return nil, err
 			}
 			exclude := models.ExperienceExclude{
 				Id:        0,
 				ExpId:     *insertToExperience,
 				ExcludeId: getExcludeById.Id,
 			}
-			err = m.expExcludeRepo.Insert(ctx,&exclude)
+			err = m.expExcludeRepo.Insert(ctx, &exclude)
 			if err != nil {
 				return nil, err
 			}
@@ -1262,6 +1311,11 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		ExpPaymentDeadlineAmount: &commandExperience.ExpPaymentDeadlineAmount,
 		ExpPaymentDeadlineType:   &commandExperience.ExpPaymentDeadlineType,
 		IsCustomisedByUser:       &commandExperience.IsCustomisedByUser,
+		ExpLocationMapName:       commandExperience.ExpLocationMapName,
+		ExpLatitudeMap:           commandExperience.ExpLatitudeMap,
+		ExpLongitudeMap:          commandExperience.ExpLongitudeMap,
+		ExpMaximumBookingAmount:commandExperience.ExpMaximumBookingAmount,
+		ExpMaximumBookingType:commandExperience.ExpMaximumBookingType,
 	}
 	if *experiences.HarborsId == "" && experiences.Status == 1 {
 		experiences.HarborsId = nil
@@ -1450,13 +1504,12 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		element.Id = id
 	}
 
-
-	err = m.expFacilitiesRepo.Delete(ctx ,*insertToExperience,"")
+	err = m.expFacilitiesRepo.Delete(ctx, *insertToExperience, "")
 	if err != nil {
 		return nil, err
 	}
-	for _,element := range commandExperience.ExpFacilities{
-		getFacilitiesByName ,err := m.facilitiesRepo.GetByName(ctx,element.Name)
+	for _, element := range commandExperience.ExpFacilities {
+		getFacilitiesByName, err := m.facilitiesRepo.GetByName(ctx, element.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -1467,22 +1520,22 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			FacilitiesId: getFacilitiesByName.Id,
 			Amount:       element.Amount,
 		}
-		err = m.expFacilitiesRepo.Insert(ctx ,&facilities)
+		err = m.expFacilitiesRepo.Insert(ctx, &facilities)
 		if err != nil {
 			return nil, err
 		}
 	}
-	err = m.expIncludeRepo.Delete(ctx ,*insertToExperience)
+	err = m.expIncludeRepo.Delete(ctx, *insertToExperience)
 	if err != nil {
 		return nil, err
 	}
-	err = m.expExcludeRepo.Delete(ctx ,*insertToExperience)
+	err = m.expExcludeRepo.Delete(ctx, *insertToExperience)
 	if err != nil {
 		return nil, err
 	}
-	for _,element := range commandExperience.ExpInclusion {
+	for _, element := range commandExperience.ExpInclusion {
 		if element.Type == 0 {
-			getIncludeById ,err := m.includeRepo.GetByName(ctx,element.Name)
+			getIncludeById, err := m.includeRepo.GetByName(ctx, element.Name)
 			if err != nil {
 				return nil, err
 			}
@@ -1491,27 +1544,26 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 				ExpId:     *insertToExperience,
 				IncludeId: getIncludeById.Id,
 			}
-			err = m.expIncludeRepo.Insert(ctx,&include)
+			err = m.expIncludeRepo.Insert(ctx, &include)
 			if err != nil {
 				return nil, err
 			}
-		}else if element.Type == 1 {
-			getExcludeById,err := m.excludeRepo.GetByName(ctx,element.Name)
-			if err != nil{
-				return nil,err
+		} else if element.Type == 1 {
+			getExcludeById, err := m.excludeRepo.GetByName(ctx, element.Name)
+			if err != nil {
+				return nil, err
 			}
 			exclude := models.ExperienceExclude{
 				Id:        0,
 				ExpId:     *insertToExperience,
 				ExcludeId: getExcludeById.Id,
 			}
-			err = m.expExcludeRepo.Insert(ctx,&exclude)
+			err = m.expExcludeRepo.Insert(ctx, &exclude)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-
 
 	var status string
 	if commandExperience.Status == 1 {
@@ -1545,7 +1597,7 @@ func (m experienceUsecase) PublishExperience(c context.Context, commandExperienc
 	}
 	return response, nil
 }
-func (m experienceUsecase) GetByID(c context.Context, id string) (*models.ExperienceDto, error) {
+func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice string,isMerchant string) (*models.ExperienceDto, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
@@ -1585,6 +1637,21 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 			} else {
 				currency = "IDR"
 			}
+			if currencyPrice == "USD" {
+				if currency == "IDR" {
+					convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+					calculatePrice := convertCurrency.Rates.USD * element.Amount
+					element.Amount = calculatePrice
+					currency = "USD"
+				}
+			} else if currencyPrice == "IDR" {
+				if currency == "USD" {
+					convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+					calculatePrice := convertCurrency.Rates.IDR * element.Amount
+					element.Amount = calculatePrice
+					currency = "IDR"
+				}
+			}
 			addOns := models.ExperienceAddOnObj{
 				Id:       element.Id,
 				Name:     element.Name,
@@ -1620,6 +1687,40 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 				}
 			}
 		}
+
+		if currencyPrice == "USD" {
+			if currency == "IDR" {
+				convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+				calculatePrice := convertCurrency.Rates.USD * elementPayment.Price
+				elementPayment.Price = calculatePrice
+				currency = "USD"
+			}
+		} else if currencyPrice == "IDR" {
+			if currency == "USD" {
+				convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+				calculatePrice := convertCurrency.Rates.IDR * elementPayment.Price
+				elementPayment.Price = calculatePrice
+				currency = "IDR"
+			}
+		}
+
+		for index, elementCustomPrice := range customPrice {
+			if currencyPrice == "USD" {
+				if elementCustomPrice.Currency == "IDR" {
+					convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+					calculatePrice := convertCurrency.Rates.USD * elementCustomPrice.Price
+					customPrice[index].Price = calculatePrice
+					customPrice[index].Currency = "USD"
+				}
+			} else if currencyPrice == "IDR" {
+				if elementCustomPrice.Currency == "USD" {
+					convertCurrency, _ := m.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+					calculatePrice := convertCurrency.Rates.IDR * elementCustomPrice.Price
+					customPrice[index].Price = calculatePrice
+					customPrice[index].Currency = "IDR"
+				}
+			}
+		}
 		expPayobj := models.ExpPaymentObj{
 			Id:              elementPayment.Id,
 			Currency:        currency,
@@ -1651,18 +1752,70 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 			if errObject != nil {
 				return nil, models.ErrInternalServerError
 			}
-			if res.ExpTripType == "Private Trip" {
-				for _, date := range dates {
-					checkBookingCount, err := m.bookingRepo.GetCountByBookingDateExp(ctx, date, element.ExpId)
-					if err != nil {
-						return nil, err
+			if isMerchant == "true"{
+				expA.Date = dates
+			}else {
+				if res.ExpTripType == "Private Trip" {
+					for _, date := range dates {
+						checkBookingCount, err := m.bookingRepo.GetCountByBookingDateExp(ctx, date, element.ExpId)
+						if err != nil {
+							return nil, err
+						}
+						if res.ExpMaximumBookingType != nil && res.ExpMaximumBookingAmount != nil{
+							if *res.ExpMaximumBookingType == "Days"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount)
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0{
+									expA.Date = append(expA.Date, date)
+								}
+
+							}else if *res.ExpMaximumBookingType == "Week"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount * 7)
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0{
+									expA.Date = append(expA.Date, date)
+								}
+							}else if *res.ExpMaximumBookingType == "Month"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,*res.ExpMaximumBookingAmount,0 )
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0{
+									expA.Date = append(expA.Date, date)
+								}
+							}
+						}else {
+							if checkBookingCount == 0 {
+								expA.Date = append(expA.Date, date)
+							}
+						}
 					}
-					if checkBookingCount == 0 {
-						expA.Date = append(expA.Date, date)
+				} else {
+					if res.ExpMaximumBookingType != nil && res.ExpMaximumBookingAmount != nil{
+						for _,date := range dates{
+							if *res.ExpMaximumBookingType == "Days"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount)
+								if convertDate.After(now) || convertDate.Equal(now){
+									expA.Date = append(expA.Date, date)
+								}
+
+							}else if *res.ExpMaximumBookingType == "Week"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount * 7)
+								if convertDate.After(now) || convertDate.Equal(now){
+									expA.Date = append(expA.Date, date)
+								}
+							}else if *res.ExpMaximumBookingType == "Month"{
+								convertDate ,_ := time.Parse("2006-01-02",date)
+								now := time.Now().AddDate(0,*res.ExpMaximumBookingAmount,0 )
+								if convertDate.After(now) || convertDate.Equal(now){
+									expA.Date = append(expA.Date, date)
+								}
+							}
+						}
+					}else {
+						expA.Date = dates
 					}
 				}
-			} else {
-				expA.Date = dates
 			}
 			expAvailability = append(expAvailability, expA)
 		}
@@ -1680,22 +1833,22 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		//fmt.Println("Error : ",err.Error())
 		return nil, models.ErrInternalServerError
 	}
-	expFacilities := make( []models.ExpFacilitiesObject,0)
+	expFacilities := make([]models.ExpFacilitiesObject, 0)
 	//errObject = json.Unmarshal([]byte(res.ExpFacilities), &expFacilities)
 	//if errObject != nil {
 	//	//fmt.Println("Error : ",err.Error())
 	//	return nil, models.ErrInternalServerError
 	//}
-	getFacilities,err := m.expFacilitiesRepo.GetJoin(ctx,res.Id,"")
-	for _,element := range getFacilities{
+	getFacilities, err := m.expFacilitiesRepo.GetJoin(ctx, res.Id, "")
+	for _, element := range getFacilities {
 		facility := models.ExpFacilitiesObject{
 			Name:   element.FacilityName,
 			Icon:   *element.FacilityIcon,
 			Amount: element.Amount,
 		}
-		expFacilities = append(expFacilities,facility)
+		expFacilities = append(expFacilities, facility)
 	}
-	expInclusion := make([]models.ExpInclusionObject,0)
+	expInclusion := make([]models.ExpInclusionObject, 0)
 	//if res.ExpInclusion != ""{
 	//	errObject = json.Unmarshal([]byte(res.ExpInclusion), &expInclusion)
 	//	if errObject != nil {
@@ -1703,23 +1856,23 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 	//		return nil, models.ErrInternalServerError
 	//	}
 	//}
-	getInclude,err := m.expIncludeRepo.GetByExpIdJoin(ctx, res.Id)
-	for _,element := range getInclude{
+	getInclude, err := m.expIncludeRepo.GetByExpIdJoin(ctx, res.Id)
+	for _, element := range getInclude {
 		inclusion := models.ExpInclusionObject{
 			Name: element.IncludeName,
 			Type: 0,
 		}
-		expInclusion = append(expInclusion,inclusion)
+		expInclusion = append(expInclusion, inclusion)
 	}
-	getExclude,err := m.expExcludeRepo.GetByExpIdJoin(ctx ,res.Id)
-	for _,element := range getExclude{
+	getExclude, err := m.expExcludeRepo.GetByExpIdJoin(ctx, res.Id)
+	for _, element := range getExclude {
 		inclusion := models.ExpInclusionObject{
 			Name: element.ExcludeName,
 			Type: 1,
 		}
-		expInclusion = append(expInclusion,inclusion)
+		expInclusion = append(expInclusion, inclusion)
 	}
-	expRules := make([]models.ExpRulesObject,0)
+	expRules := make([]models.ExpRulesObject, 0)
 	if res.ExpRules != "" {
 		errObject = json.Unmarshal([]byte(res.ExpRules), &expRules)
 		if errObject != nil {
@@ -1778,6 +1931,11 @@ func (m experienceUsecase) GetByID(c context.Context, id string) (*models.Experi
 		ExpPaymentDeadlineAmount: res.ExpPaymentDeadlineAmount,
 		ExpPaymentDeadlineType:   res.ExpPaymentDeadlineType,
 		IsCustomisedByUser:       res.IsCustomisedByUser,
+		ExpLocationMapName:       res.ExpLocationMapName,
+		ExpLatitudeMap:           res.ExpLatitudeMap,
+		ExpLongitudeMap:          res.ExpLongitudeMap,
+		ExpMaximumBookingAmount:res.ExpMaximumBookingAmount,
+		ExpMaximumBookingType:res.ExpMaximumBookingType,
 	}
 	return &experiences, nil
 }

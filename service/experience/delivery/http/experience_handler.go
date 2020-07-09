@@ -174,9 +174,9 @@ func (a *experienceHandler) CreateExperiences(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
-	if ok, err := isRequestValid(&experienceCommand); !ok {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
+	//if ok, err := isRequestValid(&experienceCommand); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -262,13 +262,14 @@ func (a *experienceHandler) GetByID(c echo.Context) error {
 	//if err != nil {
 	//	return c.JSON(http.StatusNotFound, models.ErrNotFound.Error())
 	//}
-
+	currency := c.QueryParam("currency")
+	isMerchant := c.QueryParam("is_merchant")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	art, err := a.experienceUsecase.GetByID(ctx, id)
+	art, err := a.experienceUsecase.GetByID(ctx, id,currency,isMerchant)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -328,6 +329,7 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	qperPage := c.QueryParam("size")
 	status := c.QueryParam("status")
 	search := c.QueryParam("search")
+	currency := c.QueryParam("currency")
 
 	var limit = 20
 	var page = 1
@@ -348,7 +350,7 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 	}
 
 	searchResult, err := a.experienceUsecase.FilterSearchExp(ctx, needMerchantAuth, search, token, status, cityID, harborID, qtype, startDate, endDate, guest, trip,
-		bottomprice, upprice, sortby, page, limit, offset, provinceID)
+		bottomprice, upprice, sortby, page, limit, offset, provinceID,currency)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -358,6 +360,7 @@ func (a *experienceHandler) FilterSearchExp(c echo.Context) error {
 func (a *experienceHandler) GetUserDiscoverPreference(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
+	currency := c.QueryParam("currency")
 
 	ctx := c.Request().Context()
 	if ctx == nil {
@@ -366,13 +369,13 @@ func (a *experienceHandler) GetUserDiscoverPreference(c echo.Context) error {
 	if qpage != "" && qsize != "" {
 		page, _ := strconv.Atoi(qpage)
 		size, _ := strconv.Atoi(qsize)
-		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx, &page, &size)
+		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx, &page, &size,currency)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
 	} else {
-		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx, nil, nil)
+		art, err := a.experienceUsecase.GetUserDiscoverPreference(ctx, nil, nil,currency)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

@@ -10,6 +10,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/models"
+	"github.com/service/transportation/delivery/events"
+
 	_merchantUcase "github.com/auth/merchant/usecase"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
@@ -128,6 +131,7 @@ import (
 	_filterActivityTypeRepo "github.com/service/filter_activity_type/repository"
 
 	_currencyHttpHandler "github.com/misc/currency/delivery/http"
+	_currencyRepo "github.com/misc/currency/repository"
 	_currencyUsecase "github.com/misc/currency/usecase"
 
 	_currencyMasterHttpHandler "github.com/service/currency/delivery/http"
@@ -185,13 +189,12 @@ func main() {
 	// dbName := viper.GetString(`database.name`)
 	// baseUrlis := viper.GetString(`identityServer.baseUrl`)
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
-	//dev
-	// baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
-	//prd
-	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
+
 	//local
 	// baseUrlLocal := "http://localhost:9090"
 
+	//dev env
+	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
 	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
@@ -206,6 +209,8 @@ func main() {
 	//dev URL Forgot Password
 	urlForgotPassword := "http://cgo-web-api.azurewebsites.net/account/change-password"
 
+	// //prd env
+	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
 	// //prd pdfCrowdAccount
 	// usernamePDF := "cgoindonesia"
 	// accessKeyPDF := "cef1b4478dac7cf83c26cac11340fbd4"
@@ -258,6 +263,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 	//e.Use(_echoMiddleware.CORS())
+	currencyRepo := _currencyRepo.NewExChangeRatesRepository(dbConn)
 	versionAPPRepo := _versionAPPRepo.NewVersionAPPRepositoryRepository(dbConn)
 	minimumBookingRepo := _minimumBookingRepo.NewMinimumBookingRepository(dbConn)
 	tempUserPreferenceRepo := _tempUserPreferenceRepo.NewtempUserPreferencesRepository(dbConn)
@@ -304,6 +310,13 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	createNotifier := events.UserCreatedNotifier{
+		BaseUrl:  baseUrlLocal,
+		Schedule: models.NewCommandSchedule{},
+	}
+
+	events.UserCreated.Register(createNotifier)
+
 	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo, timeoutContext)
 	isUsecase := _isUcase.NewidentityserverUsecase(urlForgotPassword, redirectUrlGoogle, clientIDGoogle, clientSecretGoogle, baseUrlis, basicAuth, accountStorage, accessKeyStorage)
 	adminUsecase := _adminUcase.NewadminUsecase(adminRepo, isUsecase, timeoutContext)
@@ -312,11 +325,14 @@ func main() {
 	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(experienceRepo, userUsecase, reviewsRepo, userRepo, timeoutContext)
-	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(experienceAddOnRepo, timeoutContext)
+	currencyUcase := _currencyUsecase.NewCurrencyUsecase(currencyRepo,timeoutContext)
+	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(currencyUcase,experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase, harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
-	promoUsecase := _promoUcase.NewPromoUsecase(promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
+
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
+		currencyUcase,
 		expFacilitesRepo,
 		expIncludeRepo,
 		expExcludeRepo,
@@ -341,17 +357,16 @@ func main() {
 	)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(usernamePDF, accessKeyPDF, reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(currencyUcase,usernamePDF, accessKeyPDF, reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
 	paymentUsecase := _paymentUcase.NewPaymentUsecase(transportationRepo, experienceRepo, bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(adminUsecase, facilityRepo, timeoutContext)
-	transportationUcase := _transportationUcase.NewTransportationUsecase(expFacilitesRepo,facilityRepo,transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
-	transactionUcase := _transactionUcase.NewTransactionUsecase(adminUsecase, merchantUsecase, paymentRepo, transactionRepo, timeoutContext)
+	transportationUcase := _transportationUcase.NewTransportationUsecase(currencyUcase,expFacilitesRepo, facilityRepo, transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
+	transactionUcase := _transactionUcase.NewTransactionUsecase(promoRepo,adminUsecase, merchantUsecase, paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo, adminUsecase, balanceHistoryRepo, merchantUsecase, timeoutContext)
 	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)
-	currencyUcase := _currencyUsecase.NewCurrencyUsecase(timeoutContext)
 	currencyMasterUcase := _currencyMasterUsecase.NewCurrencyUsecase(adminUsecase, currencyMasterRepo, timeoutContext)
 	cpcUsecase := _cpcUsecase.NewCPCUsecase(adminUsecase, cpcRepo, timeoutContext)
 	minimumBookingUsecase := _minimumBookingUsecase.NewminimumBookingUsecase(minimumBookingRepo, timeoutContext)

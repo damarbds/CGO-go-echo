@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/misc/currency"
 	"html/template"
 	"io/ioutil"
 	"math"
@@ -59,12 +60,14 @@ type bookingExpUsecase struct {
 	contextTimeout            time.Duration
 	usernamePDFrowd           string
 	accessKeyPDFcrowd         string
+	currencyUsecase   currency.Usecase
 }
 
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(currencyUsecase   currency.Usecase,usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
+		currencyUsecase:currencyUsecase,
 		usernamePDFrowd:           usernamePDFrowd,
 		accessKeyPDFcrowd:         accessKeyPDFcrowd,
 		reviewRepo:                reviewRepo,
@@ -6047,9 +6050,9 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 	//var transactionStatus int
-	getDetailBookingID ,err := b.GetDetailBookingID(ctx,bookingId,bookingId)
+	getDetailBookingID ,err := b.GetDetailBookingID(ctx,bookingId,bookingId,"")
 	if err == models.ErrNotFound {
-		bookingDetail, err := b.GetDetailTransportBookingID(ctx, bookingId, bookingId, nil)
+		bookingDetail, err := b.GetDetailTransportBookingID(ctx, bookingId, bookingId, nil,"")
 		if err != nil {
 			return nil,err
 		}
@@ -6063,7 +6066,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 
 		if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-			bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
+			bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
 			if err != nil {
 				return nil,err
 			}
@@ -6744,7 +6747,7 @@ func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) e
 }
 
 func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, orderId string) (*string, error) {
-	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId, nil)
+	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId, nil,"")
 	if bookingDetail != nil {
 		if err != nil {
 			return nil, err
@@ -6820,7 +6823,7 @@ func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, ord
 }
 
 func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId string) (*string, error) {
-	bookingDetail, err := b.GetDetailBookingID(ctx, "", orderId)
+	bookingDetail, err := b.GetDetailBookingID(ctx, "", orderId,"")
 	if bookingDetail != nil {
 		if err != nil {
 			return nil, err
@@ -7196,7 +7199,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			if err != nil {
 				return err
 			}
-			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "")
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "","")
 			if err != nil {
 				return err
 			}
@@ -7632,7 +7635,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				return err
 			}
 		} else {
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil)
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil,"")
 			if err != nil {
 				return err
 			}
@@ -7646,7 +7649,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 
 			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
 				if err != nil {
 					return err
 				}
@@ -7922,18 +7925,24 @@ func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, da
 	if err != nil {
 		return false, err
 	}
-	getBooking, err := b.transactionRepo.GetCountByExpId(ctx, date, expId)
+	getBooking, err := b.transactionRepo.GetCountByExpId(ctx, date, expId,false)
 	if err != nil {
 		return false, err
 	}
-	guestDesc := make([]models.GuestDescObj, 0)
-	if getBooking != nil && *getBooking != "" {
-		if errUnmarshal := json.Unmarshal([]byte(*getBooking), &guestDesc); errUnmarshal != nil {
-			return false, models.ErrInternalServerError
+
+	var guestDescs int
+
+	if getBooking != nil {
+		for _,booking := range getBooking{
+			guestDesc := make([]models.GuestDescObj, 0)
+			if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
+				return false, models.ErrInternalServerError
+			}
+			guestDescs = guestDescs + len(guestDesc)
 		}
 	}
 	var result = false
-	currentAmountBooking := len(guestDesc)
+	currentAmountBooking := guestDescs
 	remainingSeat := getExperience.ExpMaxGuest - currentAmountBooking
 	if guest > remainingSeat {
 		result = true
@@ -7979,7 +7988,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			if err != nil {
 				return nil, err
 			}
-			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "")
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "","")
 			if err != nil {
 				return nil, err
 			}
@@ -8408,7 +8417,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			}
 		} else {
 
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil)
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil,"")
 			if err != nil {
 				return nil, err
 			}
@@ -8421,7 +8430,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId)
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
 				if err != nil {
 					return nil, err
 				}
@@ -8663,7 +8672,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 	return result, nil
 }
 
-func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string, transId *string) (*models.BookingExpDetailDto, error) {
+func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string, transId *string,currencyPrice string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 
@@ -8725,6 +8734,21 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 		currency = "USD"
 	} else {
 		currency = "IDR"
+	}
+	if currencyPrice == "USD" {
+		if currency == "IDR" {
+			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+			calculatePrice := convertCurrency.Rates.USD * *details[0].TotalPrice
+			*details[0].TotalPrice = calculatePrice
+			currency = "USD"
+		}
+	} else if currencyPrice == "IDR" {
+		if currency == "USD" {
+			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+			calculatePrice := convertCurrency.Rates.IDR * *details[0].TotalPrice
+			*details[0].TotalPrice = calculatePrice
+			currency = "IDR"
+		}
 	}
 	transport[0].TotalGuest = len(guestDesc)
 	if len(transport) > 1 {
@@ -9024,7 +9048,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 	return response, nil
 }
 
-func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, bookingCode string) (*models.BookingExpDetailDto, error) {
+func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, bookingCode string,currencyPrice string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 	getDetailBooking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, bookingCode)
@@ -9061,6 +9085,21 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	} else {
 		currency = "IDR"
 	}
+	if currencyPrice == "USD" {
+		if currency == "IDR" {
+			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+			calculatePrice := convertCurrency.Rates.USD * *getDetailBooking.TotalPrice
+			*getDetailBooking.TotalPrice = calculatePrice
+			currency = "USD"
+		}
+	} else if currencyPrice == "IDR" {
+		if currency == "USD" {
+			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+			calculatePrice := convertCurrency.Rates.IDR * *getDetailBooking.TotalPrice
+			*getDetailBooking.TotalPrice = calculatePrice
+			currency = "IDR"
+		}
+	}
 	var experiencePaymentType *models.ExperiencePaymentTypeDto
 	if getDetailBooking.ExperiencePaymentId != "" {
 		query, err := b.experiencePaymentTypeRepo.GetById(ctx, getDetailBooking.ExperiencePaymentId)
@@ -9075,8 +9114,29 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 					Desc: element.ExpPaymentTypeDesc,
 				}
 				if paymentType.Name == "Down Payment" {
-					remainingPayment := element.Price - *getDetailBooking.TotalPrice
-					paymentType.RemainingPayment = remainingPayment
+					if getDetailBooking.OriginalPrice != nil{
+						paymentType.OriginalPrice = getDetailBooking.OriginalPrice
+						remainingPayment := *getDetailBooking.OriginalPrice - *getDetailBooking.TotalPrice
+						paymentType.RemainingPayment = remainingPayment
+					}else {
+						remainingPayment := element.Price - *getDetailBooking.TotalPrice
+						paymentType.RemainingPayment = remainingPayment
+					}
+					if currencyPrice == "USD" {
+						if currency == "IDR" {
+							convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+							calculatePrice := convertCurrency.Rates.USD * paymentType.RemainingPayment
+							paymentType.RemainingPayment = calculatePrice
+							currency = "USD"
+						}
+					} else if currencyPrice == "IDR" {
+						if currency == "USD" {
+							convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+							calculatePrice := convertCurrency.Rates.IDR * paymentType.RemainingPayment
+							paymentType.RemainingPayment = calculatePrice
+							currency = "IDR"
+						}
+					}
 				} else {
 					paymentType.RemainingPayment = 0
 				}
@@ -9098,6 +9158,21 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 					currency = "USD"
 				} else {
 					currency = "IDR"
+				}
+				if currencyPrice == "USD" {
+					if currency == "IDR" {
+						convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+						calculatePrice := convertCurrency.Rates.USD * element.Amount
+						element.Amount = calculatePrice
+						currency = "USD"
+					}
+				} else if currencyPrice == "IDR" {
+					if currency == "USD" {
+						convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+						calculatePrice := convertCurrency.Rates.IDR * element.Amount
+						element.Amount = calculatePrice
+						currency = "IDR"
+					}
 				}
 				addOns := models.ExperienceAddOnObj{
 					Id:       element.Id,

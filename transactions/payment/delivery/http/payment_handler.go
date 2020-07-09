@@ -35,6 +35,7 @@ func NewPaymentHandler(e *echo.Echo, pus payment.Usecase, bus booking_exp.Usecas
 	}
 	e.POST("/transaction/payments", handler.CreatePayment)
 	e.PUT("/transaction/payments/confirm", handler.ConfirmPayment)
+	e.PUT("/transaction/payments/confirm-by-date", handler.ConfirmPaymentByDate)
 }
 
 func isRequestValid(m *models.TransactionIn) (bool, error) {
@@ -44,6 +45,38 @@ func isRequestValid(m *models.TransactionIn) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+func (p *paymentHandler) ConfirmPaymentByDate(c echo.Context) error {
+	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//token := c.Request().Header.Get("Authorization")
+	//
+	//if token == "" {
+	//	return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	//}
+
+	cp := new(models.ConfirmTransactionPayment)
+	if err := c.Bind(cp); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err := p.paymentUsecase.ConfirmPaymentByDate(ctx, cp)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	response := &models.PaymentTransactionBookingDate{
+		Status:      http.StatusOK,
+		Message:     "Confirm Payment Succeeds",
+		BookingDate: cp.BookingDate,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func (p *paymentHandler) ConfirmPayment(c echo.Context) error {
@@ -88,10 +121,10 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	if err := c.Bind(t); err != nil {
 		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
 	}
-
-	if ok, err := isRequestValid(t); !ok {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
+	//
+	//if ok, err := isRequestValid(t); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
 
 	ctx := c.Request().Context()
 	if ctx == nil {
@@ -135,16 +168,18 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 		Status:              t.Status,
 		TotalPrice:          t.TotalPrice,
 		Currency:            t.Currency,
-		ExChangeRates:		&t.ExChangeRates,
-		ExChangeCurrency:	&t.ExChangeCurrency,
+		ExChangeRates:       &t.ExChangeRates,
+		ExChangeCurrency:    &t.ExChangeCurrency,
+		Points:&t.Points,
+		OriginalPrice:t.OriginalPrice,
 	}
-	if strings.Contains(t.PaypalOrderId,"PAYID"){
-		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points,true)
+	if strings.Contains(t.PaypalOrderId, "PAYID") {
+		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points, true)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
-	}else {
-		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points,false)
+	} else {
+		_, err := p.paymentUsecase.Insert(ctx, tr, token, t.Points, false)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -163,13 +198,13 @@ func (p *paymentHandler) CreatePayment(c echo.Context) error {
 
 	var data map[string]interface{}
 
-	if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal"  && strings.Contains(t.PaypalOrderId,"PAYID"){
+	if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" && strings.Contains(t.PaypalOrderId, "PAYID") {
 		response, err := p.bookingUsecase.PaypalAutoComplete(ctx, *tr.BookingExpId)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, response)
-	}else if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" {
+	} else if t.PaypalOrderId != "" && *pm.MidtransPaymentCode == "paypal" {
 		data, err = p.bookingUsecase.Verify(ctx, t.PaypalOrderId, bookingCode)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

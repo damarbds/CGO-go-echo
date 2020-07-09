@@ -45,6 +45,11 @@ type Experience struct {
 	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
 	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 type ExperienceWithExperiencePayment struct {
 
@@ -90,6 +95,11 @@ type ExperienceWithExperiencePayment struct {
 	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
 	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 	ExpPaymentTypeName	string 	`json:"exp_payment_type_name"`
 }
 type ExperienceJoinForegnKey struct {
@@ -135,6 +145,11 @@ type ExperienceJoinForegnKey struct {
 	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
 	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 	MinimumBookingAmount    *int       `json:"minimum_booking_amount"`
 	MinimumBookingDesc      string     `json:"minimum_booking_desc"`
 }
@@ -180,6 +195,11 @@ type ExperienceDto struct {
 	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
 	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 type ResponseCreateExperience struct {
 	Id      string `json:"id"`
@@ -222,7 +242,11 @@ type NewCommandExperience struct {
 	ExpPaymentDeadlineAmount int `json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType string	`json:"exp_payment_deadline_type"`
 	IsCustomisedByUser int 		`json:"is_customised_by_user"`
-	
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 type CustomPrice struct {
 	Currency	string 		`json:"currency"`
@@ -297,6 +321,9 @@ type ExpSearch struct {
 	Longitude  float64 `json:"longitude"`
 	CoverPhoto string  `json:"cover_photo"`
 	Province   string  `json:"province"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
 	//Price	   string   `json:"price"`
 }
 
@@ -315,6 +342,10 @@ type ExpSearchObject struct {
 	Province    string         `json:"province"`
 	CoverPhoto  CoverPhotosObj `json:"cover_photo"`
 	ListPhoto   []ExpPhotosObj `json:"list_photo"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+
 }
 type ExperienceUserDiscoverPreferenceDto struct {
 	Id           string         `json:"id" validate:"required"`
@@ -382,6 +413,11 @@ type ExpUserDiscoverPreference struct {
 	ExpPaymentDeadlineAmount *int `json:"exp_payment_deadline_amount"`
 	ExpPaymentDeadlineType *string	`json:"exp_payment_deadline_type"`
 	IsCustomisedByUser *int 		`json:"is_customised_by_user"`
+	ExpLocationMapName 	*string		`json:"exp_location_map_name"`
+	ExpLatitudeMap 		*float64	`json:"exp_latitude_map"`
+	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
+	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
+	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 
 type ExpUserDiscoverPreferenceDto struct {

@@ -38,6 +38,7 @@ type paymentUsecase struct {
 	transportationRepo transportation.Repository
 }
 
+
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
 func NewPaymentUsecase(		transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
@@ -5469,6 +5470,435 @@ If you wish your payment to be transmitted to credits, please click transmit to 
         
    </body>
    </html>`
+
+	templateTicketTransportationWithReturn string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" type="text/css">
+    <title>Ticket TRANSPORTATION</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+</html>
+<body style="margin: 0; padding: 0;">
+    <table bgcolor="#F2F2F2" border="0" cellpadding="0" cellspacing="0" width="100%">
+     <tr>
+      <td>
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="628">
+            <tr>
+                <td style="padding: 15px 30px 15px 30px; background:linear-gradient(90deg, rgba(35,62,152,1) 0%, rgba(35,62,152,1) 35%, rgba(53,116,222,1) 100%);">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                         <td>
+                          <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/cGO_Fix(1)-02.png" alt="">
+                         </td>
+                         <td align="right" style="color: white; font-family: 'Nunito Sans', sans-serif;
+                         font-weight: 700 !important;
+                         font-size: 17px;">
+                            Order ID: {{.orderId}}
+                         </td>
+                        </tr>
+                       </table>
+                </td>
+            </tr>
+            <tr>
+             <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                     <td>
+                        <b style="font-size: 20px; font-family: 'Rubik', sans-serif;
+                        color: #35405A;font-weight: normal !important;">Your E-ticket is here</b>
+                     </td>
+                    </tr>
+                    <tr>
+                     <td style="padding: 30px 0 20px 0; font-family: 'Nunito Sans', sans-serif;
+                     font-style: normal;
+                     font-weight: normal;
+                     font-size: 15px;
+                     line-height: 24px;">
+                        Dear {{.user}},
+                     </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0 20px 0; font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            Your booking has been successfully confirmed. Please find your E-ticket <br> attached.
+                        </td>
+                    </tr>
+
+                    <tr >
+                     <td bgcolor="#E1FAFF" style="border-radius: .8rem;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="padding: 10px 20px 0px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 15px 0;">
+                                                <img src="{{.merchantPicture}}" alt="" width="53" height="24" style="object-fit: cover;" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: black;" width="15%">
+                                                <b style="font-size: 17px; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: 700;
+                                                line-height: 24px;">{{.sourceTimeDeparture}}</b>
+                                            </td>
+                                            <td style="color: #8E8E8E;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;" width="15%">
+                                                {{.durationDeparture}}
+                                            </td>
+                                            <td style="color: black;">
+                                                <b style="font-size: 17px;font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: 700;
+                                                line-height: 24px;">{{.desTimeDeparture}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0px 20px 10px 20px;     border-bottom: 1px solid #E0E0E0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: black; padding: 15px 0 5px; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;" width="25%">
+                                                {{.sourceDeparture}}
+                                            </td>
+                                            <td width="15%">
+                                                <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/arrow-back.png" alt="">
+                                            </td>
+                                            <td style="color: black; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                 {{.destDeparture}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:#7E7E7E; font-weight:600 !important;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">{{.classDeparture}}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 20px 10px 20px;     border-bottom: 1px solid #E0E0E0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                Dates
+                                            </td>
+                                            <td align="right" style="color: #35405A;">
+                                            <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">{{.tripDateDeparture}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 20px 10px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                Guest
+                                            </td>
+                                            <td align="right" style="color: #35405A;">
+                                                <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-size: 15px;
+                                                line-height: 24px;">{{.guestCountDeparture}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                           </table>
+                     </td>
+                    </tr>
+					<tr>
+						<td bgcolor="#FFFFF" width="200px">&nbsp;</td>
+					</tr>
+					<tr >
+                     <td bgcolor="#E1FAFF" style="border-radius: .8rem;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="padding: 10px 20px 0px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 15px 0;">
+                                                <img src="{{.merchantPicture}}" alt="" width="53" height="24" style="object-fit: cover;" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: black;" width="15%">
+                                                <b style="font-size: 17px; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: 700;
+                                                line-height: 24px;">{{.sourceTimeReturn}}</b>
+                                            </td>
+                                            <td style="color: #8E8E8E;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;" width="15%">
+                                                {{.durationReturn}}
+                                            </td>
+                                            <td style="color: black;">
+                                                <b style="font-size: 17px;font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-weight: 700;
+                                                line-height: 24px;">{{.desTimeReturn}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0px 20px 10px 20px;     border-bottom: 1px solid #E0E0E0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: black; padding: 15px 0 5px; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;" width="25%">
+                                                {{.sourceReturn}}
+                                            </td>
+                                            <td width="15%">
+                                                <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/arrow-back.png" alt="">
+                                            </td>
+                                            <td style="color: black; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                 {{.destReturn}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:#7E7E7E; font-weight:600 !important;font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">{{.classReturn}}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 20px 10px 20px;     border-bottom: 1px solid #E0E0E0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                Dates
+                                            </td>
+                                            <td align="right" style="color: #35405A;">
+                                            <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">{{.tripDateReturn}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 20px 10px 20px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="color: #35405A; font-family: 'Nunito Sans', sans-serif;
+                                            font-style: normal;
+                                            font-weight: normal;
+                                            font-size: 15px;
+                                            line-height: 24px;">
+                                                Guest
+                                            </td>
+                                            <td align="right" style="color: #35405A;">
+                                                <b style="font-weight: 800 !important; font-family: 'Nunito Sans', sans-serif;
+                                                font-style: normal;
+                                                font-size: 15px;
+                                                line-height: 24px;">{{.guestCountReturn}}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                           </table>
+                     </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 45px 0 20px 0;     text-align: center;">
+                            <a href="#" style="    background: linear-gradient(145deg, rgba(55,123,232,1) 0%, rgba(35,62,152,1) 42%, rgba(35,62,152,1) 100%);
+                            color: white;
+                            text-decoration: none;
+                            font-weight: 600;
+                            padding: 12px 4rem;
+                            border-radius: 2rem;
+                            font-family: 'Nunito Sans', sans-serif;
+                            font-style: normal;
+                            font-size: 15px;
+                            line-height: 24px;">ADD TO CALENDAR</a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 30px 0 20px 0;font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            We wish you a pleasant trip ahead.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0 20px 0;font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            Do not hesitate to contact us if you have any questions or if you need additional information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            Kind regards,
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: 'Nunito Sans', sans-serif;
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 15px;
+                        line-height: 24px;">
+                            cGO Indonesia
+                        </td>
+                    </tr>
+                   </table>
+             </td>
+            </tr>
+            <tr>
+                <td bgcolor="#E1FAFF" style="padding: 20px 30px 10px 30px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                            <td style="padding: 10px 20px 10px 20px; font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                            font-style: normal;
+                            font-weight: normal;">
+                                Please have your Order ID {{.orderId}} handy when contacting us.
+    
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0px 20px 10px 20px;" >
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="35%">
+                                            <table  border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                <tr>
+                                                    <td style="padding: 10px 20px 10px 6px; color: #7A7A7A;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                                                    font-style: normal;
+                                                    font-weight: normal;
+                                                    line-height: 24px;">For Question</td>
+                                                </tr>
+                                                <tr>
+                                                    <td >
+                                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1637.png" alt="">
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                <tr>
+                                                    <td style="padding: 10px 20px 10px 6px; color: #7A7A7A;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                                                    font-style: normal;
+                                                    font-weight: normal;
+                                                    line-height: 24px;">More Information</td>
+                                                </tr>
+                                                <tr>
+                                                    <td >
+                                                        <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/Group_1638.png" alt="">
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0px 20px 10px 20px;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                            font-style: normal;
+                            font-weight: normal;
+                            line-height: 24px;">Download cGO app</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0px 20px 0px 20px;">
+                                <table border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                     <td>
+                                      <a href="http://www.twitter.com/">
+                                       <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/en_badge_web_generic_1.png" alt="Twitter" style="display: block;" border="0" />
+                                      </a>
+                                     </td>
+                                     <td style="font-size: 0; line-height: 0;" width="20">&nbsp;</td>
+                                     <td>
+                                      <a href="http://www.twitter.com/">
+                                       <img src="https://cgostorage.blob.core.windows.net/cgo-storage/img/img/6341429_preview_1.png" alt="Twitter" style="display: block;" border="0" />
+                                      </a>
+                                     </td>
+                                    </tr>
+                                   </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 20px 10px 20px;font-size: 12px; font-family: 'Nunito Sans', sans-serif;
+                            font-style: normal;
+                            font-weight: normal;
+                            line-height: 24px;">© 2019-2020, PT DTech Solusi Bisnis</td>
+                        </tr>
+                        </table>
+                 </td>
+            </tr>
+           </table>
+      </td>
+     </tr>
+    </table>
+   </body>`
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
@@ -5524,6 +5954,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		OrderId:             payment.OrderId,
 		ExChangeRates:       payment.ExChangeRates,
 		ExChangeCurrency:    payment.ExChangeCurrency,
+		Points:payment.Points,
+		OriginalPrice:payment.OriginalPrice,
 	}
 	if autoComplete == true {
 		exp, err := p.expRepo.GetExperienceByBookingId(ctx, *newData.BookingExpId,*newData.ExperiencePaymentId)
@@ -5565,10 +5997,691 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 	return res.Id, nil
 }
 
-func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.ConfirmPaymentIn) error {
+func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *models.ConfirmTransactionPayment) error {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
+	err := p.paymentRepo.ChangeStatusTransByDate(ctx, confirmIn)
+	if err != nil {
+		return err
+	}
+	if confirmIn.ExpId != "" {
+		listTransaction , _ := p.transactionRepo.GetByBookingDate(ctx,confirmIn.BookingDate,"",confirmIn.ExpId)
+		for _,getTransaction := range listTransaction{
+			if err != nil {
+				return err
+			}
+			notif := models.Notification{
+				Id:           "",
+				CreatedBy:    getTransaction.CreatedBy,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   getTransaction.MerchantId,
+				Type:         0,
+				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+			}
+			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
+				//confirm
+				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+					}
+					paymentDeadline := bookingDetail.BookingDate
+					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+							paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+						}
+					}
+					var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+					var data = map[string]interface{}{
+						"title":            bookingDetail.Experience[0].ExpTitle,
+						"user":             user,
+						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+						"orderId":          bookingDetail.OrderId,
+						"tripDate":         tripDate,
+						"userGuide":        bookingDetail.Experience[0].MerchantName,
+						"guideContact":     bookingDetail.Experience[0].MerchantPhone,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//ticketPDF Bind HTML
+					var htmlPDFTicket bytes.Buffer
+
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					dataMapping := map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+						"time":            bookingDetail.Experience[0].ExpPickupTime,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+					// We create the template and register out template function
+					t := template.New("t").Funcs(templateFuncs)
+					t, err := t.Parse(templateTicketExperiencePDF)
+					if err != nil {
+						panic(err)
+					}
+
+					err = t.Execute(&htmlPDFTicket, dataMapping)
+					if err != nil {
+						panic(err)
+					}
+
+					msg := tpl.String()
+					pdf := htmlPDFTicket.String()
+					var attachment []*models.Attachment
+					eTicket := models.Attachment{
+						AttachmentFileUrl: pdf,
+						FileName:          "E-Ticket.pdf",
+					}
+					attachment = append(attachment, &eTicket)
+					pushEmail := &models.SendingEmail{
+						Subject:    "Your booking has been confirmed",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookingDetail.BookedBy[0].Email,
+						Attachment: attachment,
+					}
+					if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil
+					}
+
+				} else {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+					}
+					guestCount := len(bookingDetail.GuestDesc)
+
+					var tmpl *template.Template
+					var data map[string]interface{}
+					var t *template.Template
+					var dataMapping map[string]interface{}
+					if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+						tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
+						data = map[string]interface{}{
+							"title":        bookingDetail.Experience[0].ExpTitle,
+							"user":         user,
+							"tripDate":     tripDate,
+							"orderId":      bookingDetail.OrderId,
+							"userGuide":    bookingDetail.Experience[0].MerchantName,
+							"guideContact": bookingDetail.Experience[0].MerchantPhone,
+							"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+						}
+
+						//for html pdf
+						var guestDesc []models.GuestDescObjForHTML
+						for i, element := range bookingDetail.GuestDesc {
+							guest := models.GuestDescObjForHTML{
+								No:       i + 1,
+								FullName: element.FullName,
+								Type:     element.Type,
+								IdType:   element.IdType,
+								IdNumber: element.IdNumber,
+							}
+							guestDesc = append(guestDesc, guest)
+						}
+
+						// We create the template and register out template function
+						temp := template.New("t").Funcs(templateFuncs)
+						temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+						if err != nil {
+							panic(err)
+						}
+
+						t = temp
+
+						dataMapping = map[string]interface{}{
+							"guestDesc":       guestDesc,
+							"expType":         bookingDetail.Experience[0].ExpType,
+							"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+							"title":           bookingDetail.Experience[0].ExpTitle,
+							"city":            bookingDetail.Experience[0].HarborsName,
+							"country":         bookingDetail.Experience[0].CountryName,
+							"merchantName":    bookingDetail.Experience[0].MerchantName,
+							"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+							"orderId":         bookingDetail.OrderId,
+							"qrCode":          bookingDetail.TicketQRCode,
+							"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+						}
+
+					} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+						tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
+						data = map[string]interface{}{
+							"title":        bookingDetail.Experience[0].ExpTitle,
+							"user":         user,
+							"tripDate":     tripDate,
+							"orderId":      bookingDetail.OrderId,
+							"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+							"userGuide":    bookingDetail.Experience[0].MerchantName,
+							"guideContact": bookingDetail.Experience[0].MerchantPhone,
+							"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+						}
+
+						//for html pdf
+						var guestDesc []models.GuestDescObjForHTML
+						for i, element := range bookingDetail.GuestDesc {
+							guest := models.GuestDescObjForHTML{
+								No:       i + 1,
+								FullName: element.FullName,
+								Type:     element.Type,
+								IdType:   element.IdType,
+								IdNumber: element.IdNumber,
+							}
+							guestDesc = append(guestDesc, guest)
+						}
+
+						// We create the template and register out template function
+						temp := template.New("t").Funcs(templateFuncs)
+						temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
+						if err != nil {
+							panic(err)
+						}
+
+						t = temp
+
+						dataMapping = map[string]interface{}{
+							"guestDesc":       guestDesc,
+							"expType":         bookingDetail.Experience[0].ExpType,
+							"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+							"title":           bookingDetail.Experience[0].ExpTitle,
+							"city":            bookingDetail.Experience[0].HarborsName,
+							"country":         bookingDetail.Experience[0].CountryName,
+							"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+							"merchantName":    bookingDetail.Experience[0].MerchantName,
+							"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+							"orderId":         bookingDetail.OrderId,
+							"qrCode":          bookingDetail.TicketQRCode,
+							"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+						}
+
+					} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
+						tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
+						data = map[string]interface{}{
+							"title":        bookingDetail.Experience[0].ExpTitle,
+							"user":         user,
+							"tripDate":     tripDate,
+							"orderId":      bookingDetail.OrderId,
+							"time":         bookingDetail.Experience[0].ExpPickupTime,
+							"userGuide":    bookingDetail.Experience[0].MerchantName,
+							"guideContact": bookingDetail.Experience[0].MerchantPhone,
+							"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+						}
+
+						//for html pdf
+						var guestDesc []models.GuestDescObjForHTML
+						for i, element := range bookingDetail.GuestDesc {
+							guest := models.GuestDescObjForHTML{
+								No:       i + 1,
+								FullName: element.FullName,
+								Type:     element.Type,
+								IdType:   element.IdType,
+								IdNumber: element.IdNumber,
+							}
+							guestDesc = append(guestDesc, guest)
+						}
+
+						// We create the template and register out template function
+						temp := template.New("t").Funcs(templateFuncs)
+						temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+						if err != nil {
+							panic(err)
+						}
+
+						t = temp
+
+						dataMapping = map[string]interface{}{
+							"guestDesc":       guestDesc,
+							"expType":         bookingDetail.Experience[0].ExpType,
+							"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+							"title":           bookingDetail.Experience[0].ExpTitle,
+							"city":            bookingDetail.Experience[0].HarborsName,
+							"country":         bookingDetail.Experience[0].CountryName,
+							"merchantName":    bookingDetail.Experience[0].MerchantName,
+							"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+							"orderId":         bookingDetail.OrderId,
+							"qrCode":          bookingDetail.TicketQRCode,
+							"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+						}
+
+					} else {
+						tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
+						data = map[string]interface{}{
+							"title":        bookingDetail.Experience[0].ExpTitle,
+							"user":         user,
+							"tripDate":     tripDate,
+							"orderId":      bookingDetail.OrderId,
+							"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+							"time":         bookingDetail.Experience[0].ExpPickupTime,
+							"userGuide":    bookingDetail.Experience[0].MerchantName,
+							"guideContact": bookingDetail.Experience[0].MerchantPhone,
+							"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+						}
+
+						//for html pdf
+						var guestDesc []models.GuestDescObjForHTML
+						for i, element := range bookingDetail.GuestDesc {
+							guest := models.GuestDescObjForHTML{
+								No:       i + 1,
+								FullName: element.FullName,
+								Type:     element.Type,
+								IdType:   element.IdType,
+								IdNumber: element.IdNumber,
+							}
+							guestDesc = append(guestDesc, guest)
+						}
+
+						// We create the template and register out template function
+						temp := template.New("t").Funcs(templateFuncs)
+						temp, err := temp.Parse(templateTicketExperiencePDF)
+						if err != nil {
+							panic(err)
+						}
+
+						t = temp
+
+						dataMapping = map[string]interface{}{
+							"guestDesc":       guestDesc,
+							"expType":         bookingDetail.Experience[0].ExpType,
+							"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+							"title":           bookingDetail.Experience[0].ExpTitle,
+							"city":            bookingDetail.Experience[0].HarborsName,
+							"country":         bookingDetail.Experience[0].CountryName,
+							"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+							"time":            bookingDetail.Experience[0].ExpPickupTime,
+							"merchantName":    bookingDetail.Experience[0].MerchantName,
+							"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+							"orderId":         bookingDetail.OrderId,
+							"qrCode":          bookingDetail.TicketQRCode,
+							"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+						}
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//ticketPDF Bind HTML
+					var htmlPDFTicket bytes.Buffer
+
+					err = t.Execute(&htmlPDFTicket, dataMapping)
+					if err != nil {
+						panic(err)
+					}
+
+					msg := tpl.String()
+					pdf := htmlPDFTicket.String()
+					var attachment []*models.Attachment
+					eTicket := models.Attachment{
+						AttachmentFileUrl: pdf,
+						FileName:          "E-Ticket.pdf",
+					}
+					attachment = append(attachment, &eTicket)
+					pushEmail := &models.SendingEmail{
+						Subject:    "Experience E-Ticket",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookingDetail.BookedBy[0].Email,
+						Attachment: attachment,
+					}
+
+					if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil
+					}
+				}
+
+			} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
+				//cancelled
+				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
+				if err != nil {
+					return err
+				}
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
+				var data = map[string]interface{}{
+					"title":    bookingDetail.Experience[0].ExpTitle,
+					"tripDate": tripDate,
+					"orderId":  bookingDetail.OrderId,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//maxTime := time.Now().AddDate(0, 0, 1)
+				msg := tpl.String()
+
+				pushEmail := &models.SendingEmail{
+					Subject:    "Cancelled Booking",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         getTransaction.CreatedBy,
+					Attachment: nil,
+				}
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+			}
+
+		}
+	}else if confirmIn.TransId != ""{
+		listTransaction , _ := p.transactionRepo.GetByBookingDate(ctx,confirmIn.BookingDate,confirmIn.TransId,"")
+		for _,getTransaction := range listTransaction{
+			notif := models.Notification{
+				Id:           "",
+				CreatedBy:    getTransaction.CreatedBy,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   getTransaction.MerchantId,
+				Type:         0,
+				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+			}
+			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			bookingDetail, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, *getTransaction.OrderId, *getTransaction.OrderId, nil,"")
+			if err != nil {
+				return err
+			}
+			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			guestCount := len(bookingDetail.GuestDesc)
+
+			layoutFormat := "15:04:05"
+			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
+
+			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
+
+				bookingDetailReturn, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
+				if err != nil {
+					return err
+				}
+				tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
+
+				departureTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].DepartureTime)
+				arrivalTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].ArrivalTime)
+
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
+				data := map[string]interface{}{
+					"title":               bookingDetail.Transportation[0].TransTitle,
+					"user":                user,
+					"tripDateDeparture":   tripDate,
+					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeDeparture": departureTime.Format("15:04"),
+					"desTimeDeparture":    arrivalTime.Format("15:04"),
+					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+					"classDeparture":      bookingDetail.Transportation[0].TransClass,
+					"orderId":             bookingDetail.OrderId,
+					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+					"tripDateReturn":      tripDateReturn,
+					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
+				}
+
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				//ticketPDF Bind HTML is Return
+				var htmlPDFTicketReturn bytes.Buffer
+
+				dataMappingReturn := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDateReturn,
+					"sourceTime":      departureTimeReturn.Format("15:04"),
+					"desTime":         arrivalTimeReturn.Format("15:04"),
+					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
+					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
+					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
+					"class":           bookingDetailReturn.Transportation[0].TransClass,
+					"qrCode":          bookingDetailReturn.TicketQRCode,
+					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetailReturn.OrderId,
+				}
+				// We create the template and register out template function
+				tReturn := template.New("t").Funcs(templateFuncs)
+				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				pdfReturn := htmlPDFTicketReturn.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				eTicketReturn := models.Attachment{
+					AttachmentFileUrl: pdfReturn,
+					FileName:          "E-Ticket-Return.pdf",
+				}
+				attachment = append(attachment, &eTicketReturn)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookingDetail.BookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
+			} else {
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
+				data := map[string]interface{}{
+					"title":           bookingDetail.Transportation[0].TransTitle,
+					"user":            user,
+					"tripDate":        tripDate,
+					"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"orderId":         bookingDetail.OrderId,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:        bookingDetail.BookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return err
+				}
+
+			}
+
+		}
+	}
+	return nil
+}
+func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.ConfirmPaymentIn) error {
+	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
+	defer cancel()
+	if confirmIn.BookingStatus == 0 {
+		transaction ,_:= p.transactionRepo.GetById(ctx,confirmIn.TransactionID)
+		if transaction != nil{
+			confirmIn.BookingStatus = *transaction.BookingStatus
+		}
+	}
 	err := p.paymentRepo.ConfirmPayment(ctx, confirmIn)
 	if err != nil {
 		return err
@@ -5596,38 +6709,555 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 	if pushNotifErr != nil {
 		return nil
 	}
-	if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
-		//confirm
-		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
-		if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+	if getTransaction.ExpId != nil{
+		if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
+			//confirm
+			bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
+			if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				paymentDeadline := bookingDetail.BookingDate
+				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+					}
+				}
+				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+				var data = map[string]interface{}{
+					"title":            bookingDetail.Experience[0].ExpTitle,
+					"user":             user,
+					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+					"orderId":          bookingDetail.OrderId,
+					"tripDate":         tripDate,
+					"userGuide":        bookingDetail.Experience[0].MerchantName,
+					"guideContact":     bookingDetail.Experience[0].MerchantPhone,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"expType":         bookingDetail.Experience[0].ExpType,
+					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+					"title":           bookingDetail.Experience[0].ExpTitle,
+					"city":            bookingDetail.Experience[0].HarborsName,
+					"country":         bookingDetail.Experience[0].CountryName,
+					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+					"time":            bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName":    bookingDetail.Experience[0].MerchantName,
+					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+					"orderId":         bookingDetail.OrderId,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err := t.Parse(templateTicketExperiencePDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Your booking has been confirmed",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookingDetail.BookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
+			} else {
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				guestCount := len(bookingDetail.GuestDesc)
+
+				var tmpl *template.Template
+				var data map[string]interface{}
+				var t *template.Template
+				var dataMapping map[string]interface{}
+				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
+					data = map[string]interface{}{
+						"title":        bookingDetail.Experience[0].ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
+					data = map[string]interface{}{
+						"title":        bookingDetail.Experience[0].ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
+					data = map[string]interface{}{
+						"title":        bookingDetail.Experience[0].ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"time":         bookingDetail.Experience[0].ExpPickupTime,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
+					data = map[string]interface{}{
+						"title":        bookingDetail.Experience[0].ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+						"time":         bookingDetail.Experience[0].ExpPickupTime,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDF)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+						"time":            bookingDetail.Experience[0].ExpPickupTime,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Experience E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookingDetail.BookedBy[0].Email,
+					Attachment: attachment,
+				}
+
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+			}
+
+		} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
+			//cancelled
+			bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
+			if err != nil {
+				return err
+			}
 			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 			duration := 0
 			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
 				duration = bookingDetail.Experience[0].ExpDuration - 1
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			}
-			paymentDeadline := bookingDetail.BookingDate
-			if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-				if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
-					paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
-					paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-				} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
-					paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
-				}
-			}
-			var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+			var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
 			var data = map[string]interface{}{
-				"title":            bookingDetail.Experience[0].ExpTitle,
-				"user":             user,
-				"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
-				"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
-				"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-				"orderId":          bookingDetail.OrderId,
-				"tripDate":         tripDate,
-				"userGuide":        bookingDetail.Experience[0].MerchantName,
-				"guideContact":     bookingDetail.Experience[0].MerchantPhone,
+				"title":    bookingDetail.Experience[0].ExpTitle,
+				"tripDate": tripDate,
+				"orderId":  bookingDetail.OrderId,
+			}
+			var tpl bytes.Buffer
+			err = tmpl.Execute(&tpl, data)
+			if err != nil {
+				//http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			//maxTime := time.Now().AddDate(0, 0, 1)
+			msg := tpl.String()
+
+			pushEmail := &models.SendingEmail{
+				Subject:    "Cancelled Booking",
+				Message:    msg,
+				From:       "CGO Indonesia",
+				To:         getTransaction.CreatedBy,
+				Attachment: nil,
+			}
+			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+				return nil
+			}
+		}
+	}else if getTransaction.TransId != nil{
+		bookingDetail, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, *getTransaction.OrderId, *getTransaction.OrderId, nil,"")
+		if err != nil {
+			return err
+		}
+		user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		guestCount := len(bookingDetail.GuestDesc)
+
+		layoutFormat := "15:04:05"
+		departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+		arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
+
+		if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
+
+			bookingDetailReturn, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
+			if err != nil {
+				return err
+			}
+			tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
+
+			departureTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].DepartureTime)
+			arrivalTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].ArrivalTime)
+
+			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
+			data := map[string]interface{}{
+				"title":               bookingDetail.Transportation[0].TransTitle,
+				"user":                user,
+				"tripDateDeparture":   tripDate,
+				"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTimeDeparture": departureTime.Format("15:04"),
+				"desTimeDeparture":    arrivalTime.Format("15:04"),
+				"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+				"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+				"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+				"classDeparture":      bookingDetail.Transportation[0].TransClass,
+				"orderId":             bookingDetail.OrderId,
+				"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+				"tripDateReturn":      tripDateReturn,
+				"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+				"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+				"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+				"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+				"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+				"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
+			}
+
+			var tpl bytes.Buffer
+			err = tmpl.Execute(&tpl, data)
+			if err != nil {
+				//http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			//ticketPDF Bind HTML
+			var htmlPDFTicket bytes.Buffer
+
+			var guestDesc []models.GuestDescObjForHTML
+			for i, element := range bookingDetail.GuestDesc {
+				guest := models.GuestDescObjForHTML{
+					No:       i + 1,
+					FullName: element.FullName,
+					Type:     element.Type,
+					IdType:   element.IdType,
+					IdNumber: element.IdNumber,
+				}
+				guestDesc = append(guestDesc, guest)
+			}
+
+			dataMapping := map[string]interface{}{
+				"guestDesc":       guestDesc,
+				"tripDate":        tripDate,
+				"sourceTime":      departureTime.Format("15:04"),
+				"desTime":         arrivalTime.Format("15:04"),
+				"duration":        bookingDetail.Transportation[0].TripDuration,
+				"source":          bookingDetail.Transportation[0].HarborSourceName,
+				"dest":            bookingDetail.Transportation[0].HarborDestName,
+				"class":           bookingDetail.Transportation[0].TransClass,
+				"qrCode":          bookingDetail.TicketQRCode,
+				"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+				"orderId":         bookingDetail.OrderId,
+			}
+			// We create the template and register out template function
+			t := template.New("t").Funcs(templateFuncs)
+			t, err = t.Parse(templateTicketTransportationPDF)
+			if err != nil {
+				panic(err)
+			}
+
+			err = t.Execute(&htmlPDFTicket, dataMapping)
+			if err != nil {
+				panic(err)
+			}
+
+			//ticketPDF Bind HTML is Return
+			var htmlPDFTicketReturn bytes.Buffer
+
+			dataMappingReturn := map[string]interface{}{
+				"guestDesc":       guestDesc,
+				"tripDate":        tripDateReturn,
+				"sourceTime":      departureTimeReturn.Format("15:04"),
+				"desTime":         arrivalTimeReturn.Format("15:04"),
+				"duration":        bookingDetailReturn.Transportation[0].TripDuration,
+				"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
+				"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
+				"class":           bookingDetailReturn.Transportation[0].TransClass,
+				"qrCode":          bookingDetailReturn.TicketQRCode,
+				"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
+				"orderId":         bookingDetailReturn.OrderId,
+			}
+			// We create the template and register out template function
+			tReturn := template.New("t").Funcs(templateFuncs)
+			tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
+			if err != nil {
+				panic(err)
+			}
+
+			err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
+			if err != nil {
+				panic(err)
+			}
+
+			msg := tpl.String()
+			pdf := htmlPDFTicket.String()
+			pdfReturn := htmlPDFTicketReturn.String()
+			var attachment []*models.Attachment
+			eTicket := models.Attachment{
+				AttachmentFileUrl: pdf,
+				FileName:          "E-Ticket.pdf",
+			}
+			attachment = append(attachment, &eTicket)
+			eTicketReturn := models.Attachment{
+				AttachmentFileUrl: pdfReturn,
+				FileName:          "E-Ticket-Return.pdf",
+			}
+			attachment = append(attachment, &eTicketReturn)
+			pushEmail := &models.SendingEmail{
+				Subject:    "Transportation E-Ticket",
+				Message:    msg,
+				From:       "CGO Indonesia",
+				To:         bookingDetail.BookedBy[0].Email,
+				Attachment: attachment,
+			}
+			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+				return nil
+			}
+
+		} else {
+			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
+			data := map[string]interface{}{
+				"title":           bookingDetail.Transportation[0].TransTitle,
+				"user":            user,
+				"tripDate":        tripDate,
+				"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
+				"sourceTime":      departureTime.Format("15:04"),
+				"desTime":         arrivalTime.Format("15:04"),
+				"duration":        bookingDetail.Transportation[0].TripDuration,
+				"source":          bookingDetail.Transportation[0].HarborSourceName,
+				"dest":            bookingDetail.Transportation[0].HarborDestName,
+				"class":           bookingDetail.Transportation[0].TransClass,
+				"orderId":         bookingDetail.OrderId,
+				"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
 			}
 			var tpl bytes.Buffer
 			err = tmpl.Execute(&tpl, data)
@@ -5652,22 +7282,20 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 
 			dataMapping := map[string]interface{}{
 				"guestDesc":       guestDesc,
-				"expType":         bookingDetail.Experience[0].ExpType,
-				"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-				"title":           bookingDetail.Experience[0].ExpTitle,
-				"city":            bookingDetail.Experience[0].HarborsName,
-				"country":         bookingDetail.Experience[0].CountryName,
-				"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-				"time":            bookingDetail.Experience[0].ExpPickupTime,
-				"merchantName":    bookingDetail.Experience[0].MerchantName,
-				"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-				"orderId":         bookingDetail.OrderId,
+				"tripDate":        tripDate,
+				"sourceTime":      departureTime.Format("15:04"),
+				"desTime":         arrivalTime.Format("15:04"),
+				"duration":        bookingDetail.Transportation[0].TripDuration,
+				"source":          bookingDetail.Transportation[0].HarborSourceName,
+				"dest":            bookingDetail.Transportation[0].HarborDestName,
+				"class":           bookingDetail.Transportation[0].TransClass,
 				"qrCode":          bookingDetail.TicketQRCode,
-				"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+				"orderId":         bookingDetail.OrderId,
 			}
 			// We create the template and register out template function
 			t := template.New("t").Funcs(templateFuncs)
-			t, err := t.Parse(templateTicketExperiencePDF)
+			t, err = t.Parse(templateTicketTransportationPDF)
 			if err != nil {
 				panic(err)
 			}
@@ -5686,300 +7314,16 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			}
 			attachment = append(attachment, &eTicket)
 			pushEmail := &models.SendingEmail{
-				Subject:    "Your booking has been confirmed",
+				Subject:    "Transportation E-Ticket",
 				Message:    msg,
 				From:       "CGO Indonesia",
-				To:         bookingDetail.BookedBy[0].Email,
+				To:        bookingDetail.BookedBy[0].Email,
 				Attachment: attachment,
 			}
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
-				return nil
+				return err
 			}
 
-		} else {
-			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-			duration := 0
-			if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-				duration = bookingDetail.Experience[0].ExpDuration - 1
-				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-			}
-			guestCount := len(bookingDetail.GuestDesc)
-
-			var tmpl *template.Template
-			var data map[string]interface{}
-			var t *template.Template
-			var dataMapping map[string]interface{}
-			if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
-				tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
-				data = map[string]interface{}{
-					"title":        bookingDetail.Experience[0].ExpTitle,
-					"user":         user,
-					"tripDate":     tripDate,
-					"orderId":      bookingDetail.OrderId,
-					"userGuide":    bookingDetail.Experience[0].MerchantName,
-					"guideContact": bookingDetail.Experience[0].MerchantPhone,
-					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-				}
-
-				//for html pdf
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				// We create the template and register out template function
-				temp := template.New("t").Funcs(templateFuncs)
-				temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
-				if err != nil {
-					panic(err)
-				}
-
-				t = temp
-
-				dataMapping = map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"expType":         bookingDetail.Experience[0].ExpType,
-					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].HarborsName,
-					"country":         bookingDetail.Experience[0].CountryName,
-					"merchantName":    bookingDetail.Experience[0].MerchantName,
-					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-					"orderId":         bookingDetail.OrderId,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-				}
-
-			} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
-				tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
-				data = map[string]interface{}{
-					"title":        bookingDetail.Experience[0].ExpTitle,
-					"user":         user,
-					"tripDate":     tripDate,
-					"orderId":      bookingDetail.OrderId,
-					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-					"userGuide":    bookingDetail.Experience[0].MerchantName,
-					"guideContact": bookingDetail.Experience[0].MerchantPhone,
-					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-				}
-
-				//for html pdf
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				// We create the template and register out template function
-				temp := template.New("t").Funcs(templateFuncs)
-				temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
-				if err != nil {
-					panic(err)
-				}
-
-				t = temp
-
-				dataMapping = map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"expType":         bookingDetail.Experience[0].ExpType,
-					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].HarborsName,
-					"country":         bookingDetail.Experience[0].CountryName,
-					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-					"merchantName":    bookingDetail.Experience[0].MerchantName,
-					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-					"orderId":         bookingDetail.OrderId,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-				}
-
-			} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
-				tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
-				data = map[string]interface{}{
-					"title":        bookingDetail.Experience[0].ExpTitle,
-					"user":         user,
-					"tripDate":     tripDate,
-					"orderId":      bookingDetail.OrderId,
-					"time":         bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide":    bookingDetail.Experience[0].MerchantName,
-					"guideContact": bookingDetail.Experience[0].MerchantPhone,
-					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-				}
-
-				//for html pdf
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				// We create the template and register out template function
-				temp := template.New("t").Funcs(templateFuncs)
-				temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
-				if err != nil {
-					panic(err)
-				}
-
-				t = temp
-
-				dataMapping = map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"expType":         bookingDetail.Experience[0].ExpType,
-					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].HarborsName,
-					"country":         bookingDetail.Experience[0].CountryName,
-					"merchantName":    bookingDetail.Experience[0].MerchantName,
-					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-					"orderId":         bookingDetail.OrderId,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-				}
-
-			} else {
-				tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
-				data = map[string]interface{}{
-					"title":        bookingDetail.Experience[0].ExpTitle,
-					"user":         user,
-					"tripDate":     tripDate,
-					"orderId":      bookingDetail.OrderId,
-					"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-					"time":         bookingDetail.Experience[0].ExpPickupTime,
-					"userGuide":    bookingDetail.Experience[0].MerchantName,
-					"guideContact": bookingDetail.Experience[0].MerchantPhone,
-					"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-				}
-
-				//for html pdf
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				// We create the template and register out template function
-				temp := template.New("t").Funcs(templateFuncs)
-				temp, err := temp.Parse(templateTicketExperiencePDF)
-				if err != nil {
-					panic(err)
-				}
-
-				t = temp
-
-				dataMapping = map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"expType":         bookingDetail.Experience[0].ExpType,
-					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].HarborsName,
-					"country":         bookingDetail.Experience[0].CountryName,
-					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-					"time":            bookingDetail.Experience[0].ExpPickupTime,
-					"merchantName":    bookingDetail.Experience[0].MerchantName,
-					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-					"orderId":         bookingDetail.OrderId,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-				}
-			}
-			var tpl bytes.Buffer
-			err = tmpl.Execute(&tpl, data)
-			if err != nil {
-				//http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-
-			//ticketPDF Bind HTML
-			var htmlPDFTicket bytes.Buffer
-
-			err = t.Execute(&htmlPDFTicket, dataMapping)
-			if err != nil {
-				panic(err)
-			}
-
-			msg := tpl.String()
-			pdf := htmlPDFTicket.String()
-			var attachment []*models.Attachment
-			eTicket := models.Attachment{
-				AttachmentFileUrl: pdf,
-				FileName:          "E-Ticket.pdf",
-			}
-			attachment = append(attachment, &eTicket)
-			pushEmail := &models.SendingEmail{
-				Subject:    "Experience E-Ticket",
-				Message:    msg,
-				From:       "CGO Indonesia",
-				To:         bookingDetail.BookedBy[0].Email,
-				Attachment: attachment,
-			}
-
-			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
-				return nil
-			}
-		}
-
-	} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
-		//cancelled
-		bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "")
-		if err != nil {
-			return err
-		}
-		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-		duration := 0
-		if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-			duration = bookingDetail.Experience[0].ExpDuration - 1
-			tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-		}
-		var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
-		var data = map[string]interface{}{
-			"title":    bookingDetail.Experience[0].ExpTitle,
-			"tripDate": tripDate,
-			"orderId":  bookingDetail.OrderId,
-		}
-		var tpl bytes.Buffer
-		err = tmpl.Execute(&tpl, data)
-		if err != nil {
-			//http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		//maxTime := time.Now().AddDate(0, 0, 1)
-		msg := tpl.String()
-
-		pushEmail := &models.SendingEmail{
-			Subject:    "Cancelled Booking",
-			Message:    msg,
-			From:       "CGO Indonesia",
-			To:         getTransaction.CreatedBy,
-			Attachment: nil,
-		}
-		if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
-			return nil
 		}
 	}
 

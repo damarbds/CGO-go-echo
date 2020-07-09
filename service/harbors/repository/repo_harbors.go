@@ -152,10 +152,21 @@ func (m *harborsRepository) Fetch(ctx context.Context, limit, offset int) ([]*mo
 }
 
 func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, size *int, search string,harborsType string) ([]*models.HarborsWCPC, error) {
-
-	search = "%" + search + "%"
+	if search != ""{
+		search = "%" + search + "%"
+	}
 	if page != nil && size != nil && search != "" {
-		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name 
+		query := `Select 
+				h.id, 
+				h.harbors_name,
+				h.harbors_longitude,
+				h.harbors_latitude,
+				h.harbors_image,
+				h.city_id , 
+				c.city_name,
+				p.id as province_id,
+				p.province_name,
+				co.country_name 
 			from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
@@ -163,9 +174,28 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 			where h.is_active = 1 and h.is_deleted = 0 
 			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?) 
             `
-
-		if harborsType != ""{
-			query = query + ` AND h.harbors_type = ` + harborsType
+		if harborsType == "1"{
+			query = `Select 
+				h.id, 
+				h.harbors_name,
+				h.harbors_longitude,
+				h.harbors_latitude,
+				h.harbors_image,
+				h.city_id , 
+				c.city_name,
+				p.id as province_id,
+				p.province_name,
+				co.country_name 
+			from cgo_indonesia.harbors h
+			join cities c on h.city_id = c.id
+			join provinces p on c.province_id = p.id
+			join countries co on p.country_id = co.id
+			where h.is_active = 1 and h.is_deleted = 0 
+			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?) 
+            `
+		}
+		if harborsType != "" && harborsType != "2"{
+			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null)`
 		}
 
 		query = query + ` ORDER BY h.created_date desc LIMIT ? OFFSET ? `
@@ -178,16 +208,46 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 		return res, err
 
 	} else if page == nil && size == nil && search != "" {
-		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
+		query := `Select 
+				h.id, 
+				h.harbors_name,
+				h.harbors_longitude,
+				h.harbors_latitude,
+				h.harbors_image,
+				h.city_id , 
+				c.city_name,
+				p.id as province_id,
+				p.province_name,
+				co.country_name 
+			from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
 			where h.is_active = 1 and h.is_deleted = 0 
 			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
 
+		if harborsType == "1"{
+			query = `Select 
+				h.id, 
+				h.harbors_name,
+				h.harbors_longitude,
+				h.harbors_latitude,
+				h.harbors_image,
+				h.city_id , 
+				c.city_name,
+				p.id as province_id,
+				p.province_name,
+				co.country_name 
+			from cgo_indonesia.harbors h
+			join cities c on h.city_id = c.id
+			join provinces p on c.province_id = p.id
+			join countries co on p.country_id = co.id
+			where h.is_active = 1 and h.is_deleted = 0 
+			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
+		}
 
-		if harborsType != ""{
-			query = query + ` AND h.harbors_type = ` + harborsType
+		if harborsType != ""&& harborsType != "2"{
+			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null )`
 		}
 
 		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search)
@@ -197,14 +257,44 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 		return res, err
 
 	} else {
-		query := `Select h.id, h.harbors_name,h.harbors_longitude,h.harbors_latitude,h.harbors_image,h.city_id , c.city_name,p.id as province_id,p.province_name,co.country_name from cgo_indonesia.harbors h
+		query := `Select 
+				h.id, 
+				h.harbors_name,
+				h.harbors_longitude,
+				h.harbors_latitude,
+				h.harbors_image,
+				h.city_id ,
+				c.city_name,
+				p.id as province_id,
+				p.province_name,
+				co.country_name 
+			from cgo_indonesia.harbors h
 			join cities c on h.city_id = c.id
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
 			where h.is_active = 1 and h.is_deleted = 0`
 
-		if harborsType != "" {
-			query = query + ` AND h.harbors_type = ` + harborsType
+		if harborsType == "1"{
+			query = `Select 
+				h.id, 
+				h.harbors_name,
+				h.harbors_longitude,
+				h.harbors_latitude,
+				h.harbors_image,
+				h.city_id ,
+				c.city_name,
+				p.id as province_id,
+				p.province_name,
+				co.country_name 
+			from cgo_indonesia.harbors h
+			join cities c on h.city_id = c.id
+			join provinces p on c.province_id = p.id
+			join countries co on p.country_id = co.id
+			where h.is_active = 1 and h.is_deleted = 0`
+		}
+
+		if harborsType != "" && harborsType != "2"{
+			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null )`
 		}
 
 		res, err := m.fetchWithJoinCPC(ctx, query)
@@ -236,13 +326,13 @@ func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*str
 	a.Id = uuid.New().String()
 	query := `INSERT harbors SET id=?,created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
-				harbors_image=?,city_id=?`
+				harbors_image=?,city_id=?,harbors_type=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.HarborsName, a.HarborsLongitude,
-		a.HarborsLatitude, a.HarborsImage, a.CityId)
+		a.HarborsLatitude, a.HarborsImage, a.CityId,a.HarborsType)
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +347,7 @@ func (m *harborsRepository) Insert(ctx context.Context, a *models.Harbors) (*str
 }
 func (m *harborsRepository) Update(ctx context.Context, a *models.Harbors) error {
 	query := `UPDATE harbors set modified_by=?, modified_date=? ,  harbors_name=? , harbors_longitude=? , harbors_latitude=? ,
-				harbors_image=?,city_id=? WHERE id = ?`
+				harbors_image=?,city_id=?,harbors_type=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -265,7 +355,7 @@ func (m *harborsRepository) Update(ctx context.Context, a *models.Harbors) error
 	}
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.HarborsName, a.HarborsLongitude,
-		a.HarborsLatitude, a.HarborsImage, a.CityId, a.Id)
+		a.HarborsLatitude, a.HarborsImage, a.CityId, a.HarborsType,a.Id)
 	if err != nil {
 		return err
 	}
