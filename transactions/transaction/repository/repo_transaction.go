@@ -324,13 +324,13 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 func (t transactionRepository) GetCountByExpId(ctx context.Context, date string, expId string,isTransaction bool) ([]*string, error) {
 	query := `
 	select b.guest_desc from transactions a
-										join booking_exps b on a.order_id = b.order_id 
+										join booking_exps b on a.booking_exp_id = b.id 
 										join experiences c on c.id = b.exp_id 
 										where a.status < 3 and (b.status = 1 or b.status = 3)
 										and date(b.booking_date) = ? and exp_id = ?`
 	if isTransaction == true {
 		query = `select b.guest_desc from transactions a
-										join booking_exps b on a.order_id = b.order_id 
+										join booking_exps b on a.booking_exp_id = b.id  
 										join experiences c on c.id = b.exp_id 
 										where a.status in (0,1,2,5)
 										and date(b.booking_date) = ? 
