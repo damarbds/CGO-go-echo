@@ -7925,18 +7925,24 @@ func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, da
 	if err != nil {
 		return false, err
 	}
-	getBooking, err := b.transactionRepo.GetCountByExpId(ctx, date, expId)
+	getBooking, err := b.transactionRepo.GetCountByExpId(ctx, date, expId,false)
 	if err != nil {
 		return false, err
 	}
-	guestDesc := make([]models.GuestDescObj, 0)
-	if getBooking != nil && *getBooking != "" {
-		if errUnmarshal := json.Unmarshal([]byte(*getBooking), &guestDesc); errUnmarshal != nil {
-			return false, models.ErrInternalServerError
+
+	var guestDescs int
+
+	if getBooking != nil {
+		for _,booking := range getBooking{
+			guestDesc := make([]models.GuestDescObj, 0)
+			if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
+				return false, models.ErrInternalServerError
+			}
+			guestDescs = guestDescs + len(guestDesc)
 		}
 	}
 	var result = false
-	currentAmountBooking := len(guestDesc)
+	currentAmountBooking := guestDescs
 	remainingSeat := getExperience.ExpMaxGuest - currentAmountBooking
 	if guest > remainingSeat {
 		result = true

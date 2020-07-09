@@ -132,7 +132,8 @@ func (t transactionRepository) GetTransactionByDate(ctx context.Context, date st
 				null as departure_time,
 				null as arrival_time,
 				null as harbors_dest,
-				null as harbors_source
+				null as harbors_source,
+				e.exp_max_guest as capacity
 
 				FROM transactions t 
 				JOIN booking_exps b ON t.booking_exp_id = b.id
@@ -149,7 +150,8 @@ func (t transactionRepository) GetTransactionByDate(ctx context.Context, date st
 				s.departure_time,
 				s.arrival_time,
 				h.harbors_name as harbors_dest,
-				hs.harbors_name as harbors_source
+				hs.harbors_name as harbors_source,
+				trans.trans_capacity as capacity
 				
 				FROM transactions t 
 				JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
@@ -191,6 +193,7 @@ func (t transactionRepository) GetTransactionByDate(ctx context.Context, date st
 			&t.ArrivalTime,
 			&t.HarborsDest,
 			&t.HarborsSource,
+			&t.Capacity,
 		)
 		if err != nil {
 			logrus.Error(err)
@@ -318,50 +321,77 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 
 	return result, nil
 }
-func (t transactionRepository) GetCountByExpId(ctx context.Context, date string, expId string) (*string, error) {
+func (t transactionRepository) GetCountByExpId(ctx context.Context, date string, expId string,isTransaction bool) ([]*string, error) {
 	query := `
 	select b.guest_desc from transactions a
 										join booking_exps b on a.order_id = b.order_id 
 										join experiences c on c.id = b.exp_id 
 										where a.status < 3 and (b.status = 1 or b.status = 3)
 										and date(b.booking_date) = ? and exp_id = ?`
-
+	if isTransaction == true {
+		query = `select b.guest_desc from transactions a
+										join booking_exps b on a.order_id = b.order_id 
+										join experiences c on c.id = b.exp_id 
+										where a.status in (0,1,2,5)
+										and date(b.booking_date) = ? 
+										and exp_id = ?
+										and a.is_deleted = 0 
+										and a.is_active = 1`
+	}
 	rows, err := t.Conn.QueryContext(ctx, query, date, expId)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
 	}
 
-	var bookingDesc string
+	var bookingGuestResult []*string
 	for rows.Next() {
+		var bookingDesc string
 		err = rows.Scan(&bookingDesc)
 		if err != nil {
 			return nil, err
 		}
+		bookingGuestResult = append(bookingGuestResult,&bookingDesc)
 	}
 
-	return &bookingDesc, nil
+	return bookingGuestResult, nil
 }
-func (t transactionRepository) GetCountByTransId(ctx context.Context, transId string) (int, error) {
-	query := `select count(*) from transactions a
+func (t transactionRepository) GetCountByTransId(ctx context.Context, transId string,isTransaction bool,date string) ([]*string, error) {
+	query := `select b.guest_desc from transactions a
 											join booking_exps b on a.order_id = b.order_id 
 											join transportations c on c.id = b.trans_id 
 											join schedules d on b.schedule_id = d.id
 											where a.status < 3 and b.trans_id = ?`
-
+	if isTransaction == true {
+		query = `select b.guest_desc from transactions a
+											join booking_exps b on a.order_id = b.order_id 
+											join transportations c on c.id = b.trans_id 
+											join schedules d on b.schedule_id = d.id
+											where a.status in (0,1,2,5) 
+											and b.trans_id = ?
+											and a.is_deleted = 0 
+											and a.is_active = 1`
+	}
+	if date != ""{
+		query = query + ` and date(b.booking_date) = '` + date + `' `
+	}
 	rows, err := t.Conn.QueryContext(ctx, query, transId)
 	if err != nil {
 		logrus.Error(err)
-		return 0, err
+		return nil, err
 	}
 
-	count, err := checkCount(rows)
-	if err != nil {
-		logrus.Error(err)
-		return 0, err
+	var bookingGuestResult []*string
+	for rows.Next() {
+		var bookingDesc string
+		err = rows.Scan(&bookingDesc)
+		if err != nil {
+			return nil, err
+		}
+		bookingGuestResult = append(bookingGuestResult,&bookingDesc)
 	}
 
-	return count, nil
+	return bookingGuestResult, nil
 }
 func (t transactionRepository) UpdateAfterPayment(ctx context.Context, status int, vaNumber string, transactionId, bookingId string) error {
 	query := `UPDATE transactions SET status = ?, va_number = ? WHERE (id = ? OR booking_exp_id = ? OR order_id = ?)`

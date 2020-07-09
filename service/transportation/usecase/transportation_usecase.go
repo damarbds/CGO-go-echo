@@ -686,8 +686,18 @@ func (t transportationUsecase) FilterSearchTrans(
 			ReturnTransId:         element.ReturnTransId,
 		}
 		if guest != 0 {
-			getbookingCount, _ := t.transactionRepo.GetCountByTransId(ctx, element.TransId)
+			getbooking, _ := t.transactionRepo.GetCountByTransId(ctx, element.TransId,false,"")
 			getCapacity := element.TransCapacity
+			var getbookingCount int
+			if getbooking != nil {
+				for _,booking := range getbooking{
+					guestDesc := make([]models.GuestDescObj, 0)
+					if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
+						return nil, models.ErrInternalServerError
+					}
+					getbookingCount = getbookingCount + len(guestDesc)
+				}
+			}
 			remainingSeat := getCapacity - getbookingCount
 
 			if guest <= remainingSeat {

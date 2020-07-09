@@ -136,6 +136,40 @@ func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date strin
 			ArrivalTime:   item.ArrivalTime,
 			TransTo:   item.HarborsDest,
 			TransFrom: item.HarborsSource,
+			MaxCapacity:item.Capacity,
+		}
+		if result[i].ExpId != nil{
+			getBooking, err := t.transactionRepo.GetCountByExpId(ctx, date, *result[i].ExpId,true)
+			if err != nil {
+				return nil, err
+			}
+
+			var guestDescs int
+
+			if getBooking != nil {
+				for _,booking := range getBooking{
+					guestDesc := make([]models.GuestDescObj, 0)
+					if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
+						return nil, models.ErrInternalServerError
+					}
+					guestDescs = guestDescs + len(guestDesc)
+				}
+			}
+			result[i].SeatTaken = guestDescs
+		}else if result[i].TransId != nil {
+			getbooking, _ := t.transactionRepo.GetCountByTransId(ctx, *result[i].TransId,true,date)
+
+			var getbookingCount int
+			if getbooking != nil {
+				for _,booking := range getbooking{
+					guestDesc := make([]models.GuestDescObj, 0)
+					if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
+						return nil, models.ErrInternalServerError
+					}
+					getbookingCount = getbookingCount + len(guestDesc)
+				}
+			}
+			result[i].SeatTaken = getbookingCount
 		}
 	}
 	return result,nil
