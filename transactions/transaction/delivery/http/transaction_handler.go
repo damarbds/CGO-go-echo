@@ -62,6 +62,7 @@ func (t *transactionHandler) ListTransactionScheduleDetail(c echo.Context) error
 		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
 	}
 
+	status := c.QueryParam("status")
 	date := c.QueryParam("date")
 	transId := c.QueryParam("trans_id")
 	expId := c.QueryParam("exp_id")
@@ -72,7 +73,7 @@ func (t *transactionHandler) ListTransactionScheduleDetail(c echo.Context) error
 		ctx = context.Background()
 	}
 
-	result, err := t.TransUsecase.GetDetailTransactionSchedule(ctx, date,transId,expId,token)
+	result, err := t.TransUsecase.GetDetailTransactionSchedule(ctx, date,transId,expId,token,status)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

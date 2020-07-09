@@ -36,14 +36,14 @@ func NewTransactionUsecase(promoRepo promo.Repository, au admin.Usecase, mu merc
 	}
 }
 
-func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, date string, transId string, expId string, token string) (*models.TransactionScheduleDto, error) {
+func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, date string, transId string, expId string, token string,status string) (*models.TransactionScheduleDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
 	if err != nil {
 		return nil, models.ErrUnAuthorize
 	}
-	listTransactions ,err := t.transactionRepo.GetTransactionByExpIdORTransId(ctx,date,expId,transId,currentMerchant.Id)
+	listTransactions ,err := t.transactionRepo.GetTransactionByExpIdORTransId(ctx,date,expId,transId,currentMerchant.Id,status)
 	if err != nil {
 		return nil,err
 	}

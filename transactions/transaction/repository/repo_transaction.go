@@ -21,7 +21,7 @@ func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
-func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Context, date string, expId string, transId string, merchantId string) ([]*models.TransactionOut, error) {
+func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Context, date string, expId string, transId string, merchantId string,status string) ([]*models.TransactionOut, error) {
 	var query string
 	queryExp := `
 	SELECT
@@ -106,6 +106,27 @@ func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Contex
 	if merchantId != "" {
 		queryExp = queryExp + ` AND e.merchant_id = '` + merchantId + `' `
 		queryTrans = queryTrans + ` AND tr.merchant_id = '` + merchantId + `' `
+	}
+	if status != ""{
+		var statusArray []int
+		if errUnmarshal := json.Unmarshal([]byte(status), &statusArray); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+		for index, statusElement := range statusArray {
+			if index == 0 && index != (len(statusArray)-1) {
+				queryExp = queryExp + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' `
+				queryTrans = queryTrans + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' `
+			} else if index == 0 && index == (len(statusArray)-1) {
+				queryExp = queryExp + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' ) `
+				queryTrans = queryTrans + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' ) `
+			} else if index == (len(statusArray) - 1) {
+				queryExp = queryExp + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' ) `
+				queryTrans = queryTrans + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' ) `
+			} else {
+				queryExp = queryExp + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' `
+				queryTrans = queryTrans + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' `
+			}
+		}
 	}
 	if date != "" {
 		queryExp = queryExp + ` AND DATE(b.booking_date) = '` + date + `' `
