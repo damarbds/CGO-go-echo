@@ -28,7 +28,12 @@ type CountryDto struct {
 type NewCommandCountry struct {
 	Id           int        `json:"id"`
 	CountryName  string     `json:"country_name"`
-	PhoneCode	 *int		`json:"phone_code"`
+	Iso 		*string 		`json:"iso"`
+	Name 		*string		`json:"name"`
+	NiceName 	*string 		`json:"nicename"`
+	Iso3 		*string 		`json:"iso3"`
+	NumCode 	*int    	`json:"numcode"`
+	PhoneCode 	*int 		`json:"phonecode"`
 }
 
 type CountryDtoWithPagination struct {

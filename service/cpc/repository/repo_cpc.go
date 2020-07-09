@@ -70,7 +70,7 @@ func (m *cpcRepository) fetchCity(ctx context.Context, query string, args ...int
 
 func (m *cpcRepository) FetchCity(ctx context.Context, limit, offset int) ([]*models.City, error) {
 	if limit != 0 {
-		query := `Select * FROM cities where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM cities where is_deleted = 0 AND is_active = 1 `
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -80,7 +80,7 @@ func (m *cpcRepository) FetchCity(ctx context.Context, limit, offset int) ([]*mo
 		//		`OR promo_code LIKE '%` + search + `%' ` +
 		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
 		//}
-		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
+		query = query + `ORDER BY created_date desc LIMIT ? OFFSET ?`
 		res, err := m.fetchCity(ctx, query, limit, offset)
 		if err != nil {
 			return nil, err
@@ -88,7 +88,7 @@ func (m *cpcRepository) FetchCity(ctx context.Context, limit, offset int) ([]*mo
 		return res, err
 
 	} else {
-		query := `Select * FROM cities where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM cities where is_deleted = 0 AND is_active = 1 `
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -98,7 +98,7 @@ func (m *cpcRepository) FetchCity(ctx context.Context, limit, offset int) ([]*mo
 		//		`OR promo_code LIKE '%` + search + `%' ` +
 		//		`OR max_usage LIKE '%` + search + `%' ` + `) `
 		//}
-		query = query + ` ORDER BY created_date desc `
+		query = query + `ORDER BY created_date desc`
 		res, err := m.fetchCity(ctx, query)
 		if err != nil {
 			return nil, err
@@ -142,14 +142,12 @@ func (m *cpcRepository) GetCountCity(ctx context.Context) (int, error) {
 }
 
 func (m *cpcRepository) InsertCity(ctx context.Context, a *models.City) (*int, error) {
-	query := `INSERT cities SET created_by=? , created_date=? , modified_by=?, modified_date=? ,
-				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , city_name=?,city_desc=? , 
-				city_photos=? ,province_id=?`
+	query := `INSERT cities SET created_by=?,created_date=?,modified_by=?,modified_date=?,deleted_by=?,deleted_date=?,is_deleted=?,is_active=?,city_name=?,city_desc=?,city_photos=?,province_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CityName, a.CityDesc,
+	res, err := stmt.ExecContext(ctx, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.CityName, a.CityDesc,
 		a.CityPhotos, a.ProvinceId)
 	if err != nil {
 		return nil, err
@@ -165,12 +163,11 @@ func (m *cpcRepository) InsertCity(ctx context.Context, a *models.City) (*int, e
 }
 
 func (m *cpcRepository) UpdateCity(ctx context.Context, a *models.City) error {
-	query := `UPDATE cities set modified_by=?, modified_date=? ,city_name=?,city_desc=? , 
-				city_photos=? ,province_id=? WHERE id = ?`
+	query := `UPDATE cities set modified_by=?, modified_date=? ,city_name=?,city_desc=?,city_photos=?,province_id WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CityName, a.CityDesc, a.CityPhotos, a.ProvinceId, a.Id)
@@ -254,7 +251,7 @@ func (m *cpcRepository) fetchProvince(ctx context.Context, query string, args ..
 
 func (m *cpcRepository) FetchProvince(ctx context.Context, limit, offset int) ([]*models.Province, error) {
 	if limit != 0 {
-		query := `Select * FROM provinces where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM provinces where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -272,7 +269,7 @@ func (m *cpcRepository) FetchProvince(ctx context.Context, limit, offset int) ([
 		return res, err
 
 	} else {
-		query := `Select * FROM provinces where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM provinces where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -326,13 +323,12 @@ func (m *cpcRepository) GetCountProvince(ctx context.Context) (int, error) {
 }
 
 func (m *cpcRepository) InsertProvince(ctx context.Context, a *models.Province) (*int, error) {
-	query := `INSERT provinces SET created_by=? , created_date=? , modified_by=?, modified_date=? ,
-				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , province_name=?,country_id=?`
+	query := `INSERT provinces SET created_by=?,created_date=?,modified_by=?,modified_date=?,deleted_by=?,deleted_date=?,is_deleted=?,is_active=?,province_name=?,country_id=?,province_name_transportation=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ProvinceName, a.CountryId)
+	res, err := stmt.ExecContext(ctx, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.ProvinceName, a.CountryId,a.ProvinceNameTransportation)
 	if err != nil {
 		return nil, err
 	}
@@ -347,14 +343,14 @@ func (m *cpcRepository) InsertProvince(ctx context.Context, a *models.Province) 
 }
 
 func (m *cpcRepository) UpdateProvince(ctx context.Context, a *models.Province) error {
-	query := `UPDATE provinces set modified_by=?, modified_date=? ,province_name=?,country_id=? WHERE id = ?`
+	query := `UPDATE provinces set modified_by=?, modified_date=? ,province_name=?,country_id=?,province_name_transportation=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.ProvinceName, a.CountryId, a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.ProvinceName, a.CountryId, a.ProvinceNameTransportation,a.Id)
 	if err != nil {
 		return err
 	}
@@ -440,7 +436,7 @@ func (m *cpcRepository) fetchCountry(ctx context.Context, query string, args ...
 
 func (m *cpcRepository) FetchCountry(ctx context.Context, limit, offset int) ([]*models.Country, error) {
 	if limit != 0 {
-		query := `Select * FROM countries where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM countries where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -458,7 +454,7 @@ func (m *cpcRepository) FetchCountry(ctx context.Context, limit, offset int) ([]
 		return res, err
 
 	} else {
-		query := `Select * FROM countries where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM countries where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -513,13 +509,13 @@ func (m *cpcRepository) GetCountCountry(ctx context.Context) (int, error) {
 }
 
 func (m *cpcRepository) InsertCountry(ctx context.Context, a *models.Country) (*int, error) {
-	query := `INSERT countries SET created_by=? , created_date=? , modified_by=?, modified_date=? ,
-				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , country_name=?`
+	query := `INSERT countries SET created_by=? , created_date=? , modified_by=?, modified_date=? ,deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , country_name=?,iso=?,name=?,nice_name=?, iso3=?,num_code=?,phone_code=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.CountryName)
+	res, err := stmt.ExecContext(ctx, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.CountryName,a.Iso,a.Name,
+		a.NiceName,a.Iso3,a.NumCode,a.PhoneCode)
 	if err != nil {
 		return nil, err
 	}
@@ -534,14 +530,15 @@ func (m *cpcRepository) InsertCountry(ctx context.Context, a *models.Country) (*
 }
 
 func (m *cpcRepository) UpdateCountry(ctx context.Context, a *models.Country) error {
-	query := `UPDATE countries set modified_by=?, modified_date=? ,country_name=? WHERE id = ?`
+	query := `UPDATE countries set modified_by=?, modified_date=? ,country_name=?,iso=?,name=?,nice_name=?, iso3=?,num_code=?,phone_code=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CountryName, a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CountryName,a.Iso,a.Name,
+		a.NiceName,a.Iso3,a.NumCode,a.PhoneCode, a.Id)
 	if err != nil {
 		return err
 	}

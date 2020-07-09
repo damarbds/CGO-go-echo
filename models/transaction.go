@@ -54,6 +54,7 @@ type TransactionByDate struct {
 	ArrivalTime 	*string `json:"arrival_time"`
 	HarborsDest 	*string `json:"harbors_dest"`
 	HarborsSource *string `json:"harbors_source"`
+	Capacity 		int `json:"capacity"`
 }
 type TransactionByDateDto struct {
 	ExpId 			*string `json:"exp_id"`
@@ -63,6 +64,8 @@ type TransactionByDateDto struct {
 	ArrivalTime 	*string `json:"arrival_time"`
 	TransTo 	*string `json:"trans_to"`
 	TransFrom *string `json:"trans_from"`
+	MaxCapacity int `json:"max_capacity"`
+	SeatTaken 	int `json:"seat_taken"`
 }
 type TransactionWithBooking struct {
 	ExpTitle 		string 		`json:"exp_title"`

@@ -115,7 +115,7 @@ func (c cPCUsecase) CreateCity(ctx context.Context, p *models.NewCommandCity, to
 	city := models.City{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
@@ -268,7 +268,7 @@ func (c cPCUsecase) CreateProvince(ctx context.Context, p *models.NewCommandProv
 	province := models.Province{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
@@ -277,6 +277,7 @@ func (c cPCUsecase) CreateProvince(ctx context.Context, p *models.NewCommandProv
 		IsActive:     0,
 		ProvinceName: p.ProvinceName,
 		CountryId:    p.CountryId,
+		ProvinceNameTransportation:p.ProvinceNameTransportation,
 	}
 	provinceId,err := c.cpcRepo.InsertProvince(ctx,&province)
 	if err != nil {
@@ -310,6 +311,7 @@ func (c cPCUsecase) UpdateProvince(ctx context.Context, p *models.NewCommandProv
 		IsActive:     0,
 		ProvinceName: p.ProvinceName,
 		CountryId:    p.CountryId,
+		ProvinceNameTransportation:p.ProvinceNameTransportation,
 	}
 	err = c.cpcRepo.UpdateProvince(ctx,&province)
 	if err != nil {
@@ -415,15 +417,20 @@ func (c cPCUsecase) CreateCountry(ctx context.Context, p *models.NewCommandCount
 	country := models.Country{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,
-		IsActive:     0,
-		CountryName:p.CountryName,
-		PhoneCode: p.PhoneCode,
+		IsActive:     1,
+		CountryName:  "",
+		Iso:          p.Iso,
+		Name:         p.Name,
+		NiceName:     p.NiceName,
+		Iso3:         p.Iso3,
+		NumCode:      p.NumCode,
+		PhoneCode:    p.PhoneCode,
 	}
 	countryId,err := c.cpcRepo.InsertCountry(ctx,&country)
 	if err != nil {
@@ -456,7 +463,12 @@ func (c cPCUsecase) UpdateCountry(ctx context.Context, p *models.NewCommandCount
 		IsDeleted:    0,
 		IsActive:     0,
 		CountryName:p.CountryName,
-		PhoneCode: p.PhoneCode,
+		Iso:          p.Iso,
+		Name:         p.Name,
+		NiceName:     p.NiceName,
+		Iso3:         p.Iso3,
+		NumCode:      p.NumCode,
+		PhoneCode:    p.PhoneCode,
 	}
 	err = c.cpcRepo.UpdateCountry(ctx,&country)
 	if err != nil {
