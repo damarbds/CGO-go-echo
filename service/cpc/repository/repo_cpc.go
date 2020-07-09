@@ -170,7 +170,7 @@ func (m *cpcRepository) UpdateCity(ctx context.Context, a *models.City) error {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CityName, a.CityDesc, a.CityPhotos, a.ProvinceId, a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.CityName, a.CityDesc, a.CityPhotos, a.ProvinceId, a.Id)
 	if err != nil {
 		return err
 	}
@@ -350,7 +350,7 @@ func (m *cpcRepository) UpdateProvince(ctx context.Context, a *models.Province) 
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.ProvinceName, a.CountryId, a.ProvinceNameTransportation,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.ProvinceName, a.CountryId, a.ProvinceNameTransportation,a.Id)
 	if err != nil {
 		return err
 	}
