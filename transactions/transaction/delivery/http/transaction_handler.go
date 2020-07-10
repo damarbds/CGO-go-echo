@@ -144,7 +144,7 @@ func (t *transactionHandler) List(c echo.Context) error {
 	departureTimeEnd := c.QueryParam("departure_time_end")
 	arrivalTimeStart := c.QueryParam("arrival_time_start")
 	arrivalTimeEnd := c.QueryParam("arrival_time_end")
-
+	transactionId 	:= c.QueryParam("transaction_id")
 	var admin bool
 	if isAdmin != ""{
 		admin = true
@@ -188,13 +188,13 @@ func (t *transactionHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 	if qpage != "" && qperPage != ""{
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, &page, &limit, &offset,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, result)
 	}else {
-		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
+		result, err := t.TransUsecase.List(ctx, startDate, endDate, qSearch, qStatus, nil, nil, nil,token,admin,trans,exp,schedule,tripType,paymentType,activityType,confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -281,7 +281,7 @@ func (t *transactionHandler) ExportExcel(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false,false,"","","","","","","","","")
+	getresult, err := t.TransUsecase.List(ctx, startDate, endDate, "", "", nil, nil, nil,token,admin,false,false,false,"","","","","","","","","","")
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
