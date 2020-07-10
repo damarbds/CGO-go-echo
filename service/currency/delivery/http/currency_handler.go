@@ -15,13 +15,13 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type currencyHandler struct {
-	currencyUsecase currency.Usecase
+type CurrencyHandler struct {
+	CurrencyUsecase currency.Usecase
 }
 
 func NewCurrencyHandler(e *echo.Echo, currencyUsecase currency.Usecase) {
-	handler := &currencyHandler{
-		currencyUsecase: currencyUsecase,
+	handler := &CurrencyHandler{
+		CurrencyUsecase: currencyUsecase,
 	}
 	e.POST("master/currency", handler.CreateCurrency)
 	e.PUT("master/currency/:id", handler.UpdateCurrency)
@@ -30,7 +30,7 @@ func NewCurrencyHandler(e *echo.Echo, currencyUsecase currency.Usecase) {
 	e.DELETE("master/currency/:id", handler.DeleteCurrency)
 }
 
-func (a *currencyHandler) DeleteCurrency(c echo.Context) error {
+func (a *CurrencyHandler) DeleteCurrency(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -45,7 +45,7 @@ func (a *currencyHandler) DeleteCurrency(c echo.Context) error {
 		ctx = context.Background()
 	}
 	facilitiesId,_:= strconv.Atoi(id)
-	result, err := a.currencyUsecase.Delete(ctx, facilitiesId, token)
+	result, err := a.CurrencyUsecase.Delete(ctx, facilitiesId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -53,7 +53,7 @@ func (a *currencyHandler) DeleteCurrency(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *currencyHandler) GetAllCurrency(c echo.Context) error {
+func (a *CurrencyHandler) GetAllCurrency(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -68,7 +68,7 @@ func (a *currencyHandler) GetAllCurrency(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.currencyUsecase.GetAll(ctx, page,limit,offset)
+	art, err := a.CurrencyUsecase.GetAll(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -76,7 +76,7 @@ func (a *currencyHandler) GetAllCurrency(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *currencyHandler) CreateCurrency(c echo.Context) error {
+func (a *CurrencyHandler) CreateCurrency(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -94,7 +94,7 @@ func (a *currencyHandler) CreateCurrency(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	result,error := a.currencyUsecase.Create(ctx,&currencyCommand,token)
+	result,error := a.CurrencyUsecase.Create(ctx,&currencyCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -102,7 +102,7 @@ func (a *currencyHandler) CreateCurrency(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func (a *currencyHandler) UpdateCurrency(c echo.Context) error {
+func (a *CurrencyHandler) UpdateCurrency(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -120,7 +120,7 @@ func (a *currencyHandler) UpdateCurrency(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	result,error := a.currencyUsecase.Update(ctx,&currencyCommand,token)
+	result,error := a.CurrencyUsecase.Update(ctx,&currencyCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -128,7 +128,7 @@ func (a *currencyHandler) UpdateCurrency(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func (a *currencyHandler) GetDetailCurrencyID(c echo.Context) error {
+func (a *CurrencyHandler) GetDetailCurrencyID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -136,7 +136,7 @@ func (a *currencyHandler) GetDetailCurrencyID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	facilitiesID ,_:= strconv.Atoi(id)
-	result, err := a.currencyUsecase.GetById(ctx,facilitiesID)
+	result, err := a.CurrencyUsecase.GetById(ctx,facilitiesID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

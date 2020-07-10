@@ -106,7 +106,7 @@ func (f currencyUsecase) Create(ctx context.Context, fac *models.NewCommandCurre
 	currencyMod := models.Currency{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
