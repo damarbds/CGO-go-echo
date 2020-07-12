@@ -16,19 +16,19 @@ type ResponseError struct {
 }
 
 // promoHandler  represent the httphandler for promo
-type exclusionServicesHandler struct {
-	exclusionServicesUsecase exclusion_service.Usecase
+type ExclusionServicesHandler struct {
+	ExclusionServicesUsecase exclusion_service.Usecase
 }
 
 // NewpromoHandler will initialize the promos/ resources endpoint
 func NewExclusionServicesHandler(e *echo.Echo, exclusionServicesUsecase exclusion_service.Usecase) {
-	handler := &exclusionServicesHandler{
-		exclusionServicesUsecase : exclusionServicesUsecase,
+	handler := &ExclusionServicesHandler{
+		ExclusionServicesUsecase : exclusionServicesUsecase,
 	}
 	e.GET("master/exclusion_service", handler.List)
 }
 
-func (a *exclusionServicesHandler) List(c echo.Context) error {
+func (a *ExclusionServicesHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -51,7 +51,7 @@ func (a *exclusionServicesHandler) List(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.exclusionServicesUsecase.List(ctx, page, limit,offset,token)
+	art, err := a.ExclusionServicesUsecase.List(ctx, page, limit,offset,token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

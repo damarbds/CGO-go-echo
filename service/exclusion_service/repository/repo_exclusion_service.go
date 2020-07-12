@@ -77,7 +77,7 @@ func (m *exclusionServiceRepository) fetch(ctx context.Context, query string, ar
 }
 func (m exclusionServiceRepository) Fetch(ctx context.Context, limit, offset int) ([]*models.ExclusionService, error) {
 	if limit != 0 {
-		query := `Select * FROM exclusion_services where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM exclusion_services where is_deleted = 0 AND is_active = 1`
 
 		//if search != "" {
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -95,7 +95,7 @@ func (m exclusionServiceRepository) Fetch(ctx context.Context, limit, offset int
 		return res, err
 
 	} else {
-		query := `Select * FROM exclusion_services where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM exclusion_services where is_deleted = 0 AND is_active = 1`
 
 		//if search != "" {
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
