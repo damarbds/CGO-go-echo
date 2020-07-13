@@ -139,6 +139,9 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 	promoType, _ := strconv.Atoi(c.FormValue("promo_type"))
 	productionCapacity , _ := strconv.Atoi(c.FormValue("production_capacity"))
 	promoProductType , _ := strconv.Atoi(c.FormValue("promo_product_type"))
+	isAnyTripPeriod , _ := strconv.Atoi(c.FormValue("is_any_trip_period"))
+	maxDiscount , _ := strconv.ParseFloat(c.FormValue("max_discount"),32)
+	maxDiscount32 := float32(maxDiscount)
 	merchants := c.FormValue("merchant_id")
 	merchantId := make([]string,0)
 	if merchants != ""{
@@ -161,6 +164,15 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 		ProductionCapacity: productionCapacity,
 		MerchantId:merchantId,
 		PromoProductType:&promoProductType,
+		StartTripPeriod: c.FormValue("start_trip_period"),
+		EndTripPeriod: c.FormValue("end_trip_period"),
+		IsAnyTripPeriod: isAnyTripPeriod,
+		Disclaimer: c.FormValue("disclaimer"),
+		MaxDiscount: maxDiscount32,
+		TermCondition: c.FormValue("term_condition"),
+		HowToGet: c.FormValue("how_to_get"),
+		HowToUse: c.FormValue("how_to_use"),
+
 	}
 	if ok, err := isRequestValid(&promoCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -220,6 +232,9 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 	promoType, _ := strconv.Atoi(c.FormValue("promo_type"))
 	productionCapacity , _ := strconv.Atoi(c.FormValue("production_capacity"))
 	promoProductType , _ := strconv.Atoi(c.FormValue("promo_product_type"))
+	isAnyTripPeriod , _ := strconv.Atoi(c.FormValue("is_any_trip_period"))
+	maxDiscount , _ := strconv.ParseFloat(c.FormValue("max_discount"),32)
+	maxDiscount32 := float32(maxDiscount)
 	merchants := c.FormValue("merchant_id")
 	merchantId := make([]string,0)
 	if merchants != ""{
@@ -242,6 +257,14 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 		ProductionCapacity: productionCapacity,
 		MerchantId:merchantId,
 		PromoProductType:&promoProductType,
+		StartTripPeriod: c.FormValue("start_trip_period"),
+		EndTripPeriod: c.FormValue("end_trip_period"),
+		IsAnyTripPeriod: isAnyTripPeriod,
+		Disclaimer: c.FormValue("disclaimer"),
+		MaxDiscount: maxDiscount32,
+		TermCondition: c.FormValue("term_condition"),
+		HowToGet: c.FormValue("how_to_get"),
+		HowToUse: c.FormValue("how_to_use"),
 	}
 	if ok, err := isRequestValid(&promoCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
