@@ -144,7 +144,7 @@ type BookingExpJoin struct {
 	Province               string         `json:"province"`
 	Country                string         `json:"country"`
 	ExperiencePaymentId    string         `json:"experience_payment_id"`
-	Currency               int            `json:"currency"`
+	Currency               string            `json:"currency"`
 	AccountBank            *string        `json:"account_bank"`
 	Icon                   *string        `json:"icon"`
 	CreatedDateTransaction *time.Time     `json:"created_date_transaction"`

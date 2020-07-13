@@ -8730,11 +8730,12 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 		}
 	}
 	var currency string
-	if details[0].Currency == 1 {
-		currency = "USD"
-	} else {
-		currency = "IDR"
-	}
+	currency = *details[0].ExChangeCurrency
+	//if details[0].Currency == 1 {
+	//	currency = "USD"
+	//} else {
+	//	currency = "IDR"
+	//}
 	if currencyPrice == "USD" {
 		if currency == "IDR" {
 			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
@@ -9080,11 +9081,12 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		}
 	}
 	var currency string
-	if getDetailBooking.Currency == 1 {
-		currency = "USD"
-	} else {
-		currency = "IDR"
-	}
+	currency = *getDetailBooking.ExChangeCurrency
+	//if getDetailBooking.Currency == 1 {
+	//	currency = "USD"
+	//} else {
+	//	currency = "IDR"
+	//}
 	if currencyPrice == "USD" {
 		if currency == "IDR" {
 			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
