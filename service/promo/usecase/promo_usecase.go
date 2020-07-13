@@ -63,6 +63,14 @@ func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search 
 			MaxUsage:           item.MaxUsage,
 			ProductionCapacity: item.ProductionCapacity,
 			PromoProductType:item.PromoProductType,
+			StartTripPeriod: item.StartTripPeriod,
+			EndTripPeriod: item.EndTripPeriod,
+			IsAnyTripPeriod: item.IsAnyTripPeriod,
+			MaxDiscount: item.MaxDiscount,
+			HowToUse: item.HowToUse,
+			HowToGet: item.HowToGet,
+			Disclaimer: item.Disclaimer,
+			TermCondition: item.TermCondition,
 			//VoucherValueOptionType: item.VoucherValueOptionType,
 		}
 		merchantIds := make([]string, 0)
@@ -132,6 +140,14 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 		MaxUsage:           &command.MaxUsage,
 		ProductionCapacity: &command.ProductionCapacity,
 		PromoProductType:command.PromoProductType,
+		StartTripPeriod: &command.StartTripPeriod,
+		EndTripPeriod: &command.EndTripPeriod,
+		IsAnyTripPeriod: command.IsAnyTripPeriod,
+		MaxDiscount: command.MaxDiscount,
+		HowToUse: command.HowToUse,
+		HowToGet: command.HowToGet,
+		TermCondition: command.TermCondition,
+		Disclaimer: command.Disclaimer,
 		//VoucherValueOptionType: &command.VoucherValueOptionType,
 	}
 	err = p.promoRepo.Update(ctx, &promo)
@@ -184,6 +200,14 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 		MaxUsage:           &command.MaxUsage,
 		ProductionCapacity: &command.ProductionCapacity,
 		PromoProductType:command.PromoProductType,
+		StartTripPeriod: &command.StartTripPeriod,
+		EndTripPeriod: &command.EndTripPeriod,
+		IsAnyTripPeriod: command.IsAnyTripPeriod,
+		MaxDiscount: command.MaxDiscount,
+		HowToUse: command.HowToUse,
+		HowToGet: command.HowToGet,
+		TermCondition: command.TermCondition,
+		Disclaimer: command.Disclaimer,
 	}
 	id, err := p.promoRepo.Insert(ctx, &promo)
 
@@ -251,6 +275,14 @@ func (p promoUsecase) GetDetail(ctx context.Context, id string, token string) (*
 		MaxUsage:           getPromoDetail.MaxUsage,
 		ProductionCapacity: getPromoDetail.ProductionCapacity,
 		PromoProductType:getPromoDetail.PromoProductType,
+		StartTripPeriod: getPromoDetail.StartTripPeriod,
+		EndTripPeriod: getPromoDetail.EndTripPeriod,
+		IsAnyTripPeriod: getPromoDetail.IsAnyTripPeriod,
+		MaxDiscount: getPromoDetail.MaxDiscount,
+		HowToUse: getPromoDetail.HowToUse,
+		HowToGet: getPromoDetail.HowToGet,
+		TermCondition: getPromoDetail.TermCondition,
+		Disclaimer: getPromoDetail.Disclaimer,
 		//VoucherValueOptionType: getPromoDetail.VoucherValueOptionType,
 	}
 	merchantIds := make([]string, 0)
@@ -286,6 +318,14 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 			MaxUsage:           element.MaxUsage,
 			ProductionCapacity: element.ProductionCapacity,
 			PromoProductType:element.PromoProductType,
+			StartTripPeriod: element.StartTripPeriod,
+			EndTripPeriod: element.EndTripPeriod,
+			IsAnyTripPeriod: element.IsAnyTripPeriod,
+			MaxDiscount: element.MaxDiscount,
+			HowToUse: element.HowToUse,
+			HowToGet: element.HowToGet,
+			TermCondition: element.TermCondition,
+			Disclaimer: element.Disclaimer,
 		}
 		merchantIds := make([]string, 0)
 		getPromoMerchant, err := p.promoMerchant.GetByMerchantId(ctx, "", element.Id)
@@ -372,6 +412,14 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 			MaxUsage:   promos[0].MaxUsage,
 			ProductionCapacity: promos[0].ProductionCapacity,
 			PromoProductType:promos[0].PromoProductType,
+			StartTripPeriod: promos[0].StartTripPeriod,
+			EndTripPeriod: promos[0].EndTripPeriod,
+			IsAnyTripPeriod: promos[0].IsAnyTripPeriod,
+			MaxDiscount: promos[0].MaxDiscount,
+			HowToUse: promos[0].HowToUse,
+			HowToGet: promos[0].HowToGet,
+			TermCondition: promos[0].TermCondition,
+			Disclaimer: promos[0].Disclaimer,
 		}
 
 
