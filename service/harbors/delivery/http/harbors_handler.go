@@ -53,7 +53,7 @@ func (a *HarborsHandler) GetAllHarbors(c echo.Context) error {
 	if qpage != "" && qsize != "" {
 		page, _ := strconv.Atoi(qpage)
 		size, _ := strconv.Atoi(qsize)
-		art, err := a.HarborsUsecase.GetAllWithJoinCPC(ctx, &size, &page, search, harborsType)
+		art, err := a.HarborsUsecase.GetAllWithJoinCPC(ctx, &page,&size, search, harborsType)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}

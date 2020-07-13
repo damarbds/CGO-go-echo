@@ -2,6 +2,7 @@ package repository_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -124,7 +125,7 @@ func TestCountFetch(t *testing.T) {
 	_, err = a.GetCount(context.TODO())
 	assert.Error(t, err)
 }
-func TestGetAllWithJoinCPCWithPagination(t *testing.T) {
+func TestGetAllWithJoinCPCWithoutPagination(t *testing.T) {
 	db, mock, err := sqlmock.New()
 
 	if err != nil {
@@ -174,7 +175,7 @@ func TestGetAllWithJoinCPCWithPagination(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, anArticle, 2)
 }
-func TestGetAllWithJoinCPCErrorFetch(t *testing.T) {
+func TestGetAllWithJoinCPCWithoutPaginationErrorFetch(t *testing.T) {
 	db, mock, err := sqlmock.New()
 
 	if err != nil {
@@ -225,58 +226,58 @@ func TestGetAllWithJoinCPCErrorFetch(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, anArticle)
 }
-//func TestGetAllWithJoinCPCSearchWithPagination(t *testing.T) {
-//	db, mock, err := sqlmock.New()
-//
-//	if err != nil {
-//		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-//	}
-//
-//	//defer func() {
-//	//	err = db.Close()
-//	//	require.NoError(t, err)
-//	//}()
-//
-//	rows := sqlmock.NewRows([]string{"id", "harbors_name", "harbors_longitude", "harbors_latitude",
-//		"harbors_image", "city_id", "city_name","province_id","province_name","country_name"}).
-//		AddRow(mockHarborsJoin[0].Id, mockHarborsJoin[0].HarborsName, mockHarborsJoin[0].HarborsLongitude,
-//			mockHarborsJoin[0].HarborsLatitude, mockHarborsJoin[0].HarborsImage, mockHarborsJoin[0].CityId,
-//			mockHarborsJoin[0].CityName,mockHarborsJoin[0].ProvinceId,mockHarborsJoin[0].ProvinceName,
-//			mockHarborsJoin[0].CountryName).
-//		AddRow(mockHarborsJoin[1].Id, mockHarborsJoin[1].HarborsName, mockHarborsJoin[1].HarborsLongitude,
-//			mockHarborsJoin[1].HarborsLatitude, mockHarborsJoin[1].HarborsImage, mockHarborsJoin[1].CityId,
-//			mockHarborsJoin[1].CityName,mockHarborsJoin[1].ProvinceId,mockHarborsJoin[1].ProvinceName,
-//			mockHarborsJoin[1].CountryName)
-//
-//	query := `Select
-//				h.id,
-//				h.harbors_name,
-//				h.harbors_longitude,
-//				h.harbors_latitude,
-//				h.harbors_image,
-//				h.city_id ,
-//				c.city_name,
-//				p.id as province_id,
-//				p.province_name,
-//				co.country_name
-//			from cgo_indonesia.harbors h
-//			join cities c on h.city_id = c.id
-//			join provinces p on c.province_id = p.id
-//			join countries co on p.country_id = co.id
-//			where h.is_active = 1 and h.is_deleted = 0
-//			AND (h.harbors_name LIKE \? OR c.city_name LIKE \? OR p.province_name LIKE \?)`
-//	query = query + ` ORDER BY h.created_date desc LIMIT ? OFFSET ? `
-//
-//	mock.ExpectQuery(query).WillReturnRows(rows)
-//	a := HarborsRepo.NewharborsRepository(db)
-//	limit := 10
-//	offset := 0
-//	search := "Bogor"
-//	anArticle, err := a.GetAllWithJoinCPC(context.TODO(),&limit,&offset,search,"")
-//	//assert.NotEmpty(t, nextCursor)
-//	assert.NoError(t, err)
-//	assert.Len(t, anArticle, 2)
-//}
+func TestGetAllWithJoinCPCWithPagination(t *testing.T) {
+	db, mock, err := sqlmock.New()
+
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	//defer func() {
+	//	err = db.Close()
+	//	require.NoError(t, err)
+	//}()
+
+	rows := sqlmock.NewRows([]string{"id", "harbors_name", "harbors_longitude", "harbors_latitude",
+		"harbors_image", "city_id", "city_name","province_id","province_name","country_name"}).
+		AddRow(mockHarborsJoin[0].Id, mockHarborsJoin[0].HarborsName, mockHarborsJoin[0].HarborsLongitude,
+			mockHarborsJoin[0].HarborsLatitude, mockHarborsJoin[0].HarborsImage, mockHarborsJoin[0].CityId,
+			mockHarborsJoin[0].CityName,mockHarborsJoin[0].ProvinceId,mockHarborsJoin[0].ProvinceName,
+			mockHarborsJoin[0].CountryName).
+		AddRow(mockHarborsJoin[1].Id, mockHarborsJoin[1].HarborsName, mockHarborsJoin[1].HarborsLongitude,
+			mockHarborsJoin[1].HarborsLatitude, mockHarborsJoin[1].HarborsImage, mockHarborsJoin[1].CityId,
+			mockHarborsJoin[1].CityName,mockHarborsJoin[1].ProvinceId,mockHarborsJoin[1].ProvinceName,
+			mockHarborsJoin[1].CountryName)
+	size := 10
+	page := 0
+	query := `Select 
+				h.id, 
+				h.harbors_name,
+				h.harbors_longitude,
+				h.harbors_latitude,
+				h.harbors_image,
+				h.city_id ,
+				c.city_name,
+				p.id as province_id,
+				p.province_name,
+				co.country_name 
+			from cgo_indonesia.harbors h
+			join cities c on h.city_id = c.id
+			join provinces p on c.province_id = p.id
+			join countries co on p.country_id = co.id
+			where h.is_active = 1 and h.is_deleted = 0`
+
+	query = query + ` ORDER BY h.created_date desc LIMIT `+ strconv.Itoa(size)+` OFFSET `+ strconv.Itoa(page)+``
+
+	mock.ExpectQuery(query).WillReturnRows(rows)
+	a := HarborsRepo.NewharborsRepository(db)
+
+	//search := "Bogor"
+	anArticle, err := a.GetAllWithJoinCPC(context.TODO(),&size,&page,"","")
+	//assert.NotEmpty(t, nextCursor)
+	assert.Error(t, err)
+	assert.Len(t, anArticle, 0)
+}
 func TestFetchWithPagination(t *testing.T) {
 	db, mock, err := sqlmock.New()
 

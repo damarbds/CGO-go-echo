@@ -62,7 +62,36 @@ var (
 
 )
 
-func TestGetAllHarbors(t *testing.T) {
+func TestGetAllHarborsWithPagination(t *testing.T) {
+	var mockHarbors models.HarborsWCPCDto
+	err := faker.FakeData(&mockHarbors)
+	assert.NoError(t, err)
+	mockUCase := new(mocks.Usecase)
+	var mockListHarbors []*models.HarborsWCPCDto
+	mockListHarbors = append(mockListHarbors, &mockHarbors)
+
+	mockUCase.On("GetAllWithJoinCPC", mock.Anything, mock.AnythingOfType("*int"), mock.AnythingOfType("*int"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(mockListHarbors, nil)
+	//token := "eyJhbGciOiJSUzI1NiIsImtpZCI6ImZhZWE3Y2Q2YWFhYjM1YmIyYmE4MjE3ZTgyNWNkODE5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1OTM2MjU3MzYsImV4cCI6MTU5NDIzMDUzNiwiaXNzIjoiaHR0cDovL2lkZW50aXR5LXNlcnZlci1jZ28taW5kb25lc2lhLmF6dXJld2Vic2l0ZXMubmV0IiwiYXVkIjpbImh0dHA6Ly9pZGVudGl0eS1zZXJ2ZXItY2dvLWluZG9uZXNpYS5henVyZXdlYnNpdGVzLm5ldC9yZXNvdXJjZXMiLCJhcGkxIiwiYXBpMiJdLCJjbGllbnRfaWQiOiJyb2NsaWVudCIsInN1YiI6Ijk3MmZlMDlmLTkzZTktNDc5OC1iNjQyLTE0ZTBhYzc3YzZiZSIsImF1dGhfdGltZSI6MTU5MzYyNTczNiwiaWRwIjoibG9jYWwiLCJuYW1lIjoiYWRtaW5DR08iLCJlbWFpbCI6ImFkbWluMTIzNEBnbWFpbC5jb20iLCJzY29wZSI6WyJjdXN0b20ucHJvZmlsZSIsIm9wZW5pZCIsImFwaTEiLCJhcGkyLnJlYWRfb25seSIsIm9mZmxpbmVfYWNjZXNzIl0sImFtciI6WyJwd2QiXX0.XkNnCV-GwYRFTjoll7Y_FeTOJ6AlPyzHnJFFErgzsVM5EPTAVfetre0jXflHe8cTJ52iEWqAB3RKYi2ckHr-9-LER0Z5L3ir7kS7d7-Rmf268ob4vlhLxFNV6QFEvpoz1JRqjo6KzIKCuBWTZV22N_Ipb6R4_geLISILfSlWmxlZxEEzqMxPUdwWdY7GqByI0qNmx93-MVMyjwdcfQENGlP5xkdmuCiFzFGAjdgezy1GqJhZ4svOYNDh5R56pZf8A3kBA20n31MvQJqDn-BE4LLmygCZMCgZQdwDitJKH1AnpuU5smcnrSXZt4xbFGIv0up517TgIBEDWabbU-8U7Q"
+
+	e := echo.New()
+	req, err := http.NewRequest(echo.GET, "/service/exp-destination?page="+strconv.Itoa(1)+"&size="+strconv.Itoa(2), strings.NewReader(""))
+	assert.NoError(t, err)
+
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	//c.Request().Header.Add("Authorization", token)
+
+	handler := HarborsHttp.HarborsHandler{
+		HarborsUsecase: mockUCase,
+	}
+	err = handler.GetAllHarbors(c)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+	mockUCase.AssertExpectations(t)
+}
+
+func TestGetAllHarborsWithoutPagination(t *testing.T) {
 	var mockHarbors models.HarborsWCPCDto
 	err := faker.FakeData(&mockHarbors)
 	assert.NoError(t, err)
@@ -111,7 +140,7 @@ func TestListHarbors(t *testing.T) {
 	handler := HarborsHttp.HarborsHandler{
 		HarborsUsecase: mockUCase,
 	}
-	err = handler.GetAllHarbors(c)
+	err = handler.ListHarbors(c)
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 	mockUCase.AssertExpectations(t)
@@ -137,7 +166,7 @@ func TestListHarborsErrorInternalServer(t *testing.T) {
 	handler := HarborsHttp.HarborsHandler{
 		HarborsUsecase: mockUCase,
 	}
-	err = handler.GetAllHarbors(c)
+	err = handler.ListHarbors(c)
 	//require.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 	//mockUCase.AssertExpectations(t)
@@ -218,8 +247,8 @@ func TestCreateHarbors(t *testing.T) {
 
 	mockUCase.On("Create", mock.Anything, mock.AnythingOfType("*models.NewCommandHarbors"), mock.AnythingOfType("string")).Return(mockReponse, nil)
 	mockIsUsecase.On("UploadFileToBlob", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(mockHarbors.HarborsImage, nil)
-	var param = url.Values{}
-	param.Set("Harbors_name", tempMockHarbors.HarborsName)
+	//var param = url.Values{}
+	//param.Set("Harbors_name", tempMockHarbors.HarborsName)
 	//var payload = bytes.NewBufferString(param.Encode())
 
 	dir, err := os.Getwd()

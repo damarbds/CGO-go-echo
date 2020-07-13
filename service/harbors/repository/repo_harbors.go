@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -152,108 +153,7 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 	if search != ""{
 		search = "%" + search + "%"
 	}
-	if page != nil && size != nil && search != "" {
-		query := `Select 
-				h.id, 
-				h.harbors_name,
-				h.harbors_longitude,
-				h.harbors_latitude,
-				h.harbors_image,
-				h.city_id , 
-				c.city_name,
-				p.id as province_id,
-				p.province_name,
-				co.country_name 
-			from cgo_indonesia.harbors h
-			join cities c on h.city_id = c.id
-			join provinces p on c.province_id = p.id
-			join countries co on p.country_id = co.id
-			where h.is_active = 1 and h.is_deleted = 0 
-			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?) 
-            `
-		if harborsType == "1"{
-			query = `Select 
-				h.id, 
-				h.harbors_name,
-				h.harbors_longitude,
-				h.harbors_latitude,
-				h.harbors_image,
-				h.city_id , 
-				c.city_name,
-				p.id as province_id,
-				p.province_name,
-				co.country_name 
-			from cgo_indonesia.harbors h
-			join cities c on h.city_id = c.id
-			join provinces p on c.province_id = p.id
-			join countries co on p.country_id = co.id
-			where h.is_active = 1 and h.is_deleted = 0 
-			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
-		}
-		if harborsType != "" && harborsType != "2"{
-			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null)`
-		}
-
-		query = query + ` ORDER BY h.created_date desc LIMIT ? OFFSET ? `
-
-
-		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search, page, size)
-		if err != nil {
-			return nil, err
-		}
-		return res, err
-
-	} else if page == nil && size == nil && search != "" {
-		query := `Select 
-				h.id, 
-				h.harbors_name,
-				h.harbors_longitude,
-				h.harbors_latitude,
-				h.harbors_image,
-				h.city_id , 
-				c.city_name,
-				p.id as province_id,
-				p.province_name,
-				co.country_name 
-			from cgo_indonesia.harbors h
-			join cities c on h.city_id = c.id
-			join provinces p on c.province_id = p.id
-			join countries co on p.country_id = co.id
-			where h.is_active = 1 and h.is_deleted = 0 
-			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
-
-		if harborsType == "1"{
-			query = `Select 
-				h.id, 
-				h.harbors_name,
-				h.harbors_longitude,
-				h.harbors_latitude,
-				h.harbors_image,
-				h.city_id , 
-				c.city_name,
-				p.id as province_id,
-				p.province_name,
-				co.country_name 
-			from cgo_indonesia.harbors h
-			join cities c on h.city_id = c.id
-			join provinces p on c.province_id = p.id
-			join countries co on p.country_id = co.id
-			where h.is_active = 1 and h.is_deleted = 0 
-			AND (h.harbors_name LIKE ? OR c.city_name LIKE ? OR p.province_name LIKE ?)`
-		}
-
-		if harborsType != ""&& harborsType != "2"{
-			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null )`
-		}
-
-		res, err := m.fetchWithJoinCPC(ctx, query, search, search, search)
-		if err != nil {
-			return nil, err
-		}
-		return res, err
-
-	} else {
-		query := `Select 
+	query := `Select 
 				h.id, 
 				h.harbors_name,
 				h.harbors_longitude,
@@ -269,38 +169,25 @@ func (m *harborsRepository) GetAllWithJoinCPC(ctx context.Context, page *int, si
 			join provinces p on c.province_id = p.id
 			join countries co on p.country_id = co.id
 			where h.is_active = 1 and h.is_deleted = 0`
-
-		if harborsType == "1"{
-			query = `Select 
-				h.id, 
-				h.harbors_name,
-				h.harbors_longitude,
-				h.harbors_latitude,
-				h.harbors_image,
-				h.city_id ,
-				c.city_name,
-				p.id as province_id,
-				p.province_name,
-				co.country_name 
-			from cgo_indonesia.harbors h
-			join cities c on h.city_id = c.id
-			join provinces p on c.province_id = p.id
-			join countries co on p.country_id = co.id
-			where h.is_active = 1 and h.is_deleted = 0`
-		}
-
-		if harborsType != "" && harborsType != "2"{
-			query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null )`
-		}
-
-		res, err := m.fetchWithJoinCPC(ctx, query)
-		if err != nil {
-			return nil, err
-		}
-		return res, err
+	if search != ""{
+		query = query + ` AND 
+						(h.harbors_name LIKE '` +  search + `' OR
+						c.city_name LIKE '` +  search + `' OR 
+						p.province_name LIKE '` +  search + `')`
+	}
+	if harborsType != "" && harborsType != "2"{
+		query = query + ` AND (h.harbors_type = ` + harborsType + ` OR h.harbors_type = 2 OR h.harbors_type is null)`
+	}
+	if page != nil && size != nil {
+		query = query + ` ORDER BY h.created_date desc LIMIT `+ strconv.Itoa(*size)+` OFFSET `+ strconv.Itoa(*page)+``
 	}
 
-	return nil, nil
+	res, err := m.fetchWithJoinCPC(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 func (m *harborsRepository) GetByID(ctx context.Context, id string) (res *models.Harbors, err error) {
 	query := `SELECT * FROM harbors WHERE id = ? AND is_deleted = 0  AND is_active = 1`
