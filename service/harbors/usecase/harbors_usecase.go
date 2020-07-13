@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/auth/admin"
+	"github.com/google/uuid"
 	"math"
 	"time"
 
@@ -140,9 +141,9 @@ func (m harborsUsecase) Create(ctx context.Context, p *models.NewCommandHarbors,
 	}
 
 	harbors := models.Harbors{
-		Id:               "",
+		Id:               uuid.New().String(),
 		CreatedBy:        currentUser.Name,
-		CreatedDate:      time.Time{},
+		CreatedDate:      time.Now(),
 		ModifiedBy:       nil,
 		ModifiedDate:     nil,
 		DeletedBy:        nil,
