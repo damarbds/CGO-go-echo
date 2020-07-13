@@ -22,13 +22,13 @@ type Promo struct {
 	EndDate 	*string		`json:"end_date"`
 	StartTripPeriod	*string	`json:"start_trip_period"`
 	EndTripPeriod	*string	`json:"end_trip_period"`
-	IsAnyTripPeriod int	`json:"is_any_trip_period"`
+	IsAnyTripPeriod *int	`json:"is_any_trip_period"`
 	//Currency 	*int 		`json:"currency"`
-	HowToGet	string		`json:"how_to_get"`
-	HowToUse	string		`json:"how_to_use"`
-	TermCondition	string	`json:"term_condition"`
-	Disclaimer	string		`json:"disclaimer"`
-	MaxDiscount	float32		`json:"max_discount"`
+	HowToGet	*string		`json:"how_to_get"`
+	HowToUse	*string		`json:"how_to_use"`
+	TermCondition	*string	`json:"term_condition"`
+	Disclaimer	*string		`json:"disclaimer"`
+	MaxDiscount	*float32		`json:"max_discount"`
 	MaxUsage   	*int 		`json:"max_usage"`
 	ProductionCapacity	*int `json:"production_capacity"`
 	CurrencyId *int 	`json:"currency_id"`
@@ -47,14 +47,14 @@ type PromoDto struct {
 	EndDate 	*string		`json:"end_date"`
 	StartTripPeriod	*string	`json:"start_trip_period"`
 	EndTripPeriod	*string	`json:"end_trip_period"`
-	IsAnyTripPeriod	int	`json:"is_any_trip_period"`
+	IsAnyTripPeriod	*int	`json:"is_any_trip_period"`
 	Currency 	*int 		`json:"currency"`
-	MaxDiscount	float32		`json:"max_value"`
+	MaxDiscount	*float32		`json:"max_value"`
 	MaxUsage   	*int 		`json:"max_usage"`
-	HowToGet	string		`json:"how_to_get"`
-	HowToUse	string		`json:"how_to_use"`
-	TermCondition	string	`json:"term_condition"`
-	Disclaimer	string		`json:"disclaimer"`
+	HowToGet	*string		`json:"how_to_get"`
+	HowToUse	*string		`json:"how_to_use"`
+	TermCondition	*string	`json:"term_condition"`
+	Disclaimer	*string		`json:"disclaimer"`
 	ProductionCapacity	*int `json:"production_capacity"`
 	MerchantId	[]string	`json:"merchant_id"`
 	PromoProductType *int `json:"promo_product_type"`

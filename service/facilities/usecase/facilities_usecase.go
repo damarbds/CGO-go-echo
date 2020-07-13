@@ -127,7 +127,7 @@ func (f facilityUsecase) Create(ctx context.Context, fac *models.NewCommandFacil
 	facilities := models.Facilities{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,

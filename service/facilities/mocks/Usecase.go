@@ -14,16 +14,39 @@ type Usecase struct {
 	mock.Mock
 }
 
+// Delete provides a mock function with given fields: ctx, id
+func (_m *Usecase) List(ctx context.Context) ([]*models.FacilityDto, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []*models.FacilityDto
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.FacilityDto); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.FacilityDto)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Fetch provides a mock function with given fields: ctx, cursor, num
-func (_m *Usecase) GetAll(ctx context.Context, page, limit, offset int) (*models.CurrencyDtoWithPagination, error) {
+func (_m *Usecase) GetAll(ctx context.Context, page, limit, offset int) (*models.FacilityDtoWithPagination, error) {
 	ret := _m.Called(ctx, page, limit, offset)
 
-	var r0 *models.CurrencyDtoWithPagination
-	if rf, ok := ret.Get(0).(func(context.Context, int, int, int) *models.CurrencyDtoWithPagination); ok {
+	var r0 *models.FacilityDtoWithPagination
+	if rf, ok := ret.Get(0).(func(context.Context, int, int, int) *models.FacilityDtoWithPagination); ok {
 		r0 = rf(ctx, page, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.CurrencyDtoWithPagination)
+			r0 = ret.Get(0).(*models.FacilityDtoWithPagination)
 		}
 	}
 
@@ -38,15 +61,15 @@ func (_m *Usecase) GetAll(ctx context.Context, page, limit, offset int) (*models
 }
 
 // GetByID provides a mock function with given fields: ctx, id
-func (_m *Usecase) GetById(ctx context.Context, id int) (*models.CurrencyDto, error) {
+func (_m *Usecase) GetById(ctx context.Context, id int) (*models.FacilityDto, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *models.CurrencyDto
-	if rf, ok := ret.Get(0).(func(context.Context, int) *models.CurrencyDto); ok {
+	var r0 *models.FacilityDto
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.FacilityDto); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.CurrencyDto)
+			r0 = ret.Get(0).(*models.FacilityDto)
 		}
 	}
 
@@ -61,11 +84,11 @@ func (_m *Usecase) GetById(ctx context.Context, id int) (*models.CurrencyDto, er
 }
 
 // GetByTitle provides a mock function with given fields: ctx, title
-func (_m *Usecase) Create(ctx context.Context, f *models.NewCommandCurrency, token string) (*models.ResponseDelete, error) {
+func (_m *Usecase) Create(ctx context.Context, f *models.NewCommandFacilities, token string) (*models.ResponseDelete, error) {
 	ret := _m.Called(ctx, f, token)
 
 	var r0 *models.ResponseDelete
-	if rf, ok := ret.Get(0).(func(context.Context, *models.NewCommandCurrency, string) *models.ResponseDelete); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.NewCommandFacilities, string) *models.ResponseDelete); ok {
 		r0 = rf(ctx, f, token)
 	} else {
 		if ret.Get(0) != nil {
@@ -74,7 +97,7 @@ func (_m *Usecase) Create(ctx context.Context, f *models.NewCommandCurrency, tok
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.NewCommandCurrency, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *models.NewCommandFacilities, string) error); ok {
 		r1 = rf(ctx, f, token)
 	} else {
 		r1 = ret.Error(1)
@@ -84,11 +107,11 @@ func (_m *Usecase) Create(ctx context.Context, f *models.NewCommandCurrency, tok
 }
 
 // Store provides a mock function with given fields: _a0, _a1
-func (_m *Usecase) Update(ctx context.Context, f *models.NewCommandCurrency, token string) (*models.ResponseDelete, error) {
+func (_m *Usecase) Update(ctx context.Context, f *models.NewCommandFacilities, token string) (*models.ResponseDelete, error) {
 	ret := _m.Called(ctx, f, token)
 
 	var r0 *models.ResponseDelete
-	if rf, ok := ret.Get(0).(func(context.Context, *models.NewCommandCurrency, string) *models.ResponseDelete); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.NewCommandFacilities, string) *models.ResponseDelete); ok {
 		r0 = rf(ctx, f, token)
 	} else {
 		if ret.Get(0) != nil {
@@ -97,7 +120,7 @@ func (_m *Usecase) Update(ctx context.Context, f *models.NewCommandCurrency, tok
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.NewCommandCurrency, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *models.NewCommandFacilities, string) error); ok {
 		r1 = rf(ctx, f, token)
 	} else {
 		r1 = ret.Error(1)

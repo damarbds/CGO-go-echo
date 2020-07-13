@@ -142,12 +142,12 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 		PromoProductType:command.PromoProductType,
 		StartTripPeriod: &command.StartTripPeriod,
 		EndTripPeriod: &command.EndTripPeriod,
-		IsAnyTripPeriod: command.IsAnyTripPeriod,
-		MaxDiscount: command.MaxDiscount,
-		HowToUse: command.HowToUse,
-		HowToGet: command.HowToGet,
-		TermCondition: command.TermCondition,
-		Disclaimer: command.Disclaimer,
+		IsAnyTripPeriod: &command.IsAnyTripPeriod,
+		MaxDiscount: &command.MaxDiscount,
+		HowToUse: &command.HowToUse,
+		HowToGet: &command.HowToGet,
+		TermCondition: &command.TermCondition,
+		Disclaimer: &command.Disclaimer,
 		//VoucherValueOptionType: &command.VoucherValueOptionType,
 	}
 	err = p.promoRepo.Update(ctx, &promo)
@@ -202,12 +202,12 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 		PromoProductType:command.PromoProductType,
 		StartTripPeriod: &command.StartTripPeriod,
 		EndTripPeriod: &command.EndTripPeriod,
-		IsAnyTripPeriod: command.IsAnyTripPeriod,
-		MaxDiscount: command.MaxDiscount,
-		HowToUse: command.HowToUse,
-		HowToGet: command.HowToGet,
-		TermCondition: command.TermCondition,
-		Disclaimer: command.Disclaimer,
+		IsAnyTripPeriod: &command.IsAnyTripPeriod,
+		MaxDiscount: &command.MaxDiscount,
+		HowToUse: &command.HowToUse,
+		HowToGet: &command.HowToGet,
+		TermCondition: &command.TermCondition,
+		Disclaimer: &command.Disclaimer,
 	}
 	id, err := p.promoRepo.Insert(ctx, &promo)
 

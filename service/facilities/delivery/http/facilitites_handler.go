@@ -19,15 +19,15 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type facilityHandler struct {
-	isUsecase identityserver.Usecase
-	facilityUsecase facilities.Usecase
+type FacilityHandler struct {
+	IsUsecase identityserver.Usecase
+	FacilityUsecase facilities.Usecase
 }
 
 func NewFacilityHandler(e *echo.Echo, us facilities.Usecase,isUsecase identityserver.Usecase) {
-	handler := &facilityHandler{
-		facilityUsecase: us,
-		isUsecase:isUsecase,
+	handler := &FacilityHandler{
+		FacilityUsecase: us,
+		IsUsecase:isUsecase,
 	}
 	e.POST("master/facilities", handler.CreateFacilities)
 	e.PUT("master/facilities/:id", handler.UpdateFacilities)
@@ -37,7 +37,7 @@ func NewFacilityHandler(e *echo.Echo, us facilities.Usecase,isUsecase identityse
 	e.GET("service/facilities", handler.List)
 }
 
-func (f *facilityHandler) List(c echo.Context) error {
+func (f *FacilityHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -51,13 +51,13 @@ func (f *facilityHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	list, err := f.facilityUsecase.List(ctx)
+	list, err := f.FacilityUsecase.List(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, list)
 }
-func (a *facilityHandler) DeleteFacilities(c echo.Context) error {
+func (a *FacilityHandler) DeleteFacilities(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -72,7 +72,7 @@ func (a *facilityHandler) DeleteFacilities(c echo.Context) error {
 		ctx = context.Background()
 	}
 	facilitiesId,_:= strconv.Atoi(id)
-	result, err := a.facilityUsecase.Delete(ctx, facilitiesId, token)
+	result, err := a.FacilityUsecase.Delete(ctx, facilitiesId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -80,7 +80,7 @@ func (a *facilityHandler) DeleteFacilities(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *facilityHandler) GetAllFacilities(c echo.Context) error {
+func (a *FacilityHandler) GetAllFacilities(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -95,7 +95,7 @@ func (a *facilityHandler) GetAllFacilities(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.facilityUsecase.GetAll(ctx, page,limit,offset)
+	art, err := a.FacilityUsecase.GetAll(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -103,7 +103,7 @@ func (a *facilityHandler) GetAllFacilities(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *facilityHandler) CreateFacilities(c echo.Context) error {
+func (a *FacilityHandler) CreateFacilities(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -132,7 +132,7 @@ func (a *facilityHandler) CreateFacilities(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Facilities")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Facilities")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -153,7 +153,7 @@ func (a *facilityHandler) CreateFacilities(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	facilities,error := a.facilityUsecase.Create(ctx,&facilitesCommand,token)
+	facilities,error := a.FacilityUsecase.Create(ctx,&facilitesCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -161,7 +161,7 @@ func (a *facilityHandler) CreateFacilities(c echo.Context) error {
 	return c.JSON(http.StatusOK, facilities)
 }
 
-func (a *facilityHandler) UpdateFacilities(c echo.Context) error {
+func (a *FacilityHandler) UpdateFacilities(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -190,7 +190,7 @@ func (a *facilityHandler) UpdateFacilities(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Facilities")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Facilities")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -211,7 +211,7 @@ func (a *facilityHandler) UpdateFacilities(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	facilities,error := a.facilityUsecase.Update(ctx,&facilitesCommand,token)
+	facilities,error := a.FacilityUsecase.Update(ctx,&facilitesCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -219,7 +219,7 @@ func (a *facilityHandler) UpdateFacilities(c echo.Context) error {
 	return c.JSON(http.StatusOK, facilities)
 }
 
-func (a *facilityHandler) GetDetailFacilitiesID(c echo.Context) error {
+func (a *FacilityHandler) GetDetailFacilitiesID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -227,7 +227,7 @@ func (a *facilityHandler) GetDetailFacilitiesID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	facilitiesID ,_:= strconv.Atoi(id)
-	result, err := a.facilityUsecase.GetById(ctx,facilitiesID)
+	result, err := a.FacilityUsecase.GetById(ctx,facilitiesID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

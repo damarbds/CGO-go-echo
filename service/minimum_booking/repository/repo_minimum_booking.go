@@ -65,7 +65,7 @@ func (m *minimumBookingRepository) fetch(ctx context.Context, query string, args
 
 func (m minimumBookingRepository) GetAll(ctx context.Context, limit, offset int) ([]*models.MinimumBooking, error) {
 	if limit != 0 {
-		query := `Select * FROM minimum_bookings where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM minimum_bookings where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -83,7 +83,7 @@ func (m minimumBookingRepository) GetAll(ctx context.Context, limit, offset int)
 		return res, err
 
 	} else {
-		query := `Select * FROM minimum_bookings where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM minimum_bookings where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +

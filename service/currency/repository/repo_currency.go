@@ -63,7 +63,7 @@ func (f currencyRepository) fetch(ctx context.Context, query string, args ...int
 
 func (m *currencyRepository) Fetch(ctx context.Context, limit,offset int) ([]*models.Currency, error) {
 	if limit != 0 {
-		query := `Select * FROM currencies where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM currencies where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -81,7 +81,7 @@ func (m *currencyRepository) Fetch(ctx context.Context, limit,offset int) ([]*mo
 		return res, err
 
 	} else {
-		query := `Select * FROM currencies where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM currencies where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -135,14 +135,12 @@ func (m *currencyRepository) GetCount(ctx context.Context) (int, error) {
 }
 
 func (m *currencyRepository) Insert(ctx context.Context, a *models.Currency) (*int, error) {
-	query := `INSERT currencies SET created_by=? , created_date=? , modified_by=?, modified_date=? ,
-				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , code=?,name=? , 
-				symbol=? `
+	query := `INSERT currencies SET created_by=? , created_date=? , modified_by=?, modified_date=? , 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? ,code=?,name=? ,symbol=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Code,a.Name,
+	res, err := stmt.ExecContext(ctx,a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.Code,a.Name,
 		a.Symbol)
 	if err != nil {
 		return nil,err
@@ -159,12 +157,11 @@ func (m *currencyRepository) Insert(ctx context.Context, a *models.Currency) (*i
 }
 
 func (m *currencyRepository) Update(ctx context.Context, a *models.Currency) error {
-	query := `UPDATE currencies set modified_by=?, modified_date=? ,code=?,name=? , 
-				symbol=?   WHERE id = ?`
+	query := `UPDATE currencies set modified_by=?, modified_date=? ,code=?,name=? ,symbol=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.Code,a.Name, a.Symbol,a.Id)

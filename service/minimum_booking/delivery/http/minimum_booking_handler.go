@@ -17,19 +17,19 @@ type ResponseError struct {
 }
 
 // harborsHandler  represent the httphandler for harbors
-type minimumBookingHandler struct {
-	minimumBookingUsecase minimum_booking.Usecase
+type MinimumBookingHandler struct {
+	MinimumBookingUsecase minimum_booking.Usecase
 }
 
 // NewharborsHandler will initialize the harborss/ resources endpoint
 func NewminimumBookingHandler(e *echo.Echo, minimumBookingUsecase minimum_booking.Usecase) {
-	handler := &minimumBookingHandler{
-		minimumBookingUsecase:minimumBookingUsecase,
+	handler := &MinimumBookingHandler{
+		MinimumBookingUsecase:minimumBookingUsecase,
 	}
 	e.GET("master/minimum_booking", handler.GetAllMinimumBooking)
 }
 
-func (a *minimumBookingHandler) GetAllMinimumBooking(c echo.Context) error {
+func (a *MinimumBookingHandler) GetAllMinimumBooking(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -44,7 +44,7 @@ func (a *minimumBookingHandler) GetAllMinimumBooking(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.minimumBookingUsecase.GetAll(ctx, page,limit,offset)
+	art, err := a.MinimumBookingUsecase.GetAll(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

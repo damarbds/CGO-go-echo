@@ -49,16 +49,38 @@ func (_m *Repository) Delete(ctx context.Context, id int, deletedBy string) erro
 
 	return r0
 }
+func (_m *Repository) List(ctx context.Context) ([]*models.Facilities, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []*models.Facilities
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.Facilities); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Facilities)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Fetch provides a mock function with given fields: ctx, cursor, num
-func (_m *Repository) Fetch(ctx context.Context, limit int, offset int) ([]*models.Currency, error) {
+func (_m *Repository) Fetch(ctx context.Context, limit int, offset int) ([]*models.Facilities, error) {
 	ret := _m.Called(ctx, limit, offset)
 
-	var r0 []*models.Currency
-	if rf, ok := ret.Get(0).(func(context.Context, int, int) []*models.Currency); ok {
+	var r0 []*models.Facilities
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) []*models.Facilities); ok {
 		r0 = rf(ctx, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Currency)
+			r0 = ret.Get(0).([]*models.Facilities)
 		}
 	}
 
@@ -73,15 +95,15 @@ func (_m *Repository) Fetch(ctx context.Context, limit int, offset int) ([]*mode
 }
 
 // GetByID provides a mock function with given fields: ctx, id
-func (_m *Repository) GetById(ctx context.Context, id int) (*models.Currency, error) {
+func (_m *Repository) GetById(ctx context.Context, id int) (*models.Facilities, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *models.Currency
-	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Currency); ok {
+	var r0 *models.Facilities
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Facilities); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Currency)
+			r0 = ret.Get(0).(*models.Facilities)
 		}
 	}
 
@@ -95,12 +117,35 @@ func (_m *Repository) GetById(ctx context.Context, id int) (*models.Currency, er
 	return r0, r1
 }
 
+// GetByTitle provides a mock function with given fields: ctx, title
+func (_m *Repository) GetByName(ctx context.Context, title string) (*models.Facilities, error) {
+	ret := _m.Called(ctx, title)
+
+	var r0 *models.Facilities
+	if rf, ok := ret.Get(0).(func(context.Context, string) *models.Facilities); ok {
+		r0 = rf(ctx, title)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Facilities)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, title)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Store provides a mock function with given fields: ctx, a
-func (_m *Repository) Insert(ctx context.Context, a *models.Currency) (*int, error) {
+func (_m *Repository) Insert(ctx context.Context, a *models.Facilities) (*int, error) {
 	ret := _m.Called(ctx, a)
 
 	var r0 *int
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Currency) *int); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Facilities) *int); ok {
 		r0 = rf(ctx, a)
 	} else {
 		if ret.Get(0) != nil {
@@ -109,7 +154,7 @@ func (_m *Repository) Insert(ctx context.Context, a *models.Currency) (*int, err
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.Currency) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *models.Facilities) error); ok {
 		r1 = rf(ctx, a)
 	} else {
 		r1 = ret.Error(1)
@@ -119,11 +164,11 @@ func (_m *Repository) Insert(ctx context.Context, a *models.Currency) (*int, err
 }
 
 // Update provides a mock function with given fields: ctx, ar
-func (_m *Repository) Update(ctx context.Context, ar *models.Currency) error {
+func (_m *Repository) Update(ctx context.Context, ar *models.Facilities) error {
 	ret := _m.Called(ctx, ar)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Currency) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Facilities) error); ok {
 		r0 = rf(ctx, ar)
 	} else {
 		r0 = ret.Error(0)
