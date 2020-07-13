@@ -83,6 +83,14 @@ func (m *promoRepository) fetch(ctx context.Context, query string, args ...inter
 			&t.ProductionCapacity,
 			&t.CurrencyId,
 			&t.PromoProductType,
+			&t.IsAnyTripPeriod,
+			&t.StartTripPeriod,
+			&t.EndTripPeriod,
+			&t.MaxDiscount,
+			&t.HowToGet,
+			&t.HowToUse,
+			&t.Disclaimer,
+			&t.TermCondition,
 		)
 
 		if err != nil {
@@ -121,13 +129,16 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string, 
 	query := `INSERT promos SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , promo_code=?,promo_name=? , 
 				promo_desc=? ,promo_value=?,promo_type=?,promo_image=?,start_date=?,end_date=?,currency_id	=?,
-				max_usage=?,production_capacity=?,promo_product_type=?`
+				max_usage=?,production_capacity=?,promo_product_type=?,start_trip_period=?,end_trip_period=?,
+				how_to_get=?,how_to_use=?,term_condition=?,disclaimer=?,max_discount=?,is_any_trip_period=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return "", err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.PromoCode, a.PromoName,
-		a.PromoDesc, a.PromoValue, a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity,a.PromoProductType)
+		a.PromoDesc, a.PromoValue, a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage,
+		a.ProductionCapacity,a.PromoProductType,a.StartTripPeriod,a.EndTripPeriod,a.HowToGet,a.HowToUse,a.TermCondition,
+		a.Disclaimer,a.MaxDiscount,a.IsAnyTripPeriod)
 	if err != nil {
 		return "", err
 	}
@@ -144,7 +155,8 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string, 
 func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 	query := `UPDATE promos set modified_by=?, modified_date=? , promo_code=?,promo_name=? , promo_desc=? ,promo_value=?,
 				promo_type=?,promo_image=?,start_date=?,end_date=?,currency_id=?,max_usage=?,production_capacity=?, 
-				promo_product_type=? WHERE id = ?`
+				promo_product_type=?,start_trip_period=?,end_trip_period=?,
+				how_to_get=?,how_to_use=?,term_condition=?,disclaimer=?,max_discount=?,is_any_trip_period=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -152,7 +164,9 @@ func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 	}
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
-		a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity, a.PromoProductType,a.Id)
+		a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity, a.PromoProductType,
+		a.StartTripPeriod, a.EndTripPeriod, a.HowToGet, a.HowToUse, a.TermCondition, a.Disclaimer,a.MaxDiscount,
+		a.IsAnyTripPeriod, a.Id)
 	if err != nil {
 		return err
 	}

@@ -20,7 +20,15 @@ type Promo struct {
 	PromoImage   string     `json:"promo_image"`
 	StartDate 	 *string		`json:"start_date"`
 	EndDate 	*string		`json:"end_date"`
+	StartTripPeriod	*string	`json:"start_trip_period"`
+	EndTripPeriod	*string	`json:"end_trip_period"`
+	IsAnyTripPeriod int	`json:"is_any_trip_period"`
 	//Currency 	*int 		`json:"currency"`
+	HowToGet	string		`json:"how_to_get"`
+	HowToUse	string		`json:"how_to_use"`
+	TermCondition	string	`json:"term_condition"`
+	Disclaimer	string		`json:"disclaimer"`
+	MaxDiscount	float32		`json:"max_discount"`
 	MaxUsage   	*int 		`json:"max_usage"`
 	ProductionCapacity	*int `json:"production_capacity"`
 	CurrencyId *int 	`json:"currency_id"`
@@ -37,8 +45,16 @@ type PromoDto struct {
 	PromoImage string  `json:"promo_image"`
 	StartDate 	 *string		`json:"start_date"`
 	EndDate 	*string		`json:"end_date"`
+	StartTripPeriod	*string	`json:"start_trip_period"`
+	EndTripPeriod	*string	`json:"end_trip_period"`
+	IsAnyTripPeriod	int	`json:"is_any_trip_period"`
 	Currency 	*int 		`json:"currency"`
+	MaxDiscount	float32		`json:"max_value"`
 	MaxUsage   	*int 		`json:"max_usage"`
+	HowToGet	string		`json:"how_to_get"`
+	HowToUse	string		`json:"how_to_use"`
+	TermCondition	string	`json:"term_condition"`
+	Disclaimer	string		`json:"disclaimer"`
 	ProductionCapacity	*int `json:"production_capacity"`
 	MerchantId	[]string	`json:"merchant_id"`
 	PromoProductType *int `json:"promo_product_type"`
@@ -53,6 +69,14 @@ type NewCommandPromo struct {
 	PromoImage string  `json:"promo_image"`
 	StartDate 	 string		`json:"start_date"`
 	EndDate 	string		`json:"end_date"`
+	StartTripPeriod	string	`json:"start_trip_period"`
+	EndTripPeriod	string	`json:"end_trip_period"`
+	MaxDiscount	float32		`json:"max_discount"`
+	HowToGet	string		`json:"how_to_get"`
+	HowToUse	string		`json:"how_to_use"`
+	IsAnyTripPeriod	int	`json:"is_any_trip_period"`
+	TermCondition	string	`json:"term_condition"`
+	Disclaimer	string		`json:"disclaimer"`
 	Currency 	int 		`json:"currency"`
 	MaxUsage   	int 		`json:"max_usage"`
 	ProductionCapacity int 	`json:"production_capacity"`
