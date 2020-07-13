@@ -22,16 +22,16 @@ type ResponseError struct {
 }
 
 // promoHandler  represent the httphandler for promo
-type cPCHandler struct {
-	isUsecase identityserver.Usecase
-	cPCUsecase cpc.Usecase
+type CPCHandler struct {
+	IsUsecase identityserver.Usecase
+	CPCUsecase cpc.Usecase
 }
 
 // NewpromoHandler will initialize the promos/ resources endpoint
 func NewCPCHandler(e *echo.Echo, cPCUsecase cpc.Usecase,is identityserver.Usecase) {
-	handler := &cPCHandler{
-		isUsecase:is,
-		cPCUsecase: cPCUsecase,
+	handler := &CPCHandler{
+		IsUsecase:is,
+		CPCUsecase: cPCUsecase,
 	}
 	e.POST("master/city", handler.CreateCity)
 	e.PUT("master/city/:id", handler.UpdateCity)
@@ -58,7 +58,7 @@ func isRequestValid(m *models.NewCommandPromo) (bool, error) {
 	}
 	return true, nil
 }
-func (a *cPCHandler) DeleteCity(c echo.Context) error {
+func (a *CPCHandler) DeleteCity(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -73,7 +73,7 @@ func (a *cPCHandler) DeleteCity(c echo.Context) error {
 		ctx = context.Background()
 	}
 	cityId,_:= strconv.Atoi(id)
-	result, err := a.cPCUsecase.DeleteCity(ctx, cityId, token)
+	result, err := a.CPCUsecase.DeleteCity(ctx, cityId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -81,7 +81,7 @@ func (a *cPCHandler) DeleteCity(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *cPCHandler) ListCity(c echo.Context) error {
+func (a *CPCHandler) ListCity(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -96,7 +96,7 @@ func (a *cPCHandler) ListCity(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-		art, err := a.cPCUsecase.GetAllCity(ctx, page,limit,offset)
+		art, err := a.CPCUsecase.GetAllCity(ctx, page,limit,offset)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -104,7 +104,7 @@ func (a *cPCHandler) ListCity(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *cPCHandler) CreateCity(c echo.Context) error {
+func (a *CPCHandler) CreateCity(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -133,7 +133,7 @@ func (a *cPCHandler) CreateCity(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/City")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/City")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -150,7 +150,7 @@ func (a *cPCHandler) CreateCity(c echo.Context) error {
 			Original:  imagePath,
 			Thumbnail: "",
 		}
-		coverPhotos[0] = coverPhoto
+		coverPhotos = append(coverPhotos,coverPhoto)
 	}
 	cityCommand := models.NewCommandCity{
 		Id:         id,
@@ -164,7 +164,7 @@ func (a *cPCHandler) CreateCity(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	city,error := a.cPCUsecase.CreateCity(ctx, &cityCommand, token)
+	city,error := a.CPCUsecase.CreateCity(ctx, &cityCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -172,7 +172,7 @@ func (a *cPCHandler) CreateCity(c echo.Context) error {
 	return c.JSON(http.StatusOK, city)
 }
 
-func (a *cPCHandler) UpdateCity(c echo.Context) error {
+func (a *CPCHandler) UpdateCity(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -201,7 +201,7 @@ func (a *cPCHandler) UpdateCity(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/City")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/City")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -218,7 +218,7 @@ func (a *cPCHandler) UpdateCity(c echo.Context) error {
 			Original:  imagePath,
 			Thumbnail: "",
 		}
-		coverPhotos[0] = coverPhoto
+		coverPhotos = append(coverPhotos,coverPhoto)
 	}
 	cityCommand := models.NewCommandCity{
 		Id:         id,
@@ -232,7 +232,7 @@ func (a *cPCHandler) UpdateCity(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	city,error := a.cPCUsecase.UpdateCity(ctx, &cityCommand, token)
+	city,error := a.CPCUsecase.UpdateCity(ctx, &cityCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -240,7 +240,7 @@ func (a *cPCHandler) UpdateCity(c echo.Context) error {
 	return c.JSON(http.StatusOK, city)
 }
 
-func (a *cPCHandler) GetDetailCityID(c echo.Context) error {
+func (a *CPCHandler) GetDetailCityID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -248,7 +248,7 @@ func (a *cPCHandler) GetDetailCityID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	cityId ,_:= strconv.Atoi(id)
-	result, err := a.cPCUsecase.GetCityById(ctx,cityId)
+	result, err := a.CPCUsecase.GetCityById(ctx,cityId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -256,7 +256,7 @@ func (a *cPCHandler) GetDetailCityID(c echo.Context) error {
 }
 
 
-func (a *cPCHandler) DeleteProvince(c echo.Context) error {
+func (a *CPCHandler) DeleteProvince(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -271,7 +271,7 @@ func (a *cPCHandler) DeleteProvince(c echo.Context) error {
 		ctx = context.Background()
 	}
 	provinceId,_:= strconv.Atoi(id)
-	result, err := a.cPCUsecase.DeleteProvince(ctx, provinceId, token)
+	result, err := a.CPCUsecase.DeleteProvince(ctx, provinceId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -279,7 +279,7 @@ func (a *cPCHandler) DeleteProvince(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *cPCHandler) ListProvince(c echo.Context) error {
+func (a *CPCHandler) ListProvince(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -294,7 +294,7 @@ func (a *cPCHandler) ListProvince(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.cPCUsecase.GetAllProvince(ctx, page,limit,offset)
+	art, err := a.CPCUsecase.GetAllProvince(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -302,7 +302,7 @@ func (a *cPCHandler) ListProvince(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *cPCHandler) CreateProvince(c echo.Context) error {
+func (a *CPCHandler) CreateProvince(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -323,7 +323,7 @@ func (a *cPCHandler) CreateProvince(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	province,error := a.cPCUsecase.CreateProvince(ctx, &provinceCommand, token)
+	province,error := a.CPCUsecase.CreateProvince(ctx, &provinceCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -331,7 +331,7 @@ func (a *cPCHandler) CreateProvince(c echo.Context) error {
 	return c.JSON(http.StatusOK, province)
 }
 
-func (a *cPCHandler) UpdateProvince(c echo.Context) error {
+func (a *CPCHandler) UpdateProvince(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -352,7 +352,7 @@ func (a *cPCHandler) UpdateProvince(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	province,error := a.cPCUsecase.UpdateProvince(ctx, &provinceCommand, token)
+	province,error := a.CPCUsecase.UpdateProvince(ctx, &provinceCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -360,7 +360,7 @@ func (a *cPCHandler) UpdateProvince(c echo.Context) error {
 	return c.JSON(http.StatusOK, province)
 }
 
-func (a *cPCHandler) GetDetailProvinceID(c echo.Context) error {
+func (a *CPCHandler) GetDetailProvinceID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -368,7 +368,7 @@ func (a *cPCHandler) GetDetailProvinceID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	provinceId ,_:= strconv.Atoi(id)
-	result, err := a.cPCUsecase.GetProvinceById(ctx,provinceId)
+	result, err := a.CPCUsecase.GetProvinceById(ctx,provinceId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -376,7 +376,7 @@ func (a *cPCHandler) GetDetailProvinceID(c echo.Context) error {
 }
 
 
-func (a *cPCHandler) DeleteCountry(c echo.Context) error {
+func (a *CPCHandler) DeleteCountry(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -391,7 +391,7 @@ func (a *cPCHandler) DeleteCountry(c echo.Context) error {
 		ctx = context.Background()
 	}
 	countryId,_:= strconv.Atoi(id)
-	result, err := a.cPCUsecase.DeleteCountry(ctx, countryId, token)
+	result, err := a.CPCUsecase.DeleteCountry(ctx, countryId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -399,7 +399,7 @@ func (a *cPCHandler) DeleteCountry(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *cPCHandler) ListCountry(c echo.Context) error {
+func (a *CPCHandler) ListCountry(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -414,7 +414,7 @@ func (a *cPCHandler) ListCountry(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.cPCUsecase.GetAllCountry(ctx, page,limit,offset)
+	art, err := a.CPCUsecase.GetAllCountry(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -422,7 +422,7 @@ func (a *cPCHandler) ListCountry(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *cPCHandler) CreateCountry(c echo.Context) error {
+func (a *CPCHandler) CreateCountry(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -441,7 +441,7 @@ func (a *cPCHandler) CreateCountry(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	country,error := a.cPCUsecase.CreateCountry(ctx, &countryCommand, token)
+	country,error := a.CPCUsecase.CreateCountry(ctx, &countryCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -449,7 +449,7 @@ func (a *cPCHandler) CreateCountry(c echo.Context) error {
 	return c.JSON(http.StatusOK, country)
 }
 
-func (a *cPCHandler) UpdateCountry(c echo.Context) error {
+func (a *CPCHandler) UpdateCountry(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -468,7 +468,7 @@ func (a *cPCHandler) UpdateCountry(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	country,error := a.cPCUsecase.UpdateCountry(ctx, &countryCommand, token)
+	country,error := a.CPCUsecase.UpdateCountry(ctx, &countryCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -476,7 +476,7 @@ func (a *cPCHandler) UpdateCountry(c echo.Context) error {
 	return c.JSON(http.StatusOK, country)
 }
 
-func (a *cPCHandler) GetDetailCountryID(c echo.Context) error {
+func (a *CPCHandler) GetDetailCountryID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -484,7 +484,7 @@ func (a *cPCHandler) GetDetailCountryID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	countryId ,_:= strconv.Atoi(id)
-	result, err := a.cPCUsecase.GetCountryById(ctx,countryId)
+	result, err := a.CPCUsecase.GetCountryById(ctx,countryId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

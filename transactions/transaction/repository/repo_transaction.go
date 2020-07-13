@@ -21,7 +21,7 @@ func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
 
-func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Context, date string, expId string, transId string, merchantId string) ([]*models.TransactionOut, error) {
+func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Context, date string, expId string, transId string, merchantId string,status string) ([]*models.TransactionOut, error) {
 	var query string
 	queryExp := `
 	SELECT
@@ -106,6 +106,27 @@ func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Contex
 	if merchantId != "" {
 		queryExp = queryExp + ` AND e.merchant_id = '` + merchantId + `' `
 		queryTrans = queryTrans + ` AND tr.merchant_id = '` + merchantId + `' `
+	}
+	if status != ""{
+		var statusArray []int
+		if errUnmarshal := json.Unmarshal([]byte(status), &statusArray); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+		for index, statusElement := range statusArray {
+			if index == 0 && index != (len(statusArray)-1) {
+				queryExp = queryExp + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' `
+				queryTrans = queryTrans + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' `
+			} else if index == 0 && index == (len(statusArray)-1) {
+				queryExp = queryExp + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' ) `
+				queryTrans = queryTrans + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' ) `
+			} else if index == (len(statusArray) - 1) {
+				queryExp = queryExp + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' ) `
+				queryTrans = queryTrans + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' ) `
+			} else {
+				queryExp = queryExp + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' `
+				queryTrans = queryTrans + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' `
+			}
+		}
 	}
 	if date != "" {
 		queryExp = queryExp + ` AND DATE(b.booking_date) = '` + date + `' `
@@ -439,7 +460,7 @@ func (t transactionRepository) CountThisMonth(ctx context.Context) (*models.Tota
 	return total, nil
 }
 
-func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string) ([]*models.TransactionOut, error) {
+func (t transactionRepository) List(ctx context.Context, startDate, endDate, search, status string, limit, offset *int, merchantId string, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string,transactionId string) ([]*models.TransactionOut, error) {
 	var transactionStatus int
 	//var bookingStatus int
 
@@ -528,7 +549,10 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
 	}
 
-
+	if transactionId != ""{
+		query = query + ` AND t.id = '` + transactionId + `' `
+		queryT = queryT + ` AND t.id = '` + transactionId + `' `
+	}
 
 	if tripType == "0" {
 		query = query + ` AND e.exp_trip_type = 'Private Trip' `
@@ -868,7 +892,7 @@ func (t transactionRepository) CountSuccess(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string, merchantId string, isTransportation bool, isExperience bool,isSchedule bool,tripType,paymentType,activityType string,confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string) (int, error) {
+func (t transactionRepository) Count(ctx context.Context, startDate, endDate, search, status string, merchantId string, isTransportation bool, isExperience bool,isSchedule bool,tripType,paymentType,activityType string,confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string,transactionId string) (int, error) {
 	query := `
 	SELECT
 		count(*) as count
@@ -904,6 +928,10 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 	if merchantId != "" {
 		query = query + ` AND e.merchant_id = '` + merchantId + `' `
 		queryT = queryT + ` AND tr.merchant_id = '` + merchantId + `' `
+	}
+	if transactionId != ""{
+		query = query + ` AND t.id = '` + transactionId + `' `
+		queryT = queryT + ` AND t.id = '` + transactionId + `' `
 	}
 	if tripType == "0" {
 		query = query + ` AND e.exp_trip_type = 'Private Trip' `

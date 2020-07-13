@@ -149,12 +149,13 @@ func (c cPCUsecase) UpdateCity(ctx context.Context, p *models.NewCommandCity, to
 	}
 	cityPhotos ,_:= json.Marshal(p.CityPhotos)
 	cityPhotosJson := string(cityPhotos)
+	now := time.Now()
 	city := models.City{
 		Id:           p.Id,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
 		ModifiedBy:   &currentUser.Name,
-		ModifiedDate: nil,
+		ModifiedDate: &now,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,
@@ -299,12 +300,13 @@ func (c cPCUsecase) UpdateProvince(ctx context.Context, p *models.NewCommandProv
 	if err != nil {
 		return nil, err
 	}
+	now := time.Now()
 	province := models.Province{
 		Id:           p.Id,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
 		ModifiedBy:   &currentUser.Name,
-		ModifiedDate: nil,
+		ModifiedDate: &now,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,

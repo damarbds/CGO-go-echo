@@ -36,19 +36,19 @@ func NewTransactionUsecase(promoRepo promo.Repository, au admin.Usecase, mu merc
 	}
 }
 
-func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, date string, transId string, expId string, token string) (*models.TransactionScheduleDto, error) {
+func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, date string, transId string, expId string, token string,status string) (*models.TransactionScheduleDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
 	if err != nil {
 		return nil, models.ErrUnAuthorize
 	}
-	listTransactions ,err := t.transactionRepo.GetTransactionByExpIdORTransId(ctx,date,expId,transId,currentMerchant.Id)
+	listTransactions ,err := t.transactionRepo.GetTransactionByExpIdORTransId(ctx,date,expId,transId,currentMerchant.Id,status)
 	if err != nil {
 		return nil,err
 	}
 	if len(listTransactions) == 0 {
-		return nil,models.ErrNotFound
+		return nil,nil
 	}
 	var expType []string
 	if listTransactions[0].ExpType != "" {
@@ -187,7 +187,7 @@ func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTr
 	return total, nil
 }
 
-func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int, token string, isAdmin bool, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int, token string, isAdmin bool, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string,transactionId string) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	var merchantId string
@@ -201,7 +201,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
 
 		if err != nil {
 			return nil, err
@@ -213,7 +213,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
 
 		if err != nil {
 			return nil, err
@@ -351,9 +351,9 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 	}
 	var totalRecords int
 	if token != "" && isAdmin == true {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "",isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "",isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
 	} else {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId,isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId,isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
 	}
 
 	if limit == nil {
