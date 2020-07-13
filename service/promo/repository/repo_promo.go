@@ -83,14 +83,14 @@ func (m *promoRepository) fetch(ctx context.Context, query string, args ...inter
 			&t.ProductionCapacity,
 			&t.CurrencyId,
 			&t.PromoProductType,
-			&t.IsAnyTripPeriod,
 			&t.StartTripPeriod,
 			&t.EndTripPeriod,
-			&t.MaxDiscount,
 			&t.HowToGet,
 			&t.HowToUse,
-			&t.Disclaimer,
 			&t.TermCondition,
+			&t.Disclaimer,
+			&t.MaxDiscount,
+			&t.IsAnyTripPeriod,
 		)
 
 		if err != nil {
