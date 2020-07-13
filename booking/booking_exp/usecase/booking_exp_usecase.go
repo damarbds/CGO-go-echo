@@ -9090,12 +9090,12 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		if currency == "IDR" {
 			if *getDetailBooking.ExChangeCurrency == "USD" {
 				//convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-				calculatePrice := *getDetailBooking.TotalPrice / *getDetailBooking.ExChangeRates
+				calculatePrice := *getDetailBooking.ExChangeRates * *getDetailBooking.TotalPrice
 				*getDetailBooking.TotalPrice = calculatePrice
 				currency = "USD"
 			} else {
 				convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-				calculatePrice := *getDetailBooking.TotalPrice / convertCurrency.Rates.USD
+				calculatePrice := convertCurrency.Rates.USD * *getDetailBooking.TotalPrice
 				*getDetailBooking.TotalPrice = calculatePrice
 				currency = "USD"
 			}
@@ -9137,7 +9137,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 					if currencyPrice == "USD" {
 						if currency == "IDR" {
 							if *getDetailBooking.ExChangeCurrency == "USD" {
-								calculatePrice := paymentType.RemainingPayment / *getDetailBooking.ExChangeRates
+								calculatePrice := *getDetailBooking.ExChangeRates * paymentType.RemainingPayment
 								paymentType.RemainingPayment = calculatePrice
 								currency = "USD"
 							} else {
