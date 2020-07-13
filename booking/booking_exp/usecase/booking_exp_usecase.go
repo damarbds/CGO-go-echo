@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/misc/currency"
 	"html/template"
 	"io/ioutil"
 	"math"
@@ -18,6 +17,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/misc/currency"
 
 	pdfcrowd "github.com/pdfcrowd/pdfcrowd-go"
 
@@ -60,14 +61,13 @@ type bookingExpUsecase struct {
 	contextTimeout            time.Duration
 	usernamePDFrowd           string
 	accessKeyPDFcrowd         string
-	currencyUsecase   currency.Usecase
+	currencyUsecase           currency.Usecase
 }
 
-
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(currencyUsecase   currency.Usecase,usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(currencyUsecase currency.Usecase, usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
-		currencyUsecase:currencyUsecase,
+		currencyUsecase:           currencyUsecase,
 		usernamePDFrowd:           usernamePDFrowd,
 		accessKeyPDFcrowd:         accessKeyPDFcrowd,
 		reviewRepo:                reviewRepo,
@@ -6045,16 +6045,15 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
-
-func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId string) (*models.ResponseDelete, error) {
+func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 	//var transactionStatus int
-	getDetailBookingID ,err := b.GetDetailBookingID(ctx,bookingId,bookingId,"")
+	getDetailBookingID, err := b.GetDetailBookingID(ctx, bookingId, bookingId, "")
 	if err == models.ErrNotFound {
-		bookingDetail, err := b.GetDetailTransportBookingID(ctx, bookingId, bookingId, nil,"")
+		bookingDetail, err := b.GetDetailTransportBookingID(ctx, bookingId, bookingId, nil, "")
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
@@ -6066,9 +6065,9 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 
 		if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-			bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
+			bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId, "")
 			if err != nil {
-				return nil,err
+				return nil, err
 			}
 			tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
 
@@ -6191,11 +6190,11 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 				Subject:    "Transportation E-Ticket",
 				Message:    msg,
 				From:       "CGO Indonesia",
-				To:        bookingDetail.BookedBy[0].Email,
+				To:         bookingDetail.BookedBy[0].Email,
 				Attachment: attachment,
 			}
 			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-				return nil,nil
+				return nil, nil
 			}
 
 		} else {
@@ -6276,7 +6275,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 				Attachment: attachment,
 			}
 			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-				return nil,nil
+				return nil, nil
 			}
 
 		}
@@ -6290,7 +6289,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 			Id:      "",
 			Message: "Success Payment With Paypal",
 		}
-		return &result,nil
+		return &result, nil
 	}
 	exp, err := b.expRepo.GetByID(ctx, getDetailBookingID.Experience[0].ExpId)
 	if exp.ExpBookingType == "No Instant Booking" {
@@ -6336,11 +6335,11 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 				Subject:    "Waiting for guide confirmation",
 				Message:    msg,
 				From:       "CGO Indonesia",
-				To:        getDetailBookingID. BookedBy[0].Email,
+				To:         getDetailBookingID.BookedBy[0].Email,
 				Attachment: nil,
 			}
 			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-				return nil,nil
+				return nil, nil
 			}
 		} else {
 			user := getDetailBookingID.BookedBy[0].Title + `.` + getDetailBookingID.BookedBy[0].FullName
@@ -6374,7 +6373,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 			}
 
 			if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-				return nil,nil
+				return nil, nil
 			}
 		}
 
@@ -6464,12 +6463,12 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 			Subject: "Experience E-Ticket",
 			Message: msg,
 			From:    "CGO Indonesia",
-			To:     getDetailBookingID.BookedBy[0].Email,
+			To:      getDetailBookingID.BookedBy[0].Email,
 			// FileName:          "E-Ticket.pdf",
 			// AttachmentFileUrl: pdf,
 		}
 		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-			return nil,nil
+			return nil, nil
 		}
 
 	} else if exp.ExpBookingType == "Instant Booking" && getDetailBookingID.ExperiencePaymentType.Name == "Full Payment" {
@@ -6717,7 +6716,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 		}
 
 		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-			return nil,nil
+			return nil, nil
 		}
 
 	}
@@ -6728,7 +6727,7 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context,bookingId stri
 		Id:      "",
 		Message: "Success Payment With Paypal",
 	}
-	return &result,nil
+	return &result, nil
 }
 
 func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) error {
@@ -6747,7 +6746,7 @@ func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) e
 }
 
 func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, orderId string) (*string, error) {
-	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId, nil,"")
+	bookingDetail, err := b.GetDetailTransportBookingID(ctx, "", orderId, nil, "")
 	if bookingDetail != nil {
 		if err != nil {
 			return nil, err
@@ -6823,7 +6822,7 @@ func (b bookingExpUsecase) DownloadTicketTransportation(ctx context.Context, ord
 }
 
 func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId string) (*string, error) {
-	bookingDetail, err := b.GetDetailBookingID(ctx, "", orderId,"")
+	bookingDetail, err := b.GetDetailBookingID(ctx, "", orderId, "")
 	if bookingDetail != nil {
 		if err != nil {
 			return nil, err
@@ -7199,7 +7198,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			if err != nil {
 				return err
 			}
-			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "","")
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "", "")
 			if err != nil {
 				return err
 			}
@@ -7635,7 +7634,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				return err
 			}
 		} else {
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil,"")
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil, "")
 			if err != nil {
 				return err
 			}
@@ -7649,7 +7648,7 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 
 			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId, "")
 				if err != nil {
 					return err
 				}
@@ -7925,7 +7924,7 @@ func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, da
 	if err != nil {
 		return false, err
 	}
-	getBooking, err := b.transactionRepo.GetCountByExpId(ctx, date, expId,false)
+	getBooking, err := b.transactionRepo.GetCountByExpId(ctx, date, expId, false)
 	if err != nil {
 		return false, err
 	}
@@ -7933,7 +7932,7 @@ func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, da
 	var guestDescs int
 
 	if getBooking != nil {
-		for _,booking := range getBooking{
+		for _, booking := range getBooking {
 			guestDesc := make([]models.GuestDescObj, 0)
 			if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
 				return false, models.ErrInternalServerError
@@ -7988,7 +7987,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			if err != nil {
 				return nil, err
 			}
-			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "","")
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "", "")
 			if err != nil {
 				return nil, err
 			}
@@ -8417,7 +8416,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			}
 		} else {
 
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil,"")
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil, "")
 			if err != nil {
 				return nil, err
 			}
@@ -8430,7 +8429,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 
 			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
 
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId,"")
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId, "")
 				if err != nil {
 					return nil, err
 				}
@@ -8672,7 +8671,7 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 	return result, nil
 }
 
-func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string, transId *string,currencyPrice string) (*models.BookingExpDetailDto, error) {
+func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string, transId *string, currencyPrice string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
 
@@ -9049,7 +9048,7 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 	return response, nil
 }
 
-func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, bookingCode string,currencyPrice string) (*models.BookingExpDetailDto, error) {
+func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, bookingCode string, currencyPrice string) (*models.BookingExpDetailDto, error) {
 	ctx, cancel := context.WithTimeout(c, b.contextTimeout)
 	defer cancel()
 	getDetailBooking, err := b.bookingExpRepo.GetDetailBookingID(ctx, bookingId, bookingCode)
@@ -9081,7 +9080,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		}
 	}
 	var currency string
-	currency = *getDetailBooking.ExChangeCurrency
+	currency = getDetailBooking.Currency
 	//if getDetailBooking.Currency == 1 {
 	//	currency = "USD"
 	//} else {
@@ -9089,10 +9088,21 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	//}
 	if currencyPrice == "USD" {
 		if currency == "IDR" {
-			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-			calculatePrice := convertCurrency.Rates.USD * *getDetailBooking.TotalPrice
-			*getDetailBooking.TotalPrice = calculatePrice
-			currency = "USD"
+			if *getDetailBooking.ExChangeCurrency == "USD" {
+				//convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+				calculatePrice := *getDetailBooking.TotalPrice / *getDetailBooking.ExChangeRates
+				*getDetailBooking.TotalPrice = calculatePrice
+				currency = "USD"
+			} else {
+				convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+				calculatePrice := *getDetailBooking.TotalPrice / convertCurrency.Rates.USD
+				*getDetailBooking.TotalPrice = calculatePrice
+				currency = "USD"
+			}
+			//convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+			//calculatePrice := convertCurrency.Rates.USD * *getDetailBooking.TotalPrice
+			//*getDetailBooking.TotalPrice = calculatePrice
+			//currency = "USD"
 		}
 	} else if currencyPrice == "IDR" {
 		if currency == "USD" {
@@ -9116,20 +9126,27 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 					Desc: element.ExpPaymentTypeDesc,
 				}
 				if paymentType.Name == "Down Payment" {
-					if getDetailBooking.OriginalPrice != nil{
+					if getDetailBooking.OriginalPrice != nil {
 						paymentType.OriginalPrice = getDetailBooking.OriginalPrice
 						remainingPayment := *getDetailBooking.OriginalPrice - *getDetailBooking.TotalPrice
 						paymentType.RemainingPayment = remainingPayment
-					}else {
+					} else {
 						remainingPayment := element.Price - *getDetailBooking.TotalPrice
 						paymentType.RemainingPayment = remainingPayment
 					}
 					if currencyPrice == "USD" {
 						if currency == "IDR" {
-							convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-							calculatePrice := convertCurrency.Rates.USD * paymentType.RemainingPayment
-							paymentType.RemainingPayment = calculatePrice
-							currency = "USD"
+							if *getDetailBooking.ExChangeCurrency == "USD" {
+								calculatePrice := paymentType.RemainingPayment / *getDetailBooking.ExChangeRates
+								paymentType.RemainingPayment = calculatePrice
+								currency = "USD"
+							} else {
+
+								convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+								calculatePrice := convertCurrency.Rates.USD * paymentType.RemainingPayment
+								paymentType.RemainingPayment = calculatePrice
+								currency = "USD"
+							}
 						}
 					} else if currencyPrice == "IDR" {
 						if currency == "USD" {
