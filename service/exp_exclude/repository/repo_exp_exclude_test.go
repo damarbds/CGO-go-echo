@@ -93,7 +93,7 @@ rows := sqlmock.NewRows([]string{"id", "exp_id", "exclude_id", "exclude_name", "
 	query := `SELECT ee.*,e.exclude_name, e.exclude_icon
 				FROM experience_excludes ee 
 				JOIN excludes e ON ee.exclude_id = e.id
-				WHERE ee.exp_id = \\? `
+				WHERE ee.exp_id = \\? adsasdsa`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := ExperienceExcludeRepo.NewExpExcludeRepository(db)
@@ -101,7 +101,7 @@ rows := sqlmock.NewRows([]string{"id", "exp_id", "exclude_id", "exclude_name", "
 	expId := mockExperienceExcludeJoin[0].ExpId
 	_, err = a.GetByExpIdJoin(context.TODO(),expId)
 	//assert.NotEmpty(t, nextCursor)
-	//assert.Error(t, err)
+	assert.Error(t, err)
 	//assert.Nil(t, anArticle)
 	//assert.Len(t, anArticle, 2)
 }

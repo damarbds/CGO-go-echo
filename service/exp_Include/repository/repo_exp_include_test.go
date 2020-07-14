@@ -94,7 +94,7 @@ func TestGetByExpIdJoinErrorFetch(t *testing.T) {
 	query := `SELECT ei.*,i.include_name,i.include_icon
 				FROM experience_includes ei 
 				JOIN includes i ON ei.include_id = i.id
-				WHERE ei.exp_id = \\? `
+				WHERE ei.exp_id = \\? asdsadasd`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := ExperienceIncludeRepo.NewExpIncludeRepository(db)
@@ -102,7 +102,7 @@ func TestGetByExpIdJoinErrorFetch(t *testing.T) {
 	expId := mockExperienceIncludeJoin[0].ExpId
 	_, err = a.GetByExpIdJoin(context.TODO(), expId)
 	//assert.NotEmpty(t, nextCursor)
-	//assert.Error(t, err)
+	assert.Error(t, err)
 	//assert.Nil(t, anArticle)
 	//assert.Len(t, anArticle, 2)
 }
