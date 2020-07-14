@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/auth/user"
+	guuid "github.com/google/uuid"
 	"github.com/transactions/transaction"
 	"math"
 	"time"
@@ -118,6 +119,10 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 	if err != nil {
 		return nil, models.ErrUnAuthorize
 	}
+	if command.PromoImage == ""{
+		getById,_:= p.promoRepo.GetById(ctx,command.Id)
+		command.PromoImage = getById.PromoImage
+	}
 	promo := models.Promo{
 		Id:                 command.Id,
 		CreatedBy:          "",
@@ -179,7 +184,7 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 		return nil, models.ErrUnAuthorize
 	}
 	promo := models.Promo{
-		Id:                 "",
+		Id:                 guuid.New().String(),
 		CreatedBy:          currentUser.Name,
 		CreatedDate:        time.Now(),
 		ModifiedBy:         nil,

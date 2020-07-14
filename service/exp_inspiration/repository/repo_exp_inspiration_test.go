@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/models"
-	ExperienceIncludeRepo "github.com/service/exp_Include/repository"
+	ExpInspirationRepo "github.com/service/exp_inspiration/repository"
 
 	"github.com/stretchr/testify/assert"
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -51,19 +51,30 @@ func TestGetExpInspirations(t *testing.T) {
 		mockExpInspiration[0].ExpDesc, mockExpInspiration[0].ExpCoverPhoto,mockExpInspiration[0].ExpType,
 		mockExpInspiration[0].Rating).
 		AddRow(mockExpInspiration[1].ExpInspirationID, mockExpInspiration[1].ExpId, mockExpInspiration[1].ExpTitle,
-		mockExpInspiration[1].ExpDesc, mockExpInspiration[0].ExpCoverPhoto,mockExpInspiration[0].ExpType,
-		mockExpInspiration[0].Rating)
+		mockExpInspiration[1].ExpDesc, mockExpInspiration[1].ExpCoverPhoto,mockExpInspiration[1].ExpType,
+		mockExpInspiration[1].Rating)
 
-	query := `SELECT ei.*,i.include_name,i.include_icon
-				FROM experience_includes ei 
-				JOIN includes i ON ei.include_id = i.id
-				WHERE ei.exp_id = \\? `
+	query := `SELECT
+		ei.id as exp_inspiration_id,
+		ei.exp_id,
+		ei.exp_title,
+		ei.exp_desc,
+		ei.exp_cover_photo,
+		e.exp_type,
+		e.rating
+	FROM
+		exp_inspirations ei
+	JOIN 
+		experiences e on e.id = ei.exp_id
+	WHERE
+		ei.is_deleted = 0
+		AND ei.is_active = 1`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := ExperienceIncludeRepo.NewExpIncludeRepository(db)
-
-	expId := mockExperienceIncludeJoin[0].ExpId
-	anArticle, err := a.GetByExpIdJoin(context.TODO(), expId)
+	a := ExpInspirationRepo.NewExpInspirationRepository(db)
+	//
+	//expId := mockExperienceIncludeJoin[0].ExpId
+	anArticle, err := a.GetExpInspirations(context.TODO())
 	//assert.NotEmpty(t, nextCursor)
 	assert.NoError(t, err)
 	assert.Len(t, anArticle, 2)
@@ -80,22 +91,36 @@ func TestGetExpInspirationsErrorFetch(t *testing.T) {
 	//	require.NoError(t, err)
 	//}()
 
-	rows := sqlmock.NewRows([]string{"id", "exp_id", "include_id", "include_name", "include_icon"}).
-		AddRow(mockExperienceIncludeJoin[0].Id, mockExperienceIncludeJoin[0].ExpId, mockExperienceIncludeJoin[0].IncludeId, mockExperienceIncludeJoin[0].IncludeName,
-			mockExperienceIncludeJoin[0].Id).
-		AddRow(mockExperienceIncludeJoin[1].Id, mockExperienceIncludeJoin[1].ExpId, mockExperienceIncludeJoin[1].IncludeId, mockExperienceIncludeJoin[1].IncludeName,
-			mockExperienceIncludeJoin[1].Id)
+	rows := sqlmock.NewRows([]string{"exp_inspiration_id", "exp_id", "exp_title", "exp_desc", "exp_cover_photo",
+		"exp_type", "rating"}).
+		AddRow(mockExpInspiration[0].ExpInspirationID, mockExpInspiration[0].ExpId, mockExpInspiration[0].ExpTitle,
+			mockExpInspiration[0].ExpDesc, mockExpInspiration[0].ExpCoverPhoto,mockExpInspiration[0].ExpType,
+			mockExpInspiration[0].Rating).
+		AddRow(mockExpInspiration[1].ExpInspirationID, mockExpInspiration[1].ExpId, mockExpInspiration[1].ExpTitle,
+			mockExpInspiration[1].ExpDesc, mockExpInspiration[1].ExpCoverPhoto,mockExpInspiration[1].ExpType,
+			mockExpInspiration[1].Rating)
 
-	query := `SELECT ei.*,i.include_name,i.include_icon
-				FROM experience_includes ei 
-				JOIN includes i ON ei.include_id = i.id
-				WHERE ei.exp_id = \\? asdsadasd`
+	query := `SELECT
+		ei.id as exp_inspiration_id,
+		ei.exp_id,
+		ei.exp_title,
+		ei.exp_desc,
+		ei.exp_cover_photo,
+		e.exp_type,
+		e.rating
+	FROM
+		exp_inspirations ei
+	JOIN 
+		experiences e on e.id = ei.exp_id
+	WHERE
+		ei.is_deleted = 0
+		AND ei.is_active = 1asdasds`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := ExperienceIncludeRepo.NewExpIncludeRepository(db)
+	a := ExpInspirationRepo.NewExpInspirationRepository(db)
 
-	expId := mockExperienceIncludeJoin[0].ExpId
-	_, err = a.GetByExpIdJoin(context.TODO(), expId)
+	//expId := mockExperienceIncludeJoin[0].ExpId
+	_, err = a.GetExpInspirations(context.TODO())
 	//assert.NotEmpty(t, nextCursor)
 	assert.Error(t, err)
 	//assert.Nil(t, anArticle)
