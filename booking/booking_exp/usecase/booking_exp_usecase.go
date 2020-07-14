@@ -8729,25 +8729,53 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 		}
 	}
 	var currency string
-	currency = *details[0].ExChangeCurrency
+	currency = "IDR"
 	//if details[0].Currency == 1 {
 	//	currency = "USD"
 	//} else {
 	//	currency = "IDR"
 	//}
-	if currencyPrice == "USD" {
-		if currency == "IDR" {
-			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-			calculatePrice := convertCurrency.Rates.USD * *details[0].TotalPrice
-			*details[0].TotalPrice = calculatePrice
-			currency = "USD"
+	var originalPrice float64
+	var totalPrice 	float64
+	//var remainingPayment float64
+	if currencyPrice == "IDR"{
+		if *details[0].ExChangeCurrency == "USD"{
+			if details[0].OriginalPrice != nil {
+				originalPrice = *details[0].OriginalPrice * *details[0].ExChangeRates
+			}
+			totalPrice = *details[0].TotalPrice
+			//remainingPayment = originalPrice - *details[0].TotalPrice
+		}else {
+			if details[0].OriginalPrice != nil {
+				originalPrice = *details[0].OriginalPrice
+			}
+			totalPrice = *details[0].TotalPrice
+			//remainingPayment = originalPrice - *details[0].TotalPrice
 		}
-	} else if currencyPrice == "IDR" {
-		if currency == "USD" {
+		currency = currencyPrice
+		*details[0].TotalPrice = totalPrice
+		if details[0].OriginalPrice != nil {
+			*details[0].OriginalPrice = originalPrice
+		}
+	}else if currencyPrice =="USD"{
+		if *details[0].ExChangeCurrency == "USD"{
+			if details[0].OriginalPrice != nil{
+				originalPrice = *details[0].OriginalPrice
+			}
+			totalPrice = *details[0].TotalPrice / *details[0].ExChangeRates
+			//remainingPayment = originalPrice - *details[0].TotalPrice
+		}else {
 			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
-			calculatePrice := convertCurrency.Rates.IDR * *details[0].TotalPrice
-			*details[0].TotalPrice = calculatePrice
-			currency = "IDR"
+			if details[0].OriginalPrice != nil {
+				originalPrice = *details[0].OriginalPrice / convertCurrency.Rates.USD
+			}
+			totalPrice = *details[0].TotalPrice / convertCurrency.Rates.USD
+			//remainingPayment = originalPrice - *details[0].TotalPrice
+		}
+		currency = currencyPrice
+		*details[0].TotalPrice = totalPrice
+		if details[0].OriginalPrice != nil {
+			*details[0].OriginalPrice = originalPrice
 		}
 	}
 	transport[0].TotalGuest = len(guestDesc)
@@ -9081,36 +9109,37 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 	}
 	var currency string
 	currency = getDetailBooking.Currency
-	//if getDetailBooking.Currency == 1 {
-	//	currency = "USD"
-	//} else {
-	//	currency = "IDR"
-	//}
-	if currencyPrice == "USD" {
-		if currency == "IDR" {
-			if *getDetailBooking.ExChangeCurrency == "USD" {
-				//convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-				calculatePrice := *getDetailBooking.ExChangeRates * *getDetailBooking.TotalPrice
-				*getDetailBooking.TotalPrice = calculatePrice
-				currency = "USD"
-			} else {
-				convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-				calculatePrice := convertCurrency.Rates.USD * *getDetailBooking.TotalPrice
-				*getDetailBooking.TotalPrice = calculatePrice
-				currency = "USD"
-			}
-			//convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-			//calculatePrice := convertCurrency.Rates.USD * *getDetailBooking.TotalPrice
-			//*getDetailBooking.TotalPrice = calculatePrice
-			//currency = "USD"
+
+	var originalPrice float64
+	var totalPrice 	float64
+	var remainingPayment float64
+	if currencyPrice == "IDR"{
+		if *getDetailBooking.ExChangeCurrency == "USD"{
+			originalPrice = *getDetailBooking.OriginalPrice * *getDetailBooking.ExChangeRates
+			totalPrice = *getDetailBooking.TotalPrice
+			remainingPayment = originalPrice - *getDetailBooking.TotalPrice
+		}else {
+			originalPrice = *getDetailBooking.OriginalPrice
+			totalPrice = *getDetailBooking.TotalPrice
+			remainingPayment = originalPrice - *getDetailBooking.TotalPrice
 		}
-	} else if currencyPrice == "IDR" {
-		if currency == "USD" {
+		currency = currencyPrice
+		*getDetailBooking.TotalPrice = totalPrice
+		*getDetailBooking.OriginalPrice = originalPrice
+	}else if currencyPrice =="USD"{
+		if *getDetailBooking.ExChangeCurrency == "USD"{
+			originalPrice = *getDetailBooking.OriginalPrice
+			totalPrice = *getDetailBooking.TotalPrice / *getDetailBooking.ExChangeRates
+			remainingPayment = originalPrice - *getDetailBooking.TotalPrice
+		}else {
 			convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
-			calculatePrice := convertCurrency.Rates.IDR * *getDetailBooking.TotalPrice
-			*getDetailBooking.TotalPrice = calculatePrice
-			currency = "IDR"
+			originalPrice = *getDetailBooking.OriginalPrice / convertCurrency.Rates.USD
+			totalPrice = *getDetailBooking.TotalPrice / convertCurrency.Rates.USD
+			remainingPayment = originalPrice - *getDetailBooking.TotalPrice
 		}
+		currency = currencyPrice
+		*getDetailBooking.TotalPrice = totalPrice
+		*getDetailBooking.OriginalPrice = originalPrice
 	}
 	var experiencePaymentType *models.ExperiencePaymentTypeDto
 	if getDetailBooking.ExperiencePaymentId != "" {
@@ -9135,26 +9164,28 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 						paymentType.RemainingPayment = remainingPayment
 					}
 					if currencyPrice == "USD" {
-						if currency == "IDR" {
-							if *getDetailBooking.ExChangeCurrency == "USD" {
-								calculatePrice := *getDetailBooking.ExChangeRates * paymentType.RemainingPayment
-								paymentType.RemainingPayment = calculatePrice
-								currency = "USD"
-							} else {
-
-								convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
-								calculatePrice := convertCurrency.Rates.USD * paymentType.RemainingPayment
-								paymentType.RemainingPayment = calculatePrice
-								currency = "USD"
-							}
-						}
+						paymentType.RemainingPayment = remainingPayment
+						//if currency == "IDR" {
+						//	if *getDetailBooking.ExChangeCurrency == "USD" {
+						//		//calculatePrice := *getDetailBooking.ExChangeRates * paymentType.RemainingPayment
+						//		paymentType.RemainingPayment = remainingPayment
+						//		currency = "USD"
+						//	} else {
+						//
+						//		//convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+						//		//calculatePrice := convertCurrency.Rates.USD * paymentType.RemainingPayment
+						//		paymentType.RemainingPayment = remainingPayment
+						//		currency = "USD"
+						//	}
+						//}
 					} else if currencyPrice == "IDR" {
-						if currency == "USD" {
-							convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
-							calculatePrice := convertCurrency.Rates.IDR * paymentType.RemainingPayment
-							paymentType.RemainingPayment = calculatePrice
-							currency = "IDR"
-						}
+						paymentType.RemainingPayment = remainingPayment
+						//if currency == "USD" {
+						//	//convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+						//	//calculatePrice := convertCurrency.Rates.IDR * paymentType.RemainingPayment
+						//	paymentType.RemainingPayment = remainingPayment
+						//	currency = "IDR"
+						//}
 					}
 				} else {
 					paymentType.RemainingPayment = 0
