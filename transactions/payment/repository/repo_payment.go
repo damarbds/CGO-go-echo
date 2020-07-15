@@ -18,8 +18,71 @@ func NewPaymentRepository(Conn *sql.DB) payment.Repository {
 	return &paymentRepository{Conn}
 }
 func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment *models.ConfirmTransactionPayment) error {
-	if payment.BookingStatus == 0 {
-		query := `
+	if payment.IsCancelExp == true {
+		query4 := `
+	UPDATE
+		transactions,
+		booking_exps
+	SET
+		transactions.status = 4,
+		transactions.remarks = ?
+	WHERE
+		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id) 
+		AND transactions.status != 5
+		AND DATE(booking_exps.booking_date) = ? `
+
+		if payment.TransId != "" {
+			query4 = query4 + ` AND booking_exps.trans_id = '` + payment.TransId + `' `
+		} else if payment.ExpId != "" {
+			query4 = query4 + ` AND booking_exps.exp_id = '` + payment.ExpId + `' `
+		}
+
+		query8 := `
+	UPDATE
+		transactions,
+		booking_exps
+	SET
+		transactions.status = 8,
+		transactions.remarks = ?
+	WHERE
+		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id)
+		AND transactions.status = 5
+		AND DATE(booking_exps.booking_date) = ? `
+
+		if payment.TransId != "" {
+			query8 = query8 + ` AND booking_exps.trans_id = '` + payment.TransId + `' `
+		} else if payment.ExpId != "" {
+			query8 = query8 + ` AND booking_exps.exp_id = '` + payment.ExpId + `' `
+		}
+
+		stmt, err := p.Conn.PrepareContext(ctx, query4)
+		if err != nil {
+			return err
+		}
+
+		_, err = stmt.ExecContext(ctx,
+			payment.Remarks,
+			payment.BookingDate,
+		)
+		if err != nil {
+			return err
+		}
+
+		stmt, err = p.Conn.PrepareContext(ctx, query8)
+		if err != nil {
+			return err
+		}
+
+		_, err = stmt.ExecContext(ctx,
+			payment.Remarks,
+			payment.BookingDate,
+		)
+		if err != nil {
+			return err
+		}
+	}else {
+		if payment.BookingStatus == 0 {
+			query := `
 	UPDATE
 		transactions,
 		booking_exps
@@ -30,27 +93,27 @@ func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment 
 		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id)
 		AND DATE(booking_exps.booking_date) = ? `
 
-		if payment.TransId != "" {
-			query = query + ` AND booking_exps.trans_id = '` + payment.TransId + `'`
-		} else if payment.ExpId != "" {
-			query = query + ` AND booking_exps.exp_id = '` + payment.ExpId + `'`
-		}
-		stmt, err := p.Conn.PrepareContext(ctx, query)
-		if err != nil {
-			return err
-		}
+			if payment.TransId != "" {
+				query = query + ` AND booking_exps.trans_id = '` + payment.TransId + `'`
+			} else if payment.ExpId != "" {
+				query = query + ` AND booking_exps.exp_id = '` + payment.ExpId + `'`
+			}
+			stmt, err := p.Conn.PrepareContext(ctx, query)
+			if err != nil {
+				return err
+			}
 
-		_, err = stmt.ExecContext(ctx,
-			payment.TransactionStatus,
-			payment.Remarks,
-			payment.BookingDate,
-		)
-		if err != nil {
-			return err
-		}
+			_, err = stmt.ExecContext(ctx,
+				payment.TransactionStatus,
+				payment.Remarks,
+				payment.BookingDate,
+			)
+			if err != nil {
+				return err
+			}
 
-	}else {
-		query := `
+		}else {
+			query := `
 	UPDATE
 		transactions,
 		booking_exps
@@ -62,26 +125,27 @@ func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment 
 		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id)
 		AND DATE(booking_exps.booking_date) = ? `
 
-		if payment.TransId != "" {
-			query = query + ` AND booking_exps.trans_id = '` + payment.TransId + `'`
-		} else if payment.ExpId != "" {
-			query = query + ` AND booking_exps.exp_id = '` + payment.ExpId + `'`
-		}
-		stmt, err := p.Conn.PrepareContext(ctx, query)
-		if err != nil {
-			return err
-		}
+			if payment.TransId != "" {
+				query = query + ` AND booking_exps.trans_id = '` + payment.TransId + `'`
+			} else if payment.ExpId != "" {
+				query = query + ` AND booking_exps.exp_id = '` + payment.ExpId + `'`
+			}
+			stmt, err := p.Conn.PrepareContext(ctx, query)
+			if err != nil {
+				return err
+			}
 
-		_, err = stmt.ExecContext(ctx,
-			payment.TransactionStatus,
-			payment.Remarks,
-			payment.BookingStatus,
-			payment.BookingDate,
-		)
-		if err != nil {
-			return err
-		}
+			_, err = stmt.ExecContext(ctx,
+				payment.TransactionStatus,
+				payment.Remarks,
+				payment.BookingStatus,
+				payment.BookingDate,
+			)
+			if err != nil {
+				return err
+			}
 
+		}
 	}
 
 	return nil

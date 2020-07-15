@@ -311,7 +311,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			status = "Up coming"
 		} else if item.TransactionStatus == 2 && item.CheckInDate.Before(time.Now()) {
 			status = "Finished"
-		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
+		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 || item.TransactionStatus == 8 {
 			status = "Failed"
 		} else if item.TransactionStatus == 2 && item.BookingStatus == 3 {
 			status = "Boarded"

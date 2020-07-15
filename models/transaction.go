@@ -159,6 +159,7 @@ type ConfirmTransactionPayment struct {
 	BookingStatus int `json:"booking_status"`
 	BookingDate string `json:"booking_date"`
 	Remarks				*string 	`json:"remarks"`
+	IsCancelExp bool `json:"is_cancel_exp"`
 }
 
 type TransactionOut struct {

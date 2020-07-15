@@ -704,8 +704,9 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 		if status == "failed" {
 			transactionStatus = 3
 			cancelledStatus := 4
-			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
-			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
+			cancalledStatus2 := 8
+			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `,` + strconv.Itoa(cancalledStatus2) + `)`
+			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `,` + strconv.Itoa(cancalledStatus2) + `)`
 			unionQuery = querySt + ` UNION ` + queryTSt
 			if tripType != "" && activityType == "" {
 				unionQuery = querySt
