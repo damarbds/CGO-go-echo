@@ -664,12 +664,14 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 			transactionStatus = 1
 		} else if status == "confirm" {
 			transactionStatus = 2
-			query = query + ` AND b.booking_date > CURRENT_DATE `
-			queryT = queryT + ` AND b.booking_date > CURRENT_DATE `
+			query = query + ` AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`') `
+			queryT = queryT + ` AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`') `
 		} else if status == "upcoming" {
 			transactionStatus = 2
-			query = query + ` AND date_add(b.booking_date, interval + 14 DAY) >= DATE(CURRENT_DATE) `
-			queryT = queryT + ` AND date_add(b.booking_date, interval + 14 DAY) >= DATE(CURRENT_DATE) `
+			query = query + ` AND (DATE(b.booking_date) <= date_add('`+time.Now().Format("2006-01-02")+`', interval + 14 DAY) 
+							AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`')) `
+			queryT = queryT + ` AND (DATE(b.booking_date) <= date_add('`+time.Now().Format("2006-01-02")+`', interval + 14 DAY) 
+							AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`')) `
 		} else if status == "finished" {
 			transactionStatus = 7
 			//query = query + ` AND b.booking_date < CURRENT_DATE `
@@ -1021,8 +1023,9 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		query = query + ` AND b.exp_id != '' `
 		queryT = queryT + ` AND b.exp_id != '' `
 	}
-	unionQuery := query + ` UNION` + queryT
-	rows, err := t.Conn.QueryContext(ctx, unionQuery)
+	//unionQuery := query + ` UNION` + queryT
+	rows1, err := t.Conn.QueryContext(ctx, query)
+	rows2, err := t.Conn.QueryContext(ctx, queryT)
 	var transactionStatus int
 	if status != "" {
 		if status == "pending" {
@@ -1031,12 +1034,14 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 			transactionStatus = 1
 		} else if status == "confirm" {
 			transactionStatus = 2
-			query = query + ` AND b.booking_date > CURRENT_DATE `
-			queryT = queryT + ` AND b.booking_date > CURRENT_DATE `
+			query = query + ` AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`') `
+			queryT = queryT + ` AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`') `
 		} else if status == "upcoming" {
 			transactionStatus = 2
-			query = query + ` AND date_add(b.booking_date, interval + 14 DAY) >= DATE(CURRENT_DATE) `
-			queryT = queryT + ` AND date_add(b.booking_date, interval + 14 DAY) >= DATE(CURRENT_DATE) `
+			query = query + ` AND (DATE(b.booking_date) <= date_add('`+time.Now().Format("2006-01-02")+`', interval + 14 DAY) 
+							AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`')) `
+			queryT = queryT + ` AND (DATE(b.booking_date) <= date_add('`+time.Now().Format("2006-01-02")+`', interval + 14 DAY) 
+							AND DATE(b.booking_date) >= DATE('`+time.Now().Format("2006-01-02")+`')) `
 		} else if status == "finished" {
 			transactionStatus = 7
 			//query = query + ` AND b.booking_date < CURRENT_DATE `
@@ -1045,29 +1050,49 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 
 		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
-		unionQuery = querySt + ` UNION ` + queryTSt
-		rows, err = t.Conn.QueryContext(ctx, unionQuery)
-
+		//unionQuery = querySt + ` UNION ` + queryTSt
+		rows1, err = t.Conn.QueryContext(ctx, querySt)
+		rows2, err = t.Conn.QueryContext(ctx, queryTSt)
 		if status == "failed" {
 			transactionStatus = 3
 			cancelledStatus := 4
-			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
-			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `)`
-			unionQuery = querySt + ` UNION ` + queryTSt
-			rows, err = t.Conn.QueryContext(ctx, unionQuery)
+			cancalledStatus2 := 8
+			querySt = query + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `,` + strconv.Itoa(cancalledStatus2) + `)`
+			queryTSt = queryT + ` AND t.status IN (` + strconv.Itoa(transactionStatus) + `,` + strconv.Itoa(cancelledStatus) + `,` + strconv.Itoa(cancalledStatus2) + `)`
+			//unionQuery = querySt + ` UNION ` + queryTSt
+			if tripType != "" && activityType == "" {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+			} else if activityType != "" && tripType == "" {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+			} else if tripType != "" && activityType != "" {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+			}else {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+				rows2, err = t.Conn.QueryContext(ctx, queryTSt)
+			}
+
 		}
 
 		if status == "boarded" {
-			//transactionStatus = 1
-			//bookingStatus := 3
+			//transactionStatus = 2
+			//bookingStatus = 3
 			//querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			//queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus) + ` AND b.status = ` + strconv.Itoa(bookingStatus)
 			transactionStatus = 6
 			//bookingStatus = 3
 			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
 			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
-			unionQuery = querySt + ` UNION ` + queryTSt
-			rows, err = t.Conn.QueryContext(ctx, unionQuery)
+			//unionQuery = querySt + ` UNION ` + queryTSt
+			if tripType != "" && activityType == "" {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+			} else if activityType != "" && tripType == "" {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+			} else if tripType != "" && activityType != "" {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+			}else {
+				rows1, err = t.Conn.QueryContext(ctx, querySt)
+				rows2, err = t.Conn.QueryContext(ctx, queryTSt)
+			}
 		}
 		if err != nil {
 			logrus.Error(err)
@@ -1075,12 +1100,17 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 		}
 	}
 
-	count, err := checkCountUnion(rows)
+	count, err := checkCountUnion(rows1)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
 	}
-
+	count2, err := checkCountUnion(rows2)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+	count = count + count2
 	return count, nil
 }
 func (m transactionRepository) GetByBookingDate(ctx context.Context, bookingDate string, transId string, expId string) ([]*models.TransactionWMerchant, error) {

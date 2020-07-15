@@ -79,10 +79,12 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 			status = "Pending"
 		} else if item.TransactionStatus == 1 {
 			status = "Waiting approval"
+		} else if item.TransactionStatus == 2 &&
+			(item.CheckInDate.Format("02 January 2006") <= time.Now().AddDate(0, 0, 14).Format("02 January 2006") &&
+			item.CheckInDate.Format("02 January 2006") >= time.Now().Format("02 January 2006")) {
+			status = "Up coming"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
 			status = "Confirm"
-		} else if item.TransactionStatus == 2 && (item.CheckInDate.AddDate(0, 0, 14).Format("02 January 2006") == time.Now().Format("02 January 2006")) {
-			status = "Up coming"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") < time.Now().Format("2006-01-02")) {
 			status = "Finished"
 		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
@@ -305,18 +307,19 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			status = "Pending"
 		} else if item.TransactionStatus == 1 {
 			status = "Waiting approval"
-		} else if item.TransactionStatus == 2 && item.CheckInDate.After(time.Now()) {
-			status = "Confirm"
-		} else if item.TransactionStatus == 2 && (item.CheckInDate.AddDate(0, 0, 14).Format("02 January 2006") == time.Now().Format("02 January 2006")) {
+		} else if item.TransactionStatus == 2 &&
+			(item.CheckInDate.Format("02 January 2006") <= time.Now().AddDate(0, 0, 14).Format("02 January 2006") &&
+				item.CheckInDate.Format("02 January 2006") >= time.Now().Format("02 January 2006")) {
 			status = "Up coming"
-		} else if item.TransactionStatus == 2 && item.CheckInDate.Before(time.Now()) {
+		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
+			status = "Confirm"
+		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") < time.Now().Format("2006-01-02")) {
 			status = "Finished"
-		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 || item.TransactionStatus == 8 {
+		} else if item.TransactionStatus == 3 || item.TransactionStatus == 4 {
 			status = "Failed"
 		} else if item.TransactionStatus == 2 && item.BookingStatus == 3 {
 			status = "Boarded"
 		}
-
 		transactions[i] = &models.TransactionDto{
 			TransactionId:         item.TransactionId,
 			ExpId:                 item.ExpId,
