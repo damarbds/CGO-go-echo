@@ -41,10 +41,11 @@ func TestGetExpTypes(t *testing.T) {
 		AddRow(mockExpType[0].ExpTypeID, mockExpType[0].ExpTypeName, mockExpType[0].ExpTypeIcon).
 		AddRow(mockExpType[1].ExpTypeID, mockExpType[1].ExpTypeName, mockExpType[1].ExpTypeIcon)
 
-	query := `SELECT
+	query := `
+	SELECT
 		id AS exp_type_id,
 		exp_type_name,
-		COALESCE \ (exp_type_icon,"") AS exp_type_icon
+		COALESCE\(exp_type_icon,""\) AS exp_type_icon
 	FROM
 		experience_types
 	WHERE
@@ -76,15 +77,16 @@ func TestGetExpTypesErrorFetch(t *testing.T) {
 		AddRow(mockExpType[0].ExpTypeID, mockExpType[0].ExpTypeName, mockExpType[0].ExpTypeIcon).
 		AddRow(mockExpType[1].ExpTypeID, mockExpType[1].ExpTypeName, mockExpType[1].ExpTypeIcon)
 
-	query := `SELECT
+	query := `
+	SELECT
 		id AS exp_type_id,
 		exp_type_name,
-		COALESCE(exp_type_icon,"") AS exp_type_icon
+		COALESCE\(exp_type_icon,""\) AS exp_type_icon
 	FROM
 		experience_types
 	WHERE
 		is_active = 1
-		AND is_deleted = 0adasdasd`
+		AND is_deleted = 0asdasdasd`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := ExpTypeRepo.NewExpTypeRepository(db)
@@ -111,15 +113,16 @@ func TestGetByName(t *testing.T) {
 		AddRow(mockExpType[0].ExpTypeID, mockExpType[0].ExpTypeName, mockExpType[0].ExpTypeIcon).
 		AddRow(mockExpType[1].ExpTypeID, mockExpType[1].ExpTypeName, mockExpType[1].ExpTypeIcon)
 
-	query := `SELECT
+	query := `
+	SELECT
 		id AS exp_type_id,
 		exp_type_name,
-		COALESCE(exp_type_icon,"") AS exp_type_icon
+		COALESCE\(exp_type_icon,""\) AS exp_type_icon
 	FROM
 		experience_types
 	WHERE
 		is_active = 1
-		AND is_deleted = 0 AND exp_type_name = \\?`
+		AND is_deleted = 0 AND exp_type_name = \?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := ExpTypeRepo.NewExpTypeRepository(db)
@@ -142,15 +145,16 @@ func TestGetByNameNotFound(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"exp_type_id", "exp_type_name", "exp_type_icon"})
 
-	query := `SELECT
+	query := `
+	SELECT
 		id AS exp_type_id,
 		exp_type_name,
-		COALESCE(exp_type_icon,"") AS exp_type_icon
+		COALESCE\(exp_type_icon,""\) AS exp_type_icon
 	FROM
 		experience_types
 	WHERE
 		is_active = 1
-		AND is_deleted = 0 AND exp_type_name = \\?`
+		AND is_deleted = 0 AND exp_type_name = \?`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := ExpTypeRepo.NewExpTypeRepository(db)
@@ -175,15 +179,16 @@ func TestGetByNameErrorFetch(t *testing.T) {
 		AddRow(mockExpType[0].ExpTypeName, mockExpType[0].ExpTypeName, mockExpType[0].ExpTypeIcon).
 		AddRow(mockExpType[1].ExpTypeName, mockExpType[1].ExpTypeName, mockExpType[1].ExpTypeIcon)
 
-	query := `SELECT
+	query := `
+	SELECT
 		id AS exp_type_id,
 		exp_type_name,
-		COALESCE(exp_type_icon,"") AS exp_type_icon
+		COALESCE\(exp_type_icon,""\) AS exp_type_icon
 	FROM
 		experience_types
 	WHERE
 		is_active = 1
-		AND is_deleted = 0 AND exp_type_name = \\?`
+		AND is_deleted = 0 AND exp_type_name = \?adadssad`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := ExpTypeRepo.NewExpTypeRepository(db)

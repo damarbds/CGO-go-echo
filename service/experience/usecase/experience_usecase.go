@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	guuid "github.com/google/uuid"
 	"math"
 	"strconv"
 	"strings"
@@ -1076,9 +1077,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	for _, element := range commandExperience.ExpPhotos {
 		images, _ := json.Marshal(element.ExpPhotoImage)
 		expPhoto := models.ExpPhotos{
-			Id:             "",
+			Id:             guuid.New().String(),
 			CreatedBy:      currentUserMerchant.MerchantEmail,
-			CreatedDate:    time.Time{},
+			CreatedDate:    time.Now(),
 			ModifiedBy:     nil,
 			ModifiedDate:   nil,
 			DeletedBy:      nil,
@@ -1117,9 +1118,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 		}
 
 		payments := models.ExperiencePayment{
-			Id:               "",
+			Id:               guuid.New().String(),
 			CreatedBy:        currentUserMerchant.MerchantEmail,
-			CreatedDate:      time.Time{},
+			CreatedDate:      time.Now(),
 			ModifiedBy:       nil,
 			ModifiedDate:     nil,
 			DeletedBy:        nil,
@@ -1144,9 +1145,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 	for _, element := range commandExperience.ExpAvailability {
 		date, _ := json.Marshal(element.Date)
 		expAvailability := models.ExpAvailability{
-			Id:                   "",
+			Id:                   guuid.New().String(),
 			CreatedBy:            currentUserMerchant.MerchantEmail,
-			CreatedDate:          time.Time{},
+			CreatedDate:          time.Now(),
 			ModifiedBy:           nil,
 			ModifiedDate:         nil,
 			DeletedBy:            nil,
@@ -1174,9 +1175,9 @@ func (m experienceUsecase) CreateExperience(c context.Context, commandExperience
 			currency = 0
 		}
 		addOns := models.ExperienceAddOn{
-			Id:           "",
+			Id:           guuid.New().String(),
 			CreatedBy:    currentUserMerchant.MerchantEmail,
-			CreatedDate:  time.Time{},
+			CreatedDate:  time.Now(),
 			ModifiedBy:   nil,
 			ModifiedDate: nil,
 			DeletedBy:    nil,
@@ -1365,9 +1366,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 		if element.Id == "" {
 			images, _ := json.Marshal(element.ExpPhotoImage)
 			expPhoto := models.ExpPhotos{
-				Id:             "",
+				Id:             guuid.New().String(),
 				CreatedBy:      currentUserMerchant.MerchantEmail,
-				CreatedDate:    time.Time{},
+				CreatedDate:    time.Now(),
 				ModifiedBy:     nil,
 				ModifiedDate:   nil,
 				DeletedBy:      nil,
@@ -1412,9 +1413,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			customPriceJson = string(customPrice)
 		}
 		payments := models.ExperiencePayment{
-			Id:               "",
+			Id:               guuid.New().String(),
 			CreatedBy:        currentUserMerchant.MerchantEmail,
-			CreatedDate:      time.Time{},
+			CreatedDate:      time.Now(),
 			ModifiedBy:       nil,
 			ModifiedDate:     nil,
 			DeletedBy:        nil,
@@ -1445,9 +1446,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 	for _, element := range commandExperience.ExpAvailability {
 		date, _ := json.Marshal(element.Date)
 		expAvailability := models.ExpAvailability{
-			Id:                   "",
+			Id:                   guuid.New().String(),
 			CreatedBy:            currentUserMerchant.MerchantEmail,
-			CreatedDate:          time.Time{},
+			CreatedDate:          time.Now(),
 			ModifiedBy:           nil,
 			ModifiedDate:         nil,
 			DeletedBy:            nil,
@@ -1481,9 +1482,9 @@ func (m experienceUsecase) UpdateExperience(c context.Context, commandExperience
 			currency = 0
 		}
 		addOns := models.ExperienceAddOn{
-			Id:           "",
+			Id:           guuid.New().String(),
 			CreatedBy:    currentUserMerchant.MerchantEmail,
-			CreatedDate:  time.Time{},
+			CreatedDate:  time.Now(),
 			ModifiedBy:   nil,
 			ModifiedDate: nil,
 			DeletedBy:    nil,

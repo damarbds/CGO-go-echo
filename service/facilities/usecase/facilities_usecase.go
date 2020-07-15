@@ -163,13 +163,13 @@ func (f facilityUsecase) Update(ctx context.Context, fac *models.NewCommandFacil
 		getFacilities ,_ := f.facilityRepo.GetById(ctx,fac.Id)
 		fac.FacilityIcon = *getFacilities.FacilityIcon
 	}
-
+	now := time.Now()
 	facilities := models.Facilities{
 		Id:           fac.Id,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
 		ModifiedBy:   &currentUser.Name,
-		ModifiedDate: nil,
+		ModifiedDate: &now,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,

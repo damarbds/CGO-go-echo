@@ -170,7 +170,7 @@ func (m *includeRepository) Update(ctx context.Context, a *models.Include) error
 		return nil
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.IncludeName, a.IncludeIcon, a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.IncludeName, a.IncludeIcon, a.Id)
 	if err != nil {
 		return err
 	}

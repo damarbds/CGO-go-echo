@@ -167,7 +167,7 @@ func (m *excludeRepository) Insert(ctx context.Context, a *models.Exclude) (*int
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExcludeName,
+	res, err := stmt.ExecContext(ctx,a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.ExcludeName,
 		a.ExcludeIcon)
 	if err != nil {
 		return nil,err

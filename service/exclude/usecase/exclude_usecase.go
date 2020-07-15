@@ -123,7 +123,7 @@ func (f excludeUsecase) Create(ctx context.Context, exc *models.NewCommandExclud
 	excludes := models.Exclude{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
