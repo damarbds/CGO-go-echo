@@ -160,7 +160,7 @@ func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
 		a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity, a.PromoProductType,
 		a.StartTripPeriod, a.EndTripPeriod, a.HowToGet, a.HowToUse, a.TermCondition, a.Disclaimer,a.MaxDiscount,
 		a.IsAnyTripPeriod, a.Id)

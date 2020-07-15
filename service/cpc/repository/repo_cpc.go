@@ -537,7 +537,7 @@ func (m *cpcRepository) UpdateCountry(ctx context.Context, a *models.Country) er
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.CountryName,a.Iso,a.Name,
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.CountryName,a.Iso,a.Name,
 		a.NiceName,a.Iso3,a.NumCode,a.PhoneCode, a.Id)
 	if err != nil {
 		return err

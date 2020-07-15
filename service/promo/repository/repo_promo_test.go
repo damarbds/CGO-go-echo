@@ -747,7 +747,7 @@ func TestUpdate(t *testing.T) {
 				how_to_get=\?,how_to_use=\?,term_condition=\?,disclaimer=\?,max_discount=\?,is_any_trip_period=\? WHERE id = \?`
 
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(a.ModifiedBy, time.Now(), a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
+	prep.ExpectExec().WithArgs(a.ModifiedBy, a.ModifiedDate, a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
 		a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity, a.PromoProductType,
 		a.StartTripPeriod, a.EndTripPeriod, a.HowToGet, a.HowToUse, a.TermCondition, a.Disclaimer,a.MaxDiscount,
 		a.IsAnyTripPeriod, a.Id).

@@ -191,7 +191,7 @@ func (m *excludeRepository) Update(ctx context.Context, a *models.Exclude) error
 		return nil
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.ExcludeName, a.ExcludeIcon, a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.ExcludeName, a.ExcludeIcon, a.Id)
 	if err != nil {
 		return err
 	}

@@ -123,12 +123,13 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 		getById,_:= p.promoRepo.GetById(ctx,command.Id)
 		command.PromoImage = getById.PromoImage
 	}
+	now := time.Now()
 	promo := models.Promo{
 		Id:                 command.Id,
 		CreatedBy:          "",
 		CreatedDate:        time.Now(),
 		ModifiedBy:         &currentUser.Name,
-		ModifiedDate:       nil,
+		ModifiedDate:       &now,
 		DeletedBy:          nil,
 		DeletedDate:        nil,
 		IsDeleted:          0,
