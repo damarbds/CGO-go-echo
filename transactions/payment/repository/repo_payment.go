@@ -28,7 +28,7 @@ func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment 
 		transactions.remarks = ?
 	WHERE
 		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id) 
-		AND transactions.status != 5
+		AND transactions.status != 2
 		AND DATE(booking_exps.booking_date) = ? `
 
 		if payment.TransId != "" {
@@ -46,7 +46,7 @@ func (p paymentRepository) ChangeStatusTransByDate(ctx context.Context, payment 
 		transactions.remarks = ?
 	WHERE
 		(booking_exp_id = booking_exps.id OR booking_exps.order_id = transactions.order_id)
-		AND transactions.status = 5
+		AND transactions.status = 2
 		AND DATE(booking_exps.booking_date) = ? `
 
 		if payment.TransId != "" {
