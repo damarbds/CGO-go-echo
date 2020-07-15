@@ -9142,6 +9142,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		*getDetailBooking.OriginalPrice = originalPrice
 	}
 	var experiencePaymentType *models.ExperiencePaymentTypeDto
+	var expPayment	*models.ExpPaymentObj
 	if getDetailBooking.ExperiencePaymentId != "" {
 		query, err := b.experiencePaymentTypeRepo.GetById(ctx, getDetailBooking.ExperiencePaymentId)
 		if err != nil {
@@ -9149,6 +9150,77 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		}
 		for _, element := range query {
 			if element.Id == getDetailBooking.ExperiencePaymentId {
+				//exp payment
+				var currency string
+				if element.Currency == 1 {
+					currency = "USD"
+				} else {
+					currency = "IDR"
+				}
+
+				var priceItemType string
+				if element.PriceItemType == 1 {
+					priceItemType = "Per Pax"
+				} else {
+					priceItemType = "Per Trip"
+				}
+				customPrice := make([]models.CustomPrice, 0)
+				if element.CustomPrice != nil {
+					if *element.CustomPrice != "" {
+						errObject := json.Unmarshal([]byte(*element.CustomPrice), &customPrice)
+						if errObject != nil {
+							return nil, models.ErrInternalServerError
+						}
+					}
+				}
+
+				if currencyPrice == "USD" {
+					if currency == "IDR" {
+						convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+						calculatePrice := convertCurrency.Rates.USD * element.Price
+						element.Price = calculatePrice
+						currency = "USD"
+					}
+				} else if currencyPrice == "IDR" {
+					if currency == "USD" {
+						convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+						calculatePrice := convertCurrency.Rates.IDR * element.Price
+						element.Price = calculatePrice
+						currency = "IDR"
+					}
+				}
+
+				for index, elementCustomPrice := range customPrice {
+					if currencyPrice == "USD" {
+						if elementCustomPrice.Currency == "IDR" {
+							convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "IDR", "USD")
+							calculatePrice := convertCurrency.Rates.USD * elementCustomPrice.Price
+							customPrice[index].Price = calculatePrice
+							customPrice[index].Currency = "USD"
+						}
+					} else if currencyPrice == "IDR" {
+						if elementCustomPrice.Currency == "USD" {
+							convertCurrency, _ := b.currencyUsecase.ExchangeRatesApi(ctx, "USD", "IDR")
+							calculatePrice := convertCurrency.Rates.IDR * elementCustomPrice.Price
+							customPrice[index].Price = calculatePrice
+							customPrice[index].Currency = "IDR"
+						}
+					}
+				}
+				expPayobj := models.ExpPaymentObj{
+					Id:              element.Id,
+					Currency:        currency,
+					Price:           element.Price,
+					PriceItemType:   priceItemType,
+					PaymentTypeId:   element.ExpPaymentTypeId,
+					PaymentTypeName: element.ExpPaymentTypeName,
+					PaymentTypeDesc: element.ExpPaymentTypeDesc,
+					CustomPrice:     customPrice,
+				}
+
+				expPayment = &expPayobj
+
+				//payment type
 				paymentType := models.ExperiencePaymentTypeDto{
 					Id:   element.ExpPaymentTypeId,
 					Name: element.ExpPaymentTypeName,
@@ -9191,6 +9263,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 					paymentType.RemainingPayment = 0
 				}
 				experiencePaymentType = &paymentType
+
 			}
 		}
 	}
@@ -9296,6 +9369,7 @@ func (b bookingExpUsecase) GetDetailBookingID(c context.Context, bookingId, book
 		ExperiencePaymentId:   getDetailBooking.ExperiencePaymentId,
 		Experience:            expDetail,
 		ExperiencePaymentType: experiencePaymentType,
+		ExpPayment:expPayment,
 		IsReview:              isReview,
 		MidtransUrl:           getDetailBooking.PaymentUrl,
 		ExChangeRates:         getDetailBooking.ExChangeRates,
