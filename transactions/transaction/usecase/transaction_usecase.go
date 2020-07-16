@@ -80,8 +80,8 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 		} else if item.TransactionStatus == 1 {
 			status = "Waiting approval"
 		} else if item.TransactionStatus == 2 &&
-			(item.CheckInDate.Format("02 January 2006") <= time.Now().AddDate(0, 0, 14).Format("02 January 2006") &&
-				item.CheckInDate.Format("02 January 2006") >= time.Now().Format("02 January 2006")) {
+			(item.CheckInDate.Format("2006-01-02") <= time.Now().AddDate(0, 0, 14).Format("2006-01-02") &&
+				item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
 			status = "Upcoming"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
 			status = "Confirm"
@@ -189,7 +189,7 @@ func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTr
 	return total, nil
 }
 
-func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int, token string, isAdmin bool, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string, class string, departureTimeStart string, departureTimeEnd string, arrivalTimeStart string, arrivalTimeEnd string, transactionId string) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, statusParam string, page, limit, offset *int, token string, isAdmin bool, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string, class string, departureTimeStart string, departureTimeEnd string, arrivalTimeStart string, arrivalTimeEnd string, transactionId string) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	var merchantId string
@@ -203,7 +203,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, statusParam, limit, offset, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 
 		if err != nil {
 			return nil, err
@@ -215,7 +215,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, statusParam, limit, offset, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 
 		if err != nil {
 			return nil, err
@@ -308,8 +308,8 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		} else if item.TransactionStatus == 1 {
 			status = "Waiting approval"
 		} else if item.TransactionStatus == 2 &&
-			(item.CheckInDate.Format("02 January 2006") <= time.Now().AddDate(0, 0, 14).Format("02 January 2006") &&
-				item.CheckInDate.Format("02 January 2006") >= time.Now().Format("02 January 2006")) {
+			(item.CheckInDate.Format("2006-01-02") <= time.Now().AddDate(0, 0, 14).Format("2006-01-02") &&
+				item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
 			status = "Upcoming"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
 			status = "Confirm"
@@ -319,6 +319,9 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			status = "Failed"
 		} else if item.TransactionStatus == 2 && item.BookingStatus == 3 {
 			status = "Boarded"
+		}
+		if status == "Upcoming" && statusParam == "confirm"{
+			status = "Confirm"
 		}
 		transactions[i] = &models.TransactionDto{
 			TransactionId:         item.TransactionId,
@@ -354,9 +357,9 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 	}
 	var totalRecords int
 	if token != "" && isAdmin == true {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, statusParam, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 	} else {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, statusParam, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 	}
 
 	if limit == nil {
