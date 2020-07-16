@@ -30,6 +30,7 @@ func Newbooking_expHandler(e *echo.Echo, us booking_exp.Usecase) {
 	}
 	e.GET("booking/download-ticket", handler.DownloadTicketPDF)
 	e.POST("booking/remaining-payment-booking", handler.RemainingPaymentBooking)
+	e.POST("booking/changes-status-scheduler", handler.ChangesStatusExpiredPayment)
 	e.POST("booking/update-expired-payment", handler.UpdateStatusExpiredPayment)
 	e.POST("booking/checkout", handler.CreateBooking)
 	e.GET("booking/detail/:id", handler.GetDetail)
@@ -225,6 +226,19 @@ func (a *booking_expHandler) RemainingPaymentBooking(c echo.Context) error {
 	}
 
 	err := a.booking_expUsecase.RemainingPaymentNotification(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, true)
+
+}
+func (a *booking_expHandler) ChangesStatusExpiredPayment(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err := a.booking_expUsecase.ChangeStatusTransactionScheduler(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

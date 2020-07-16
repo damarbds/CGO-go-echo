@@ -6,6 +6,7 @@ import (
 )
 
 type Usecase interface {
+	ChangeStatusTransactionScheduler(ctx context.Context)error
 	PaypalAutoComplete(ctx context.Context,bookingId string)(*models.ResponseDelete,error)
 	UpdateTransactionStatusExpired(ctx context.Context)error
 	DownloadTicketTransportation(ctx context.Context,orderId string)(*string, error)
