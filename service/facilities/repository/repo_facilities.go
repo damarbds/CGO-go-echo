@@ -191,7 +191,7 @@ func (m *facilityRepository) Update(ctx context.Context, a *models.Facilities) e
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.FacilityName,a.IsNumerable, a.FacilityIcon,a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.FacilityName,a.IsNumerable, a.FacilityIcon,a.Id)
 	if err != nil {
 		return err
 	}

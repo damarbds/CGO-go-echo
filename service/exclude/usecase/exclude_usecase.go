@@ -123,7 +123,7 @@ func (f excludeUsecase) Create(ctx context.Context, exc *models.NewCommandExclud
 	excludes := models.Exclude{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
@@ -158,12 +158,13 @@ func (f excludeUsecase) Update(ctx context.Context, exc *models.NewCommandExclud
 		getById ,_ := f.excludeRepo.GetById(ctx,exc.Id)
 		exc.ExcludeIcon = getById.ExcludeIcon
 	}
+	now := time.Now()
 	excludes := models.Exclude{
 		Id:           exc.Id,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
-		ModifiedBy:   nil,
-		ModifiedDate: nil,
+		CreatedDate:  time.Now(),
+		ModifiedBy:   &currentUser.Name,
+		ModifiedDate: &now,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,

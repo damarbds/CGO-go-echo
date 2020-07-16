@@ -6,7 +6,6 @@ import (
 
 	"github.com/service/exp_availability"
 
-	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -157,8 +156,8 @@ func (e exp_availabilityRepository) GetByExpId(ctx context.Context, expId string
 	return list, nil
 }
 func (m *exp_availabilityRepository) Insert(ctx context.Context, a models.ExpAvailability) (string, error) {
-	id := guuid.New()
-	a.Id = id.String()
+	//id := guuid.New()
+	//a.Id = id.String()
 	query := `INSERT exp_availabilities SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_availability_month=?,
 				exp_availability_date=?,exp_availability_year=?,exp_id=?`
@@ -166,7 +165,7 @@ func (m *exp_availabilityRepository) Insert(ctx context.Context, a models.ExpAva
 	if err != nil {
 		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpAvailabilityMonth,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.ExpAvailabilityMonth,
 		a.ExpAvailabilityDate, a.ExpAvailabilityYear, a.ExpId)
 	if err != nil {
 		return "", err
@@ -189,7 +188,7 @@ func (m *exp_availabilityRepository) Update(ctx context.Context, a models.ExpAva
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), nil, nil, 0, 1, a.ExpAvailabilityMonth,
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, nil, nil, 0, 1, a.ExpAvailabilityMonth,
 		a.ExpAvailabilityDate, a.ExpAvailabilityYear, a.ExpId, a.Id)
 	if err != nil {
 		return err

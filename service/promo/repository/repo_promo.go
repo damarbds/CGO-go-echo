@@ -3,10 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
 	"time"
-
-	guuid "github.com/google/uuid"
 
 	"github.com/sirupsen/logrus"
 
@@ -125,7 +122,7 @@ func (m *promoRepository) Delete(ctx context.Context, id string, deletedBy strin
 }
 
 func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string, error) {
-	a.Id = guuid.New().String()
+	//a.Id = guuid.New().String()
 	query := `INSERT promos SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , promo_code=?,promo_name=? , 
 				promo_desc=? ,promo_value=?,promo_type=?,promo_image=?,start_date=?,end_date=?,currency_id	=?,
@@ -135,7 +132,7 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string, 
 	if err != nil {
 		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.PromoCode, a.PromoName,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.PromoCode, a.PromoName,
 		a.PromoDesc, a.PromoValue, a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage,
 		a.ProductionCapacity,a.PromoProductType,a.StartTripPeriod,a.EndTripPeriod,a.HowToGet,a.HowToUse,a.TermCondition,
 		a.Disclaimer,a.MaxDiscount,a.IsAnyTripPeriod)
@@ -144,9 +141,9 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string, 
 	}
 
 	//lastID, err := res.RowsAffected()
-	if err != nil {
-		return "", err
-	}
+	//if err != nil {
+	//	return "", err
+	//}
 
 	//a.Id = lastID
 	return a.Id, nil
@@ -160,10 +157,10 @@ func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
 		a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity, a.PromoProductType,
 		a.StartTripPeriod, a.EndTripPeriod, a.HowToGet, a.HowToUse, a.TermCondition, a.Disclaimer,a.MaxDiscount,
 		a.IsAnyTripPeriod, a.Id)
@@ -229,10 +226,10 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string,promoType *
 
 func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, search string) ([]*models.Promo, error) {
 	if page != nil && size != nil {
-		query := `Select * FROM promos where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM promos where is_deleted = 0 AND is_active = 1`
 
 		if search != "" {
-			query = query + `AND (promo_name LIKE '%` + search + `%'` +
+			query = query + ` AND (promo_name LIKE '%` + search + `%'` +
 				`OR promo_desc LIKE '%` + search + `%' ` +
 				`OR start_date LIKE '%` + search + `%' ` +
 				`OR end_date LIKE '%` + search + `%' ` +
@@ -247,10 +244,10 @@ func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, searc
 		return res, err
 
 	} else {
-		query := `Select * FROM promos where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM promos where is_deleted = 0 AND is_active = 1`
 
 		if search != "" {
-			query = query + `AND (promo_name LIKE '%` + search + `%'` +
+			query = query + ` AND (promo_name LIKE '%` + search + `%'` +
 				`OR promo_desc LIKE '%` + search + `%' ` +
 				`OR start_date LIKE '%` + search + `%' ` +
 				`OR end_date LIKE '%` + search + `%' ` +
@@ -274,24 +271,4 @@ func checkCount(rows *sql.Rows) (count int, err error) {
 		}
 	}
 	return count, nil
-}
-
-// DecodeCursor will decode cursor from user for mysql
-func DecodeCursor(encodedTime string) (time.Time, error) {
-	byt, err := base64.StdEncoding.DecodeString(encodedTime)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	timeString := string(byt)
-	t, err := time.Parse(timeFormat, timeString)
-
-	return t, err
-}
-
-// EncodeCursor will encode cursor from mysql to user
-func EncodeCursor(t time.Time) string {
-	timeString := t.Format(timeFormat)
-
-	return base64.StdEncoding.EncodeToString([]byte(timeString))
 }

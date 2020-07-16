@@ -159,13 +159,13 @@ func (f includeUsecase) Update(ctx context.Context, inc *models.NewCommandInclud
 		getById,_:= f.includeRepo.GetById(ctx,inc.Id)
 		inc.IncludeIcon = getById.IncludeIcon
 	}
-
+	now := time.Now()
 	includes := models.Include{
 		Id:           inc.Id,
 		CreatedBy:    currentUser.Name,
 		CreatedDate:  time.Time{},
-		ModifiedBy:   nil,
-		ModifiedDate: nil,
+		ModifiedBy:   &currentUser.Name,
+		ModifiedDate: &now,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,

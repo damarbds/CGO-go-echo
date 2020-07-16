@@ -454,12 +454,13 @@ func (c cPCUsecase) UpdateCountry(ctx context.Context, p *models.NewCommandCount
 	if err != nil {
 		return nil, err
 	}
+	now := time.Now()
 	country := models.Country{
 		Id:           p.Id,
 		CreatedBy:    "",
 		CreatedDate:  time.Time{},
 		ModifiedBy:   &currentUser.Name,
-		ModifiedDate: nil,
+		ModifiedDate: &now,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,

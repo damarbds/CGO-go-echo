@@ -144,7 +144,7 @@ type BookingExpJoin struct {
 	Province               string         `json:"province"`
 	Country                string         `json:"country"`
 	ExperiencePaymentId    string         `json:"experience_payment_id"`
-	Currency               int            `json:"currency"`
+	Currency               string            `json:"currency"`
 	AccountBank            *string        `json:"account_bank"`
 	Icon                   *string        `json:"icon"`
 	CreatedDateTransaction *time.Time     `json:"created_date_transaction"`
@@ -231,6 +231,7 @@ type BookingExpDetailDto struct {
 	Experience             []BookingExpDetail            `json:"experience,omitempty"`
 	Transportation         []BookingTransportationDetail `json:"transportation,omitempty"`
 	ExperiencePaymentType  *ExperiencePaymentTypeDto     `json:"experience_payment_type"`
+	ExpPayment				*ExpPaymentObj				`json:"exp_payment"`
 	IsReview               bool                          `json:"is_review"`
 	ReviewDesc             *string                       `json:"review_desc"`
 	GuideReview            *float64                      `json:"guide_review"`

@@ -23,16 +23,16 @@ type ResponseError struct {
 }
 
 // promoHandler  represent the httphandler for promo
-type promoHandler struct {
-	isUsecase identityserver.Usecase
-	promoUsecase promo.Usecase
+type PromoHandler struct {
+	IsUsecase identityserver.Usecase
+	PromoUsecase promo.Usecase
 }
 
 // NewpromoHandler will initialize the promos/ resources endpoint
 func NewpromoHandler(e *echo.Echo, us promo.Usecase,is identityserver.Usecase) {
-	handler := &promoHandler{
-		isUsecase:is,
-		promoUsecase: us,
+	handler := &PromoHandler{
+		IsUsecase:is,
+		PromoUsecase: us,
 	}
 	e.POST("admin/promo", handler.CreatePromo)
 	e.PUT("admin/promo/:id", handler.UpdatePromo)
@@ -42,7 +42,7 @@ func NewpromoHandler(e *echo.Echo, us promo.Usecase,is identityserver.Usecase) {
 	e.GET("service/special-promo", handler.GetAllPromo)
 	e.GET("service/special-promo/:code", handler.GetPromoByCode)
 }
-func (a *promoHandler) Delete(c echo.Context) error {
+func (a *PromoHandler) Delete(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -57,7 +57,7 @@ func (a *promoHandler) Delete(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.promoUsecase.Delete(ctx, id, token)
+	result, err := a.PromoUsecase.Delete(ctx, id, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -74,7 +74,7 @@ func isRequestValid(m *models.NewCommandPromo) (bool, error) {
 }
 
 // GetByID will get article by given id
-func (a *promoHandler) GetAllPromo(c echo.Context) error {
+func (a *PromoHandler) GetAllPromo(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -85,13 +85,13 @@ func (a *promoHandler) GetAllPromo(c echo.Context) error {
 	if qpage != "" && qsize != "" {
 		page, _ := strconv.Atoi(qpage)
 		size, _ := strconv.Atoi(qsize)
-		art, err := a.promoUsecase.Fetch(ctx, &page, &size)
+		art, err := a.PromoUsecase.Fetch(ctx, &page, &size)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
 	} else {
-		art, err := a.promoUsecase.Fetch(ctx, nil, nil)
+		art, err := a.PromoUsecase.Fetch(ctx, nil, nil)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -99,7 +99,7 @@ func (a *promoHandler) GetAllPromo(c echo.Context) error {
 	}
 }
 // Store will store the user by given request body
-func (a *promoHandler) CreatePromo(c echo.Context) error {
+func (a *PromoHandler) CreatePromo(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -124,7 +124,7 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Promo")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Promo")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -181,7 +181,7 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	promo,error := a.promoUsecase.Create(ctx, promoCommand, token)
+	promo,error := a.PromoUsecase.Create(ctx, promoCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -189,7 +189,7 @@ func (a *promoHandler) CreatePromo(c echo.Context) error {
 	return c.JSON(http.StatusOK, promo)
 }
 
-func (a *promoHandler) UpdatePromo(c echo.Context) error {
+func (a *PromoHandler) UpdatePromo(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -218,7 +218,7 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePath, _ = a.isUsecase.UploadFileToBlob(fileLocation, "Promo")
+		imagePath, _ = a.IsUsecase.UploadFileToBlob(fileLocation, "Promo")
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
 		if errRemove != nil {
@@ -273,7 +273,7 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	response,error := a.promoUsecase.Update(ctx, promoCommand, token)
+	response,error := a.PromoUsecase.Update(ctx, promoCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -281,7 +281,7 @@ func (a *promoHandler) UpdatePromo(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 // GetByID will get article by given id
-func (a *promoHandler) List(c echo.Context) error {
+func (a *PromoHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -305,7 +305,7 @@ func (a *promoHandler) List(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-		art, err := a.promoUsecase.List(ctx, page, limit,offset,search,token)
+		art, err := a.PromoUsecase.List(ctx, page, limit,offset,search,token)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -313,7 +313,7 @@ func (a *promoHandler) List(c echo.Context) error {
 
 }
 
-func (a *promoHandler) GetDetailID(c echo.Context) error {
+func (a *PromoHandler) GetDetailID(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -325,14 +325,14 @@ func (a *promoHandler) GetDetailID(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.promoUsecase.GetDetail(ctx,id,token)
+	result, err := a.PromoUsecase.GetDetail(ctx,id,token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, result)
 }
 
-func (a *promoHandler) GetPromoByCode(c echo.Context) error {
+func (a *PromoHandler) GetPromoByCode(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -349,7 +349,7 @@ func (a *promoHandler) GetPromoByCode(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	results, err := a.promoUsecase.GetByCode(ctx, code,promoType,merchantId,token)
+	results, err := a.PromoUsecase.GetByCode(ctx, code,promoType,merchantId,token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

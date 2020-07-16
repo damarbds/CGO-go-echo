@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/auth/admin"
+	"github.com/google/uuid"
 	"math"
 	"time"
 
@@ -140,9 +141,9 @@ func (m harborsUsecase) Create(ctx context.Context, p *models.NewCommandHarbors,
 	}
 
 	harbors := models.Harbors{
-		Id:               "",
+		Id:               uuid.New().String(),
 		CreatedBy:        currentUser.Name,
-		CreatedDate:      time.Time{},
+		CreatedDate:      time.Now(),
 		ModifiedBy:       nil,
 		ModifiedDate:     nil,
 		DeletedBy:        nil,
@@ -171,7 +172,10 @@ func (m harborsUsecase) Create(ctx context.Context, p *models.NewCommandHarbors,
 func (m harborsUsecase) Update(ctx context.Context, p *models.NewCommandHarbors, token string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
-
+	if p.HarborsImage == ""{
+		getHarbor,_ := m.harborsRepo.GetByID(ctx,p.Id)
+		p.HarborsImage = getHarbor.HarborsImage
+	}
 	currentUser, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
 	if err != nil {
 		return nil, err

@@ -14,7 +14,6 @@ import (
 	"github.com/service/harbors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	validator "gopkg.in/go-playground/validator.v9"
 )
 
 // ResponseError represent the reseponse error struct
@@ -23,16 +22,16 @@ type ResponseError struct {
 }
 
 // harborsHandler  represent the httphandler for harbors
-type harborsHandler struct {
-	isUsecase      identityserver.Usecase
-	harborsUsecase harbors.Usecase
+type HarborsHandler struct {
+	IsUsecase      identityserver.Usecase
+	HarborsUsecase harbors.Usecase
 }
 
 // NewharborsHandler will initialize the harborss/ resources endpoint
 func NewharborsHandler(e *echo.Echo, us harbors.Usecase, isUsecase identityserver.Usecase) {
-	handler := &harborsHandler{
-		harborsUsecase: us,
-		isUsecase:      isUsecase,
+	handler := &HarborsHandler{
+		HarborsUsecase: us,
+		IsUsecase:      isUsecase,
 	}
 	e.GET("service/exp-destination", handler.GetAllHarbors)
 	e.POST("master/harbors", handler.CreateHarbors)
@@ -41,18 +40,8 @@ func NewharborsHandler(e *echo.Echo, us harbors.Usecase, isUsecase identityserve
 	e.GET("master/harbors/:id", handler.GetDetailHarborsID)
 	e.DELETE("master/harbors/:id", handler.DeleteHarbors)
 }
-
-func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
-	validate := validator.New()
-	err := validate.Struct(m)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
 // GetByID will get article by given id
-func (a *harborsHandler) GetAllHarbors(c echo.Context) error {
+func (a *HarborsHandler) GetAllHarbors(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 	search := c.QueryParam("search")
@@ -64,13 +53,13 @@ func (a *harborsHandler) GetAllHarbors(c echo.Context) error {
 	if qpage != "" && qsize != "" {
 		page, _ := strconv.Atoi(qpage)
 		size, _ := strconv.Atoi(qsize)
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, &size, &page, search, harborsType)
+		art, err := a.HarborsUsecase.GetAllWithJoinCPC(ctx, &page,&size, search, harborsType)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		return c.JSON(http.StatusOK, art)
 	} else {
-		art, err := a.harborsUsecase.GetAllWithJoinCPC(ctx, nil, nil, search, harborsType)
+		art, err := a.HarborsUsecase.GetAllWithJoinCPC(ctx, nil, nil, search, harborsType)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -79,7 +68,7 @@ func (a *harborsHandler) GetAllHarbors(c echo.Context) error {
 
 	return nil
 }
-func (a *harborsHandler) DeleteHarbors(c echo.Context) error {
+func (a *HarborsHandler) DeleteHarbors(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -93,7 +82,7 @@ func (a *harborsHandler) DeleteHarbors(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	result, err := a.harborsUsecase.Delete(ctx, id, token)
+	result, err := a.HarborsUsecase.Delete(ctx, id, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -101,7 +90,7 @@ func (a *harborsHandler) DeleteHarbors(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *harborsHandler) ListHarbors(c echo.Context) error {
+func (a *HarborsHandler) ListHarbors(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -116,7 +105,7 @@ func (a *harborsHandler) ListHarbors(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.harborsUsecase.GetAll(ctx, page, limit, offset)
+	art, err := a.HarborsUsecase.GetAll(ctx, page, limit, offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -125,7 +114,7 @@ func (a *harborsHandler) ListHarbors(c echo.Context) error {
 }
 
 // Store will store the user by given request body
-func (a *harborsHandler) CreateHarbors(c echo.Context) error {
+func (a *HarborsHandler) CreateHarbors(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -154,7 +143,7 @@ func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Harbors")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Harbors")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -181,7 +170,7 @@ func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	harbors, error := a.harborsUsecase.Create(ctx, &harborsCommand, token)
+	harbors, error := a.HarborsUsecase.Create(ctx, &harborsCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -189,7 +178,7 @@ func (a *harborsHandler) CreateHarbors(c echo.Context) error {
 	return c.JSON(http.StatusOK, harbors)
 }
 
-func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
+func (a *HarborsHandler) UpdateHarbors(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -218,7 +207,7 @@ func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Harbors")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Harbors")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -245,7 +234,7 @@ func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	harbors, error := a.harborsUsecase.Update(ctx, &harborsCommand, token)
+	harbors, error := a.HarborsUsecase.Update(ctx, &harborsCommand, token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -253,14 +242,14 @@ func (a *harborsHandler) UpdateHarbors(c echo.Context) error {
 	return c.JSON(http.StatusOK, harbors)
 }
 
-func (a *harborsHandler) GetDetailHarborsID(c echo.Context) error {
+func (a *HarborsHandler) GetDetailHarborsID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	result, err := a.harborsUsecase.GetById(ctx, id)
+	result, err := a.HarborsUsecase.GetById(ctx, id)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

@@ -92,6 +92,8 @@ func (e *expTypeRepository) GetByName(ctx context.Context, name string) (*models
 		}
 		return nil, err
 	}
-
+	if len(list) == 0 {
+		return nil, models.ErrNotFound
+	}
 	return list[0], nil
 }
