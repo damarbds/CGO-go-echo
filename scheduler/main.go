@@ -35,7 +35,7 @@ func main() {
 	go CreateExChangeJob(baseUrlLocal)
 
 	//prd
-	go ChangeStatusJobPRD(baseUrlLocalPRD)
+	// go ChangeStatusJobPRD(baseUrlLocalPRD)
 	go UpdateStatusExpiredPaymentJobPRD(baseUrlLocalPRD)
 	go RemainingPaymentJobPRD(baseUrlLocalPRD)
 	go CreateExChangeJobPRD(baseUrlLocalPRD)
@@ -98,7 +98,7 @@ func ChangeStatusJob(baseUrl string) {
 			return
 		case t := <-ticker.C:
 			now := time.Now().Format("15:04")
-			if now == "01:00"{
+			if now == "01:00" {
 				req, err := http.NewRequest("POST", baseUrl+"/booking/changes-status-scheduler", nil)
 
 				if err != nil {
@@ -220,7 +220,7 @@ func ChangeStatusJobPRD(baseUrl string) {
 			return
 		case t := <-ticker.C:
 			now := time.Now().Format("15:04")
-			if now == "01:00"{
+			if now == "01:00" {
 				req, err := http.NewRequest("POST", baseUrl+"/booking/changes-status-scheduler", nil)
 
 				if err != nil {
