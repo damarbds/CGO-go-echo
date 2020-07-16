@@ -127,6 +127,9 @@ func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Contex
 				queryTrans = queryTrans + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' `
 			}
 		}
+	}else{
+		queryExp = queryExp + ` AND t.status in (0,1,2,5) `
+		queryTrans = queryTrans + ` AND t.status in (0,1,2,5) `
 	}
 	if date != "" {
 		queryExp = queryExp + ` AND DATE(b.booking_date) = '` + date + `' `

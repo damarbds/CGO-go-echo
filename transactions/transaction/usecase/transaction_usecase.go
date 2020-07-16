@@ -36,19 +36,19 @@ func NewTransactionUsecase(promoRepo promo.Repository, au admin.Usecase, mu merc
 	}
 }
 
-func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, date string, transId string, expId string, token string,status string) (*models.TransactionScheduleDto, error) {
+func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, date string, transId string, expId string, token string, status string) (*models.TransactionScheduleDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	currentMerchant, err := t.merchantUsecase.ValidateTokenMerchant(ctx, token)
 	if err != nil {
 		return nil, models.ErrUnAuthorize
 	}
-	listTransactions ,err := t.transactionRepo.GetTransactionByExpIdORTransId(ctx,date,expId,transId,currentMerchant.Id,status)
+	listTransactions, err := t.transactionRepo.GetTransactionByExpIdORTransId(ctx, date, expId, transId, currentMerchant.Id, status)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	if len(listTransactions) == 0 {
-		return nil,nil
+		return nil, nil
 	}
 	var expType []string
 	if listTransactions[0].ExpType != "" {
@@ -68,11 +68,11 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 		result.TransFrom = listTransactions[0].ProvinceName
 		result.ArrivalTime = listTransactions[0].ArrivalTime
 		result.DepartureTime = listTransactions[0].DepartureTime
-	}else {
+	} else {
 		result.ExpId = &listTransactions[0].ExpId
 		result.ExpTitle = &listTransactions[0].ExpTitle
 	}
-	result.Transactions = make([]models.TransactionBooked,len(listTransactions))
+	result.Transactions = make([]models.TransactionBooked, len(listTransactions))
 	for i, item := range listTransactions {
 		var status string
 		if item.TransactionStatus == 0 {
@@ -81,8 +81,8 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 			status = "Waiting approval"
 		} else if item.TransactionStatus == 2 &&
 			(item.CheckInDate.Format("02 January 2006") <= time.Now().AddDate(0, 0, 14).Format("02 January 2006") &&
-			item.CheckInDate.Format("02 January 2006") >= time.Now().Format("02 January 2006")) {
-			status = "Up coming"
+				item.CheckInDate.Format("02 January 2006") >= time.Now().Format("02 January 2006")) {
+			status = "Upcoming"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
 			status = "Confirm"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") < time.Now().Format("2006-01-02")) {
@@ -113,7 +113,7 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 			TransactionStatus: status,
 		}
 	}
-	return &result,nil
+	return &result, nil
 }
 
 func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date string, isTransportation bool, isExperience bool, token string) ([]*models.TransactionByDateDto, error) {
@@ -124,11 +124,11 @@ func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date strin
 		return nil, models.ErrUnAuthorize
 	}
 
-	listTransactions ,err := t.transactionRepo.GetTransactionByDate(ctx,date,isTransportation,isExperience,currentMerchant.Id)
+	listTransactions, err := t.transactionRepo.GetTransactionByDate(ctx, date, isTransportation, isExperience, currentMerchant.Id)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	result := make([]*models.TransactionByDateDto,len(listTransactions))
+	result := make([]*models.TransactionByDateDto, len(listTransactions))
 	for i, item := range listTransactions {
 		result[i] = &models.TransactionByDateDto{
 			ExpId:         item.ExpId,
@@ -136,12 +136,12 @@ func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date strin
 			TransId:       item.TransId,
 			DepartureTime: item.DepartureTime,
 			ArrivalTime:   item.ArrivalTime,
-			TransTo:   item.HarborsDest,
-			TransFrom: item.HarborsSource,
-			MaxCapacity:item.Capacity,
+			TransTo:       item.HarborsDest,
+			TransFrom:     item.HarborsSource,
+			MaxCapacity:   item.Capacity,
 		}
-		if result[i].ExpId != nil{
-			getBooking, err := t.transactionRepo.GetCountByExpId(ctx, date, *result[i].ExpId,true)
+		if result[i].ExpId != nil {
+			getBooking, err := t.transactionRepo.GetCountByExpId(ctx, date, *result[i].ExpId, true)
 			if err != nil {
 				return nil, err
 			}
@@ -149,7 +149,7 @@ func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date strin
 			var guestDescs int
 
 			if getBooking != nil {
-				for _,booking := range getBooking{
+				for _, booking := range getBooking {
 					guestDesc := make([]models.GuestDescObj, 0)
 					if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
 						return nil, models.ErrInternalServerError
@@ -158,12 +158,12 @@ func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date strin
 				}
 			}
 			result[i].SeatTaken = guestDescs
-		}else if result[i].TransId != nil {
-			getbooking, _ := t.transactionRepo.GetCountByTransId(ctx, *result[i].TransId,true,date)
+		} else if result[i].TransId != nil {
+			getbooking, _ := t.transactionRepo.GetCountByTransId(ctx, *result[i].TransId, true, date)
 
 			var getbookingCount int
 			if getbooking != nil {
-				for _,booking := range getbooking{
+				for _, booking := range getbooking {
 					guestDesc := make([]models.GuestDescObj, 0)
 					if errUnmarshal := json.Unmarshal([]byte(*booking), &guestDesc); errUnmarshal != nil {
 						return nil, models.ErrInternalServerError
@@ -174,7 +174,7 @@ func (t transactionUsecase) GetTransactionByDate(ctx context.Context, date strin
 			result[i].SeatTaken = getbookingCount
 		}
 	}
-	return result,nil
+	return result, nil
 }
 
 func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTransaction, error) {
@@ -189,7 +189,7 @@ func (t transactionUsecase) CountThisMonth(ctx context.Context) (*models.TotalTr
 	return total, nil
 }
 
-func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int, token string, isAdmin bool, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string,class string,departureTimeStart string,departureTimeEnd string,arrivalTimeStart string,arrivalTimeEnd string,transactionId string) (*models.TransactionWithPagination, error) {
+func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search, status string, page, limit, offset *int, token string, isAdmin bool, isTransportation bool, isExperience bool, isSchedule bool, tripType, paymentType, activityType string, confirmType string, class string, departureTimeStart string, departureTimeEnd string, arrivalTimeStart string, arrivalTimeEnd string, transactionId string) (*models.TransactionWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()
 	var merchantId string
@@ -203,7 +203,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 
 		if err != nil {
 			return nil, err
@@ -215,7 +215,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		}
 		merchantId = currentMerchant.Id
 
-		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
+		list, err = t.transactionRepo.List(ctx, startDate, endDate, search, status, limit, offset, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 
 		if err != nil {
 			return nil, err
@@ -310,7 +310,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		} else if item.TransactionStatus == 2 &&
 			(item.CheckInDate.Format("02 January 2006") <= time.Now().AddDate(0, 0, 14).Format("02 January 2006") &&
 				item.CheckInDate.Format("02 January 2006") >= time.Now().Format("02 January 2006")) {
-			status = "Up coming"
+			status = "Upcoming"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")) {
 			status = "Confirm"
 		} else if item.TransactionStatus == 2 && (item.CheckInDate.Format("2006-01-02") < time.Now().Format("2006-01-02")) {
@@ -340,23 +340,23 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			GuestCount:            expGuest,
 			Promo:                 promo,
 			Points:                item.Points,
-			ArrivalTime:item.ArrivalTime,
-			DepartureTime:item.DepartureTime,
+			ArrivalTime:           item.ArrivalTime,
+			DepartureTime:         item.DepartureTime,
 		}
 		if expType[0] != "Transportation" {
 			transactions[i].ExpDuration = *item.ExpDuration
 			transactions[i].ProvinceName = *item.ProvinceName
 			transactions[i].CountryName = *item.CountryName
-		}else {
+		} else {
 			transactions[i].TransTo = *item.CountryName
 			transactions[i].TransFrom = *item.ProvinceName
 		}
 	}
 	var totalRecords int
 	if token != "" && isAdmin == true {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "",isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, "", isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 	} else {
-		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId,isTransportation,isExperience, isSchedule, tripType, paymentType, activityType, confirmType,class,departureTimeStart,departureTimeEnd,arrivalTimeStart,arrivalTimeEnd,transactionId)
+		totalRecords, _ = t.transactionRepo.Count(ctx, startDate, endDate, search, status, merchantId, isTransportation, isExperience, isSchedule, tripType, paymentType, activityType, confirmType, class, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, transactionId)
 	}
 
 	if limit == nil {
