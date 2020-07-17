@@ -14,6 +14,28 @@ type Repository struct {
 	mock.Mock
 }
 
+func (_m *Repository) GetIdTransactionByStatus(ctx context.Context, transactionStatus int) ([]*string, error) {
+	ret := _m.Called(ctx,transactionStatus)
+
+	var r0 []*string
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*string); ok {
+		r0 = rf(ctx,transactionStatus)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx,transactionStatus)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 func (_m *Repository) GetTransactionByExpIdORTransId(ctx context.Context,date string,expId string,transId string,merchantId string,status string)([]*models.TransactionOut, error) {
 	ret := _m.Called(ctx,date,expId,transId,merchantId,status)
 
