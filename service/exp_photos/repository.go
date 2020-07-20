@@ -6,8 +6,6 @@ import (
 )
 
 type Repository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []*models.ExpPhotos, nextCursor string, err error)
-	GetByID(ctx context.Context, id string) (*models.ExpPhotos, error)
 	GetByExperienceID(ctx context.Context, id string) ([]*models.ExpPhotos, error)
 	Update(ctx context.Context, a *models.ExpPhotos) (*string, error)
 	Insert(ctx context.Context, a *models.ExpPhotos) (*string, error)
