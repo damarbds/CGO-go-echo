@@ -1822,14 +1822,9 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 		}
 	}
 
-	var expType []string
-	errObject := json.Unmarshal([]byte(res.ExpType), &expType)
-	if errObject != nil {
-		//fmt.Println("Error : ",err.Error())
-		return nil, models.ErrInternalServerError
-	}
+
 	expItinerary := models.ExpItineraryObject{}
-	errObject = json.Unmarshal([]byte(res.ExpInternary), &expItinerary)
+	errObject := json.Unmarshal([]byte(res.ExpInternary), &expItinerary)
 	if errObject != nil {
 		//fmt.Println("Error : ",err.Error())
 		return nil, models.ErrInternalServerError
@@ -1888,6 +1883,13 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 	minimumBooking := models.MinimumBookingObj{
 		MinimumBookingDesc:   res.MinimumBookingDesc,
 		MinimumBookingAmount: res.MinimumBookingAmount,
+	}
+
+
+	var expType []string
+	expTypes,_ := m.filterATRepo.GetJoinExpType(ctx,res.Id)
+	for _,elementType := range expTypes{
+		expType = append(expType,elementType.ExpTypeName)
 	}
 	countRating, err := m.reviewsRepo.CountRating(ctx, 0, res.Id)
 	experiences := models.ExperienceDto{
