@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"time"
 
-	guuid "github.com/google/uuid"
-
 	"github.com/models"
 	payment "github.com/service/exp_payment"
 	"github.com/sirupsen/logrus"
@@ -108,8 +106,8 @@ func (m *expPaymentRepository) GetById(ctx context.Context, id string) ([]*model
 	return list, nil
 }
 func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePayment) (string, error) {
-	id := guuid.New()
-	a.Id = id.String()
+	//id := guuid.New()
+	//a.Id = id.String()
 	query := `INSERT experience_payments SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_payment_type_id=?,exp_id=?,
 				price_item_type=?,currency=?,price=?,custom_price=?`
@@ -117,7 +115,7 @@ func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePa
 	if err != nil {
 		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.ExpPaymentTypeId, a.ExpId,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedBy, nil, nil, nil, nil, 0, 1, a.ExpPaymentTypeId, a.ExpId,
 		a.PriceItemType, a.Currency, a.Price, a.CustomPrice)
 	if err != nil {
 		return "", err
