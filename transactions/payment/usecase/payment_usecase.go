@@ -3,6 +3,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"github.com/auth/merchant"
 	"github.com/service/experience"
 	"github.com/service/transportation"
 	"html/template"
@@ -25,6 +26,7 @@ import (
 )
 
 type paymentUsecase struct {
+	merchantUsecase  merchant.Usecase
 	isUsecase        identityserver.Usecase
 	transactionRepo  transaction.Repository
 	notificationRepo notif.Repository
@@ -40,8 +42,9 @@ type paymentUsecase struct {
 
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(		transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(	merchantUsecase  merchant.Usecase	,transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
+		merchantUsecase:merchantUsecase,
 		transportationRepo:transportationRepo,
 		expRepo:expRepo,
 		bookingUsecase:   bookingUsecase,
@@ -5902,6 +5905,50 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
+
+func (p paymentUsecase) ConfirmPaymentBoarding(ctx context.Context, orderId string, token string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
+	defer cancel()
+	_, err := p.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	var bookingId string
+	checkOrderId,_ := p.bookingRepo.GetDetailBookingID(ctx,orderId,orderId)
+	if checkOrderId == nil{
+		checkOrderIdTranspotation,_ := p.bookingRepo.GetDetailTransportBookingID(ctx,orderId,orderId,nil)
+		if len(checkOrderIdTranspotation) == 0{
+			return nil,models.ErrNotFound
+		}else if *checkOrderIdTranspotation[0].TransactionStatus != 2{
+			return nil,models.CheckBoarding
+		}else {
+			bookingId = checkOrderIdTranspotation[0].Id
+			if err := p.transactionRepo.UpdateAfterPayment(ctx, 6, "", "", orderId); err != nil {
+				return nil,err
+			}
+			result := &models.ResponseDelete{
+				Id:      orderId,
+				Message: "Success Updating Status",
+			}
+			return result,nil
+		}
+
+	}else if *checkOrderId.TransactionStatus != 2{
+		return nil,models.CheckBoarding
+	}else {
+		bookingId = checkOrderId.Id
+		if err := p.transactionRepo.UpdateAfterPayment(ctx, 6, "", "", bookingId); err != nil {
+			return nil,err
+		}
+		result := &models.ResponseDelete{
+			Id:      orderId,
+			Message: "Success Updating Status",
+		}
+		return result,nil
+	}
+
+
+}
 
 func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction, token string, points float64,autoComplete bool) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
