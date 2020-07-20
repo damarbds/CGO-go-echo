@@ -18,15 +18,15 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type ruleHandler struct {
-	isUsecase identityserver.Usecase
-	ruleUsecase rule.Usecase
+type RuleHandler struct {
+	IsUsecase identityserver.Usecase
+	RuleUsecase rule.Usecase
 }
 
 func NewRuleHandler(e *echo.Echo, us rule.Usecase,isUsecase identityserver.Usecase) {
-	handler := &ruleHandler{
-		isUsecase:      isUsecase,
-		ruleUsecase: us,
+	handler := &RuleHandler{
+		IsUsecase:      isUsecase,
+		RuleUsecase: us,
 	}
 	e.POST("master/rule", handler.CreateRule)
 	e.PUT("master/rule/:id", handler.UpdateRule)
@@ -36,7 +36,7 @@ func NewRuleHandler(e *echo.Echo, us rule.Usecase,isUsecase identityserver.Useca
 	e.GET("service/rule", handler.List)
 }
 
-func (f *ruleHandler) List(c echo.Context) error {
+func (f *RuleHandler) List(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -50,13 +50,13 @@ func (f *ruleHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	list, err := f.ruleUsecase.List(ctx)
+	list, err := f.RuleUsecase.List(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, list)
 }
-func (a *ruleHandler) DeleteRule(c echo.Context) error {
+func (a *RuleHandler) DeleteRule(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -71,7 +71,7 @@ func (a *ruleHandler) DeleteRule(c echo.Context) error {
 		ctx = context.Background()
 	}
 	ruleId,_:= strconv.Atoi(id)
-	result, err := a.ruleUsecase.Delete(ctx, ruleId, token)
+	result, err := a.RuleUsecase.Delete(ctx, ruleId, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -79,7 +79,7 @@ func (a *ruleHandler) DeleteRule(c echo.Context) error {
 }
 
 // GetByID will get article by given id
-func (a *ruleHandler) GetAllRule(c echo.Context) error {
+func (a *RuleHandler) GetAllRule(c echo.Context) error {
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
 
@@ -94,7 +94,7 @@ func (a *ruleHandler) GetAllRule(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	art, err := a.ruleUsecase.GetAll(ctx, page,limit,offset)
+	art, err := a.RuleUsecase.GetAll(ctx, page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -102,7 +102,7 @@ func (a *ruleHandler) GetAllRule(c echo.Context) error {
 
 }
 // Store will store the user by given request body
-func (a *ruleHandler) CreateRule(c echo.Context) error {
+func (a *RuleHandler) CreateRule(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -131,7 +131,7 @@ func (a *ruleHandler) CreateRule(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Rule")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Rule")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -150,7 +150,7 @@ func (a *ruleHandler) CreateRule(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	rule,error := a.ruleUsecase.Create(ctx,&ruleCommand,token)
+	rule,error := a.RuleUsecase.Create(ctx,&ruleCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -158,7 +158,7 @@ func (a *ruleHandler) CreateRule(c echo.Context) error {
 	return c.JSON(http.StatusOK, rule)
 }
 
-func (a *ruleHandler) UpdateRule(c echo.Context) error {
+func (a *RuleHandler) UpdateRule(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -167,7 +167,7 @@ func (a *ruleHandler) UpdateRule(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
 	}
 
-	filupload, image, _ := c.Request().FormFile("include_icon")
+	filupload, image, _ := c.Request().FormFile("rule_icon")
 	dir, err := os.Getwd()
 	if err != nil {
 		return models.ErrInternalServerError
@@ -187,7 +187,7 @@ func (a *ruleHandler) UpdateRule(c echo.Context) error {
 		}
 
 		//w.Write([]byte("done"))
-		imagePat, _ := a.isUsecase.UploadFileToBlob(fileLocation, "Master/Rule")
+		imagePat, _ := a.IsUsecase.UploadFileToBlob(fileLocation, "Master/Rule")
 		imagePath = imagePat
 		targetFile.Close()
 		errRemove := os.Remove(fileLocation)
@@ -206,7 +206,7 @@ func (a *ruleHandler) UpdateRule(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	rule,error := a.ruleUsecase.Update(ctx,&ruleCommand,token)
+	rule,error := a.RuleUsecase.Update(ctx,&ruleCommand,token)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -214,7 +214,7 @@ func (a *ruleHandler) UpdateRule(c echo.Context) error {
 	return c.JSON(http.StatusOK, rule)
 }
 
-func (a *ruleHandler) GetDetailRuleID(c echo.Context) error {
+func (a *RuleHandler) GetDetailRuleID(c echo.Context) error {
 	id := c.Param("id")
 
 	ctx := c.Request().Context()
@@ -222,7 +222,7 @@ func (a *ruleHandler) GetDetailRuleID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	ruleId ,_:= strconv.Atoi(id)
-	result, err := a.ruleUsecase.GetById(ctx,ruleId)
+	result, err := a.RuleUsecase.GetById(ctx,ruleId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
