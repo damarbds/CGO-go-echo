@@ -64,6 +64,7 @@ type bookingExpUsecase struct {
 	currencyUsecase           currency.Usecase
 }
 
+
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(currencyUsecase currency.Usecase, usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -6044,6 +6045,21 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 )
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
+
+func (b bookingExpUsecase) ChangeStatusTransactionScheduler(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+	list, err := b.transactionRepo.GetIdTransactionByStatus(ctx,2)
+	if err != nil {
+		return err
+	}
+	for _, id := range list {
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, 4, "", *id, ""); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)

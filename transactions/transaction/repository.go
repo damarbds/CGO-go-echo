@@ -11,6 +11,7 @@ type Repository interface {
 	GetCountTransactionByPromoId(ctx context.Context,promoId string,userId string)(int,error)
 	GetTransactionDownPaymentByDate(ctx context.Context)([]*models.TransactionWithBooking,error)
 	GetIdTransactionExpired(ctx context.Context)([]*string ,error)
+	GetIdTransactionByStatus(ctx context.Context,transactionStatus int)([]*string ,error)
 	GetCountByExpId(ctx context.Context, date string, expId string,isTransaction bool) ([]*string, error)
 	GetCountByTransId(ctx context.Context, transId string,isTransaction bool,date string) ([]*string, error)
 	GetById(ctx context.Context, id string) (*models.TransactionWMerchant, error)
