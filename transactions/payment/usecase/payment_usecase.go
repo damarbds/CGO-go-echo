@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/auth/merchant"
+	guuid "github.com/google/uuid"
 	"github.com/service/experience"
 	"github.com/service/transportation"
 	"html/template"
@@ -6059,7 +6060,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 				return err
 			}
 			notif := models.Notification{
-				Id:           "",
+				Id:           guuid.New().String(),
 				CreatedBy:    getTransaction.CreatedBy,
 				CreatedDate:  time.Now(),
 				ModifiedBy:   nil,
@@ -6469,7 +6470,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 		listTransaction , _ := p.transactionRepo.GetByBookingDate(ctx,confirmIn.BookingDate,confirmIn.TransId,"")
 		for _,getTransaction := range listTransaction{
 			notif := models.Notification{
-				Id:           "",
+				Id:           guuid.New().String(),
 				CreatedBy:    getTransaction.CreatedBy,
 				CreatedDate:  time.Now(),
 				ModifiedBy:   nil,
@@ -6738,7 +6739,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		return err
 	}
 	notif := models.Notification{
-		Id:           "",
+		Id:           guuid.New().String(),
 		CreatedBy:    getTransaction.CreatedBy,
 		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
