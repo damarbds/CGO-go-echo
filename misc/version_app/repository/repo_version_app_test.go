@@ -12,7 +12,7 @@ import (
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
-func TestGetByType(t *testing.T) {
+func TestGetAll(t *testing.T) {
 	db, mock, err := sqlmock.New()
 
 	if err != nil {
@@ -50,7 +50,7 @@ func TestGetByType(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, anArticle, 1)
 }
-func TestGetByTypeErrorFetch(t *testing.T) {
+func TestGetAllErrorQuery(t *testing.T) {
 	db, mock, err := sqlmock.New()
 
 	if err != nil {
