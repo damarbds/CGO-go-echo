@@ -733,7 +733,7 @@ func TestInsert(t *testing.T) {
 				deleted_date=\? , is_deleted=\? , is_active=\? , trans_id=\?,arrival_time=\?,departure_time=\?,day=\?,
 				month=\?,year=\?,departure_date=\?,price=\?,departure_timeoption_id=\?,arrival_timeoption_id=\?`
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec().WithArgs(a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.TransId, a.ArrivalTime,
+	prep.ExpectExec().WithArgs(a.Id, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.TransId, a.ArrivalTime,
 		a.DepartureTime, a.Day, a.Month, a.Year, a.DepartureDate, a.Price, a.DepartureTimeoptionId, a.ArrivalTimeoptionId).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	i := ScheduleRepo.NewScheduleRepository(db)

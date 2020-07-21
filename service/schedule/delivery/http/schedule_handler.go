@@ -7,7 +7,6 @@ import (
 	"github.com/service/schedule"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	validator "gopkg.in/go-playground/validator.v9"
 	"net/http"
 )
 
@@ -17,16 +16,16 @@ type ResponseError struct {
 }
 
 // promoHandler  represent the httphandler for promo
-type scheduleHandler struct {
+type ScheduleHandler struct {
 	promoUsecase promo.Usecase
-	scheduleUsecase schedule.Usecase
+	ScheduleUsecase schedule.Usecase
 }
 
 // NewpromoHandler will initialize the promos/ resources endpoint
 func NewScheduleHandler(e *echo.Echo, us promo.Usecase,su schedule.Usecase) {
-	handler := &scheduleHandler{
+	handler := &ScheduleHandler{
 		promoUsecase: us,
-		scheduleUsecase:su,
+		ScheduleUsecase:su,
 	}
 	e.POST("service/schedule", handler.CreateSchedule)
 	//e.PUT("/promos/:id", handler.Updatepromo)
@@ -35,29 +34,29 @@ func NewScheduleHandler(e *echo.Echo, us promo.Usecase,su schedule.Usecase) {
 	//e.DELETE("/promos/:id", handler.Delete)
 }
 
-func isRequestValid(m *models.NewCommandSchedule) (bool, error) {
-	validate := validator.New()
-	err := validate.Struct(m)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-func (a *scheduleHandler) CreateSchedule(c echo.Context) error {
+//func isRequestValid(m *models.NewCommandSchedule) (bool, error) {
+//	validate := validator.New()
+//	err := validate.Struct(m)
+//	if err != nil {
+//		return false, err
+//	}
+//	return true, nil
+//}
+func (a *ScheduleHandler) CreateSchedule(c echo.Context) error {
 
 	var scheduleCommand models.NewCommandSchedule
 	err := c.Bind(&scheduleCommand)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
-	if ok, err := isRequestValid(&scheduleCommand); !ok {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
+	//if ok, err := isRequestValid(&scheduleCommand); !ok {
+	//	return c.JSON(http.StatusBadRequest, err.Error())
+	//}
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	response, error := a.scheduleUsecase.InsertSchedule(ctx,&scheduleCommand)
+	response, error := a.ScheduleUsecase.InsertSchedule(ctx,&scheduleCommand)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -65,7 +64,7 @@ func (a *scheduleHandler) CreateSchedule(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 // GetByID will get article by given id
-func (a *scheduleHandler) GetSchedule(c echo.Context) error {
+func (a *ScheduleHandler) GetSchedule(c echo.Context) error {
 	merchantId := c.QueryParam("merchant_id")
 	date := c.QueryParam("date")
 	ctx := c.Request().Context()
@@ -73,7 +72,7 @@ func (a *scheduleHandler) GetSchedule(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-		art, err := a.scheduleUsecase.GetScheduleByMerchantId(ctx, merchantId,date)
+		art, err := a.ScheduleUsecase.GetScheduleByMerchantId(ctx, merchantId,date)
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -88,16 +87,16 @@ func getStatusCode(err error) int {
 	}
 	logrus.Error(err)
 	switch err {
-	case models.ErrInternalServerError:
-		return http.StatusInternalServerError
+	//case models.ErrInternalServerError:
+	//	return http.StatusInternalServerError
 	case models.ErrNotFound:
 		return http.StatusNotFound
-	case models.ErrUnAuthorize:
-		return http.StatusUnauthorized
-	case models.ErrConflict:
-		return http.StatusBadRequest
-	case models.ErrBadParamInput:
-		return http.StatusBadRequest
+	//case models.ErrUnAuthorize:
+	//	return http.StatusUnauthorized
+	//case models.ErrConflict:
+	//	return http.StatusBadRequest
+	//case models.ErrBadParamInput:
+	//	return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}
