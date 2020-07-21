@@ -396,7 +396,8 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 		t.ex_change_rates,
 		t.ex_change_currency,
 		b.exp_payment_deadline_amount,
-		b.exp_payment_deadline_type
+		b.exp_payment_deadline_type,
+		t.original_price
 	FROM
 		booking_exps a
 		JOIN experiences b ON a.exp_id = b.id
@@ -1166,7 +1167,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status = 0
 					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR) 
-				ORDER BY created_date DESC`
+				`
 
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
@@ -1233,7 +1234,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
 					and t.status = 0 
 					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR)
-					ORDER BY created_date DESC`
+					`
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
 			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, userId, limit, offset)
