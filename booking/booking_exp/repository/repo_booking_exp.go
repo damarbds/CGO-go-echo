@@ -334,15 +334,17 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, booki
 		b.return_trans_id
 	FROM
 		booking_exps a
-		LEFT JOIN transactions t ON t.booking_exp_id = a.id
-			OR t.order_id = a.order_id
+		LEFT JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 		LEFT JOIN payment_methods pm ON t.payment_method_id = pm.id
 		JOIN transportations b ON a.trans_id = b.id
 		LEFT JOIN schedules s ON b.id = s.trans_id
 			AND a.schedule_id = s.id
 		JOIN harbors h ON b.harbors_dest_id = h.id
 		JOIN harbors hs ON b.harbors_source_id = hs.id
-		JOIN merchants m ON b.merchant_id = m.id`
+		JOIN merchants m ON b.merchant_id = m.id
+		WHERE 
+		t.is_active = 1 AND
+		t.is_deleted = 0 AND`
 
 	result := make([]*models.BookingExpJoin, 0)
 	if len(bookingIds) != 0 {
@@ -407,7 +409,10 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 		JOIN cities ci ON h.city_id = ci.id
 		JOIN provinces p ON ci.province_id = p.id
 		JOIN countries co ON p.country_id = co.id
-		JOIN merchants m ON b.merchant_id = m.id`
+		JOIN merchants m ON b.merchant_id = m.id
+		WHERE 
+		t.is_active = 1 AND
+		t.is_deleted = 0`
 
 	result := make([]*models.BookingExpJoin, len(bookingIds))
 	if len(bookingIds) != 0 {
@@ -443,6 +448,8 @@ func (b bookingExpRepository) GetBookingCountByUserID(ctx context.Context, statu
 	WHERE
 		a.is_active = 1
 		AND a.is_deleted = 0
+		AND	t.is_active = 1
+		AND t.is_deleted = 0
 		AND a.user_id = ?`
 
 	if status == "confirm" {
@@ -490,6 +497,8 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 					WHERE
 						a.is_active = 1
 					AND a.is_deleted = 0
+					AND	t.is_active = 1
+					AND t.is_deleted = 0
 					AND a.user_id = ?`
 
 	if status == "confirm" {
@@ -888,7 +897,10 @@ func (b bookingExpRepository) QueryHistoryPer30DaysExpByUserId(ctx context.Conte
 					join cities d on c.city_id = d.id
 					join provinces e on d.province_id = e.id
 					join countries f on e.country_id = f.id
-					join transactions g on g.booking_exp_id = a.id`
+					join transactions g on g.booking_exp_id = a.id
+					WHERE 
+					g.is_deleted = 0 AND
+					g.is_active = 1`
 
 	result := make([]*models.BookingExpHistory, 0)
 
@@ -932,6 +944,7 @@ func (b bookingExpRepository) QueryHistoryPerMonthExpByUserId(ctx context.Contex
 					join provinces e on d.province_id = e.id 
 					join countries f on e.country_id = f.id
 					join transactions g on g.booking_exp_id = a.id
+					WHERE g.is_deleted = 0 AND g.is_active = 1
 `
 	result := make([]*models.BookingExpHistory, 0)
 	if len(bookingIds) != 0 {
@@ -992,7 +1005,10 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 			AND a.schedule_id = s.id
 		JOIN harbors h ON b.harbors_dest_id = h.id
 		JOIN harbors hs ON b.harbors_source_id = hs.id
-		JOIN merchants m ON b.merchant_id = m.id`
+		JOIN merchants m ON b.merchant_id = m.id
+		WHERE 
+		t.is_deleted = 0 AND
+		t.is_active = 1`
 
 	result := make([]*models.BookingExpJoin, 0)
 	if len(bookingIds) != 0 {
@@ -1053,7 +1069,8 @@ func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Cont
 			AND a.schedule_id = s.id
 		JOIN harbors h ON b.harbors_dest_id = h.id
 		JOIN harbors hs ON b.harbors_source_id = hs.id
-		JOIN merchants m ON b.merchant_id = m.id`
+		JOIN merchants m ON b.merchant_id = m.id
+		WHERE t.is_deleted = 0 AND t.is_active = 1`
 
 	result := make([]*models.BookingExpJoin, 0)
 	if len(bookingIds) != 0 {
@@ -1087,7 +1104,9 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 					LEFT JOIN 
 						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
-					and (t.created_date >= ? or t.modified_date >= ?)`
+					and (t.created_date >= ? or t.modified_date >= ?)
+					and t.is_active = 1 
+					and t.is_deleted = 0`
 		rows, err := b.Conn.QueryContext(ctx, query, userId, date, date)
 		if err != nil {
 			logrus.Error(err)
@@ -1112,7 +1131,9 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
 					WHERE 
 					a.user_id = ?
-					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))`
+					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
+					and t.is_active = 1 
+					and t.is_deleted = 0`
 
 		rows, err := b.Conn.QueryContext(ctx, query, userId)
 		if err != nil {
@@ -1148,6 +1169,8 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status IN (1,2,5) 
 					and DATE(a.booking_date) < CURRENT_DATE
+					and t.is_deleted = 0
+					and t.is_active = 1
 				UNION 
 					SELECT DISTINCT a.id
 					FROM 
@@ -1157,6 +1180,8 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status IN (3,4)
+					and t.is_deleted = 0
+					and t.is_active = 1
 				UNION 
 					SELECT DISTINCT a.id
 					FROM 
@@ -1167,6 +1192,8 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status = 0
 					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR) 
+					and t.is_deleted = 0
+					and t.is_active = 1
 				`
 
 		if limit != 0 {
@@ -1213,6 +1240,8 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
 					and t.status IN (1,2,5)
                     AND DATE(a.booking_date) < CURRENT_DATE 
+                    and t.is_deleted = 0
+					and t.is_active = 1
 				UNION
 					SELECT DISTINCT a.id
 					FROM 
@@ -1223,6 +1252,8 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
 					and t.status IN (3,4)
+					and t.is_deleted = 0
+					and t.is_active = 1
  				UNION 
  					SELECT DISTINCT a.id
 					FROM 
@@ -1234,6 +1265,8 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
 					and t.status = 0 
 					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR)
+					and t.is_deleted = 0
+					and t.is_active = 1
 					`
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
