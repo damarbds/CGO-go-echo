@@ -344,7 +344,7 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, booki
 		JOIN merchants m ON b.merchant_id = m.id
 		WHERE 
 		t.is_active = 1 AND
-		t.is_deleted = 0 AND`
+		t.is_deleted = 0 `
 
 	result := make([]*models.BookingExpJoin, 0)
 	if len(bookingIds) != 0 {
