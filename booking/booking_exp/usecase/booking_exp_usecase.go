@@ -9642,21 +9642,48 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			totalGuest := len(guestDesc)
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
+			if element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02") {
+				if element.StatusTransaction == 0{
 					status = "Payment Expired"
-				} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+				}else if element.StatusTransaction == 1{
 					status = "Cancelled"
-				} else if element.StatusTransaction == 2 {
-					status = "Success"
-				}
-			} else {
-				if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				}else if element.StatusTransaction == 2{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 3{
 					status = "Payment Expired"
-				} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+				}else if element.StatusTransaction == 4{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 5{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 7{
+					status = "Success"
+				}else if element.StatusTransaction == 8{
+					status = "Cancelled"
+				}
+			}else{
+				if element.StatusTransaction == 0{
+					status = "Payment Expired"
+				}else if element.StatusTransaction == 3{
+					status = "Payment Expired"
+				}else if element.StatusTransaction == 4{
 					status = "Cancelled"
 				}
 			}
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+			//		status = "Cancelled"
+			//	} else if element.StatusTransaction == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 
 			if element.UserId == nil {
 				element.UserId = new(string)
@@ -9718,21 +9745,48 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			//totalGuest := len(guestDesc)
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
+			if element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02") {
+				if *element.TransactionStatus == 0{
 					status = "Payment Expired"
-				} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+				}else if *element.TransactionStatus == 1{
 					status = "Cancelled"
-				} else if *element.TransactionStatus == 2 {
-					status = "Success"
-				}
-			} else {
-				if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				}else if *element.TransactionStatus == 2{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 3{
 					status = "Payment Expired"
-				} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+				}else if *element.TransactionStatus == 4{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 5{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 7{
+					status = "Success"
+				}else if *element.TransactionStatus == 8{
+					status = "Cancelled"
+				}
+			}else{
+				if *element.TransactionStatus == 0{
+					status = "Payment Expired"
+				}else if *element.TransactionStatus == 3{
+					status = "Payment Expired"
+				}else if *element.TransactionStatus == 4{
 					status = "Cancelled"
 				}
 			}
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+			//		status = "Cancelled"
+			//	} else if *element.TransactionStatus == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 			var tripDuration string
 			if element.DepartureTime != nil && element.ArrivalTime != nil {
 				departureTime, _ := time.Parse("15:04:00", *element.DepartureTime)
@@ -9826,21 +9880,49 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			totalGuest := len(guestDesc)
 
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
+			//item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")
+			if element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02") {
+				if element.StatusTransaction == 0{
 					status = "Payment Expired"
-				} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+				}else if element.StatusTransaction == 1{
 					status = "Cancelled"
-				} else if element.StatusTransaction == 2 {
-					status = "Success"
-				}
-			} else {
-				if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				}else if element.StatusTransaction == 2{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 3{
 					status = "Payment Expired"
-				} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+				}else if element.StatusTransaction == 4{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 5{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 7{
+					status = "Success"
+				}else if element.StatusTransaction == 8{
+					status = "Cancelled"
+				}
+			}else{
+				if element.StatusTransaction == 0{
+					status = "Payment Expired"
+				}else if element.StatusTransaction == 3{
+					status = "Payment Expired"
+				}else if element.StatusTransaction == 4{
 					status = "Cancelled"
 				}
 			}
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+			//		status = "Cancelled"
+			//	} else if element.StatusTransaction == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 			if element.UserId == nil {
 				element.UserId = new(string)
 			}
@@ -9900,21 +9982,48 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			//totalGuest := len(guestDesc)
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
+			if element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02") {
+				if *element.TransactionStatus == 0{
 					status = "Payment Expired"
-				} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+				}else if *element.TransactionStatus == 1{
 					status = "Cancelled"
-				} else if *element.TransactionStatus == 2 {
-					status = "Success"
-				}
-			} else {
-				if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				}else if *element.TransactionStatus == 2{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 3{
 					status = "Payment Expired"
-				} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+				}else if *element.TransactionStatus == 4{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 5{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 7{
+					status = "Success"
+				}else if *element.TransactionStatus == 8{
+					status = "Cancelled"
+				}
+			}else{
+				if *element.TransactionStatus == 0{
+					status = "Payment Expired"
+				}else if *element.TransactionStatus == 3{
+					status = "Payment Expired"
+				}else if *element.TransactionStatus == 4{
 					status = "Cancelled"
 				}
 			}
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+			//		status = "Cancelled"
+			//	} else if *element.TransactionStatus == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 			var tripDuration string
 			if element.DepartureTime != nil && element.ArrivalTime != nil {
 				departureTime, _ := time.Parse("15:04:00", *element.DepartureTime)

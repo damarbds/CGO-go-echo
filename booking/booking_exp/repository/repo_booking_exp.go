@@ -1168,7 +1168,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status IN (1,2,5) 
-					and DATE(a.booking_date) < CURRENT_DATE
+					and DATE(a.booking_date) < DATE(?)
 					and t.is_deleted = 0
 					and t.is_active = 1
 				UNION 
@@ -1198,7 +1198,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date, userId, date, date, limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, time.Now().Format("2006-01-02"),userId, date, date, userId, date, date, limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1213,7 +1213,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 				bookingIds = append(bookingIds, &bookingId)
 			}
 		} else {
-			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, userId, date, date, userId, date, date)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, time.Now().Format("2006-01-02"),userId, date, date, userId, date, date)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1239,7 +1239,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
 					and t.status IN (1,2,5)
-                    AND DATE(a.booking_date) < CURRENT_DATE 
+                    AND DATE(a.booking_date) < DATE(?)
                     and t.is_deleted = 0
 					and t.is_active = 1
 				UNION
@@ -1270,7 +1270,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					`
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, userId, userId, limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, time.Now().Format("2006-01-02"),userId, userId, limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
