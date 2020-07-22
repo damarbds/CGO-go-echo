@@ -1098,44 +1098,31 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 	var count int
 	if yearMonth != "" {
 		date := yearMonth + "-" + "01" + " 00:00:00"
-		query := `SELECT COUNT(*) as count 
+		query1 := `SELECT COUNT(DISTINCT a.id)
 					FROM 
 						booking_exps a 
 					LEFT JOIN 
 						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
-					and t.is_active = 1 
-					and t.is_deleted = 0`
-		rows, err := b.Conn.QueryContext(ctx, query, userId, date, date)
-		if err != nil {
-			logrus.Error(err)
-			return 0, err
-		}
-		if err != nil {
-			logrus.Error(err)
-			return 0, err
-		}
+					and t.status IN (1,2,5,7) 
+					and DATE(a.booking_date) < DATE(?)
+					and t.is_deleted = 0
+					and t.is_active = 1 `
 
-		resultCount, err := checkCount(rows)
-		if err != nil {
-			logrus.Error(err)
-			return 0, err
-		}
-		count = resultCount
-	} else {
-		query := `SELECT COUNT(*) as count 
+		query2 := `SELECT COUNT(DISTINCT a.id)
 					FROM 
 						booking_exps a 
 					LEFT JOIN 
-						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
-					WHERE 
-					a.user_id = ?
-					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
-					and t.is_active = 1 
-					and t.is_deleted = 0`
+						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					where a.user_id = ?
+					and (t.created_date >= ? or t.modified_date >= ?)
+					and t.status IN (3,4,8)
+					and t.is_deleted = 0
+					and t.is_active = 1 `
 
-		rows, err := b.Conn.QueryContext(ctx, query, userId)
+
+		rows, err := b.Conn.QueryContext(ctx, query1, userId, date, date, time.Now().Format("2006-01-02"))
 		if err != nil {
 			logrus.Error(err)
 			return 0, err
@@ -1150,7 +1137,80 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 			logrus.Error(err)
 			return 0, err
 		}
-		count = resultCount
+		rows2, err := b.Conn.QueryContext(ctx, query2, userId, date, date)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+
+		resultCount2, err := checkCount(rows2)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		count = resultCount + resultCount2
+	} else {
+		query1 := `SELECT COUNT(DISTINCT a.id)
+					FROM 
+						cgo_indonesia.booking_exps a 
+					LEFT JOIN 
+						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+					WHERE 
+					a.user_id = ?
+					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
+					and t.status IN (1,2,5,7)
+                    AND DATE(a.booking_date) < DATE(?)
+                    and t.is_deleted = 0
+					and t.is_active = 1 `
+
+		query2 := `SELECT COUNT(DISTINCT a.id)
+					FROM 
+						cgo_indonesia.booking_exps a 
+					LEFT JOIN 
+						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+					WHERE 
+					a.user_id = ?
+					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
+					and t.status IN (3,4,8)
+					and t.is_deleted = 0
+					and t.is_active = 1 `
+
+
+		rows, err := b.Conn.QueryContext(ctx, query1, userId,time.Now().Format("2006-01-02"))
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+
+		resultCount, err := checkCount(rows)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		rows2, err := b.Conn.QueryContext(ctx, query2, userId)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+
+		resultCount2, err := checkCount(rows2)
+		if err != nil {
+			logrus.Error(err)
+			return 0, err
+		}
+		count = resultCount + resultCount2
 	}
 
 	return count, nil
@@ -1167,7 +1227,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
-					and t.status IN (1,2,5,7,8) 
+					and t.status IN (1,2,5,7) 
 					and DATE(a.booking_date) < DATE(?)
 					and t.is_deleted = 0
 					and t.is_active = 1
@@ -1179,26 +1239,14 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
-					and t.status IN (3,4)
-					and t.is_deleted = 0
-					and t.is_active = 1
-				UNION 
-					SELECT DISTINCT a.id
-					FROM 
-						booking_exps a 
-					LEFT JOIN 
-						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
-					where a.user_id = ?
-					and (t.created_date >= ? or t.modified_date >= ?)
-					and t.status = 0
-					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR) 
+					and t.status IN (3,4,8)
 					and t.is_deleted = 0
 					and t.is_active = 1
 				`
 
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, time.Now().Format("2006-01-02"),userId, date, date, userId, date, date, limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, date, date, time.Now().Format("2006-01-02"),userId, date, date, limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
@@ -1238,7 +1286,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
-					and t.status IN (1,2,5,7,8)
+					and t.status IN (1,2,5,7)
                     AND DATE(a.booking_date) < DATE(?)
                     and t.is_deleted = 0
 					and t.is_active = 1
@@ -1251,26 +1299,13 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
-					and t.status IN (3,4)
+					and t.status IN (3,4,8)
 					and t.is_deleted = 0
 					and t.is_active = 1
- 				UNION 
- 					SELECT DISTINCT a.id
-					FROM 
-						cgo_indonesia.booking_exps a 
-					LEFT JOIN 
-						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
-					WHERE 
-					a.user_id = ?
-					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
-					and t.status = 0 
-					AND a.expired_date_payment < DATE_ADD(NOW(), INTERVAL 7 HOUR)
-					and t.is_deleted = 0
-					and t.is_active = 1
-					`
+ 				`
 		if limit != 0 {
 			query = query + ` LIMIT ? OFFSET ?`
-			rows, err := b.Conn.QueryContext(ctx, query, userId, time.Now().Format("2006-01-02"),userId, userId, limit, offset)
+			rows, err := b.Conn.QueryContext(ctx, query, userId, time.Now().Format("2006-01-02"),userId, limit, offset)
 			if err != nil {
 				logrus.Error(err)
 				return nil, err
