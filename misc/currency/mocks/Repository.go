@@ -42,10 +42,10 @@ func (_m *Repository) Insert(ctx context.Context, ExChangeRate *models.ExChangeR
 	ret := _m.Called(ctx, ExChangeRate)
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.ExChangeRate) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.ExChangeRate) error); ok {
 		r1 = rf(ctx, ExChangeRate)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Error(0)
 	}
 
 	return r1
