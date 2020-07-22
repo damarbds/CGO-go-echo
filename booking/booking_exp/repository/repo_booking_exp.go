@@ -454,7 +454,7 @@ func (b bookingExpRepository) GetBookingCountByUserID(ctx context.Context, statu
 
 	if status == "confirm" {
 		//bookingStatus = 1
-		query = query + ` 	AND t.status = 2 
+		query = query + ` 	AND t.status in (2,6)
 							AND DATE(a.booking_date) >= CURRENT_DATE `
 	} else if status == "waiting" {
 		//transactionStatus = 1
@@ -503,7 +503,7 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 
 	if status == "confirm" {
 		//bookingStatus = 1
-		query = query + ` 	AND t.status = 2 
+		query = query + ` 	AND t.status in (2,6) 
 							AND DATE(a.booking_date) >= CURRENT_DATE `
 	} else if status == "waiting" {
 		//transactionStatus = 1
