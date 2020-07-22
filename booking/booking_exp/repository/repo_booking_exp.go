@@ -1167,7 +1167,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
-					and t.status IN (1,2,5) 
+					and t.status IN (1,2,5,7,8) 
 					and DATE(a.booking_date) < DATE(?)
 					and t.is_deleted = 0
 					and t.is_active = 1
@@ -1238,7 +1238,7 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
-					and t.status IN (1,2,5)
+					and t.status IN (1,2,5,7,8)
                     AND DATE(a.booking_date) < DATE(?)
                     and t.is_deleted = 0
 					and t.is_active = 1
