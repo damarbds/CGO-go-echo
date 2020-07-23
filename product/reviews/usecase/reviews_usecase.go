@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	guuid "github.com/google/uuid"
 	"github.com/service/experience"
 	"math"
 	"time"
@@ -54,7 +55,7 @@ func (r reviewsUsecase) CreateReviews(c context.Context, command models.NewRevie
 	 	command.ValueReview)/5
 
 	 review := models.Review{
-		 Id:                "",
+		 Id:                guuid.New().String(),
 		 CreatedBy:         validateToken.UserEmail,
 		 CreatedDate:       time.Now(),
 		 ModifiedBy:        nil,

@@ -3,13 +3,10 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"strconv"
-	"time"
-
-	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/product/reviews"
 	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 type reviewRepository struct {
@@ -22,7 +19,7 @@ func NewReviewRepository(Conn *sql.DB) reviews.Repository {
 }
 
 func (m *reviewRepository) Insert(ctx context.Context, a models.Review) (string, error) {
-	a.Id = guuid.New().String()
+	//a.Id = guuid.New().String()
 	query := `INSERT reviews SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , reviews.values=?,reviews.desc=?,exp_id=?,user_id=?,
 				guide_review=?,activities_review=?,service_review=?,cleanliness_review=?,value_review=?`
@@ -30,7 +27,7 @@ func (m *reviewRepository) Insert(ctx context.Context, a models.Review) (string,
 	if err != nil {
 		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Values, a.Desc,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.Values, a.Desc,
 		a.ExpId, a.UserId, a.GuideReview, a.ActivitiesReview, a.ServiceReview, a.CleanlinessReview, a.ValueReview)
 	if err != nil {
 		return "", err
