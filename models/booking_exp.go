@@ -166,6 +166,7 @@ type BookingExpJoin struct {
 	ExpPaymentDeadlineType 	*string		`json:"exp_payment_deadline_type"`
 	ReturnTransId			*string `json:"return_trans_id"`
 	OriginalPrice 		*float64	`json:"original_price"`
+	PriceTransportation 	*string	`json:"price_transportation"`
 }
 
 type BookingTransportationDetail struct {
@@ -185,8 +186,13 @@ type BookingTransportationDetail struct {
 	MerchantPicture  string    `json:"merchant_picture"`
 	TotalGuest       int       `json:"total_guest"`
 	ReturnTransId 	*string		`json:"return_trans_id"`
+	Price 			DayPriceTransportation	`json:"price"`
 }
-
+type DayPriceTransportation struct {
+	AdultPrice    float64 `json:"adult_price"`
+	ChildrenPrice float64 `json:"children_price"`
+	Currency      string  `json:"currency"`
+}
 type BookingExpDetail struct {
 	ExpId           string               `json:"exp_id"`
 	ExpTitle        string               `json:"exp_title"`

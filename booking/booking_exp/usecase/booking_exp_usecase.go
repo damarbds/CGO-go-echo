@@ -8707,6 +8707,42 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()
 			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 		}
+		var price models.PriceObj
+		var currency string
+		if *detail.PriceTransportation != "" {
+			if errUnmarshal := json.Unmarshal([]byte(*detail.PriceTransportation), &price); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+		if price.Currency == 1 {
+			currency = "USD"
+		} else {
+			currency = "IDR"
+		}
+		dayMap := models.DayPriceTransportation{
+			AdultPrice:    price.AdultPrice,
+			ChildrenPrice: price.ChildrenPrice,
+			Currency:      currency,
+		}
+		if currencyPrice == "USD"{
+			if dayMap.Currency == "IDR"{
+				convertCurrency ,_ := b.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+				calculatePriceAdult := convertCurrency.Rates.USD * dayMap.AdultPrice
+				dayMap.AdultPrice = calculatePriceAdult
+				calculatePriceChildren := convertCurrency.Rates.USD * dayMap.ChildrenPrice
+				dayMap.ChildrenPrice = calculatePriceChildren
+				dayMap.Currency = "USD"
+			}
+		}else if currencyPrice =="IDR"{
+			if dayMap.Currency == "USD"{
+				convertCurrency ,_ := b.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+				calculatePriceAdult := convertCurrency.Rates.USD * dayMap.AdultPrice
+				dayMap.AdultPrice = calculatePriceAdult
+				calculatePriceChildren := convertCurrency.Rates.USD * dayMap.ChildrenPrice
+				dayMap.ChildrenPrice = calculatePriceChildren
+				dayMap.Currency = "IDR"
+			}
+		}
 		transport[i] = models.BookingTransportationDetail{
 			TransID:          *detail.TransId,
 			TransName:        *detail.TransName,
@@ -8723,6 +8759,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 			MerchantPhone:    detail.MerchantPhone.String,
 			MerchantPicture:  detail.MerchantPicture.String,
 			ReturnTransId:    detail.ReturnTransId,
+			Price:dayMap,
 		}
 	}
 
