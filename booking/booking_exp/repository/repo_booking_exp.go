@@ -441,37 +441,69 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 }
 
 func (b bookingExpRepository) GetBookingCountByUserID(ctx context.Context, status string, userId string) (int, error) {
+	queryTrans := `SELECT COUNT(DISTINCT a.id) as count
+					FROM 
+						booking_exps a
+					JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					JOIN transportations trans ON a.trans_id = trans.id
+					WHERE
+						a.is_active = 1
+					AND a.is_deleted = 0
+					AND	t.is_active = 1
+					AND t.is_deleted = 0
+					AND a.user_id = ?
+					AND trans.is_return = 0 `
 
-	query := `
-	SELECT COUNT(*) as count 
-	FROM
-		booking_exps a
-		JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
-	WHERE
-		a.is_active = 1
-		AND a.is_deleted = 0
-		AND	t.is_active = 1
-		AND t.is_deleted = 0
-		AND a.user_id = ?`
+	queryExp := `SELECT COUNT(DISTINCT a.id) as count
+					FROM 
+						booking_exps a
+					JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					JOIN experiences e ON a.exp_id = e.id
+					WHERE
+						a.is_active = 1
+					AND a.is_deleted = 0
+					AND	t.is_active = 1
+					AND t.is_deleted = 0
+					AND a.user_id = ?`
+
+	//query := `
+	//SELECT COUNT(*) as count
+	//FROM
+	//	booking_exps a
+	//	JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+	//WHERE
+	//	a.is_active = 1
+	//	AND a.is_deleted = 0
+	//	AND	t.is_active = 1
+	//	AND t.is_deleted = 0
+	//	AND a.user_id = ?`
 
 	if status == "confirm" {
 		//bookingStatus = 1
-		query = query + ` 	AND t.status in (2,6)
+		queryTrans = queryTrans + ` 	AND t.status in (2,6)
+							AND DATE(a.booking_date) >= CURRENT_DATE `
+		queryExp = queryExp + ` 	AND t.status in (2,6)
 							AND DATE(a.booking_date) >= CURRENT_DATE `
 	} else if status == "waiting" {
 		//transactionStatus = 1
 		//bookingStatus = 1
-		query = query + ` 	AND t.status IN (1,5) 
+		queryTrans = queryTrans + ` 	AND t.status IN (1,5) 
+							AND DATE(a.booking_date) >= CURRENT_DATE `
+		queryExp = queryExp + ` 	AND t.status IN (1,5) 
 							AND DATE(a.booking_date) >= CURRENT_DATE `
 	} else if status == "pending" {
 		//transactionStatus = 0
 		//bookingStatus = 1
-		query = query + ` 	AND t.status = 0 
+		queryTrans = queryTrans + ` 	AND t.status = 0 
+							AND DATE(a.booking_date) >= CURRENT_DATE 
+							AND a.expired_date_payment < CURRENT_TIMESTAMP `
+
+		queryExp = queryExp + ` 	AND t.status = 0 
 							AND DATE(a.booking_date) >= CURRENT_DATE 
 							AND a.expired_date_payment < CURRENT_TIMESTAMP `
 	}
 
-	rows, err := b.Conn.QueryContext(ctx, query, userId)
+	rows1, err := b.Conn.QueryContext(ctx, queryTrans, userId)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
@@ -481,21 +513,51 @@ func (b bookingExpRepository) GetBookingCountByUserID(ctx context.Context, statu
 		return 0, err
 	}
 
-	resultCount, err := checkCount(rows)
+	resultCount1, err := checkCount(rows1)
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
 	}
+	rows2, err := b.Conn.QueryContext(ctx, queryExp, userId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	resultCount2, err := checkCount(rows2)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+	resultCount := resultCount1 + resultCount2
 	return resultCount, nil
 }
 
 func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status string, userId string, limit, offset int) ([]*string, error) {
 
 	var bookingIds []*string
-	query := `SELECT DISTINCT a.id
+	queryTrans := `SELECT DISTINCT a.id
 					FROM 
 						booking_exps a
 					JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					JOIN transportations trans ON a.trans_id = trans.id
+					WHERE
+						a.is_active = 1
+					AND a.is_deleted = 0
+					AND	t.is_active = 1
+					AND t.is_deleted = 0
+					AND a.user_id = ?
+					AND trans.is_return = 0 `
+
+	queryExp := `SELECT DISTINCT a.id
+					FROM 
+						booking_exps a
+					JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					JOIN experiences e ON a.exp_id = e.id
 					WHERE
 						a.is_active = 1
 					AND a.is_deleted = 0
@@ -505,24 +567,31 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 
 	if status == "confirm" {
 		//bookingStatus = 1
-		query = query + ` 	AND t.status in (2,6) 
+		queryTrans = queryTrans + ` 	AND t.status in (2,6) 
+							AND DATE(a.booking_date) >= CURRENT_DATE `
+		queryExp = queryExp + ` 	AND t.status in (2,6) 
 							AND DATE(a.booking_date) >= CURRENT_DATE `
 	} else if status == "waiting" {
 		//transactionStatus = 1
 		//bookingStatus = 1
-		query = query + ` 	AND t.status IN (1,5) 
+		queryTrans = queryTrans + ` 	AND t.status IN (1,5) 
+							AND DATE(a.booking_date) >= CURRENT_DATE `
+		queryExp = queryExp + ` 	AND t.status IN (1,5) 
 							AND DATE(a.booking_date) >= CURRENT_DATE `
 	} else if status == "pending" {
 		//transactionStatus = 0
 		//bookingStatus = 1
-		query = query + ` 	AND t.status = 0 
+		queryTrans = queryTrans + ` 	AND t.status = 0 
+							AND DATE(a.booking_date) >= CURRENT_DATE`
+		queryExp = queryExp + ` 	AND t.status = 0 
 							AND DATE(a.booking_date) >= CURRENT_DATE`
 	}
-	query = query + ` ORDER BY t.created_date DESC `
+	query := queryTrans + ` UNION ` + queryExp
+	//query = query + ` ORDER BY t.created_date DESC `
 	if limit != 0 {
 		query = query + ` LIMIT ? OFFSET ?`
 
-		rows, err := b.Conn.QueryContext(ctx, query, userId, limit, offset)
+		rows, err := b.Conn.QueryContext(ctx, query, userId,userId, limit, offset)
 		if err != nil {
 			logrus.Error(err)
 			return nil, err
@@ -537,7 +606,7 @@ func (b bookingExpRepository) GetBookingIdByUserID(ctx context.Context, status s
 			bookingIds = append(bookingIds, id)
 		}
 	} else {
-		rows, err := b.Conn.QueryContext(ctx, query, userId)
+		rows, err := b.Conn.QueryContext(ctx, query, userId,userId)
 		if err != nil {
 			logrus.Error(err)
 			return nil, err
@@ -1104,10 +1173,10 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 	if yearMonth != "" {
 		date := yearMonth + "-" + "01" + " 00:00:00"
 		query1 := `SELECT COUNT(DISTINCT a.id)
-					FROM 
-						booking_exps a 
+					FROM 						
+						transactions t 
 					LEFT JOIN 
-						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+						booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status IN (1,2,5,7) 
@@ -1116,10 +1185,10 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 					and t.is_active = 1 `
 
 		query2 := `SELECT COUNT(DISTINCT a.id)
-					FROM 
-						booking_exps a 
+					FROM 						
+						transactions t 
 					LEFT JOIN 
-						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+						booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status IN (3,4,8)
@@ -1160,10 +1229,10 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 		count = resultCount + resultCount2
 	} else {
 		query1 := `SELECT COUNT(DISTINCT a.id)
-					FROM 
-						cgo_indonesia.booking_exps a 
+					FROM 						
+						cgo_indonesia.transactions t 
 					LEFT JOIN 
-						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+						cgo_indonesia.booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
@@ -1173,10 +1242,10 @@ func (b bookingExpRepository) QueryCountHistoryByUserId(ctx context.Context, use
 					and t.is_active = 1 `
 
 		query2 := `SELECT COUNT(DISTINCT a.id)
-					FROM 
-						cgo_indonesia.booking_exps a 
+					FROM 						
+						cgo_indonesia.transactions t 
 					LEFT JOIN 
-						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+						cgo_indonesia.booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
@@ -1227,9 +1296,9 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 		date := yearMonth + "-" + "01" + " 00:00:00"
 		query := `SELECT DISTINCT a.id
 					FROM 
-						booking_exps a 
-					LEFT JOIN 
-						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+						transactions t 
+					LEFT JOIN 						
+						booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status IN (1,2,5,7) 
@@ -1238,10 +1307,10 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and t.is_active = 1
 				UNION 
 					SELECT DISTINCT a.id
-					FROM 
-						booking_exps a 
-					LEFT JOIN 
-						transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
+					FROM
+						transactions t 
+					LEFT JOIN 						 
+						booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id
 					where a.user_id = ?
 					and (t.created_date >= ? or t.modified_date >= ?)
 					and t.status IN (3,4,8)
@@ -1285,9 +1354,9 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 	} else {
 		query := `SELECT DISTINCT a.id
 					FROM 
-						cgo_indonesia.booking_exps a 
-					LEFT JOIN 
-						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+						cgo_indonesia.transactions t 
+					LEFT JOIN 						
+						cgo_indonesia.booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))
@@ -1297,10 +1366,10 @@ func (b bookingExpRepository) QuerySelectIdHistoryByUserId(ctx context.Context, 
 					and t.is_active = 1
 				UNION
 					SELECT DISTINCT a.id
-					FROM 
-						cgo_indonesia.booking_exps a 
-					LEFT JOIN 
-						cgo_indonesia.transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
+					FROM
+						cgo_indonesia.transactions t 
+					LEFT JOIN 						 
+						cgo_indonesia.booking_exps a ON t.booking_exp_id = a.id OR t.order_id = a.order_id	
 					WHERE 
 					a.user_id = ?
 					and (t.created_date >= (NOW() - INTERVAL 1 MONTH) or t.modified_date >= (NOW() - INTERVAL 1 MONTH))

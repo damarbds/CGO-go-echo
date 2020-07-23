@@ -9048,10 +9048,10 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 	if err != nil {
 		return nil, err
 	}
-	for _, b := range transList {
+	for _, elementb := range transList {
 		var guestDesc []models.GuestDescObj
-		if b.GuestDesc != "" {
-			if errUnmarshal := json.Unmarshal([]byte(b.GuestDesc), &guestDesc); errUnmarshal != nil {
+		if elementb.GuestDesc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(elementb.GuestDesc), &guestDesc); errUnmarshal != nil {
 				return nil, err
 			}
 		}
@@ -9068,35 +9068,55 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 			}
 		}
 		var tripDuration string
-		if b.DepartureTime != nil && b.ArrivalTime != nil {
-			departureTime, _ := time.Parse("15:04:00", *b.DepartureTime)
-			arrivalTime, _ := time.Parse("15:04:00", *b.ArrivalTime)
+		if elementb.DepartureTime != nil && elementb.ArrivalTime != nil {
+			departureTime, _ := time.Parse("15:04:00", *elementb.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04:00", *elementb.ArrivalTime)
 
 			tripHour := arrivalTime.Hour() - departureTime.Hour()
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()
 			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 		}
 		booking := models.MyBooking{
-			OrderId:            b.OrderId,
+			OrderId:            elementb.OrderId,
 			ExpId:              "",
 			ExpTitle:           "",
-			TransId:            *b.TransId,
-			TransName:          *b.TransName,
-			TransFrom:          *b.HarborSourceName,
-			TransTo:            *b.HarborDestName,
-			TransDepartureTime: b.DepartureTime,
-			TransArrivalTime:   b.ArrivalTime,
+			TransId:            *elementb.TransId,
+			TransName:          *elementb.TransName,
+			TransFrom:          *elementb.HarborSourceName,
+			TransTo:            *elementb.HarborDestName,
+			TransDepartureTime: elementb.DepartureTime,
+			TransArrivalTime:   elementb.ArrivalTime,
 			TripDuration:       tripDuration,
-			TransClass:         *b.TransClass,
+			TransClass:         *elementb.TransClass,
 			TransGuest:         transGuest,
-			BookingDate:        b.BookingDate,
+			BookingDate:        elementb.BookingDate,
 			ExpDuration:        0,
 			TotalGuest:         len(guestDesc),
-			City:               b.City,
-			Province:           b.Province,
-			Country:            b.Country,
+			City:               elementb.City,
+			Province:           elementb.Province,
+			Country:            elementb.Country,
 		}
+		if elementb.ReturnTransId != nil{
+			getReturnTrans, _ := b.bookingExpRepo.GetDetailTransportBookingID(ctx, elementb.OrderId, elementb.OrderId, elementb.ReturnTransId)
+			if len(getReturnTrans) != 0{
+				var tripDurationReturn string
+				if getReturnTrans[0].DepartureTime != nil && getReturnTrans[0].ArrivalTime != nil {
+					departureTime, _ := time.Parse("15:04:00", *getReturnTrans[0].DepartureTime)
+					arrivalTime, _ := time.Parse("15:04:00", *getReturnTrans[0].ArrivalTime)
 
+					tripHour := arrivalTime.Hour() - departureTime.Hour()
+					tripMinute := arrivalTime.Minute() - departureTime.Minute()
+					tripDurationReturn = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+				}
+				booking.TransIdReturn =   *getReturnTrans[0].TransId
+				booking.TransNameReturn =          *getReturnTrans[0].TransName
+				booking.TransFromReturn=          *getReturnTrans[0].HarborSourceName
+				booking.TransToReturn=            *getReturnTrans[0].HarborDestName
+				booking.TransDepartureTimeReturn=  getReturnTrans[0].DepartureTime
+				booking.TransArrivalTimeReturn=    getReturnTrans[0].ArrivalTime
+				booking.TripDurationReturn=       tripDurationReturn
+			}
+		}
 		myBooking = append(myBooking, &booking)
 	}
 
@@ -9850,6 +9870,29 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Status:             status,
 				IsReview:           isReview,
 			}
+			if element.ReturnTransId != nil{
+				if element.ReturnTransId != nil{
+					getReturnTrans, _ := b.bookingExpRepo.GetDetailTransportBookingID(ctx, element.OrderId, element.OrderId, element.ReturnTransId)
+					if len(getReturnTrans) != 0{
+						var tripDurationReturn string
+						if getReturnTrans[0].DepartureTime != nil && getReturnTrans[0].ArrivalTime != nil {
+							departureTime, _ := time.Parse("15:04:00", *getReturnTrans[0].DepartureTime)
+							arrivalTime, _ := time.Parse("15:04:00", *getReturnTrans[0].ArrivalTime)
+
+							tripHour := arrivalTime.Hour() - departureTime.Hour()
+							tripMinute := arrivalTime.Minute() - departureTime.Minute()
+							tripDurationReturn = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+						}
+						itemDto.TransIdReturn =   *getReturnTrans[0].TransId
+						itemDto.TransNameReturn =          *getReturnTrans[0].TransName
+						itemDto.TransFromReturn=          *getReturnTrans[0].HarborSourceName
+						itemDto.TransToReturn=            *getReturnTrans[0].HarborDestName
+						itemDto.TransDepartureTimeReturn=  getReturnTrans[0].DepartureTime
+						itemDto.TransArrivalTimeReturn=    getReturnTrans[0].ArrivalTime
+						itemDto.TripDurationReturn=       tripDurationReturn
+					}
+				}
+			}
 			if itemDto.OrderId != check.OrderId{
 				historyDto.Items = append(historyDto.Items, itemDto)
 			}
@@ -10068,6 +10111,29 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Country:            element.Country,
 				Status:             status,
 				IsReview:           isReview,
+			}
+			if element.ReturnTransId != nil{
+				if element.ReturnTransId != nil{
+					getReturnTrans, _ := b.bookingExpRepo.GetDetailTransportBookingID(ctx, element.OrderId, element.OrderId, element.ReturnTransId)
+					if len(getReturnTrans) != 0{
+						var tripDurationReturn string
+						if getReturnTrans[0].DepartureTime != nil && getReturnTrans[0].ArrivalTime != nil {
+							departureTime, _ := time.Parse("15:04:00", *getReturnTrans[0].DepartureTime)
+							arrivalTime, _ := time.Parse("15:04:00", *getReturnTrans[0].ArrivalTime)
+
+							tripHour := arrivalTime.Hour() - departureTime.Hour()
+							tripMinute := arrivalTime.Minute() - departureTime.Minute()
+							tripDurationReturn = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+						}
+						itemDto.TransIdReturn =   *getReturnTrans[0].TransId
+						itemDto.TransNameReturn =          *getReturnTrans[0].TransName
+						itemDto.TransFromReturn=          *getReturnTrans[0].HarborSourceName
+						itemDto.TransToReturn=            *getReturnTrans[0].HarborDestName
+						itemDto.TransDepartureTimeReturn=  getReturnTrans[0].DepartureTime
+						itemDto.TransArrivalTimeReturn=    getReturnTrans[0].ArrivalTime
+						itemDto.TripDurationReturn=       tripDurationReturn
+					}
+				}
 			}
 			if check.OrderId != itemDto.OrderId{
 				historyDto.Items = append(historyDto.Items, itemDto)

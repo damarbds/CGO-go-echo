@@ -67,6 +67,13 @@ type ItemsHistoryDto struct {
 	TransDepartureTime *string                  `json:"trans_departure_time"`
 	TransArrivalTime   *string                  `json:"trans_arrival_time"`
 	TripDuration       string                   `json:"trip_duration"`
+	TransIdReturn            string                   `json:"trans_id_return"`
+	TransNameReturn          string                   `json:"trans_name_return"`
+	TransFromReturn          string                   `json:"trans_from_return"`
+	TransToReturn            string                   `json:"trans_to_return"`
+	TransDepartureTimeReturn *string                  `json:"trans_departure_time_return"`
+	TransArrivalTimeReturn   *string                  `json:"trans_arrival_time_return"`
+	TripDurationReturn       string                   `json:"trip_duration_return"`
 	TransClass         string                   `json:"trans_class"`
 	TransGuest         TotalGuestTransportation `json:"trans_guest"`
 	ExpBookingDate     time.Time                `json:"exp_booking_date"`
@@ -306,6 +313,13 @@ type MyBooking struct {
 	TransDepartureTime *string                  `json:"trans_departure_time"`
 	TransArrivalTime   *string                  `json:"trans_arrival_time"`
 	TripDuration       string                   `json:"trip_duration"`
+	TransIdReturn            string                   `json:"trans_id_return"`
+	TransNameReturn          string                   `json:"trans_name_return"`
+	TransFromReturn          string                   `json:"trans_from_return"`
+	TransToReturn            string                   `json:"trans_to_return"`
+	TransDepartureTimeReturn *string                  `json:"trans_departure_time_return"`
+	TransArrivalTimeReturn   *string                  `json:"trans_arrival_time_return"`
+	TripDurationReturn       string                   `json:"trip_duration_return"`
 	TransClass         string                   `json:"trans_class"`
 	TransGuest         TotalGuestTransportation `json:"trans_guest"`
 	BookingDate        time.Time                `json:"booking_date"`
