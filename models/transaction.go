@@ -161,6 +161,15 @@ type ConfirmTransactionPayment struct {
 	Remarks				*string 	`json:"remarks"`
 	IsCancelExp bool `json:"is_cancel_exp"`
 }
+type ResponseConfirmBoarding struct {
+	ExpTitle *string 	`json:"exp_title"`
+	TransportationsName *string `json:"transportations_name"`
+	HarborsFrom  		*string	`json:"harbors_from"`
+	HarborsTo 			*string	`json:"harbors_to"`
+	BookedBy []BookedByObj	`json:"booked_by"`
+	GuestDesc []GuestDescObj `json:"guest_desc"`
+	Price 		*float64	`json:"price"`
+}
 
 type TransactionOut struct {
 	TransactionId       string    `json:"transaction_id"`

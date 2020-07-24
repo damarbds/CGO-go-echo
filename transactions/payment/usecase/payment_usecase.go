@@ -3,6 +3,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"github.com/auth/merchant"
 	guuid "github.com/google/uuid"
 	"github.com/service/experience"
@@ -5907,7 +5908,7 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
-func (p paymentUsecase) ConfirmPaymentBoarding(ctx context.Context, orderId string, token string) (*models.ResponseDelete, error) {
+func (p paymentUsecase) ConfirmPaymentBoarding(ctx context.Context, orderId string, token string) (*models.ResponseConfirmBoarding, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 	_, err := p.merchantUsecase.ValidateTokenMerchant(ctx, token)
@@ -5927,9 +5928,27 @@ func (p paymentUsecase) ConfirmPaymentBoarding(ctx context.Context, orderId stri
 			if err := p.transactionRepo.UpdateAfterPayment(ctx, 6, "", "", orderId); err != nil {
 				return nil,err
 			}
-			result := &models.ResponseDelete{
-				Id:      orderId,
-				Message: "Success Updating Status",
+			var bookedBy []models.BookedByObj
+			var guestDesc []models.GuestDescObj
+			if checkOrderIdTranspotation[0].BookedBy != "" {
+				if errUnmarshal := json.Unmarshal([]byte(checkOrderIdTranspotation[0].BookedBy), &bookedBy); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+			if checkOrderIdTranspotation[0].GuestDesc != "" {
+				if errUnmarshal := json.Unmarshal([]byte(checkOrderIdTranspotation[0].GuestDesc), &guestDesc); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+
+			result := &models.ResponseConfirmBoarding{
+				ExpTitle:            nil,
+				TransportationsName: checkOrderIdTranspotation[0].TransName,
+				HarborsFrom:         checkOrderIdTranspotation[0].HarborSourceName,
+				HarborsTo:           checkOrderIdTranspotation[0].HarborDestName,
+				BookedBy:            bookedBy,
+				GuestDesc:           guestDesc,
+				Price:               checkOrderIdTranspotation[0].TotalPrice,
 			}
 			return result,nil
 		}
@@ -5941,9 +5960,27 @@ func (p paymentUsecase) ConfirmPaymentBoarding(ctx context.Context, orderId stri
 		if err := p.transactionRepo.UpdateAfterPayment(ctx, 6, "", "", bookingId); err != nil {
 			return nil,err
 		}
-		result := &models.ResponseDelete{
-			Id:      orderId,
-			Message: "Success Updating Status",
+		var bookedBy []models.BookedByObj
+		var guestDesc []models.GuestDescObj
+		if checkOrderId.BookedBy != "" {
+			if errUnmarshal := json.Unmarshal([]byte(checkOrderId.BookedBy), &bookedBy); errUnmarshal != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
+		if checkOrderId.GuestDesc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(checkOrderId.GuestDesc), &guestDesc); errUnmarshal != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
+
+		result := &models.ResponseConfirmBoarding{
+			ExpTitle:            checkOrderId.ExpTitle,
+			TransportationsName: nil,
+			HarborsFrom:         nil,
+			HarborsTo:           nil,
+			BookedBy:            bookedBy,
+			GuestDesc:           guestDesc,
+			Price:               checkOrderId.TotalPrice,
 		}
 		return result,nil
 	}
