@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"github.com/auth/merchant"
 	"html/template"
 	"net/http"
 	"reflect"
@@ -27,6 +29,7 @@ type ResponseError struct {
 }
 
 type xenditHandler struct {
+	merchantRepo  merchant.Repository
 	bookingRepo     booking_exp.Repository
 	expRepo         experience.Repository
 	transactionRepo transaction.Repository
@@ -34,7 +37,7 @@ type xenditHandler struct {
 	isUsecase       identityserver.Usecase
 }
 
-func NewXenditHandler(e *echo.Echo, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
+func NewXenditHandler(e *echo.Echo, merchantRepo  merchant.Repository,br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
 	handler := &xenditHandler{
 		bookingRepo:     br,
 		expRepo:         er,
@@ -6130,6 +6133,32 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				return nil
 			}
 		}
+		getMerchantId ,err := x.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
+		if err != nil {
+			return c.JSON(getStatusCode(err),errors.New("Merchant Not Found"))
+		}
+		var finalPrice float64
+		if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
+			if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+				priceExp := calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+				finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+			}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+				priceExp := bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+				finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+			}
+		}else {
+			if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+				priceExp := calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+				finalPrice = priceExp
+			}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+				priceExp := bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+				finalPrice = priceExp
+			}
+		}
+		getMerchantId.Balance = getMerchantId.Balance + finalPrice
+		_= x.merchantRepo.Update(ctx,getMerchantId)
 		if err := x.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.AccountNumber, "", booking.Id); err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
@@ -6363,6 +6392,22 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 
 		}
 		transactionStatus = 2
+		getMerchantId ,err := x.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
+		if err != nil {
+			return c.JSON(getStatusCode(err),errors.New("Merchant Not Found"))
+		}
+		var finalPriceAdult float64
+		var finalPriceChildren float64
+		for _,price := range bookingDetail.GuestDesc{
+			if price.Type == "Adult"{
+				finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
+			}else {
+				finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
+			}
+		}
+		finalPrice := finalPriceAdult + finalPriceChildren
+		getMerchantId.Balance = getMerchantId.Balance + finalPrice
+		_= x.merchantRepo.Update(ctx,getMerchantId)
 		if err := x.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, callback.AccountNumber, "", booking.OrderId); err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
