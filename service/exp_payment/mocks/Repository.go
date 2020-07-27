@@ -18,7 +18,7 @@ func (_m *Repository) Deletes(ctx context.Context, ids []string, expId string, d
 	ret := _m.Called(ctx, ids, expId,deletedBy)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, st, string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, []string,string, string) error); ok {
 		r0 = rf(ctx, ids,expId, deletedBy)
 	} else {
 		r0 = ret.Error(0)
@@ -26,44 +26,33 @@ func (_m *Repository) Deletes(ctx context.Context, ids []string, expId string, d
 
 	return r0
 }
-func (_m *Repository) List(ctx context.Context) ([]*models.ExperiencePayment, error) {
-	ret := _m.Called(ctx)
+func (_m *Repository) DeleteByExpId(ctx context.Context,expId string,deletedBy string)error {
+	ret := _m.Called(ctx,  expId,deletedBy)
 
-	var r0 []*models.ExperiencePayment
-	if rf, ok := ret.Get(0).(func(context.Context) []*models.ExperiencePayment); ok {
-		r0 = rf(ctx)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, expId, deletedBy)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.ExperiencePayment)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
+func (_m *Repository) GetByExpID(ctx context.Context, expID string) ([]*models.ExperiencePaymentJoinType, error) {
+	ret := _m.Called(ctx,expID)
 
-// Fetch provides a mock function with given fields: ctx, cursor, num
-func (_m *Repository) Fetch(ctx context.Context, limit int, offset int) ([]*models.ExperiencePayment, error) {
-	ret := _m.Called(ctx, limit, offset)
-
-	var r0 []*models.ExperiencePayment
-	if rf, ok := ret.Get(0).(func(context.Context, int, int) []*models.ExperiencePayment); ok {
-		r0 = rf(ctx, limit, offset)
+	var r0 []*models.ExperiencePaymentJoinType
+	if rf, ok := ret.Get(0).(func(context.Context,string) []*models.ExperiencePaymentJoinType); ok {
+		r0 = rf(ctx,expID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.ExperiencePayment)
+			r0 = ret.Get(0).([]*models.ExperiencePaymentJoinType)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
-		r1 = rf(ctx, limit, offset)
+	if rf, ok := ret.Get(1).(func(context.Context,string) error); ok {
+		r1 = rf(ctx,expID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -72,20 +61,20 @@ func (_m *Repository) Fetch(ctx context.Context, limit int, offset int) ([]*mode
 }
 
 // GetByID provides a mock function with given fields: ctx, id
-func (_m *Repository) GetById(ctx context.Context, id int) (*models.ExperiencePayment, error) {
+func (_m *Repository) GetById(ctx context.Context,id string)([]*models.ExperiencePaymentJoinType,error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *models.ExperiencePayment
-	if rf, ok := ret.Get(0).(func(context.Context, int) *models.ExperiencePayment); ok {
+	var r0 []*models.ExperiencePaymentJoinType
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.ExperiencePaymentJoinType); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.ExperiencePayment)
+			r0 = ret.Get(0).( []*models.ExperiencePaymentJoinType)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -94,44 +83,21 @@ func (_m *Repository) GetById(ctx context.Context, id int) (*models.ExperiencePa
 	return r0, r1
 }
 
-// GetByTitle provides a mock function with given fields: ctx, title
-func (_m *Repository) GetByName(ctx context.Context, title string) (*models.ExperiencePayment, error) {
-	ret := _m.Called(ctx, title)
-
-	var r0 *models.ExperiencePayment
-	if rf, ok := ret.Get(0).(func(context.Context, string) *models.ExperiencePayment); ok {
-		r0 = rf(ctx, title)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.ExperiencePayment)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, title)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Store provides a mock function with given fields: ctx, a
-func (_m *Repository) Insert(ctx context.Context, a *models.ExperiencePayment) (*int, error) {
+func (_m *Repository) Insert(ctx context.Context, a models.ExperiencePayment) (string, error) {
 	ret := _m.Called(ctx, a)
 
-	var r0 *int
-	if rf, ok := ret.Get(0).(func(context.Context, *models.ExperiencePayment) *int); ok {
+	var r0 string
+	if rf, ok := ret.Get(0).(func(context.Context, models.ExperiencePayment) string); ok {
 		r0 = rf(ctx, a)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*int)
+			r0 = ret.Get(0).(string)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.ExperiencePayment) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, models.ExperiencePayment) error); ok {
 		r1 = rf(ctx, a)
 	} else {
 		r1 = ret.Error(1)
@@ -141,11 +107,11 @@ func (_m *Repository) Insert(ctx context.Context, a *models.ExperiencePayment) (
 }
 
 // Update provides a mock function with given fields: ctx, ar
-func (_m *Repository) Update(ctx context.Context, ar *models.ExperiencePayment) error {
+func (_m *Repository) Update(ctx context.Context, ar models.ExperiencePayment) error {
 	ret := _m.Called(ctx, ar)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.ExperiencePayment) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, models.ExperiencePayment) error); ok {
 		r0 = rf(ctx, ar)
 	} else {
 		r0 = ret.Error(0)
