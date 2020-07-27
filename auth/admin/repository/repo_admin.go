@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
 	"fmt"
 
 	"time"
@@ -68,26 +67,26 @@ func (m *adminRepository) fetch(ctx context.Context, query string, args ...inter
 	return result, nil
 }
 
-func (m *adminRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Admin, string, error) {
-	query := `SELECT * FROM admins WHERE created_at > ? ORDER BY created_at LIMIT ? `
-
-	decodedCursor, err := DecodeCursor(cursor)
-	if err != nil && cursor != "" {
-		return nil, "", models.ErrBadParamInput
-	}
-
-	res, err := m.fetch(ctx, query, decodedCursor, num)
-	if err != nil {
-		return nil, "", err
-	}
-
-	nextCursor := ""
-	if len(res) == int(num) {
-		nextCursor = EncodeCursor(res[len(res)-1].CreatedDate)
-	}
-
-	return res, nextCursor, err
-}
+//func (m *adminRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Admin, string, error) {
+//	query := `SELECT * FROM admins WHERE created_at > ? ORDER BY created_at LIMIT ? `
+//
+//	decodedCursor, err := DecodeCursor(cursor)
+//	if err != nil && cursor != "" {
+//		return nil, "", models.ErrBadParamInput
+//	}
+//
+//	res, err := m.fetch(ctx, query, decodedCursor, num)
+//	if err != nil {
+//		return nil, "", err
+//	}
+//
+//	nextCursor := ""
+//	if len(res) == int(num) {
+//		nextCursor = EncodeCursor(res[len(res)-1].CreatedDate)
+//	}
+//
+//	return res, nextCursor, err
+//}
 func (m *adminRepository) GetByID(ctx context.Context, id string) (res *models.Admin, err error) {
 	query := `SELECT * FROM admins WHERE id = ?`
 
@@ -184,22 +183,22 @@ func (m *adminRepository) Update(ctx context.Context, ar *models.Admin) error {
 	return nil
 }
 
-// DecodeCursor will decode cursor from user for mysql
-func DecodeCursor(encodedTime string) (time.Time, error) {
-	byt, err := base64.StdEncoding.DecodeString(encodedTime)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	timeString := string(byt)
-	t, err := time.Parse(timeFormat, timeString)
-
-	return t, err
-}
-
-// EncodeCursor will encode cursor from mysql to user
-func EncodeCursor(t time.Time) string {
-	timeString := t.Format(timeFormat)
-
-	return base64.StdEncoding.EncodeToString([]byte(timeString))
-}
+//// DecodeCursor will decode cursor from user for mysql
+//func DecodeCursor(encodedTime string) (time.Time, error) {
+//	byt, err := base64.StdEncoding.DecodeString(encodedTime)
+//	if err != nil {
+//		return time.Time{}, err
+//	}
+//
+//	timeString := string(byt)
+//	t, err := time.Parse(timeFormat, timeString)
+//
+//	return t, err
+//}
+//
+//// EncodeCursor will encode cursor from mysql to user
+//func EncodeCursor(t time.Time) string {
+//	timeString := t.Format(timeFormat)
+//
+//	return base64.StdEncoding.EncodeToString([]byte(timeString))
+//}
