@@ -90,8 +90,6 @@ func (c currencyUsecase) Exchange(ctx context.Context, exchangeKey string) (map[
 		return data, err
 	}
 }
-
-
 func (c currencyUsecase) ExchangeRatesApi(ctx context.Context, base string , symbols string) (models.CurrencyExChangeRate, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
 	defer cancel()

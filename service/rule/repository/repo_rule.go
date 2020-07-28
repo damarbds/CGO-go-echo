@@ -71,7 +71,7 @@ func (f ruleRepository) List(ctx context.Context) ([]*models.Rule, error) {
 
 func (m *ruleRepository) Fetch(ctx context.Context, limit,offset int) ([]*models.Rule, error) {
 	if limit != 0 {
-		query := `Select * FROM rules where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM rules where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -89,7 +89,7 @@ func (m *ruleRepository) Fetch(ctx context.Context, limit,offset int) ([]*models
 		return res, err
 
 	} else {
-		query := `Select * FROM rules where is_deleted = 0 AND is_active = 1 `
+		query := `SELECT * FROM rules where is_deleted = 0 AND is_active = 1`
 
 		//if search != ""{
 		//	query = query + `AND (promo_name LIKE '%` + search + `%'` +
@@ -150,7 +150,7 @@ func (m *ruleRepository) Insert(ctx context.Context, a *models.Rule) (*int, erro
 	if err != nil {
 		return nil, err
 	}
-	res, err := stmt.ExecContext(ctx,a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.RuleName,
+	res, err := stmt.ExecContext(ctx,a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.RuleName,
 		a.RuleIcon)
 	if err != nil {
 		return nil,err
@@ -174,7 +174,7 @@ func (m *ruleRepository) Update(ctx context.Context, a *models.Rule) error {
 		return nil
 	}
 
-	_, err = stmt.ExecContext(ctx, a.ModifiedBy, time.Now(), a.RuleName, a.RuleIcon, a.Id)
+	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.RuleName, a.RuleIcon, a.Id)
 	if err != nil {
 		return err
 	}

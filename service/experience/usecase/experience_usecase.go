@@ -459,6 +459,8 @@ func (m experienceUsecase) FilterSearchExp(
 	offset int,
 	provinceId string,
 	currencyPrice string,
+	bookingType string,
+	paymentType string,
 ) (*models.FilterSearchWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -543,6 +545,24 @@ func (m experienceUsecase) FilterSearchExp(
 		keyword := `'%` + search + `%'`
 		query = query + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
 		qCount = qCount + ` AND LOWER(e.exp_title) LIKE LOWER(` + keyword + `)`
+	}
+	if bookingType != ""{
+		if bookingType == "instant"{
+			query = query + ` AND e.exp_booking_type = 'Instant Booking' `
+			qCount = qCount + ` AND e.exp_booking_type = 'Instant Booking' `
+		}else if bookingType == "noinstant"{
+			query = query + ` AND e.exp_booking_type = 'No Instant Booking' `
+			qCount = qCount + ` AND e.exp_booking_type = 'No Instant Booking' `
+		}
+	}
+	if paymentType != ""{
+		if paymentType == "full"{
+			query = query + ` AND ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' `
+			qCount = qCount + ` AND ep.exp_payment_type_id = '8a5e3eef-a6db-4584-a280-af5ab18a979b' `
+		}else if paymentType == "down"{
+			query = query + ` AND ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' `
+			qCount = qCount + ` AND ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' `
+		}
 	}
 	if provinceId != "" {
 		query = query + ` AND ci.province_id = '` + provinceId + `'`
@@ -1822,14 +1842,9 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 		}
 	}
 
-	var expType []string
-	errObject := json.Unmarshal([]byte(res.ExpType), &expType)
-	if errObject != nil {
-		//fmt.Println("Error : ",err.Error())
-		return nil, models.ErrInternalServerError
-	}
+
 	expItinerary := models.ExpItineraryObject{}
-	errObject = json.Unmarshal([]byte(res.ExpInternary), &expItinerary)
+	errObject := json.Unmarshal([]byte(res.ExpInternary), &expItinerary)
 	if errObject != nil {
 		//fmt.Println("Error : ",err.Error())
 		return nil, models.ErrInternalServerError
@@ -1888,6 +1903,13 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 	minimumBooking := models.MinimumBookingObj{
 		MinimumBookingDesc:   res.MinimumBookingDesc,
 		MinimumBookingAmount: res.MinimumBookingAmount,
+	}
+
+
+	var expType []string
+	expTypes,_ := m.filterATRepo.GetJoinExpType(ctx,res.Id)
+	for _,elementType := range expTypes{
+		expType = append(expType,elementType.ExpTypeName)
 	}
 	countRating, err := m.reviewsRepo.CountRating(ctx, 0, res.Id)
 	experiences := models.ExperienceDto{

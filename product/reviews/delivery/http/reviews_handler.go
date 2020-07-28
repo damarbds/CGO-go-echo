@@ -17,14 +17,14 @@ type ResponseError struct {
 }
 
 // reviewsHandler  represent the httphandler for reviews
-type reviewsHandler struct {
-	reviewsUsecase reviews.Usecase
+type ReviewsHandler struct {
+	ReviewsUsecase reviews.Usecase
 }
 
 // NewreviewsHandler will initialize the reviewss/ resources endpoint
 func NewreviewsHandler(e *echo.Echo, us reviews.Usecase) {
-	handler := &reviewsHandler{
-		reviewsUsecase: us,
+	handler := &ReviewsHandler{
+		ReviewsUsecase: us,
 	}
 	e.POST("product/exp-reviews", handler.CreateReview)
 	//e.PUT("/reviewss/:id", handler.Updatereviews)
@@ -40,7 +40,7 @@ func isRequestValid(m *models.NewCommandMerchant) (bool, error) {
 	}
 	return true, nil
 }
-func (p *reviewsHandler) CreateReview(c echo.Context) error {
+func (p *ReviewsHandler) CreateReview(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -59,21 +59,21 @@ func (p *reviewsHandler) CreateReview(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	response,err := p.reviewsUsecase.CreateReviews(ctx,*cp,token)
+	response,err := p.ReviewsUsecase.CreateReviews(ctx,*cp,token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, response)
 }
-func (a *reviewsHandler) GetReviewsByExpId(c echo.Context) error {
+func (a *ReviewsHandler) GetReviewsByExpId(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
 	isMerchant := c.QueryParam("isMerchant")
 
 	if isMerchant != "" {
-		if token != "" {
+		if token == "" {
 			return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
 		}
 	}
@@ -101,7 +101,7 @@ func (a *reviewsHandler) GetReviewsByExpId(c echo.Context) error {
 	if qRating != "" {
 		rating, _ = strconv.Atoi(qRating)
 	}
-	res, err := a.reviewsUsecase.GetReviewsByExpIdWithPagination(ctx, page, limit, offset, rating, sortBy, expId)
+	res, err := a.ReviewsUsecase.GetReviewsByExpIdWithPagination(ctx, page, limit, offset, rating, sortBy, expId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

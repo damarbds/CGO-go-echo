@@ -3,6 +3,9 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"github.com/auth/merchant"
+	guuid "github.com/google/uuid"
 	"github.com/service/experience"
 	"github.com/service/transportation"
 	"html/template"
@@ -25,6 +28,7 @@ import (
 )
 
 type paymentUsecase struct {
+	merchantUsecase  merchant.Usecase
 	isUsecase        identityserver.Usecase
 	transactionRepo  transaction.Repository
 	notificationRepo notif.Repository
@@ -40,8 +44,9 @@ type paymentUsecase struct {
 
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(		transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(	merchantUsecase  merchant.Usecase	,transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
+		merchantUsecase:merchantUsecase,
 		transportationRepo:transportationRepo,
 		expRepo:expRepo,
 		bookingUsecase:   bookingUsecase,
@@ -5903,6 +5908,86 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
+func (p paymentUsecase) ConfirmPaymentBoarding(ctx context.Context, orderId string, token string) (*models.ResponseConfirmBoarding, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
+	defer cancel()
+	_, err := p.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	var bookingId string
+	checkOrderId,_ := p.bookingRepo.GetDetailBookingID(ctx,orderId,orderId)
+	if checkOrderId == nil{
+		checkOrderIdTranspotation,_ := p.bookingRepo.GetDetailTransportBookingID(ctx,orderId,orderId,nil)
+		if len(checkOrderIdTranspotation) == 0{
+			return nil,models.ErrNotFound
+		}else if *checkOrderIdTranspotation[0].TransactionStatus != 2{
+			return nil,models.CheckBoarding
+		}else {
+			bookingId = checkOrderIdTranspotation[0].Id
+			if err := p.transactionRepo.UpdateAfterPayment(ctx, 6, "", "", orderId); err != nil {
+				return nil,err
+			}
+			var bookedBy []models.BookedByObj
+			var guestDesc []models.GuestDescObj
+			if checkOrderIdTranspotation[0].BookedBy != "" {
+				if errUnmarshal := json.Unmarshal([]byte(checkOrderIdTranspotation[0].BookedBy), &bookedBy); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+			if checkOrderIdTranspotation[0].GuestDesc != "" {
+				if errUnmarshal := json.Unmarshal([]byte(checkOrderIdTranspotation[0].GuestDesc), &guestDesc); errUnmarshal != nil {
+					return nil, models.ErrInternalServerError
+				}
+			}
+
+			result := &models.ResponseConfirmBoarding{
+				ExpTitle:            nil,
+				TransportationsName: checkOrderIdTranspotation[0].TransName,
+				HarborsFrom:         checkOrderIdTranspotation[0].HarborSourceName,
+				HarborsTo:           checkOrderIdTranspotation[0].HarborDestName,
+				BookedBy:            bookedBy,
+				GuestDesc:           guestDesc,
+				Price:               checkOrderIdTranspotation[0].TotalPrice,
+			}
+			return result,nil
+		}
+
+	}else if *checkOrderId.TransactionStatus != 2{
+		return nil,models.CheckBoarding
+	}else {
+		bookingId = checkOrderId.Id
+		if err := p.transactionRepo.UpdateAfterPayment(ctx, 6, "", "", bookingId); err != nil {
+			return nil,err
+		}
+		var bookedBy []models.BookedByObj
+		var guestDesc []models.GuestDescObj
+		if checkOrderId.BookedBy != "" {
+			if errUnmarshal := json.Unmarshal([]byte(checkOrderId.BookedBy), &bookedBy); errUnmarshal != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
+		if checkOrderId.GuestDesc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(checkOrderId.GuestDesc), &guestDesc); errUnmarshal != nil {
+				return nil, models.ErrInternalServerError
+			}
+		}
+
+		result := &models.ResponseConfirmBoarding{
+			ExpTitle:            checkOrderId.ExpTitle,
+			TransportationsName: nil,
+			HarborsFrom:         nil,
+			HarborsTo:           nil,
+			BookedBy:            bookedBy,
+			GuestDesc:           guestDesc,
+			Price:               checkOrderId.TotalPrice,
+		}
+		return result,nil
+	}
+
+
+}
+
 func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction, token string, points float64,autoComplete bool) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
@@ -6012,7 +6097,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 				return err
 			}
 			notif := models.Notification{
-				Id:           "",
+				Id:           guuid.New().String(),
 				CreatedBy:    getTransaction.CreatedBy,
 				CreatedDate:  time.Now(),
 				ModifiedBy:   nil,
@@ -6422,7 +6507,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 		listTransaction , _ := p.transactionRepo.GetByBookingDate(ctx,confirmIn.BookingDate,confirmIn.TransId,"")
 		for _,getTransaction := range listTransaction{
 			notif := models.Notification{
-				Id:           "",
+				Id:           guuid.New().String(),
 				CreatedBy:    getTransaction.CreatedBy,
 				CreatedDate:  time.Now(),
 				ModifiedBy:   nil,
@@ -6691,7 +6776,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		return err
 	}
 	notif := models.Notification{
-		Id:           "",
+		Id:           guuid.New().String(),
 		CreatedBy:    getTransaction.CreatedBy,
 		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
