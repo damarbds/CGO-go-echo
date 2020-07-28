@@ -2,8 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"time"
-
 	"github.com/models"
 	"github.com/service/time_options"
 	"github.com/sirupsen/logrus"
@@ -74,37 +72,37 @@ func (t timeOptionsRepository) fetch(ctx context.Context, query string, args ...
 
 	return result, nil
 }
-func (t timeOptionsRepository) List(ctx context.Context) ([]*models.TimesOption, error) {
-	query := `SELECT * FROM times_options WHERE is_deleted = 0 AND is_active = 1`
+//func (t timeOptionsRepository) List(ctx context.Context) ([]*models.TimesOption, error) {
+//	query := `SELECT * FROM times_options WHERE is_deleted = 0 AND is_active = 1`
+//
+//	list, err := t.fetch(ctx, query)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return list, err
+//}
 
-	list, err := t.fetch(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-
-	return list, err
-}
-
-func (t timeOptionsRepository) Insert(ctx context.Context, a models.TimesOption) (*int, error) {
-	query := `INSERT times_options SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
-				deleted_date=? , is_deleted=? , is_active=? , start_time=?,end_time=?`
-	stmt, err := t.Conn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.StartTime, a.EndTime)
-	if err != nil {
-		return nil, err
-	}
-
-	//lastID, err := res.RowsAffected()
-	//if err != nil {
-	//	return err
-	//}
-
-	//a.Id = lastID
-	return &a.Id, nil
-}
+//func (t timeOptionsRepository) Insert(ctx context.Context, a models.TimesOption) (*int, error) {
+//	query := `INSERT times_options SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? ,
+//				deleted_date=? , is_deleted=? , is_active=? , start_time=?,end_time=?`
+//	stmt, err := t.Conn.PrepareContext(ctx, query)
+//	if err != nil {
+//		return nil, err
+//	}
+//	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.StartTime, a.EndTime)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	//lastID, err := res.RowsAffected()
+//	//if err != nil {
+//	//	return err
+//	//}
+//
+//	//a.Id = lastID
+//	return &a.Id, nil
+//}
 
 func (t timeOptionsRepository) GetByTime(ctx context.Context, time string) (*models.TimesOption, error) {
 	query := `SELECT * FROM times_options where ? >= start_time  AND  ? <= end_time `

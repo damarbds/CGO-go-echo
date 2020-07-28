@@ -64,6 +64,7 @@ type bookingExpUsecase struct {
 	currencyUsecase           currency.Usecase
 }
 
+
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
 func NewbookingExpUsecase(currencyUsecase currency.Usecase, usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
@@ -6045,6 +6046,21 @@ If you wish your payment to be transmitted to credits, please click transmit to 
 
 var templateFuncs = template.FuncMap{"rangeStruct": rangeStructer}
 
+func (b bookingExpUsecase) ChangeStatusTransactionScheduler(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+	list, err := b.transactionRepo.GetIdTransactionByStatus(ctx,2)
+	if err != nil {
+		return err
+	}
+	for _, id := range list {
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, 4, "", *id, ""); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId string) (*models.ResponseDelete, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
@@ -8691,6 +8707,42 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()
 			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 		}
+		var price models.PriceObj
+		var currency string
+		if *detail.PriceTransportation != "" {
+			if errUnmarshal := json.Unmarshal([]byte(*detail.PriceTransportation), &price); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+		if price.Currency == 1 {
+			currency = "USD"
+		} else {
+			currency = "IDR"
+		}
+		dayMap := models.DayPriceTransportation{
+			AdultPrice:    price.AdultPrice,
+			ChildrenPrice: price.ChildrenPrice,
+			Currency:      currency,
+		}
+		if currencyPrice == "USD"{
+			if dayMap.Currency == "IDR"{
+				convertCurrency ,_ := b.currencyUsecase.ExchangeRatesApi(ctx,"IDR","USD")
+				calculatePriceAdult := convertCurrency.Rates.USD * dayMap.AdultPrice
+				dayMap.AdultPrice = calculatePriceAdult
+				calculatePriceChildren := convertCurrency.Rates.USD * dayMap.ChildrenPrice
+				dayMap.ChildrenPrice = calculatePriceChildren
+				dayMap.Currency = "USD"
+			}
+		}else if currencyPrice =="IDR"{
+			if dayMap.Currency == "USD"{
+				convertCurrency ,_ := b.currencyUsecase.ExchangeRatesApi(ctx,"USD","IDR")
+				calculatePriceAdult := convertCurrency.Rates.USD * dayMap.AdultPrice
+				dayMap.AdultPrice = calculatePriceAdult
+				calculatePriceChildren := convertCurrency.Rates.USD * dayMap.ChildrenPrice
+				dayMap.ChildrenPrice = calculatePriceChildren
+				dayMap.Currency = "IDR"
+			}
+		}
 		transport[i] = models.BookingTransportationDetail{
 			TransID:          *detail.TransId,
 			TransName:        *detail.TransName,
@@ -8707,6 +8759,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 			MerchantPhone:    detail.MerchantPhone.String,
 			MerchantPicture:  detail.MerchantPicture.String,
 			ReturnTransId:    detail.ReturnTransId,
+			Price:dayMap,
 		}
 	}
 
@@ -8995,10 +9048,10 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 	if err != nil {
 		return nil, err
 	}
-	for _, b := range transList {
+	for _, elementb := range transList {
 		var guestDesc []models.GuestDescObj
-		if b.GuestDesc != "" {
-			if errUnmarshal := json.Unmarshal([]byte(b.GuestDesc), &guestDesc); errUnmarshal != nil {
+		if elementb.GuestDesc != "" {
+			if errUnmarshal := json.Unmarshal([]byte(elementb.GuestDesc), &guestDesc); errUnmarshal != nil {
 				return nil, err
 			}
 		}
@@ -9015,35 +9068,55 @@ func (b bookingExpUsecase) GetByUserID(ctx context.Context, status string, token
 			}
 		}
 		var tripDuration string
-		if b.DepartureTime != nil && b.ArrivalTime != nil {
-			departureTime, _ := time.Parse("15:04:00", *b.DepartureTime)
-			arrivalTime, _ := time.Parse("15:04:00", *b.ArrivalTime)
+		if elementb.DepartureTime != nil && elementb.ArrivalTime != nil {
+			departureTime, _ := time.Parse("15:04:00", *elementb.DepartureTime)
+			arrivalTime, _ := time.Parse("15:04:00", *elementb.ArrivalTime)
 
 			tripHour := arrivalTime.Hour() - departureTime.Hour()
 			tripMinute := arrivalTime.Minute() - departureTime.Minute()
 			tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
 		}
 		booking := models.MyBooking{
-			OrderId:            b.OrderId,
+			OrderId:            elementb.OrderId,
 			ExpId:              "",
 			ExpTitle:           "",
-			TransId:            *b.TransId,
-			TransName:          *b.TransName,
-			TransFrom:          *b.HarborSourceName,
-			TransTo:            *b.HarborDestName,
-			TransDepartureTime: b.DepartureTime,
-			TransArrivalTime:   b.ArrivalTime,
+			TransId:            *elementb.TransId,
+			TransName:          *elementb.TransName,
+			TransFrom:          *elementb.HarborSourceName,
+			TransTo:            *elementb.HarborDestName,
+			TransDepartureTime: elementb.DepartureTime,
+			TransArrivalTime:   elementb.ArrivalTime,
 			TripDuration:       tripDuration,
-			TransClass:         *b.TransClass,
+			TransClass:         *elementb.TransClass,
 			TransGuest:         transGuest,
-			BookingDate:        b.BookingDate,
+			BookingDate:        elementb.BookingDate,
 			ExpDuration:        0,
 			TotalGuest:         len(guestDesc),
-			City:               b.City,
-			Province:           b.Province,
-			Country:            b.Country,
+			City:               elementb.City,
+			Province:           elementb.Province,
+			Country:            elementb.Country,
 		}
+		if elementb.ReturnTransId != nil{
+			getReturnTrans, _ := b.bookingExpRepo.GetDetailTransportBookingID(ctx, elementb.OrderId, elementb.OrderId, elementb.ReturnTransId)
+			if len(getReturnTrans) != 0{
+				var tripDurationReturn string
+				if getReturnTrans[0].DepartureTime != nil && getReturnTrans[0].ArrivalTime != nil {
+					departureTime, _ := time.Parse("15:04:00", *getReturnTrans[0].DepartureTime)
+					arrivalTime, _ := time.Parse("15:04:00", *getReturnTrans[0].ArrivalTime)
 
+					tripHour := arrivalTime.Hour() - departureTime.Hour()
+					tripMinute := arrivalTime.Minute() - departureTime.Minute()
+					tripDurationReturn = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+				}
+				booking.TransIdReturn =   *getReturnTrans[0].TransId
+				booking.TransNameReturn =          *getReturnTrans[0].TransName
+				booking.TransFromReturn=          *getReturnTrans[0].HarborSourceName
+				booking.TransToReturn=            *getReturnTrans[0].HarborDestName
+				booking.TransDepartureTimeReturn=  getReturnTrans[0].DepartureTime
+				booking.TransArrivalTimeReturn=    getReturnTrans[0].ArrivalTime
+				booking.TripDurationReturn=       tripDurationReturn
+			}
+		}
 		myBooking = append(myBooking, &booking)
 	}
 
@@ -9626,21 +9699,37 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			totalGuest := len(guestDesc)
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
-					status = "Payment Expired"
-				} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+
+				 if element.StatusTransaction == 1 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Cancelled"
-				} else if element.StatusTransaction == 2 {
+				}else if element.StatusTransaction == 2 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if element.StatusTransaction == 5 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if element.StatusTransaction == 7 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Success"
-				}
-			} else {
-				if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				}else if element.StatusTransaction == 3{
 					status = "Payment Expired"
-				} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+				}else if element.StatusTransaction == 4{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 8{
 					status = "Cancelled"
 				}
-			}
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+			//		status = "Cancelled"
+			//	} else if element.StatusTransaction == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 
 			if element.UserId == nil {
 				element.UserId = new(string)
@@ -9676,6 +9765,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		if err != nil {
 			return nil, err
 		}
+		var check models.ItemsHistoryDto
 		for _, element := range queryTrans {
 			var expType []string
 			if element.ExpType != nil {
@@ -9702,21 +9792,38 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			//totalGuest := len(guestDesc)
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
-					status = "Payment Expired"
-				} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+
+				if *element.TransactionStatus == 1 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Cancelled"
-				} else if *element.TransactionStatus == 2 {
+				}else if *element.TransactionStatus == 2 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 5 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 7 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Success"
-				}
-			} else {
-				if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				}else if *element.TransactionStatus == 3{
 					status = "Payment Expired"
-				} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+				}else if *element.TransactionStatus == 4{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 8{
 					status = "Cancelled"
 				}
-			}
+
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+			//		status = "Cancelled"
+			//	} else if *element.TransactionStatus == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 			var tripDuration string
 			if element.DepartureTime != nil && element.ArrivalTime != nil {
 				departureTime, _ := time.Parse("15:04:00", *element.DepartureTime)
@@ -9763,7 +9870,33 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Status:             status,
 				IsReview:           isReview,
 			}
-			historyDto.Items = append(historyDto.Items, itemDto)
+			if element.ReturnTransId != nil{
+				if element.ReturnTransId != nil{
+					getReturnTrans, _ := b.bookingExpRepo.GetDetailTransportBookingID(ctx, element.OrderId, element.OrderId, element.ReturnTransId)
+					if len(getReturnTrans) != 0{
+						var tripDurationReturn string
+						if getReturnTrans[0].DepartureTime != nil && getReturnTrans[0].ArrivalTime != nil {
+							departureTime, _ := time.Parse("15:04:00", *getReturnTrans[0].DepartureTime)
+							arrivalTime, _ := time.Parse("15:04:00", *getReturnTrans[0].ArrivalTime)
+
+							tripHour := arrivalTime.Hour() - departureTime.Hour()
+							tripMinute := arrivalTime.Minute() - departureTime.Minute()
+							tripDurationReturn = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+						}
+						itemDto.TransIdReturn =   *getReturnTrans[0].TransId
+						itemDto.TransNameReturn =          *getReturnTrans[0].TransName
+						itemDto.TransFromReturn=          *getReturnTrans[0].HarborSourceName
+						itemDto.TransToReturn=            *getReturnTrans[0].HarborDestName
+						itemDto.TransDepartureTimeReturn=  getReturnTrans[0].DepartureTime
+						itemDto.TransArrivalTimeReturn=    getReturnTrans[0].ArrivalTime
+						itemDto.TripDurationReturn=       tripDurationReturn
+					}
+				}
+			}
+			if itemDto.OrderId != check.OrderId{
+				historyDto.Items = append(historyDto.Items, itemDto)
+			}
+			check = itemDto
 		}
 		result = append(result, &historyDto)
 	} else {
@@ -9810,21 +9943,37 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			totalGuest := len(guestDesc)
 
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
-					status = "Payment Expired"
-				} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+			//item.CheckInDate.Format("2006-01-02") >= time.Now().Format("2006-01-02")
+				if element.StatusTransaction == 1 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Cancelled"
-				} else if element.StatusTransaction == 2 {
+				}else if element.StatusTransaction == 2 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if element.StatusTransaction == 5 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if element.StatusTransaction == 7 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Success"
-				}
-			} else {
-				if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				} else if element.StatusTransaction == 3{
 					status = "Payment Expired"
-				} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+				}else if element.StatusTransaction == 4{
+					status = "Cancelled"
+				}else if element.StatusTransaction == 8{
 					status = "Cancelled"
 				}
-			}
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if element.StatusTransaction == 0 || element.StatusTransaction == 3 {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 1 || element.StatusTransaction == 4 || element.StatusTransaction == 5 {
+			//		status = "Cancelled"
+			//	} else if element.StatusTransaction == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if element.StatusTransaction == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if element.StatusTransaction == 3 || element.StatusTransaction == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 			if element.UserId == nil {
 				element.UserId = new(string)
 			}
@@ -9858,6 +10007,7 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 		if err != nil {
 			return nil, err
 		}
+		var check models.ItemsHistoryDto
 		for _, element := range queryTrans {
 			var expType []string
 			if element.ExpType != nil {
@@ -9884,21 +10034,38 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 			}
 			//totalGuest := len(guestDesc)
 			var status string
-			if element.BookingDate.Before(time.Now()) == true {
-				if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
-					status = "Payment Expired"
-				} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+
+				if *element.TransactionStatus == 1 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Cancelled"
-				} else if *element.TransactionStatus == 2 {
+				}else if *element.TransactionStatus == 2 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 5 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 7 && (element.BookingDate.Format("2006-01-02") < time.Now().Format("2006-01-02")){
 					status = "Success"
-				}
-			} else {
-				if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+				}else if *element.TransactionStatus == 3{
 					status = "Payment Expired"
-				} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+				}else if *element.TransactionStatus == 4{
+					status = "Cancelled"
+				}else if *element.TransactionStatus == 8{
 					status = "Cancelled"
 				}
-			}
+
+			//if element.BookingDate.Before(time.Now()) == true {
+			//	if *element.TransactionStatus == 0 || *element.TransactionStatus == 3 {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 1 || *element.TransactionStatus == 4 || *element.TransactionStatus == 5 {
+			//		status = "Cancelled"
+			//	} else if *element.TransactionStatus == 2 {
+			//		status = "Success"
+			//	}
+			//} else {
+			//	if *element.TransactionStatus == 0 && time.Now().Add(7*time.Hour).After(element.ExpiredDatePayment.Add(7*time.Hour)) {
+			//		status = "Payment Expired"
+			//	} else if *element.TransactionStatus == 3 || *element.TransactionStatus == 4 {
+			//		status = "Cancelled"
+			//	}
+			//}
 			var tripDuration string
 			if element.DepartureTime != nil && element.ArrivalTime != nil {
 				departureTime, _ := time.Parse("15:04:00", *element.DepartureTime)
@@ -9945,7 +10112,33 @@ func (b bookingExpUsecase) GetHistoryBookingByUserId(c context.Context, token st
 				Status:             status,
 				IsReview:           isReview,
 			}
-			historyDto.Items = append(historyDto.Items, itemDto)
+			if element.ReturnTransId != nil{
+				if element.ReturnTransId != nil{
+					getReturnTrans, _ := b.bookingExpRepo.GetDetailTransportBookingID(ctx, element.OrderId, element.OrderId, element.ReturnTransId)
+					if len(getReturnTrans) != 0{
+						var tripDurationReturn string
+						if getReturnTrans[0].DepartureTime != nil && getReturnTrans[0].ArrivalTime != nil {
+							departureTime, _ := time.Parse("15:04:00", *getReturnTrans[0].DepartureTime)
+							arrivalTime, _ := time.Parse("15:04:00", *getReturnTrans[0].ArrivalTime)
+
+							tripHour := arrivalTime.Hour() - departureTime.Hour()
+							tripMinute := arrivalTime.Minute() - departureTime.Minute()
+							tripDurationReturn = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+						}
+						itemDto.TransIdReturn =   *getReturnTrans[0].TransId
+						itemDto.TransNameReturn =          *getReturnTrans[0].TransName
+						itemDto.TransFromReturn=          *getReturnTrans[0].HarborSourceName
+						itemDto.TransToReturn=            *getReturnTrans[0].HarborDestName
+						itemDto.TransDepartureTimeReturn=  getReturnTrans[0].DepartureTime
+						itemDto.TransArrivalTimeReturn=    getReturnTrans[0].ArrivalTime
+						itemDto.TripDurationReturn=       tripDurationReturn
+					}
+				}
+			}
+			if check.OrderId != itemDto.OrderId{
+				historyDto.Items = append(historyDto.Items, itemDto)
+			}
+			check = itemDto
 		}
 		result = append(result, &historyDto)
 	}

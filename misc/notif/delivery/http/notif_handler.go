@@ -14,18 +14,18 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type notifHandler struct {
-	notifUsecase notif.Usecase
+type NotifHandler struct {
+	NotifUsecase notif.Usecase
 }
 
 func NewNotifHandler(e *echo.Echo, us notif.Usecase) {
-	handler := &notifHandler{
-		notifUsecase: us,
+	handler := &NotifHandler{
+		NotifUsecase: us,
 	}
 	e.GET("misc/notif", handler.Get)
 }
 
-func (a *notifHandler) Get(c echo.Context) error {
+func (a *NotifHandler) Get(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
@@ -39,7 +39,7 @@ func (a *notifHandler) Get(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := a.notifUsecase.GetByMerchantID(ctx, token)
+	res, err := a.NotifUsecase.GetByMerchantID(ctx, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -52,16 +52,12 @@ func getStatusCode(err error) int {
 	}
 	logrus.Error(err)
 	switch err {
-	case models.ErrInternalServerError:
-		return http.StatusInternalServerError
-	case models.ErrNotFound:
-		return http.StatusNotFound
+	//case models.ErrInternalServerError:
+	//	return http.StatusInternalServerError
+	//case models.ErrNotFound:
+	//	return http.StatusNotFound
 	case models.ErrUnAuthorize:
 		return http.StatusUnauthorized
-	case models.ErrConflict:
-		return http.StatusBadRequest
-	case models.ErrBadParamInput:
-		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}

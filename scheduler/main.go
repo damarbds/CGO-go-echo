@@ -28,12 +28,16 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
-
+	//dev
+	go ChangeStatusJob(baseUrlLocal)
 	go UpdateStatusExpiredPaymentJob(baseUrlLocal)
 	go RemainingPaymentJob(baseUrlLocal)
+	go CreateExChangeJob(baseUrlLocal)
+
+	//prd
+	go ChangeStatusJobPRD(baseUrlLocalPRD)
 	go UpdateStatusExpiredPaymentJobPRD(baseUrlLocalPRD)
 	go RemainingPaymentJobPRD(baseUrlLocalPRD)
-	go CreateExChangeJob(baseUrlLocal)
 	go CreateExChangeJobPRD(baseUrlLocalPRD)
 	log.Fatal(e.Start(":9090"))
 
@@ -74,6 +78,48 @@ func CreateExChangeJob(baseUrl string) {
 			}
 			fmt.Println(resp.Body)
 			fmt.Println("Current time: ", t.String())
+		}
+	}
+}
+
+func ChangeStatusJob(baseUrl string) {
+	done := make(chan bool)
+	//ticker := time.NewTicker(time.Hour)
+	ticker := time.NewTicker(time.Second * 1)
+	go func() {
+		//time.Sleep(10 * time.Second) // wait for 10 seconds
+		//done <- true
+	}()
+
+	for {
+		select {
+		case <-done:
+			ticker.Stop()
+			return
+		case t := <-ticker.C:
+			now := time.Now().Format("15:04")
+			if now == "01:00" {
+				req, err := http.NewRequest("POST", baseUrl+"/booking/changes-status-scheduler", nil)
+
+				if err != nil {
+					fmt.Println("Error : ", err.Error())
+					os.Exit(1)
+				}
+
+				tr := &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}
+
+				client := &http.Client{Transport: tr}
+
+				resp, err := client.Do(req)
+				if err != nil {
+					fmt.Println("Error : ", err.Error())
+					os.Exit(1)
+				}
+				fmt.Println(resp.Body)
+				fmt.Println("Current time: ", t.String())
+			}
 		}
 	}
 }
@@ -154,6 +200,48 @@ func RemainingPaymentJob(baseUrl string) {
 			}
 			fmt.Println(resp.Body)
 			fmt.Println("Current time: ", t.String())
+		}
+	}
+}
+
+func ChangeStatusJobPRD(baseUrl string) {
+	done := make(chan bool)
+	//ticker := time.NewTicker(time.Hour)
+	ticker := time.NewTicker(time.Second * 1)
+	go func() {
+		//time.Sleep(10 * time.Second) // wait for 10 seconds
+		//done <- true
+	}()
+
+	for {
+		select {
+		case <-done:
+			ticker.Stop()
+			return
+		case t := <-ticker.C:
+			now := time.Now().Format("15:04")
+			if now == "01:00" {
+				req, err := http.NewRequest("POST", baseUrl+"/booking/changes-status-scheduler", nil)
+
+				if err != nil {
+					fmt.Println("Error : ", err.Error())
+					os.Exit(1)
+				}
+
+				tr := &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}
+
+				client := &http.Client{Transport: tr}
+
+				resp, err := client.Do(req)
+				if err != nil {
+					fmt.Println("Error : ", err.Error())
+					os.Exit(1)
+				}
+				fmt.Println(resp.Body)
+				fmt.Println("Current time: ", t.String())
+			}
 		}
 	}
 }

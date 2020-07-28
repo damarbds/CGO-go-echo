@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	guuid "github.com/google/uuid"
 	"time"
 
 	"github.com/auth/merchant"
@@ -73,9 +74,9 @@ func (s scheduleUsecase) InsertSchedule(c context.Context, command *models.NewCo
 					}
 					price, _ := json.Marshal(priceObj)
 					schedule := models.Schedule{
-						Id:                    "",
+						Id:                    guuid.New().String(),
 						CreatedBy:             command.CreatedBy,
-						CreatedDate:           time.Time{},
+						CreatedDate:           time.Now(),
 						ModifiedBy:            nil,
 						ModifiedDate:          nil,
 						DeletedBy:             nil,

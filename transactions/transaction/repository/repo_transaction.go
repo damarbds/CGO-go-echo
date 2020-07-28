@@ -17,10 +17,38 @@ type transactionRepository struct {
 	Conn *sql.DB
 }
 
+
+
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
+func (t transactionRepository) GetIdTransactionByStatus(ctx context.Context, transactionStatus int) ([]*string, error) {
+	query := `SELECT t.id
+					FROM transactions t 
+					JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
+					WHERE t.status = ?
+					AND b.booking_date < ?
+					ORDER BY b.expired_date_payment DESC`
 
+	rows, err := t.Conn.QueryContext(ctx, query, transactionStatus,time.Now())
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	var transactionIds []*string
+	for rows.Next() {
+		var transactionId string
+		err = rows.Scan(&transactionId)
+		if err != nil {
+			return nil, err
+		}
+
+		transactionIds = append(transactionIds, &transactionId)
+	}
+
+	return transactionIds, nil
+}
 func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Context, date string, expId string, transId string, merchantId string,status string) ([]*models.TransactionOut, error) {
 	var query string
 	queryExp := `
@@ -1051,8 +1079,15 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 			//queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
 		}
 
-		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
-		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		var querySt string
+		var queryTSt string
+		if status == "waitingApproval" {
+			querySt = query + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
+			queryTSt = queryT + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
+		} else {
+			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		}
 		//unionQuery = querySt + ` UNION ` + queryTSt
 		rows1, err = t.Conn.QueryContext(ctx, querySt)
 		rows2, err = t.Conn.QueryContext(ctx, queryTSt)

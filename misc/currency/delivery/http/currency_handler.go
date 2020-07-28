@@ -15,21 +15,21 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type currencyHandler struct {
-	currencyUsecase currency.Usecase
+type CurrencyHandler struct {
+	CurrencyUsecase currency.Usecase
 }
 
 func NewCurrencyHandler(e *echo.Echo, cu currency.Usecase) {
-	handler := &currencyHandler{currencyUsecase: cu}
+	handler := &CurrencyHandler{CurrencyUsecase: cu}
 	e.GET("/misc/exchange-rate", handler.ExchangeRate)
 	e.POST("/misc/exchange-rate", handler.CreateExChange)
 }
-func (a *currencyHandler) CreateExChange(c echo.Context) error {
+func (a *CurrencyHandler) CreateExChange(c echo.Context) error {
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	error := a.currencyUsecase.Insert(ctx)
+	error := a.CurrencyUsecase.Insert(ctx)
 
 	if error != nil {
 		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
@@ -37,7 +37,7 @@ func (a *currencyHandler) CreateExChange(c echo.Context) error {
 	return c.JSON(http.StatusOK, nil)
 }
 
-func (cu *currencyHandler) ExchangeRate(c echo.Context) error {
+func (cu *CurrencyHandler) ExchangeRate(c echo.Context) error {
 	from := c.QueryParam("from")
 	to := c.QueryParam("to")
 
@@ -47,7 +47,7 @@ func (cu *currencyHandler) ExchangeRate(c echo.Context) error {
 	}
 
 	//exchangeKey := from + "_" + to
-	res, err := cu.currencyUsecase.ExchangeRatesApi(ctx, from,to)
+	res, err := cu.CurrencyUsecase.ExchangeRatesApi(ctx, from,to)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -70,23 +70,9 @@ func getStatusCode(err error) int {
 	}
 	logrus.Error(err)
 	switch err {
-	case models.ErrInternalServerError:
-		return http.StatusInternalServerError
-	case models.ErrNotFound:
-		return http.StatusNotFound
-	case models.ErrUnAuthorize:
-		return http.StatusUnauthorized
 	case models.ErrConflict:
 		return http.StatusBadRequest
 	case models.ErrBadParamInput:
-		return http.StatusBadRequest
-	case models.ValidationBookedDate:
-		return http.StatusBadRequest
-	case models.ValidationStatus:
-		return http.StatusBadRequest
-	case models.ValidationBookedBy:
-		return http.StatusBadRequest
-	case models.ValidationExpId:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError

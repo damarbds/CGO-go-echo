@@ -67,6 +67,13 @@ type ItemsHistoryDto struct {
 	TransDepartureTime *string                  `json:"trans_departure_time"`
 	TransArrivalTime   *string                  `json:"trans_arrival_time"`
 	TripDuration       string                   `json:"trip_duration"`
+	TransIdReturn            string                   `json:"trans_id_return"`
+	TransNameReturn          string                   `json:"trans_name_return"`
+	TransFromReturn          string                   `json:"trans_from_return"`
+	TransToReturn            string                   `json:"trans_to_return"`
+	TransDepartureTimeReturn *string                  `json:"trans_departure_time_return"`
+	TransArrivalTimeReturn   *string                  `json:"trans_arrival_time_return"`
+	TripDurationReturn       string                   `json:"trip_duration_return"`
 	TransClass         string                   `json:"trans_class"`
 	TransGuest         TotalGuestTransportation `json:"trans_guest"`
 	ExpBookingDate     time.Time                `json:"exp_booking_date"`
@@ -166,6 +173,7 @@ type BookingExpJoin struct {
 	ExpPaymentDeadlineType 	*string		`json:"exp_payment_deadline_type"`
 	ReturnTransId			*string `json:"return_trans_id"`
 	OriginalPrice 		*float64	`json:"original_price"`
+	PriceTransportation 	*string	`json:"price_transportation"`
 }
 
 type BookingTransportationDetail struct {
@@ -185,8 +193,13 @@ type BookingTransportationDetail struct {
 	MerchantPicture  string    `json:"merchant_picture"`
 	TotalGuest       int       `json:"total_guest"`
 	ReturnTransId 	*string		`json:"return_trans_id"`
+	Price 			DayPriceTransportation	`json:"price"`
 }
-
+type DayPriceTransportation struct {
+	AdultPrice    float64 `json:"adult_price"`
+	ChildrenPrice float64 `json:"children_price"`
+	Currency      string  `json:"currency"`
+}
 type BookingExpDetail struct {
 	ExpId           string               `json:"exp_id"`
 	ExpTitle        string               `json:"exp_title"`
@@ -300,6 +313,13 @@ type MyBooking struct {
 	TransDepartureTime *string                  `json:"trans_departure_time"`
 	TransArrivalTime   *string                  `json:"trans_arrival_time"`
 	TripDuration       string                   `json:"trip_duration"`
+	TransIdReturn            string                   `json:"trans_id_return"`
+	TransNameReturn          string                   `json:"trans_name_return"`
+	TransFromReturn          string                   `json:"trans_from_return"`
+	TransToReturn            string                   `json:"trans_to_return"`
+	TransDepartureTimeReturn *string                  `json:"trans_departure_time_return"`
+	TransArrivalTimeReturn   *string                  `json:"trans_arrival_time_return"`
+	TripDurationReturn       string                   `json:"trip_duration_return"`
 	TransClass         string                   `json:"trans_class"`
 	TransGuest         TotalGuestTransportation `json:"trans_guest"`
 	BookingDate        time.Time                `json:"booking_date"`

@@ -123,7 +123,7 @@ func (f ruleUsecase) Create(ctx context.Context, inc *models.NewCommandRule, tok
 	rules := models.Rule{
 		Id:           0,
 		CreatedBy:    currentUser.Name,
-		CreatedDate:  time.Time{},
+		CreatedDate:  time.Now(),
 		ModifiedBy:   nil,
 		ModifiedDate: nil,
 		DeletedBy:    nil,
@@ -153,13 +153,13 @@ func (f ruleUsecase) Update(ctx context.Context, inc *models.NewCommandRule, tok
 	if err != nil {
 		return nil, err
 	}
-
+	now := time.Now()
 	rules := models.Rule{
 		Id:           inc.Id,
 		CreatedBy:    currentUser.Name,
 		CreatedDate:  time.Time{},
-		ModifiedBy:   nil,
-		ModifiedDate: nil,
+		ModifiedBy:   &currentUser.Name,
+		ModifiedDate: &now,
 		DeletedBy:    nil,
 		DeletedDate:  nil,
 		IsDeleted:    0,
