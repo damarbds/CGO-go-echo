@@ -575,6 +575,7 @@ func (m identityserverUsecase) CreateUser(ar *models.RegisterAndUpdateUser) (*mo
 }
 
 func (m identityserverUsecase) SendingEmail(r *models.SendingEmail) (*models.SendingEmail, error) {
+requestAgain:
 	data, _ := json.Marshal(r)
 	req, err := http.NewRequest("POST", m.baseUrl+"/connect/push-email", bytes.NewReader(data))
 	//os.Exit(1)
@@ -597,7 +598,13 @@ func (m identityserverUsecase) SendingEmail(r *models.SendingEmail) (*models.Sen
 		os.Exit(1)
 	}
 	if resp.StatusCode != 200 {
-		return nil, models.ErrBadParamInput
+			if resp.StatusCode == 502 {
+				goto requestAgain
+			} else if resp.StatusCode == 500 {
+				goto requestAgain
+			} else {
+				return nil, models.ErrBadParamInput
+			}
 	}
 	user := models.SendingEmail{}
 	json.NewDecoder(resp.Body).Decode(&user)
