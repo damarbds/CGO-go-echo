@@ -13,9 +13,6 @@ import (
 	"strconv"
 	"time"
 
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
-
 	"github.com/auth/identityserver"
 
 	"github.com/misc/notif"
@@ -6118,104 +6115,104 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 			if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 				//confirm
 				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					duration := 0
-					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-						duration = bookingDetail.Experience[0].ExpDuration - 1
-						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-					}
-					paymentDeadline := bookingDetail.BookingDate
-					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
-							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
-							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
-							paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
-						}
-					}
-					var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
-					var data = map[string]interface{}{
-						"title":            bookingDetail.Experience[0].ExpTitle,
-						"user":             user,
-						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
-						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
-						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-						"orderId":          bookingDetail.OrderId,
-						"tripDate":         tripDate,
-						"userGuide":        bookingDetail.Experience[0].MerchantName,
-						"guideContact":     bookingDetail.Experience[0].MerchantPhone,
-					}
-					var tpl bytes.Buffer
-					err = tmpl.Execute(&tpl, data)
-					if err != nil {
-						//http.Error(w, err.Error(), http.StatusInternalServerError)
-					}
-
-					//ticketPDF Bind HTML
-					var htmlPDFTicket bytes.Buffer
-
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					dataMapping := map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-						"time":            bookingDetail.Experience[0].ExpPickupTime,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-					// We create the template and register out template function
-					t := template.New("t").Funcs(templateFuncs)
-					t, err := t.Parse(templateTicketExperiencePDF)
-					if err != nil {
-						panic(err)
-					}
-
-					err = t.Execute(&htmlPDFTicket, dataMapping)
-					if err != nil {
-						panic(err)
-					}
-
-					msg := tpl.String()
-					pdf := htmlPDFTicket.String()
-					var attachment []*models.Attachment
-					eTicket := models.Attachment{
-						AttachmentFileUrl: pdf,
-						FileName:          "E-Ticket.pdf",
-					}
-					attachment = append(attachment, &eTicket)
-					pushEmail := &models.SendingEmail{
-						Subject:    "Your booking has been confirmed",
-						Message:    msg,
-						From:       "CGO Indonesia",
-						To:         bookingDetail.BookedBy[0].Email,
-						Attachment: attachment,
-					}
-					if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
-						return nil
-					}
-
-				} else {
+				//if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				//	user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				//	tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				//	duration := 0
+				//	if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+				//		duration = bookingDetail.Experience[0].ExpDuration - 1
+				//		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				//	}
+				//	paymentDeadline := bookingDetail.BookingDate
+				//	if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+				//		if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+				//			paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+				//		} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+				//			paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+				//		} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+				//			paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+				//		}
+				//	}
+				//	var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+				//	var data = map[string]interface{}{
+				//		"title":            bookingDetail.Experience[0].ExpTitle,
+				//		"user":             user,
+				//		"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+				//		"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+				//		"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+				//		"orderId":          bookingDetail.OrderId,
+				//		"tripDate":         tripDate,
+				//		"userGuide":        bookingDetail.Experience[0].MerchantName,
+				//		"guideContact":     bookingDetail.Experience[0].MerchantPhone,
+				//	}
+				//	var tpl bytes.Buffer
+				//	err = tmpl.Execute(&tpl, data)
+				//	if err != nil {
+				//		//http.Error(w, err.Error(), http.StatusInternalServerError)
+				//	}
+				//
+				//	//ticketPDF Bind HTML
+				//	var htmlPDFTicket bytes.Buffer
+				//
+				//	var guestDesc []models.GuestDescObjForHTML
+				//	for i, element := range bookingDetail.GuestDesc {
+				//		guest := models.GuestDescObjForHTML{
+				//			No:       i + 1,
+				//			FullName: element.FullName,
+				//			Type:     element.Type,
+				//			IdType:   element.IdType,
+				//			IdNumber: element.IdNumber,
+				//		}
+				//		guestDesc = append(guestDesc, guest)
+				//	}
+				//
+				//	dataMapping := map[string]interface{}{
+				//		"guestDesc":       guestDesc,
+				//		"expType":         bookingDetail.Experience[0].ExpType,
+				//		"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+				//		"title":           bookingDetail.Experience[0].ExpTitle,
+				//		"city":            bookingDetail.Experience[0].HarborsName,
+				//		"country":         bookingDetail.Experience[0].CountryName,
+				//		"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+				//		"time":            bookingDetail.Experience[0].ExpPickupTime,
+				//		"merchantName":    bookingDetail.Experience[0].MerchantName,
+				//		"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+				//		"orderId":         bookingDetail.OrderId,
+				//		"qrCode":          bookingDetail.TicketQRCode,
+				//		"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				//	}
+				//	// We create the template and register out template function
+				//	t := template.New("t").Funcs(templateFuncs)
+				//	t, err := t.Parse(templateTicketExperiencePDF)
+				//	if err != nil {
+				//		panic(err)
+				//	}
+				//
+				//	err = t.Execute(&htmlPDFTicket, dataMapping)
+				//	if err != nil {
+				//		panic(err)
+				//	}
+				//
+				//	msg := tpl.String()
+				//	pdf := htmlPDFTicket.String()
+				//	var attachment []*models.Attachment
+				//	eTicket := models.Attachment{
+				//		AttachmentFileUrl: pdf,
+				//		FileName:          "E-Ticket.pdf",
+				//	}
+				//	attachment = append(attachment, &eTicket)
+				//	pushEmail := &models.SendingEmail{
+				//		Subject:    "Your booking has been confirmed",
+				//		Message:    msg,
+				//		From:       "CGO Indonesia",
+				//		To:         bookingDetail.BookedBy[0].Email,
+				//		Attachment: attachment,
+				//	}
+				//	if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+				//		return nil
+				//	}
+				//
+				//} else {
 					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 					duration := 0
@@ -6461,7 +6458,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 					if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 						return nil
 					}
-				}
+				//}
 
 			} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
 				//cancelled
@@ -6854,104 +6851,104 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 		if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 			//confirm
 			bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
-			if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				duration := 0
-				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-					duration = bookingDetail.Experience[0].ExpDuration - 1
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-				}
-				paymentDeadline := bookingDetail.BookingDate
-				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
-						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
-						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
-						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
-					}
-				}
-				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
-				var data = map[string]interface{}{
-					"title":            bookingDetail.Experience[0].ExpTitle,
-					"user":             user,
-					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
-					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
-					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-					"orderId":          bookingDetail.OrderId,
-					"tripDate":         tripDate,
-					"userGuide":        bookingDetail.Experience[0].MerchantName,
-					"guideContact":     bookingDetail.Experience[0].MerchantPhone,
-				}
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				dataMapping := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"expType":         bookingDetail.Experience[0].ExpType,
-					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].HarborsName,
-					"country":         bookingDetail.Experience[0].CountryName,
-					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-					"time":            bookingDetail.Experience[0].ExpPickupTime,
-					"merchantName":    bookingDetail.Experience[0].MerchantName,
-					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-					"orderId":         bookingDetail.OrderId,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-				}
-				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err := t.Parse(templateTicketExperiencePDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
-				var attachment []*models.Attachment
-				eTicket := models.Attachment{
-					AttachmentFileUrl: pdf,
-					FileName:          "E-Ticket.pdf",
-				}
-				attachment = append(attachment, &eTicket)
-				pushEmail := &models.SendingEmail{
-					Subject:    "Your booking has been confirmed",
-					Message:    msg,
-					From:       "CGO Indonesia",
-					To:         bookingDetail.BookedBy[0].Email,
-					Attachment: attachment,
-				}
-				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil
-				}
-
-			} else {
+			//if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+			//	user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+			//	tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			//	duration := 0
+			//	if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+			//		duration = bookingDetail.Experience[0].ExpDuration - 1
+			//		tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+			//	}
+			//	paymentDeadline := bookingDetail.BookingDate
+			//	if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+			//		if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+			//			paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+			//		} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+			//			paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+			//		} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+			//			paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+			//		}
+			//	}
+			//	var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+			//	var data = map[string]interface{}{
+			//		"title":            bookingDetail.Experience[0].ExpTitle,
+			//		"user":             user,
+			//		"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+			//		"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+			//		"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+			//		"orderId":          bookingDetail.OrderId,
+			//		"tripDate":         tripDate,
+			//		"userGuide":        bookingDetail.Experience[0].MerchantName,
+			//		"guideContact":     bookingDetail.Experience[0].MerchantPhone,
+			//	}
+			//	var tpl bytes.Buffer
+			//	err = tmpl.Execute(&tpl, data)
+			//	if err != nil {
+			//		//http.Error(w, err.Error(), http.StatusInternalServerError)
+			//	}
+			//
+			//	//ticketPDF Bind HTML
+			//	var htmlPDFTicket bytes.Buffer
+			//
+			//	var guestDesc []models.GuestDescObjForHTML
+			//	for i, element := range bookingDetail.GuestDesc {
+			//		guest := models.GuestDescObjForHTML{
+			//			No:       i + 1,
+			//			FullName: element.FullName,
+			//			Type:     element.Type,
+			//			IdType:   element.IdType,
+			//			IdNumber: element.IdNumber,
+			//		}
+			//		guestDesc = append(guestDesc, guest)
+			//	}
+			//
+			//	dataMapping := map[string]interface{}{
+			//		"guestDesc":       guestDesc,
+			//		"expType":         bookingDetail.Experience[0].ExpType,
+			//		"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+			//		"title":           bookingDetail.Experience[0].ExpTitle,
+			//		"city":            bookingDetail.Experience[0].HarborsName,
+			//		"country":         bookingDetail.Experience[0].CountryName,
+			//		"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+			//		"time":            bookingDetail.Experience[0].ExpPickupTime,
+			//		"merchantName":    bookingDetail.Experience[0].MerchantName,
+			//		"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+			//		"orderId":         bookingDetail.OrderId,
+			//		"qrCode":          bookingDetail.TicketQRCode,
+			//		"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+			//	}
+			//	// We create the template and register out template function
+			//	t := template.New("t").Funcs(templateFuncs)
+			//	t, err := t.Parse(templateTicketExperiencePDF)
+			//	if err != nil {
+			//		panic(err)
+			//	}
+			//
+			//	err = t.Execute(&htmlPDFTicket, dataMapping)
+			//	if err != nil {
+			//		panic(err)
+			//	}
+			//
+			//	msg := tpl.String()
+			//	pdf := htmlPDFTicket.String()
+			//	var attachment []*models.Attachment
+			//	eTicket := models.Attachment{
+			//		AttachmentFileUrl: pdf,
+			//		FileName:          "E-Ticket.pdf",
+			//	}
+			//	attachment = append(attachment, &eTicket)
+			//	pushEmail := &models.SendingEmail{
+			//		Subject:    "Your booking has been confirmed",
+			//		Message:    msg,
+			//		From:       "CGO Indonesia",
+			//		To:         bookingDetail.BookedBy[0].Email,
+			//		Attachment: attachment,
+			//	}
+			//	if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+			//		return nil
+			//	}
+			//
+			//} else {
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 				duration := 0
@@ -7255,7 +7252,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
 			}
-		}
+		//}
 	}else if getTransaction.TransId != nil{
 		bookingDetail, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, *getTransaction.OrderId, *getTransaction.OrderId, nil,"")
 		if err != nil {
