@@ -6763,19 +6763,39 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 	if len(getDetailBookingID.Experience[0].ExperienceAddOn) != 0 {
 		if getDetailBookingID.ExperiencePaymentType.Name == "Down Payment" {
 			calculatePriceDP := (getDetailBookingID.ExpPayment.Price * 30) / 100
-			priceExp := calculatePriceDP *  float64(len(getDetailBookingID.GuestDesc))
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = calculatePriceDP *  float64(len(getDetailBookingID.GuestDesc))
+			}else{
+				priceExp = calculatePriceDP
+			}
 			finalPrice = priceExp + getDetailBookingID.Experience[0].ExperienceAddOn[0].Amount
 		}else if getDetailBookingID.ExperiencePaymentType.Name == "Full Payment"{
-			priceExp := getDetailBookingID.ExpPayment.Price *  float64(len(getDetailBookingID.GuestDesc))
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = getDetailBookingID.ExpPayment.Price *  float64(len(getDetailBookingID.GuestDesc))
+			}else {
+				priceExp = getDetailBookingID.ExpPayment.Price
+			}
 			finalPrice = priceExp + getDetailBookingID.Experience[0].ExperienceAddOn[0].Amount
 		}
 	}else {
 		if getDetailBookingID.ExperiencePaymentType.Name == "Down Payment" {
 			calculatePriceDP := (getDetailBookingID.ExpPayment.Price * 30) / 100
-			priceExp := calculatePriceDP *  float64(len(getDetailBookingID.GuestDesc))
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = calculatePriceDP *  float64(len(getDetailBookingID.GuestDesc))
+			}else {
+				priceExp = calculatePriceDP
+			}
 			finalPrice = priceExp
 		}else if getDetailBookingID.ExperiencePaymentType.Name == "Full Payment"{
-			priceExp := getDetailBookingID.ExpPayment.Price *  float64(len(getDetailBookingID.GuestDesc))
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = getDetailBookingID.ExpPayment.Price *  float64(len(getDetailBookingID.GuestDesc))
+			}else {
+				priceExp = getDetailBookingID.ExpPayment.Price
+			}
 			finalPrice = priceExp
 		}
 	}
@@ -7699,19 +7719,39 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					priceExp := calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else{
+						priceExp = calculatePriceDP
+					}
 					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
 				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					priceExp := bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
 					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
 				}
 			}else {
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					priceExp := calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = calculatePriceDP
+					}
 					finalPrice = priceExp
 				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					priceExp := bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
 					finalPrice = priceExp
 				}
 			}
@@ -8523,19 +8563,39 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					priceExp := calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else{
+						priceExp = calculatePriceDP
+					}
 					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
 				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					priceExp := bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
 					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
 				}
 			}else {
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					priceExp := calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = calculatePriceDP
+					}
 					finalPrice = priceExp
 				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					priceExp := bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
 					finalPrice = priceExp
 				}
 			}
