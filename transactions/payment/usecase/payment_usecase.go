@@ -1174,7 +1174,7 @@ const (
                                     font-weight: normal;
                                     font-size: 15px;
                                     line-height: 24px;">
-                                        {{.title}}
+                                        {{.remarks}}
                                     </td>
                                 </tr>
                             </table>
@@ -6519,6 +6519,7 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 						"title":    bookingDetail.Experience[0].ExpTitle,
 						"tripDate": tripDate,
 						"orderId":  bookingDetail.OrderId,
+						"remarks": confirmIn.Remarks,
 					}
 					var tpl bytes.Buffer
 					err = tmpl.Execute(&tpl, data)
@@ -7197,8 +7198,8 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					return nil
 				}
 			}
-
-		} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
+		} else if confirmIn.TransactionStatus == 8 || confirmIn.TransactionStatus == 4 {
+		//} else if confirmIn.TransactionStatus == 3 && confirmIn.BookingStatus == 1 {
 			//cancelled
 			bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 			if err != nil {
@@ -7217,6 +7218,7 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 					"title":    bookingDetail.Experience[0].ExpTitle,
 					"tripDate": tripDate,
 					"orderId":  bookingDetail.OrderId,
+					"remarks": confirmIn.Remarks,
 				}
 				var tpl bytes.Buffer
 				err = tmpl.Execute(&tpl, data)
