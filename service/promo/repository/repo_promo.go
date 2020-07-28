@@ -224,6 +224,33 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string,promoType *
 	return res, nil
 }
 
+func (m *promoRepository) GetByFilter(ctx context.Context, code string,promoType *int,merchantExpId string, merchantTransportId string) ([]*models.Promo, error) {
+	var query string
+	if merchantExpId != ""{
+		query = `SELECT p.* 
+				FROM 
+					promos p
+				JOIN promo_merchants pm on pm.promo_id = p.id
+				WHERE 
+					BINARY p.promo_code = ? AND 
+					p.promo_product_type = ? AND 
+ 					p.is_deleted = 0 AND 
+					p.is_active = 1 AND
+					pm.merchant_id = '` + merchantExpId  + `'`
+	}else {
+		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
+	}
+
+	res, err := m.fetch(ctx, query, code,promoType)
+	if err != nil {
+		return nil, err
+	}else if len(res) == 0 {
+		return nil,models.ErrNotFound
+	}
+
+	return res, nil
+}
+
 func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, search string) ([]*models.Promo, error) {
 	if page != nil && size != nil {
 		query := `SELECT * FROM promos where is_deleted = 0 AND is_active = 1`
