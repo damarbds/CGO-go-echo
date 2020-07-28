@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/models"
 	"github.com/service/filter_activity_type"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -19,6 +20,61 @@ type filterActivityTypeRepository struct {
 // NewexperienceRepository will create an object that represent the article.repository interface
 func NewFilterActivityTypeRepository(Conn *sql.DB) filter_activity_type.Repository {
 	return &filterActivityTypeRepository{Conn}
+}
+func (m *filterActivityTypeRepository) fetchJoinExpType(ctx context.Context, query string, args ...interface{}) ([]*models.FilterActivityTypeJoin, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.FilterActivityTypeJoin, 0)
+	for rows.Next() {
+		t := new(models.FilterActivityTypeJoin)
+		err = rows.Scan(
+			&t.Id      ,
+			&t.CreatedBy   ,
+			&t.CreatedDate  ,
+			&t.ModifiedBy   ,
+			&t.ModifiedDate ,
+			&t.DeletedBy    ,
+			&t.DeletedDate  ,
+			&t.IsDeleted    ,
+			&t.IsActive     ,
+			&t.ExpTypeId    ,
+			&t.ExpId        ,
+			&t.ExpTypeName  ,
+			&t.ExpTypeIcon  ,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+func (m filterActivityTypeRepository) GetJoinExpType(ctx context.Context, expId string) ([]*models.FilterActivityTypeJoin,error) {
+	query := `SELECT fat.*,et.exp_type_name,et.exp_type_icon 
+				FROM filter_activity_types fat 
+				JOIN experience_types et ON fat.exp_type_id = et.id
+				WHERE fat.exp_id = ?`
+
+	result, err := m.fetchJoinExpType(ctx, query,expId)
+	if err != nil {
+			logrus.Error(err)
+			return nil, err
+	}
+	return result,nil
 }
 func (m filterActivityTypeRepository) DeleteByExpId(ctx context.Context, expId string) error {
 	query := "DELETE FROM filter_activity_types WHERE exp_id = ?"

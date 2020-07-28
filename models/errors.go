@@ -42,4 +42,5 @@ var (
 	StatusRequired          = errors.New("Status Required")
 	TotalPriceRequired      = errors.New("TotalPrice Required")
 	CurrencyRequired        = errors.New("Currency Required")
+	CheckBoarding        = errors.New("This ID is not allowed to boarding")
 )

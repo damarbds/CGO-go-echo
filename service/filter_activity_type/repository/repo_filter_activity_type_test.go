@@ -42,9 +42,108 @@ var (
 			ExpId:        &expId,
 		},
 	}
-
+	expTypeIcon = "dasdasdasd"
+	mockFilterActivityTypeJoin = []models.FilterActivityTypeJoin{
+		models.FilterActivityTypeJoin{
+			Id:           1,
+			CreatedBy:    "Test",
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     1,
+			ExpTypeId:    1,
+			ExpId:        &expId,
+			ExpTypeName: "test2",
+			ExpTypeIcon: &expTypeIcon,
+		},
+		models.FilterActivityTypeJoin{
+			Id:           2,
+			CreatedBy:    "Test",
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     1,
+			ExpTypeId:    1,
+			ExpId:        &expId,
+			ExpTypeName: "test2",
+			ExpTypeIcon: &expTypeIcon,
+		},
+	}
 )
-
+//func TestGetJoinExpType(t *testing.T) {
+//	db, mock, err := sqlmock.New()
+//
+//	if err != nil {
+//		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+//	}
+//
+//	//defer func() {
+//	//	err = db.Close()
+//	//	require.NoError(t, err)
+//	//}()
+//	rows := sqlmock.NewRows([]string{"id", "exp_id", "trans_id","facilities_id", "amount","facility_name","is_numerable", "facility_icon"}).
+//		AddRow(mockExperienceFacilitiesJoin[0].Id, mockExperienceFacilitiesJoin[0].ExpId, mockExperienceFacilitiesJoin[0].TransId,
+//			mockExperienceFacilitiesJoin[0].FacilitiesId,mockExperienceFacilitiesJoin[0].Amount,mockExperienceFacilitiesJoin[0].FacilityName,mockExperienceFacilitiesJoin[0].IsNumerable,
+//			mockExperienceFacilitiesJoin[0].FacilityIcon).
+//		AddRow(mockExperienceFacilitiesJoin[1].Id, mockExperienceFacilitiesJoin[1].ExpId, mockExperienceFacilitiesJoin[1].TransId,
+//			mockExperienceFacilitiesJoin[1].FacilitiesId,mockExperienceFacilitiesJoin[1].Amount,mockExperienceFacilitiesJoin[1].FacilityName,mockExperienceFacilitiesJoin[1].IsNumerable,
+//			mockExperienceFacilitiesJoin[1].FacilityIcon)
+//
+//	query := `SELECT ef.* , f.facility_name,f.is_numerable,f.facility_icon
+//				FROM experience_facilities ef
+//				JOIN facilities f ON ef.facilities_id = f.id`
+//
+//	query = query + " WHERE ef.exp_id = \\?"
+//
+//	mock.ExpectQuery(query).WillReturnRows(rows)
+//	a := ExperienceFacilitiesRepo.NewExpFacilitiesRepository(db)
+//
+//	expId := mockExperienceFacilitiesJoin[0].ExpId
+//	anArticle, err := a.GetJoin(context.TODO(), *expId,"")
+//	//assert.NotEmpty(t, nextCursor)
+//	assert.NoError(t, err)
+//	assert.Len(t, anArticle, 2)
+//}
+//func TestGetJoinExpType(t *testing.T) {
+//	db, mock, err := sqlmock.New()
+//
+//	if err != nil {
+//		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+//	}
+//
+//	//defer func() {
+//	//	err = db.Close()
+//	//	require.NoError(t, err)
+//	//}()
+//	rows := sqlmock.NewRows([]string{"id", "exp_id", "trans_id","facilities_id", "amount","facility_name","is_numerable", "facility_icon"}).
+//		AddRow(mockExperienceFacilitiesJoin[0].Id, mockExperienceFacilitiesJoin[0].ExpId, mockExperienceFacilitiesJoin[0].TransId,
+//			mockExperienceFacilitiesJoin[0].FacilitiesId,mockExperienceFacilitiesJoin[0].Amount,mockExperienceFacilitiesJoin[0].FacilityName,mockExperienceFacilitiesJoin[0].IsNumerable,
+//			mockExperienceFacilitiesJoin[0].FacilityIcon).
+//		AddRow(mockExperienceFacilitiesJoin[1].Id, mockExperienceFacilitiesJoin[1].ExpId, mockExperienceFacilitiesJoin[1].TransId,
+//			mockExperienceFacilitiesJoin[1].FacilitiesId,mockExperienceFacilitiesJoin[1].Amount,mockExperienceFacilitiesJoin[1].FacilityName,mockExperienceFacilitiesJoin[1].IsNumerable,
+//			mockExperienceFacilitiesJoin[1].FacilityIcon)
+//
+//	query := `SELECT ef.* , f.facility_name,f.is_numerable,f.facility_icon
+//				FROM experience_facilities ef
+//				JOIN facilities f ON ef.facilities_id = f.id`
+//
+//	query = query + " WHERE ef.trans_id = \\?"
+//
+//	mock.ExpectQuery(query).WillReturnRows(rows)
+//	a := ExperienceFacilitiesRepo.NewExpFacilitiesRepository(db)
+//
+//	transId := mockExperienceFacilitiesJoin[1].TransId
+//	anArticle, err := a.GetJoin(context.TODO(), "",*transId)
+//	//assert.NotEmpty(t, nextCursor)
+//	assert.NoError(t, err)
+//	assert.Len(t, anArticle, 2)
+//}
 func TestInsert(t *testing.T) {
 	a := mockFilterActivityType[0]
 

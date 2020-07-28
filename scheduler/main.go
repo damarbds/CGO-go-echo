@@ -35,7 +35,7 @@ func main() {
 	go CreateExChangeJob(baseUrlLocal)
 
 	//prd
-	// go ChangeStatusJobPRD(baseUrlLocalPRD)
+	go ChangeStatusJobPRD(baseUrlLocalPRD)
 	go UpdateStatusExpiredPaymentJobPRD(baseUrlLocalPRD)
 	go RemainingPaymentJobPRD(baseUrlLocalPRD)
 	go CreateExChangeJobPRD(baseUrlLocalPRD)

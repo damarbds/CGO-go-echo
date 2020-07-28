@@ -1079,8 +1079,15 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 			//queryT = queryT + ` AND b.booking_date < CURRENT_DATE `
 		}
 
-		querySt := query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
-		queryTSt := queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		var querySt string
+		var queryTSt string
+		if status == "waitingApproval" {
+			querySt = query + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
+			queryTSt = queryT + ` AND (t.status = ` + strconv.Itoa(transactionStatus) + ` OR t.status = 5 ) `
+		} else {
+			querySt = query + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+			queryTSt = queryT + ` AND t.status = ` + strconv.Itoa(transactionStatus)
+		}
 		//unionQuery = querySt + ` UNION ` + queryTSt
 		rows1, err = t.Conn.QueryContext(ctx, querySt)
 		rows2, err = t.Conn.QueryContext(ctx, queryTSt)

@@ -6,11 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	//"fmt"
-	guuid "github.com/google/uuid"
 	"github.com/service/schedule"
-
-	"time"
 
 	"github.com/models"
 )
@@ -27,54 +23,54 @@ type scheduleRepository struct {
 func NewScheduleRepository(Conn *sql.DB) schedule.Repository {
 	return &scheduleRepository{Conn}
 }
-func (t scheduleRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Schedule, error) {
-	rows, err := t.Conn.QueryContext(ctx, query, args...)
-	if err != nil {
-		logrus.Error(err)
-		return nil, err
-	}
-
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
-
-	result := make([]*models.Schedule, 0)
-	for rows.Next() {
-		t := new(models.Schedule)
-		err = rows.Scan(
-			&t.Id,
-			&t.CreatedBy,
-			&t.CreatedDate,
-			&t.ModifiedBy,
-			&t.ModifiedDate,
-			&t.DeletedBy,
-			&t.DeletedDate,
-			&t.IsDeleted,
-			&t.IsActive,
-			&t.TransId,
-			&t.DepartureTime,
-			&t.ArrivalTime,
-			&t.Day,
-			&t.Month,
-			&t.Year,
-			&t.DepartureDate,
-			&t.Price,
-			&t.DepartureTimeoptionId,
-			&t.ArrivalTimeoptionId,
-		)
-
-		if err != nil {
-			logrus.Error(err)
-			return nil, err
-		}
-		result = append(result, t)
-	}
-
-	return result, nil
-}
+//func (t scheduleRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Schedule, error) {
+//	rows, err := t.Conn.QueryContext(ctx, query, args...)
+//	if err != nil {
+//		logrus.Error(err)
+//		return nil, err
+//	}
+//
+//	defer func() {
+//		err := rows.Close()
+//		if err != nil {
+//			logrus.Error(err)
+//		}
+//	}()
+//
+//	result := make([]*models.Schedule, 0)
+//	for rows.Next() {
+//		t := new(models.Schedule)
+//		err = rows.Scan(
+//			&t.Id,
+//			&t.CreatedBy,
+//			&t.CreatedDate,
+//			&t.ModifiedBy,
+//			&t.ModifiedDate,
+//			&t.DeletedBy,
+//			&t.DeletedDate,
+//			&t.IsDeleted,
+//			&t.IsActive,
+//			&t.TransId,
+//			&t.DepartureTime,
+//			&t.ArrivalTime,
+//			&t.Day,
+//			&t.Month,
+//			&t.Year,
+//			&t.DepartureDate,
+//			&t.Price,
+//			&t.DepartureTimeoptionId,
+//			&t.ArrivalTimeoptionId,
+//		)
+//
+//		if err != nil {
+//			logrus.Error(err)
+//			return nil, err
+//		}
+//		result = append(result, t)
+//	}
+//
+//	return result, nil
+//}
 func (t scheduleRepository) fetchDtos(ctx context.Context, query string, args ...interface{}) ([]*models.ScheduleDtos, error) {
 	rows, err := t.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -106,7 +102,7 @@ func (t scheduleRepository) fetchDtos(ctx context.Context, query string, args ..
 	return result, nil
 }
 func (s scheduleRepository) Insert(ctx context.Context, a models.Schedule) (*string, error) {
-	a.Id = guuid.New().String()
+	//a.Id = guuid.New().String()
 	query := `INSERT schedules SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , trans_id=?,arrival_time=?,departure_time=?,day=?,
 				month=?,year=?,departure_date=?,price=?,departure_timeoption_id=?,arrival_timeoption_id=?`
@@ -114,7 +110,7 @@ func (s scheduleRepository) Insert(ctx context.Context, a models.Schedule) (*str
 	if err != nil {
 		return nil, err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.TransId, a.ArrivalTime,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.TransId, a.ArrivalTime,
 		a.DepartureTime, a.Day, a.Month, a.Year, a.DepartureDate, a.Price, a.DepartureTimeoptionId, a.ArrivalTimeoptionId)
 	if err != nil {
 		return nil, err
@@ -172,9 +168,9 @@ func (t scheduleRepository) GetScheduleByTransIds(ctx context.Context, transId [
 		}
 		resp, err := t.fetchDtos(ctx, query,month,year)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				return nil, models.ErrNotFound
-			}
+			//if err == sql.ErrNoRows {
+			//	return nil, models.ErrNotFound
+			//}
 			return nil, err
 		}
 		res = resp

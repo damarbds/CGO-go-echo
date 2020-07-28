@@ -35,6 +35,7 @@ func NewPaymentHandler(e *echo.Echo, pus payment.Usecase, bus booking_exp.Usecas
 	}
 	e.POST("/transaction/payments", handler.CreatePayment)
 	e.PUT("/transaction/payments/confirm", handler.ConfirmPayment)
+	e.PUT("/transaction/payments/confirm/boarding/:id", handler.ConfirmPaymentBoarding)
 	e.PUT("/transaction/payments/confirm-by-date", handler.ConfirmPaymentByDate)
 }
 
@@ -78,7 +79,28 @@ func (p *paymentHandler) ConfirmPaymentByDate(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+func (p *paymentHandler) ConfirmPaymentBoarding(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	id := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
+	result,err := p.paymentUsecase.ConfirmPaymentBoarding(ctx, id,token)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+
+	return c.JSON(http.StatusOK, result)
+
+}
 func (p *paymentHandler) ConfirmPayment(c echo.Context) error {
 	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	//c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -265,6 +287,8 @@ func getStatusCode(err error) int {
 		return http.StatusBadRequest
 	case models.CurrencyRequired:
 		return http.StatusBadRequest
+	case models.CheckBoarding:
+		return http.StatusCreated
 	default:
 		return http.StatusInternalServerError
 	}

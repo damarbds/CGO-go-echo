@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"time"
 
-	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/product/experience_add_ons"
 	"github.com/sirupsen/logrus"
@@ -88,8 +87,8 @@ func (m *experienceAddOnsRepository) GetById(ctx context.Context, id string) ([]
 }
 
 func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.ExperienceAddOn) (string, error) {
-	id := guuid.New()
-	a.Id = id.String()
+	//id := guuid.New()
+	//a.Id = id.String()
 	query := `INSERT experience_add_ons SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? ,experience_add_ons.name=? , 
 				experience_add_ons.desc = ? , currency=? , amount=?,exp_id=?`
@@ -97,7 +96,7 @@ func (m *experienceAddOnsRepository) Insert(ctx context.Context, a models.Experi
 	if err != nil {
 		return "", err
 	}
-	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, time.Now(), nil, nil, nil, nil, 0, 1, a.Name, a.Desc, a.Currency,
+	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.Name, a.Desc, a.Currency,
 		a.Amount, a.ExpId)
 	if err != nil {
 		return "", err
