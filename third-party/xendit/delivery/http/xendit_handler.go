@@ -39,6 +39,7 @@ type xenditHandler struct {
 
 func NewXenditHandler(e *echo.Echo, merchantRepo  merchant.Repository,br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
 	handler := &xenditHandler{
+		merchantRepo:merchantRepo,
 		bookingRepo:     br,
 		expRepo:         er,
 		transactionRepo: tr,

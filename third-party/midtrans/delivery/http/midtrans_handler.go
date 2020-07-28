@@ -41,6 +41,7 @@ type midtransHandler struct {
 
 func NewMidtransHandler(e *echo.Echo,merchantRepo 	merchant.Repository, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
 	handler := &midtransHandler{
+		merchantRepo:merchantRepo,
 		bookingRepo:     br,
 		expRepo:         er,
 		transactionRepo: tr,
