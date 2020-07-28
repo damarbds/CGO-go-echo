@@ -1174,7 +1174,7 @@ const (
                                     font-weight: normal;
                                     font-size: 15px;
                                     line-height: 24px;">
-                                        Sailing ban from Indonesian government
+                                        {{.title}}
                                     </td>
                                 </tr>
                             </table>
@@ -6500,6 +6500,61 @@ func (p paymentUsecase) ConfirmPaymentByDate(ctx context.Context, confirmIn *mod
 				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
 				}
+			}else if confirmIn.IsCancelExp == true {
+				//cancelled IsCancelExp true
+				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
+				if err != nil {
+					return err
+				}
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				var msg string
+				if *bookingDetail.TransactionStatus == 8 {
+					var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
+					var data = map[string]interface{}{
+						"title":    bookingDetail.Experience[0].ExpTitle,
+						"tripDate": tripDate,
+						"orderId":  bookingDetail.OrderId,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg = tpl.String()
+				}else if *bookingDetail.TransactionStatus == 4 {
+					var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
+					var data = map[string]interface{}{
+						"title":    bookingDetail.Experience[0].ExpTitle,
+						"tripDate": tripDate,
+						"orderId":  bookingDetail.OrderId,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg = tpl.String()
+				}
+
+				pushEmail := &models.SendingEmail{
+					Subject:    "Cancelled Booking",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         getTransaction.CreatedBy,
+					Attachment: nil,
+				}
+				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
 			}
 
 		}
@@ -7155,20 +7210,38 @@ func (p paymentUsecase) ConfirmPayment(ctx context.Context, confirmIn *models.Co
 				duration = bookingDetail.Experience[0].ExpDuration - 1
 				tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
 			}
-			var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
-			var data = map[string]interface{}{
-				"title":    bookingDetail.Experience[0].ExpTitle,
-				"tripDate": tripDate,
-				"orderId":  bookingDetail.OrderId,
-			}
-			var tpl bytes.Buffer
-			err = tmpl.Execute(&tpl, data)
-			if err != nil {
-				//http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			var msg string
+			if *bookingDetail.TransactionStatus == 8 {
+				var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
+				var data = map[string]interface{}{
+					"title":    bookingDetail.Experience[0].ExpTitle,
+					"tripDate": tripDate,
+					"orderId":  bookingDetail.OrderId,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
 
-			//maxTime := time.Now().AddDate(0, 0, 1)
-			msg := tpl.String()
+				//maxTime := time.Now().AddDate(0, 0, 1)
+				msg = tpl.String()
+			}else if *bookingDetail.TransactionStatus == 4 {
+				var tmpl = template.Must(template.New("main-template").Parse(templateBookingRejected))
+				var data = map[string]interface{}{
+					"title":    bookingDetail.Experience[0].ExpTitle,
+					"tripDate": tripDate,
+					"orderId":  bookingDetail.OrderId,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//maxTime := time.Now().AddDate(0, 0, 1)
+				msg = tpl.String()
+			}
 
 			pushEmail := &models.SendingEmail{
 				Subject:    "Cancelled Booking",
