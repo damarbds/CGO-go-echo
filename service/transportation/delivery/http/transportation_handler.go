@@ -36,6 +36,7 @@ func NewtransportationHandler(e *echo.Echo, us transportation.Usecase) {
 	//e.GET("service/special-transportation", handler.GetAlltransportation)
 	//e.GET("service/special-transportation/:code", handler.GettransportationByCode)
 	//e.DELETE("/transportations/:id", handler.Delete)
+	e.GET("/service/transportation/master-data-transport", handler.GetAllTransport)
 }
 func (a *transportationHandler) GetPublishedTransCount(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -189,6 +190,19 @@ func (t *transportationHandler) List(c echo.Context) error {
 	}
 
 	result, err := t.transportationUsecase.TimeOptions(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
+
+func (a *transportationHandler) GetAllTransport(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.transportationUsecase.GetAllTransport(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
