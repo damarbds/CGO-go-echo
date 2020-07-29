@@ -92,6 +92,7 @@ import (
 	_paymentMethodRepo "github.com/transactions/payment_methods/repository"
 	_paymentMethodUcase "github.com/transactions/payment_methods/usecase"
 
+	_paymentEvent "github.com/transactions/payment/delivery/events"
 	_paymentHttpDeliver "github.com/transactions/payment/delivery/http"
 	_paymentTrRepo "github.com/transactions/payment/repository"
 	_paymentUcase "github.com/transactions/payment/usecase"
@@ -191,10 +192,10 @@ func main() {
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
 
 	//local
-	// baseUrlLocal := "http://localhost:9090"
+	//baseUrlLocal := "http://localhost:9090"
 
 	//dev env
-	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
+	//baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
 	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
@@ -310,11 +311,19 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	//initial Event
 	createNotifier := events.UserCreatedNotifier{
 		BaseUrl:  baseUrlLocal,
 		Schedule: models.NewCommandSchedule{},
 	}
+	createNotifierPayment := _paymentEvent.PaymentNotifier{
+		BaseUrl:  baseUrlLocal,
+		ConfirmPayment:nil,
+		ConfirmPaymentByDate:nil,
+	}
 
+	//register Event
+	_paymentEvent.Payment.Register(createNotifierPayment)
 	events.UserCreated.Register(createNotifier)
 
 	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo, timeoutContext)

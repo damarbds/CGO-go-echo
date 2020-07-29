@@ -37,6 +37,8 @@ func NewPaymentHandler(e *echo.Echo, pus payment.Usecase, bus booking_exp.Usecas
 	e.PUT("/transaction/payments/confirm", handler.ConfirmPayment)
 	e.PUT("/transaction/payments/confirm/boarding/:id", handler.ConfirmPaymentBoarding)
 	e.PUT("/transaction/payments/confirm-by-date", handler.ConfirmPaymentByDate)
+	e.PUT("/transaction/payments/sending-email-confirm-by-date", handler.SendingEmailConfirmPaymentByDate)
+	e.PUT("/transaction/payments/sending-email-confirm", handler.SendingEmailConfirmPayment)
 }
 
 func isRequestValid(m *models.TransactionIn) (bool, error) {
@@ -46,6 +48,70 @@ func isRequestValid(m *models.TransactionIn) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+func (p *paymentHandler) SendingEmailConfirmPaymentByDate(c echo.Context) error {
+	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//token := c.Request().Header.Get("Authorization")
+	//
+	//if token == "" {
+	//	return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	//}
+
+	cp := new(models.ConfirmTransactionPayment)
+	if err := c.Bind(cp); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err := p.paymentUsecase.SendingEmailConfirmPaymentByDate(ctx, cp)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	response := &models.PaymentTransactionBookingDate{
+		Status:      http.StatusOK,
+		Message:     "Confirm Payment Succeeds",
+		BookingDate: cp.BookingDate,
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+func (p *paymentHandler) SendingEmailConfirmPayment(c echo.Context) error {
+	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//token := c.Request().Header.Get("Authorization")
+	//
+	//if token == "" {
+	//	return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	//}
+
+	cp := new(models.ConfirmPaymentIn)
+	if err := c.Bind(cp); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrBadParamInput)
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err := p.paymentUsecase.SendingEmailConfirmPayment(ctx, cp)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	response := &models.PaymentTransaction{
+		Status:        http.StatusOK,
+		Message:       "Confirm Payment Succeeds",
+		TransactionID: cp.TransactionID,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 func (p *paymentHandler) ConfirmPaymentByDate(c echo.Context) error {
 	//c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -133,7 +199,6 @@ func (p *paymentHandler) ConfirmPayment(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
-
 func (p *paymentHandler) CreatePayment(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
