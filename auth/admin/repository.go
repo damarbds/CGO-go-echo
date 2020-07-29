@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []*models.Admin, nextCursor string, err error)
+	//Fetch(ctx context.Context, cursor string, num int64) (res []*models.Admin, nextCursor string, err error)
 	GetByID(ctx context.Context, id string) (*models.Admin, error)
 	GetByAdminEmail(ctx context.Context, merchantEmail string) (*models.Admin, error)
 	Update(ctx context.Context, ar *models.Admin) error

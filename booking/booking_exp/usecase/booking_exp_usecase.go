@@ -49,6 +49,7 @@ import (
 )
 
 type bookingExpUsecase struct {
+	merchantRepo 			merchant.Repository
 	reviewRepo                reviews.Repository
 	adOnsRepo                 experience_add_ons.Repository
 	experiencePaymentTypeRepo exp_payment.Repository
@@ -66,8 +67,9 @@ type bookingExpUsecase struct {
 
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(currencyUsecase currency.Usecase, usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(	merchantRepo 			merchant.Repository,currencyUsecase currency.Usecase, usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
+		merchantRepo:merchantRepo,
 		currencyUsecase:           currencyUsecase,
 		usernamePDFrowd:           usernamePDFrowd,
 		accessKeyPDFcrowd:         accessKeyPDFcrowd,
@@ -6297,6 +6299,23 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 		}
 
 		//transactionStatus = 2
+
+		getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
+		if err != nil {
+			return nil,errors.New("Merchant Not Found")
+		}
+		var finalPriceAdult float64
+		var finalPriceChildren float64
+		for _,price := range bookingDetail.GuestDesc{
+			if price.Type == "Adult"{
+				finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
+			}else {
+				finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
+			}
+		}
+		finalPrice := finalPriceAdult + finalPriceChildren
+		getMerchantId.Balance = getMerchantId.Balance + finalPrice
+		_= b.merchantRepo.Update(ctx,getMerchantId)
 		//if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookingId); err != nil {
 		//	return nil,err
 		//}
@@ -6736,6 +6755,52 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 		}
 
 	}
+	getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,getDetailBookingID.Experience[0].MerchantName)
+	if err != nil {
+		return nil,errors.New("Merchant Not Found")
+	}
+	var finalPrice float64
+	if len(getDetailBookingID.Experience[0].ExperienceAddOn) != 0 {
+		if getDetailBookingID.ExperiencePaymentType.Name == "Down Payment" {
+			calculatePriceDP := (getDetailBookingID.ExpPayment.Price * 30) / 100
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = calculatePriceDP *  float64(len(getDetailBookingID.GuestDesc))
+			}else{
+				priceExp = calculatePriceDP
+			}
+			finalPrice = priceExp + getDetailBookingID.Experience[0].ExperienceAddOn[0].Amount
+		}else if getDetailBookingID.ExperiencePaymentType.Name == "Full Payment"{
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = getDetailBookingID.ExpPayment.Price *  float64(len(getDetailBookingID.GuestDesc))
+			}else {
+				priceExp = getDetailBookingID.ExpPayment.Price
+			}
+			finalPrice = priceExp + getDetailBookingID.Experience[0].ExperienceAddOn[0].Amount
+		}
+	}else {
+		if getDetailBookingID.ExperiencePaymentType.Name == "Down Payment" {
+			calculatePriceDP := (getDetailBookingID.ExpPayment.Price * 30) / 100
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = calculatePriceDP *  float64(len(getDetailBookingID.GuestDesc))
+			}else {
+				priceExp = calculatePriceDP
+			}
+			finalPrice = priceExp
+		}else if getDetailBookingID.ExperiencePaymentType.Name == "Full Payment"{
+			var priceExp float64
+			if getDetailBookingID.ExpPayment.PriceItemType == "Per Pax"{
+				priceExp = getDetailBookingID.ExpPayment.Price *  float64(len(getDetailBookingID.GuestDesc))
+			}else {
+				priceExp = getDetailBookingID.ExpPayment.Price
+			}
+			finalPrice = priceExp
+		}
+	}
+	getMerchantId.Balance = getMerchantId.Balance + finalPrice
+	_= b.merchantRepo.Update(ctx,getMerchantId)
 	//if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookingId); err != nil {
 	//	return nil,err
 	//}
@@ -7646,6 +7711,53 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 				}
 
 			}
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
+			if err != nil {
+				return errors.New("Merchant Not Found")
+			}
+			var finalPrice float64
+			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else{
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}
+			}else {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp
+				}
+			}
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
+
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.Id); err != nil {
 				return err
 			}
@@ -7880,6 +7992,22 @@ func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, ac
 			}
 
 			transactionStatus = 2
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
+			if err != nil {
+				return errors.New("Merchant Not Found")
+			}
+			var finalPriceAdult float64
+			var finalPriceChildren float64
+			for _,price := range bookingDetail.GuestDesc{
+				if price.Type == "Adult"{
+					finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
+				}else {
+					finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
+				}
+			}
+			finalPrice := finalPriceAdult + finalPriceChildren
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.OrderId); err != nil {
 				return err
 			}
@@ -8427,6 +8555,53 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 					return nil, nil
 				}
 			}
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
+			if err != nil {
+				return nil,errors.New("Merchant Not Found")
+			}
+			var finalPrice float64
+			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else{
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}
+			}else {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp
+				}
+			}
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
+
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.Id); err != nil {
 				return nil, err
 			}
@@ -8661,6 +8836,22 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 			}
 
 			transactionStatus = 2
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
+			if err != nil {
+				return nil,errors.New("Merchant Not Found")
+			}
+			var finalPriceAdult float64
+			var finalPriceChildren float64
+			for _,price := range bookingDetail.GuestDesc{
+				if price.Type == "Adult"{
+					finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
+				}else {
+					finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
+				}
+			}
+			finalPrice := finalPriceAdult + finalPriceChildren
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
 			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.OrderId); err != nil {
 				return nil, err
 			}
