@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"time"
 
-	guuid "github.com/google/uuid"
 	"github.com/models"
 	"github.com/profile/wishlists"
 	"github.com/sirupsen/logrus"
@@ -138,8 +137,8 @@ func (m *wishListRepository) GetByUserAndExpId(ctx context.Context, userID strin
 	return res, nil
 }
 func (w wishListRepository) Insert(ctx context.Context, wl *models.Wishlist) (*models.Wishlist, error) {
-	id := guuid.New()
-	wl.Id = id.String()
+	//id := guuid.New()
+	//wl.Id = id.String()
 
 	q := `INSERT wishlists SET id = ?, created_by = ?, created_date = ?, modified_by = ?, 
 	modified_date = ?, deleted_by = ?, deleted_date = ?, is_deleted = ?, is_active = ?, user_id = ?, `

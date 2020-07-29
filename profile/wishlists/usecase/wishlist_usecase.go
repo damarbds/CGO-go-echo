@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	guuid "github.com/google/uuid"
 	"github.com/service/exp_photos"
 	"math"
 	"time"
@@ -193,7 +194,7 @@ func (w wishListUsecase) Insert(ctx context.Context, wl *models.WishlistIn, toke
 			return "",models.ErrConflict
 		}
 		newData := &models.Wishlist{
-			Id:           "",
+			Id:           guuid.New().String(),
 			CreatedBy:    currentUser.UserEmail,
 			CreatedDate:  time.Now(),
 			ModifiedBy:   nil,
