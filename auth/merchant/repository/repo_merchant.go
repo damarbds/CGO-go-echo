@@ -22,6 +22,22 @@ type merchantRepository struct {
 	Conn *sql.DB
 }
 
+func (m *merchantRepository) GetMerchantByName(ctx context.Context, merchantName string) (res *models.Merchant,err error) {
+	query := `SELECT * FROM merchants WHERE merchant_name = ?`
+
+	list, err := m.fetch(ctx, query, merchantName)
+	if err != nil {
+		return
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return nil, models.ErrNotFound
+	}
+	return
+}
+
 // NewmerchantRepository will create an object that represent the article.repository interface
 func NewmerchantRepository(Conn *sql.DB) merchant.Repository {
 	return &merchantRepository{Conn}
