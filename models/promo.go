@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Promo struct {
 	Id           string     `json:"id" validate:"required"`
@@ -57,6 +59,7 @@ type PromoDto struct {
 	Disclaimer	*string		`json:"disclaimer"`
 	ProductionCapacity	*int `json:"production_capacity"`
 	MerchantId	[]string	`json:"merchant_id"`
+	UserId		[]string	`json:"user_id"`
 	PromoProductType *int `json:"promo_product_type"`
 }
 type NewCommandPromo struct {
@@ -81,6 +84,7 @@ type NewCommandPromo struct {
 	MaxUsage   	int 		`json:"max_usage"`
 	ProductionCapacity int 	`json:"production_capacity"`
 	MerchantId 	[]string	`json:"merchant_id"`
+	UserId		[]string	`json:"user_id"`
 	PromoProductType *int `json:"promo_product_type"`
 }
 type PromoWithPagination struct {
