@@ -34,6 +34,8 @@ func NewmerchantHandler(e *echo.Echo, us merchant.Usecase,is identityserver.Usec
 		MerchantUsecase: us,
 		IdentityUsecase:is,
 	}
+	e.POST("/misc/merchant", handler.SendingEmailMerchant)
+	e.POST("/misc/contact-us", handler.SendingEmailContactUs)
 	e.POST("/merchants", handler.CreateMerchant)
 	e.PUT("/merchants/:id", handler.UpdateMerchant)
 	e.GET("/merchants/count", handler.Count)
@@ -43,6 +45,44 @@ func NewmerchantHandler(e *echo.Echo, us merchant.Usecase,is identityserver.Usec
 	e.GET("/merchants/service-count", handler.GetServiceCount)
 	//e.GET("/merchants/:id", handler.GetByID)
 	//e.DELETE("/merchants/:id", handler.Delete)
+}
+func (a *merchantHandler) SendingEmailContactUs(c echo.Context) error {
+	var contactUs models.NewCommandContactUs
+	err := c.Bind(&contactUs)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	res,err := a.MerchantUsecase.SendingEmailContactUs(ctx, &contactUs)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
+}
+func (a *merchantHandler) SendingEmailMerchant(c echo.Context) error {
+	var merchantRegis models.NewCommandMerchantRegistrationEmail
+	err := c.Bind(&merchantRegis)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	res,err := a.MerchantUsecase.SendingEmailMerchant(ctx, &merchantRegis)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
 }
 func (a *merchantHandler) GetDetailID(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
