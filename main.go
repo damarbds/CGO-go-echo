@@ -195,7 +195,7 @@ func main() {
 	//baseUrlLocal := "http://localhost:9090"
 
 	//dev env
-	//baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
+	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
 	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
