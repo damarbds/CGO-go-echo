@@ -6430,7 +6430,7 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 				Subject:    "Cancelled Booking",
 				Message:    msg,
 				From:       "CGO Indonesia",
-				To:         getTransaction.CreatedBy,
+				To:         bookingDetail.BookedBy[0].Email,
 				Attachment: nil,
 			}
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -7177,7 +7177,7 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 					Subject:    "Cancelled Booking",
 					Message:    msg,
 					From:       "CGO Indonesia",
-					To:         getTransaction.CreatedBy,
+					To:        bookingDetail.BookedBy[0].Email,
 					Attachment: nil,
 				}
 				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
@@ -7233,7 +7233,7 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 					Subject:    "Cancelled Booking",
 					Message:    msg,
 					From:       "CGO Indonesia",
-					To:         getTransaction.CreatedBy,
+					To:        bookingDetail.BookedBy[0].Email,
 					Attachment: nil,
 				}
 				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
