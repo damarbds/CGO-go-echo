@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -134,8 +135,8 @@ func (m *promoRepository) Insert(ctx context.Context, a *models.Promo) (string, 
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedDate, nil, nil, nil, nil, 0, 1, a.PromoCode, a.PromoName,
 		a.PromoDesc, a.PromoValue, a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage,
-		a.ProductionCapacity,a.PromoProductType,a.StartTripPeriod,a.EndTripPeriod,a.HowToGet,a.HowToUse,a.TermCondition,
-		a.Disclaimer,a.MaxDiscount,a.IsAnyTripPeriod)
+		a.ProductionCapacity, a.PromoProductType, a.StartTripPeriod, a.EndTripPeriod, a.HowToGet, a.HowToUse, a.TermCondition,
+		a.Disclaimer, a.MaxDiscount, a.IsAnyTripPeriod)
 	if err != nil {
 		return "", err
 	}
@@ -162,7 +163,7 @@ func (m *promoRepository) Update(ctx context.Context, a *models.Promo) error {
 
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, a.PromoCode, a.PromoName, a.PromoDesc, a.PromoValue,
 		a.PromoType, a.PromoImage, a.StartDate, a.EndDate, a.CurrencyId, a.MaxUsage, a.ProductionCapacity, a.PromoProductType,
-		a.StartTripPeriod, a.EndTripPeriod, a.HowToGet, a.HowToUse, a.TermCondition, a.Disclaimer,a.MaxDiscount,
+		a.StartTripPeriod, a.EndTripPeriod, a.HowToGet, a.HowToUse, a.TermCondition, a.Disclaimer, a.MaxDiscount,
 		a.IsAnyTripPeriod, a.Id)
 	if err != nil {
 		return err
@@ -197,9 +198,9 @@ func (m *promoRepository) GetById(ctx context.Context, id string) (res *models.P
 	return
 }
 
-func (m *promoRepository) GetByCode(ctx context.Context, code string,promoType *int,merchantId string) ([]*models.Promo, error) {
+func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType *int, merchantId string) ([]*models.Promo, error) {
 	var query string
-	if merchantId != ""{
+	if merchantId != "" {
 		query = `SELECT p.* 
 				FROM 
 					promos p
@@ -209,85 +210,103 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string,promoType *
 					p.promo_product_type = ? AND 
  					p.is_deleted = 0 AND 
 					p.is_active = 1 AND
-					pm.merchant_id = '` + merchantId  + `'`
-	}else {
-		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
-	}
-
-	res, err := m.fetch(ctx, query, code,promoType)
-	if err != nil {
-		return nil, err
-	}else if len(res) == 0 {
-		return nil,models.ErrNotFound
-	}
-
-	return res, nil
-}
-
-func (m *promoRepository) GetByFilter(ctx context.Context, code string,promoType *int,merchantExpId string, merchantTransportId string) ([]*models.Promo, error) {
-	var query string
-	if merchantExpId != ""{
-		query = `SELECT p.* 
-				FROM 
-					promos p
-				JOIN promo_merchants pm on pm.promo_id = p.id
-				WHERE 
-					BINARY p.promo_code = ? AND 
-					p.promo_product_type = ? AND 
- 					p.is_deleted = 0 AND 
-					p.is_active = 1 AND
-					pm.merchant_id = '` + merchantExpId  + `'`
-	}else {
-		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
-	}
-
-	res, err := m.fetch(ctx, query, code,promoType)
-	if err != nil {
-		return nil, err
-	}else if len(res) == 0 {
-		return nil,models.ErrNotFound
-	}
-
-	return res, nil
-}
-
-func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, search string) ([]*models.Promo, error) {
-	if page != nil && size != nil {
-		query := `SELECT * FROM promos where is_deleted = 0 AND is_active = 1`
-
-		if search != "" {
-			query = query + ` AND (promo_name LIKE '%` + search + `%'` +
-				`OR promo_desc LIKE '%` + search + `%' ` +
-				`OR start_date LIKE '%` + search + `%' ` +
-				`OR end_date LIKE '%` + search + `%' ` +
-				`OR promo_code LIKE '%` + search + `%' ` +
-				`OR max_usage LIKE '%` + search + `%' ` + `) `
-		}
-		query = query + ` ORDER BY created_date desc LIMIT ? OFFSET ? `
-		res, err := m.fetch(ctx, query, size, page)
-		if err != nil {
-			return nil, err
-		}
-		return res, err
-
+					pm.merchant_id = '` + merchantId + `'`
 	} else {
-		query := `SELECT * FROM promos where is_deleted = 0 AND is_active = 1`
-
-		if search != "" {
-			query = query + ` AND (promo_name LIKE '%` + search + `%'` +
-				`OR promo_desc LIKE '%` + search + `%' ` +
-				`OR start_date LIKE '%` + search + `%' ` +
-				`OR end_date LIKE '%` + search + `%' ` +
-				`OR promo_code LIKE '%` + search + `%' ` +
-				`OR max_usage LIKE '%` + search + `%' ` + `) `
-		}
-		query = query + ` ORDER BY created_date desc `
-		res, err := m.fetch(ctx, query)
-		if err != nil {
-			return nil, err
-		}
-		return res, err
+		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
 	}
+
+	res, err := m.fetch(ctx, query, code, promoType)
+	if err != nil {
+		return nil, err
+	} else if len(res) == 0 {
+		return nil, models.ErrNotFound
+	}
+
+	return res, nil
+}
+
+func (m *promoRepository) GetByFilter(ctx context.Context, code string, promoType *int, merchantExpId string, merchantTransportId string) ([]*models.Promo, error) {
+	var query string
+	if merchantExpId != "" {
+		query = `SELECT p.* 
+				FROM 
+					promos p
+				JOIN promo_merchants pm on pm.promo_id = p.id
+				WHERE 
+					BINARY p.promo_code = ? AND 
+					p.promo_product_type = ? AND 
+ 					p.is_deleted = 0 AND 
+					p.is_active = 1 AND
+					pm.merchant_id = '` + merchantExpId + `'`
+	} else {
+		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
+	}
+
+	res, err := m.fetch(ctx, query, code, promoType)
+	if err != nil {
+		return nil, err
+	} else if len(res) == 0 {
+		return nil, models.ErrNotFound
+	}
+
+	return res, nil
+}
+
+func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, search string, trans bool, exp bool, merchantIds []string,sortBy string,promoId string) ([]*models.Promo, error) {
+
+	query := `SELECT p.* FROM promos p `
+	if len(merchantIds) != 0 {
+		query = query + ` JOIN promo_merchants pm ON p.id = pm.promo_id `
+	}
+	if trans == true || exp == true	 {
+		query = query + ` JOIN promo_experience_transports pet ON p.id = pet.promo_id `
+	}
+	query = query + ` WHERE p.is_deleted = 0 AND p.is_active = 1 `
+	if trans == true{
+		query = query + ` AND pet.transportation_id != '' `
+	}
+	if exp == true {
+		query = query + ` AND pet.experience_id != '' `
+	}
+
+	for index, id := range merchantIds {
+		if index == 0 && index != (len(merchantIds)-1) {
+			query = query + ` AND (pm.merchant_id ='` + id + `' `
+		} else if index == 0 && index == (len(merchantIds)-1) {
+			query = query + ` AND (pm.merchant_id ='` + id + `' ) `
+		} else if index == (len(merchantIds) - 1) {
+			query = query + ` OR pm.merchant_id ='` + id + `' ) `
+		} else {
+			query = query + ` OR pm.merchant_id ='` + id + `' `
+		}
+	}
+	if promoId != ""{
+		query = query + ` AND p.id ='` + promoId + `' `
+	}
+	if search != "" {
+		query = query + ` AND (promo_name LIKE '%` + search + `%'` +
+			`OR promo_desc LIKE '%` + search + `%' ` +
+			`OR start_date LIKE '%` + search + `%' ` +
+			`OR end_date LIKE '%` + search + `%' ` +
+			`OR promo_code LIKE '%` + search + `%' ` +
+			`OR max_usage LIKE '%` + search + `%' ` + `) `
+	}
+	if sortBy == "newest"{
+		query = query + ` ORDER BY created_date desc `
+	}else if sortBy == "latest"{
+		query = query + ` ORDER BY created_date asc `
+	}else {
+		query = query + ` ORDER BY created_date desc `
+	}
+
+	if page != nil && size != nil {
+		query = query + ` LIMIT ` + strconv.Itoa(*size)+` OFFSET `+ strconv.Itoa(*page)+ ` `
+	}
+	res, err := m.fetch(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	return res, err
 }
 
 func checkCount(rows *sql.Rows) (count int, err error) {

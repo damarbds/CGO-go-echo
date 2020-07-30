@@ -80,8 +80,37 @@ func (a *PromoHandler) GetAllPromo(c echo.Context) error {
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	token := c.Request().Header.Get("Authorization")
 
+
 	qpage := c.QueryParam("page")
 	qsize := c.QueryParam("size")
+	merchant := c.QueryParam("merchant_id")
+	search := c.QueryParam("search")
+	sortBy := c.QueryParam("sort_by")
+	promoId := c.QueryParam("promo_id")
+	var merchantIds []string
+	if merchant != ""{
+		errObject := json.Unmarshal([]byte(merchant), &merchantIds)
+		if errObject != nil {
+			if errObject != nil {
+				return c.JSON(getStatusCode(errObject), ResponseError{Message: errObject.Error()})
+			}
+		}
+	}
+	isTrans := c.QueryParam("isTransportation")
+	var trans bool
+	if isTrans == "true"{
+		trans = true
+	}else {
+		trans = false
+	}
+
+	isExp := c.QueryParam("isExperience")
+	var exp bool
+	if isExp == "true"{
+		exp = true
+	}else {
+		exp = false
+	}
 
 	ctx := c.Request().Context()
 	if ctx == nil {
@@ -91,13 +120,13 @@ func (a *PromoHandler) GetAllPromo(c echo.Context) error {
 		if qpage != "" && qsize != "" {
 			page, _ := strconv.Atoi(qpage)
 			size, _ := strconv.Atoi(qsize)
-			art, err := a.PromoUsecase.Fetch(ctx, &page, &size)
+			art, err := a.PromoUsecase.Fetch(ctx, &page, &size,search,trans,exp,merchantIds,sortBy,promoId)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 			return c.JSON(http.StatusOK, art)
 		} else {
-			art, err := a.PromoUsecase.Fetch(ctx, nil, nil)
+			art, err := a.PromoUsecase.Fetch(ctx, nil, nil,search,trans,exp,merchantIds,sortBy,promoId)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
@@ -107,13 +136,13 @@ func (a *PromoHandler) GetAllPromo(c echo.Context) error {
 		if qpage != "" && qsize != "" {
 			page, _ := strconv.Atoi(qpage)
 			size, _ := strconv.Atoi(qsize)
-			art, err := a.PromoUsecase.FetchUser(ctx, &page, &size, token)
+			art, err := a.PromoUsecase.FetchUser(ctx, &page, &size, token,search,trans,exp,merchantIds,sortBy,promoId)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
 			return c.JSON(http.StatusOK, art)
 		} else {
-			art, err := a.PromoUsecase.FetchUser(ctx, nil, nil, token)
+			art, err := a.PromoUsecase.FetchUser(ctx, nil, nil, token,search,trans,exp,merchantIds,sortBy,promoId)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
@@ -327,7 +356,7 @@ func (a *PromoHandler) List(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-		art, err := a.PromoUsecase.List(ctx, page, limit,offset,search,token)
+		art, err := a.PromoUsecase.List(ctx, page, limit,offset,search,token,false,false,make([]string,0))
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
