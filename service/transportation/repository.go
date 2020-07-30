@@ -15,4 +15,5 @@ type Repository interface {
 	CountFilterSearch(ctx context.Context, query string) (int, error)
 	GetTransCount(ctx context.Context, merchantId string) (int, error)
 	SelectIdGetByMerchantId(ctx context.Context,merchantId string,date string)([]*string,error)
+	GetAllTransport(ctx context.Context)([]*models.Transportation,error)
 }

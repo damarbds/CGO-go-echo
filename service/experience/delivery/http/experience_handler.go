@@ -52,6 +52,7 @@ func NewexperienceHandler(e *echo.Echo, t transportation.Usecase, us experience.
 	e.GET("service/experience/success-book-count", handler.GetSuccessBookCount)
 	e.GET("service/experience/published-count", handler.GetPublishedExpCount)
 	e.GET("service/experience/transaction-count", handler.GetExpTransactionCount)
+	e.GET("service/experience/master-data-experience", handler.GetAllExperience)
 	//e.DELETE("/experiences/:id", handler.Delete)
 }
 
@@ -397,6 +398,22 @@ func (a *experienceHandler) GetExpTypes(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, expTypeResults)
 }
+
+func (a *experienceHandler) GetAllExperience(c echo.Context) error {
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+
+	searchResult, err := a.experienceUsecase.GetExperienceMasterData(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, searchResult)
+}
+
 
 func (a *experienceHandler) GetExpInspirations(c echo.Context) error {
 	ctx := c.Request().Context()

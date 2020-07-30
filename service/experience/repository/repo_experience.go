@@ -52,6 +52,19 @@ func (m *experienceRepository) GetExperienceByBookingId(ctx context.Context, boo
 
 	return experience, err
 }
+
+func (m *experienceRepository) GetAllExperience(ctx context.Context) ([]*models.Experience,error){
+	query := `SELECT id, exp_title from cgo_indonesia.experiences
+					WHERE is_deleted = 0 and is_active = 1 and status = 2`
+
+	list, err := m.fetchExperience(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
+
 func (m *experienceRepository) UpdateRating(ctx context.Context, exp models.Experience) error {
 	query := `UPDATE experiences SET modified_by=?, modified_date=? , deleted_by=? , 
 				deleted_date=? , is_deleted=? , is_active=? , rating=?,guide_review=?,activities_review=?,service_review =?,
@@ -670,6 +683,38 @@ func (m *experienceRepository) fetchByBookingId(ctx context.Context, query strin
 			&t.ExpMaximumBookingAmount,
 			&t.ExpMaximumBookingType,
 			&t.ExpPaymentTypeName,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (m *experienceRepository) fetchExperience(ctx context.Context, query string, args ...interface{}) ([]*models.Experience, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.Experience, 0)
+	for rows.Next() {
+		t := new(models.Experience)
+		err = rows.Scan(
+			&t.Id,
+			&t.ExpTitle,
 		)
 
 		if err != nil {

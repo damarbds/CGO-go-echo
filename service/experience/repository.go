@@ -14,6 +14,7 @@ type Repository interface {
 	GetUserDiscoverPreferenceByHarborsIdOrProvince(ctx context.Context, harborsId *string,provinceId *int) ([]*models.ExpUserDiscoverPreference, error)
 	GetIdByHarborsId(ctx context.Context, harborsId string) ([]*string, error)
 	GetIdByCityId(ctx context.Context, cityId string) ([]*string, error)
+	GetAllExperience(ctx context.Context) ([]*models.Experience, error)
 	QueryFilterSearch(ctx context.Context, query string, limit, offset int) ([]*models.ExpSearch, error)
 	GetByCategoryID(ctx context.Context, categoryId int) ([]*models.ExpSearch, error)
 	UpdateRating(ctx context.Context,exp models.Experience)error

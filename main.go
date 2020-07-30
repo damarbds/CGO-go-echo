@@ -191,25 +191,25 @@ func main() {
 	// basicAuth := viper.GetString(`identityServer.basicAuth`)
 
 	//local
-	baseUrlLocal := "http://localhost:9090"
+	//baseUrlLocal := "http://localhost:9090"
 
 	//dev env
-	//baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
+	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
 	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
 	//local db
-	dbHost := "localhost"
-	dbPort := "3306"
-	dbUser := "root"
-	dbPass := ""
-	dbName := "cgo_indonesia"
-	//dev db
-	//dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
+	//dbHost := "localhost"
 	//dbPort := "3306"
-	//dbUser := "AdminCgo@api-blog-cgo-mysqldbserver"
-	//dbPass := "Standar123."
+	//dbUser := "root"
+	//dbPass := ""
 	//dbName := "cgo_indonesia"
+	//dev db
+	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
+	dbPort := "3306"
+	dbUser := "AdminCgo@api-blog-cgo-mysqldbserver"
+	dbPass := "Standar123."
+	dbName := "cgo_indonesia"
 	//dev IS
 	baseUrlis := "http://identity-server-cgo-indonesia.azurewebsites.net"
 	//dev URL Forgot Password

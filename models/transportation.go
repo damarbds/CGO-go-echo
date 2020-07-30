@@ -57,6 +57,10 @@ type TransportationDto struct {
 	DepartureRoute  RouteObj         `json:"departure_route"`
 	ReturnRoute     *RouteObj        `json:"return_route"`
 }
+type MasterDataTransport struct{
+	Id	string `json:"id"`
+	TransportName string `json:"transport_name"`
+}
 type RouteObj struct {
 	Id            string    `json:"id"`
 	HarborsIdFrom *string    `json:"harbors_id_from"`
