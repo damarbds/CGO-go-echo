@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/auth/user"
 	guuid "github.com/google/uuid"
+	"github.com/service/promo_user"
 	"github.com/transactions/transaction"
 	"math"
 	"time"
@@ -17,6 +18,7 @@ import (
 type promoUsecase struct {
 	userUsecase 	user.Usecase
 	promoMerchant  promo_merchant.Repository
+	promoUser		promo_user.Repository
 	adminUsecase   admin.Usecase
 	promoRepo      promo.Repository
 	contextTimeout time.Duration
@@ -24,7 +26,7 @@ type promoUsecase struct {
 }
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPromoUsecase(userUsecase 	user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
+func NewPromoUsecase(userUsecase user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
 	return &promoUsecase{
 		userUsecase:userUsecase,
 		transactionRepo:transactionRepo,
@@ -39,7 +41,7 @@ func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search 
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 	_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
-	if err != nil {
+	if err != nil{
 		return nil, models.ErrUnAuthorize
 	}
 
@@ -170,6 +172,18 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 			return nil, err
 		}
 	}
+	for _, element := range command.UserId {
+		err = p.promoUser.DeleteByUserId(ctx, element, command.Id)
+		promoUser := models.PromoUser{
+			Id:			0,
+			PromoId: 	command.Id,
+			UserId: 	element,
+		}
+		err := p.promoUser.Insert(ctx, promoUser)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -224,6 +238,17 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 			MerchantId: element,
 		}
 		err := p.promoMerchant.Insert(ctx, promoMerchant)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, element := range command.UserId {
+		promoUser := models.PromoUser{
+			Id:		0,
+			PromoId: id,
+			UserId: element,
+		}
+		err := p.promoUser.Insert(ctx, promoUser)
 		if err != nil {
 			return nil, err
 		}
@@ -304,6 +329,11 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
+	//_, err := p.userUsecase.ValidateTokenUser(ctx, token)
+	//if err != nil {
+	//	return nil, models.ErrUnAuthorize
+	//}
+
 	promoList, err := p.promoRepo.Fetch(ctx, page, size, "")
 	if err != nil {
 		return nil, err
@@ -342,6 +372,60 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 			merchantIds = append(merchantIds, element.MerchantId)
 		}
 		resPromo.MerchantId = merchantIds
+		promoDto = append(promoDto, &resPromo)
+	}
+
+	return promoDto, nil
+}
+
+func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token string) ([]*models.PromoDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
+	defer cancel()
+
+	_, err := p.userUsecase.ValidateTokenUser(ctx, token)
+	if err != nil {
+		return nil, models.ErrUnAuthorize
+	}
+
+	promoList, err := p.promoRepo.Fetch(ctx, page, size, "")
+	if err != nil {
+		return nil, err
+	}
+	var promoDto []*models.PromoDto
+	for _, element := range promoList {
+		resPromo := models.PromoDto{
+			Id:                 element.Id,
+			PromoCode:          element.PromoCode,
+			PromoName:          element.PromoName,
+			PromoDesc:          element.PromoDesc,
+			PromoValue:         element.PromoValue,
+			PromoType:          element.PromoType,
+			PromoImage:         element.PromoImage,
+			StartDate:          element.StartDate,
+			EndDate:            element.EndDate,
+			Currency:           element.CurrencyId,
+			MaxUsage:           element.MaxUsage,
+			ProductionCapacity: element.ProductionCapacity,
+			PromoProductType:element.PromoProductType,
+			StartTripPeriod: element.StartTripPeriod,
+			EndTripPeriod: element.EndTripPeriod,
+			IsAnyTripPeriod: element.IsAnyTripPeriod,
+			MaxDiscount: element.MaxDiscount,
+			HowToUse: element.HowToUse,
+			HowToGet: element.HowToGet,
+			TermCondition: element.TermCondition,
+			Disclaimer: element.Disclaimer,
+		}
+		userIds := make([]string, 0)
+		getPromoUser, err := p.promoUser.GetByUserId(ctx, "", element.Id)
+		if err != nil {
+			return nil, err
+		}
+		for _, element := range getPromoUser {
+			userIds = append(userIds, element.UserId)
+		}
+
+		resPromo.UserId = userIds
 		promoDto = append(promoDto, &resPromo)
 	}
 
@@ -427,6 +511,89 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 			TermCondition: promos[0].TermCondition,
 			Disclaimer: promos[0].Disclaimer,
 		}
+
+
+	return promoDto, nil
+}
+func (p promoUsecase) GetByFilter(ctx context.Context, code string,promoType int,merchantExpId string,merchantTransportId string,token string) (*models.PromoDto, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
+	defer cancel()
+	var userId string
+	if token != ""{
+		currentUser,err := p.userUsecase.ValidateTokenUser(ctx,token)
+		if err != nil{
+			return nil,models.ErrUnAuthorize
+		}
+		userId = currentUser.Id
+	}
+	promos, err := p.promoRepo.GetByFilter(ctx, code,&promoType,merchantExpId, merchantTransportId)
+	if err != nil {
+		return nil, err
+	}
+	if userId != ""{
+		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+		if err != nil {
+			return nil, err
+		}
+		var productCapacity int
+		if promos[0].ProductionCapacity != nil {
+			productCapacity = *promos[0].ProductionCapacity
+		}
+		count := productCapacity - countAlreadyUse
+		if count < 1  {
+			return nil,models.ErrNotFound
+		}
+
+		countAlreadyUseWithCurrentUser ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,userId)
+		if err != nil {
+			return nil, err
+		}
+		var maxUsage int
+		if promos[0].MaxUsage != nil {
+			maxUsage = *promos[0].MaxUsage
+		}
+		countUsage := maxUsage - countAlreadyUseWithCurrentUser
+		if countUsage < 1  {
+			return nil,models.ErrNotFound
+		}
+
+	}else {
+		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+		if err != nil {
+			return nil, err
+		}
+		var productCapacity int
+		if promos[0].ProductionCapacity != nil {
+			productCapacity = *promos[0].ProductionCapacity
+		}
+		count := productCapacity - countAlreadyUse
+		if count < 1  {
+			return nil,models.ErrNotFound
+		}
+	}
+	promoDto := &models.PromoDto{
+		Id:         promos[0].Id,
+		PromoCode:  promos[0].PromoCode,
+		PromoName:  promos[0].PromoName,
+		PromoDesc:  promos[0].PromoDesc,
+		PromoValue: promos[0].PromoValue,
+		PromoType:  promos[0].PromoType,
+		PromoImage: promos[0].PromoImage,
+		StartDate:  promos[0].StartDate,
+		EndDate:    promos[0].EndDate,
+		Currency:   promos[0].CurrencyId,
+		MaxUsage:   promos[0].MaxUsage,
+		ProductionCapacity: promos[0].ProductionCapacity,
+		PromoProductType:promos[0].PromoProductType,
+		StartTripPeriod: promos[0].StartTripPeriod,
+		EndTripPeriod: promos[0].EndTripPeriod,
+		IsAnyTripPeriod: promos[0].IsAnyTripPeriod,
+		MaxDiscount: promos[0].MaxDiscount,
+		HowToUse: promos[0].HowToUse,
+		HowToGet: promos[0].HowToGet,
+		TermCondition: promos[0].TermCondition,
+		Disclaimer: promos[0].Disclaimer,
+	}
 
 
 	return promoDto, nil

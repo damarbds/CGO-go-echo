@@ -135,6 +135,8 @@ func (m experienceUsecase) UpdateStatus(ctx context.Context, status int, id stri
 	}
 	return &result, nil
 }
+
+
 func (m experienceUsecase) GetExpPendingTransactionCount(ctx context.Context, token string) (*models.Count, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -150,6 +152,27 @@ func (m experienceUsecase) GetExpPendingTransactionCount(ctx context.Context, to
 	}
 
 	return &models.Count{Count: count}, nil
+}
+
+func (m experienceUsecase) GetExperienceMasterData(ctx context.Context) ([]*models.MasterDataExperience, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	count, err := m.experienceRepo.GetAllExperience(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := []*models.MasterDataExperience{}
+	for _, element := range count {
+		res := models.MasterDataExperience{
+			Id: element.Id,
+			Title: element.ExpTitle,
+		}
+		result = append(result, &res)
+	}
+
+
+	return result, nil
 }
 
 func (m experienceUsecase) GetExpFailedTransactionCount(ctx context.Context, token string) (*models.Count, error) {

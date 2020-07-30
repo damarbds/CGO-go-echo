@@ -201,6 +201,11 @@ type ExperienceDto struct {
 	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
 	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
+type MasterDataExperience struct {
+	Id		string `json:"id"`
+	Title	string	`json:"title"`
+}
+
 type ResponseCreateExperience struct {
 	Id      string `json:"id"`
 	Message string `json:"message"`
