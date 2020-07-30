@@ -41,6 +41,8 @@ func NewmerchantUsecase(usm user_merchant.Repository, a merchant.Repository, ex 
 	}
 }
 
+
+
 func (m merchantUsecase) AutoLoginByCMSAdmin(ctx context.Context, merchantId string, token string) (*models.GetToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
@@ -166,6 +168,46 @@ func (m merchantUsecase) List(ctx context.Context, page, limit, offset int, toke
 	}
 
 	return response, nil
+}
+
+func (m merchantUsecase) GetMerchantTransport(ctx context.Context) ([]*models.MerchantTransport, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+	list, err := m.merchantRepo.GetMerchantTransport(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*models.MerchantTransport{}
+	for _, element := range list {
+		res := models.MerchantTransport{
+			Id: element.Id,
+			MerchantName: element.MerchantName,
+		}
+		result = append(result, &res)
+	}
+
+	return result, nil
+}
+
+func (m merchantUsecase) GetMerchantExperience(ctx context.Context) ([]*models.MerchantExperience, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+	list, err := m.merchantRepo.GetMerchantExperience(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*models.MerchantExperience{}
+	for _, element := range list {
+		res := models.MerchantExperience{
+			Id: element.Id,
+			MerchantName: element.MerchantName,
+		}
+		result = append(result, &res)
+	}
+
+	return result, nil
 }
 
 func (m merchantUsecase) Count(ctx context.Context) (*models.Count, error) {

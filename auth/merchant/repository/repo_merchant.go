@@ -43,6 +43,34 @@ func NewmerchantRepository(Conn *sql.DB) merchant.Repository {
 	return &merchantRepository{Conn}
 }
 
+func (m *merchantRepository) GetMerchantTransport(ctx context.Context) ([]*models.MerchantTransport, error) {
+	var query string
+
+		query = `select DISTINCT mr.id, mr.merchant_name from transportations tr join merchants mr on mr.id = tr.merchant_id WHERE mr.is_deleted = 0 and mr.is_active = 1`
+
+
+	list, err := m.fetchMerchantTransport(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (m *merchantRepository) GetMerchantExperience(ctx context.Context) ([]*models.MerchantExperience, error) {
+	var query string
+
+	query = `select DISTINCT mr.id, mr.merchant_name from experiences ex join merchants mr on mr.id = ex.merchant_id WHERE mr.is_deleted = 0 and mr.is_active = 1`
+
+
+	list, err := m.fetchMerchantExperience(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
 func (m *merchantRepository) List(ctx context.Context, limit, offset int, search string) ([]*models.Merchant, error) {
 	var query string
 	if search != "" {
@@ -126,6 +154,70 @@ func (m *merchantRepository) fetch(ctx context.Context, query string, args ...in
 			&t.Balance,
 			&t.PhoneNumber,
 			&t.MerchantPicture,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (m *merchantRepository) fetchMerchantTransport(ctx context.Context, query string, args ...interface{}) ([]*models.MerchantTransport, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.MerchantTransport, 0)
+	for rows.Next() {
+		t := new(models.MerchantTransport)
+		err = rows.Scan(
+			&t.Id,
+			&t.MerchantName,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (m *merchantRepository) fetchMerchantExperience(ctx context.Context, query string, args ...interface{}) ([]*models.MerchantExperience, error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.MerchantExperience, 0)
+	for rows.Next() {
+		t := new(models.MerchantExperience)
+		err = rows.Scan(
+			&t.Id,
+			&t.MerchantName,
 		)
 
 		if err != nil {

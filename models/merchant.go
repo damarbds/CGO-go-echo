@@ -60,6 +60,14 @@ type MerchantDto struct {
 	PhoneNumber   *string    `json:"phone_number"`
 	MerchantPicture *string 	`json:"merchant_picture"`
 }
+type MerchantExperience struct {
+	Id 				string	`json:"id"`
+	MerchantName	string	`json:"merchant_name"`
+}
+type MerchantTransport struct {
+	Id 				string	`json:"id"`
+	MerchantName	string	`json:"merchant_name"`
+}
 type LoginMerchant struct {
 	MerchantEmail string `json:"merchant_email"`
 	Password      string `json:"password"`

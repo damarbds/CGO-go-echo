@@ -41,9 +41,41 @@ func NewmerchantHandler(e *echo.Echo, us merchant.Usecase,is identityserver.Usec
 	e.DELETE("/merchants/:id", handler.Delete)
 	e.GET("/merchants/:id", handler.GetDetailID)
 	e.GET("/merchants/service-count", handler.GetServiceCount)
+	e.GET("/merchants/merchant-transport", handler.GetMerchantTransport)
+	e.GET("/merchants/merchant-experience", handler.GetMerchantExperience)
+
 	//e.GET("/merchants/:id", handler.GetByID)
 	//e.DELETE("/merchants/:id", handler.Delete)
 }
+
+func (a *merchantHandler) GetMerchantTransport(c echo.Context) error {
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.MerchantUsecase.GetMerchantTransport(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
+
+func (a *merchantHandler) GetMerchantExperience(c echo.Context) error {
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	result, err := a.MerchantUsecase.GetMerchantExperience(ctx)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, result)
+}
+
 func (a *merchantHandler) GetDetailID(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
