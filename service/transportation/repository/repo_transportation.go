@@ -43,6 +43,17 @@ func (m transportationRepository) GetTransportationByBookingId(ctx context.Conte
 	return
 }
 
+func (m transportationRepository) GetAllTransport(ctx context.Context) (res []*models.Transportation, err error) {
+	query := `SELECT id, trans_name FROM transportations WHERE is_deleted = 0 and is_active = 1 and trans_status = 2`
+
+	list, err := m.fetchAllTransport(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
+
 func (m transportationRepository) GetById(ctx context.Context, id string) (res *models.Transportation, err error) {
 	query := `SELECT * FROM transportations WHERE id = ?`
 
@@ -205,34 +216,8 @@ func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query s
 	for rows.Next() {
 		t := new(models.TransSearch)
 		err = rows.Scan(
-			&t.ScheduleId,
-			&t.DepartureDate,
-			&t.DepartureTime,
-			&t.ArrivalTime,
-			&t.Price,
 			&t.TransId,
 			&t.TransName,
-			&t.TransImages,
-			&t.TransStatus,
-			&t.HarborSourceId,
-			&t.HarborSourceName,
-			&t.HarborDestId,
-			&t.HarborDestName,
-			&t.MerchantName,
-			&t.MerchantPicture,
-			&t.Class,
-			&t.TransFacilities,
-			&t.TransCapacity,
-			&t.CitySourceId,
-			&t.CitySourceName,
-			&t.CityDestId,
-			&t.CityDestName,
-			&t.ProvinceSourceId,
-			&t.ProvinceSourceName,
-			&t.ProvinceDestId,
-			&t.ProvinceDestName,
-			&t.BoatDetails,
-			&t.ReturnTransId,
 		)
 
 		if err != nil {
@@ -280,6 +265,32 @@ func (t *transportationRepository) fetchSearchTransForMerchant(ctx context.Conte
 			&t.Class,
 			&t.TransFacilities,
 			&t.TransCapacity,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func (t *transportationRepository) fetchAllTransport(ctx context.Context, query string, args ...interface{}) ([]*models.Transportation, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+
+	result := make([]*models.Transportation, 0)
+	for rows.Next() {
+		t := new(models.Transportation)
+		err = rows.Scan(
+			&t.Id,
+			&t.TransName,
 		)
 
 		if err != nil {
@@ -361,6 +372,8 @@ func (t transportationRepository) Update(ctx context.Context, a models.Transport
 	//a.Id = lastID
 	return &a.Id, nil
 }
+
+
 func (t transportationRepository) SelectIdGetByMerchantId(ctx context.Context, merchantId string, date string) ([]*string, error) {
 	query := `SELECT DISTINCT t.id
 				FROM transportations t

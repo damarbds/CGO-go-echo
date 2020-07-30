@@ -64,6 +64,29 @@ func (t transportationUsecase) GetPublishedTransCount(ctx context.Context, token
 	return &models.Count{Count: count}, nil
 
 }
+
+func (t transportationUsecase) GetAllTransport(ctx context.Context) ([]*models.MasterDataTransport, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
+	defer cancel()
+
+
+	count, err := t.transportationRepo.GetAllTransport(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*models.MasterDataTransport{}
+	for _, element := range count {
+		res := models.MasterDataTransport{
+			Id: element.Id,
+			TransportName: element.TransName,
+		}
+		result = append(result, &res)
+	}
+	return result, nil
+
+}
+
 func (t transportationUsecase) GetDetail(ctx context.Context, id string) (*models.TransportationDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.contextTimeout)
 	defer cancel()

@@ -199,6 +199,12 @@ func main() {
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
 	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
+	//local db
+	//dbHost := "localhost"
+	//dbPort := "3306"
+	//dbUser := "root"
+	//dbPass := ""
+	//dbName := "cgo_indonesia"
 	//dev db
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
 	dbPort := "3306"
