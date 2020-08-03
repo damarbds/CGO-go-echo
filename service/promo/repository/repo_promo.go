@@ -198,21 +198,46 @@ func (m *promoRepository) GetById(ctx context.Context, id string) (res *models.P
 	return
 }
 
-func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType *int, merchantId string) ([]*models.Promo, error) {
-	var query string
-	if merchantId != "" {
-		query = `SELECT p.* 
+func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType *int, merchantId string,userId string,expId string,transId string,checkInDate string,promoUseDate string) ([]*models.Promo, error) {
+	query := `SELECT p.* 
 				FROM 
-					promos p
-				JOIN promo_merchants pm on pm.promo_id = p.id
-				WHERE 
-					BINARY p.promo_code = ? AND 
-					p.promo_product_type = ? AND 
- 					p.is_deleted = 0 AND 
-					p.is_active = 1 AND
-					pm.merchant_id = '` + merchantId + `'`
-	} else {
-		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
+					promos p `
+	if merchantId != ""{
+		query = query + ` JOIN promo_merchants pm on pm.promo_id = p.id `
+	}
+	if userId != ""{
+		query = query + ` JOIN promo_users pu on pu.promo_id = p.id`
+	}
+	if expId != "" || transId != ""{
+		query = query + ` JOIN promo_experience_transports pet on pet.promo_id = p.id`
+	}
+
+	query = query + ` WHERE 
+						BINARY p.promo_code = ? AND 
+						p.promo_product_type in (0,?) AND 
+						p.is_deleted = 0 AND 
+						p.is_active = 1 `
+
+	if checkInDate != ""{
+		query = query + ` AND (DATE('`+ checkInDate +`') >= p.start_trip_period AND 
+								DATE('`+ checkInDate +`') <= p.end_trip_period) `
+	}
+	if promoUseDate != ""{
+		query = query + ` AND (DATE('`+ promoUseDate +`') >= p.start_date AND 
+								DATE('`+ promoUseDate +`') <= p.end_date)  `
+	}
+
+	if merchantId != ""{
+		query = query + ` AND pm.merchant_id = '` + merchantId + `' `
+	}
+	if userId != ""{
+		query = query + ` AND pu.user_id = '` + userId + `' `
+	}
+	if expId != ""{
+		query = query + ` AND pet.experience_id = '` + expId + `' `
+	}
+	if transId != ""{
+		query = query + ` AND pet.transportation_id = '` + expId + `' `
 	}
 
 	res, err := m.fetch(ctx, query, code, promoType)

@@ -40,7 +40,6 @@ func NewpromoHandler(e *echo.Echo, us promo.Usecase,is identityserver.Usecase) {
 	e.GET("admin/promo/:id", handler.GetDetailID)
 	e.DELETE("admin/promo/:id", handler.Delete)
 	e.GET("service/special-promo", handler.GetAllPromo)
-	e.GET("service/special-promo/filter-promo", handler.GetPromoByFilter)
 	e.GET("service/special-promo/:code", handler.GetPromoByCode)
 }
 func (a *PromoHandler) Delete(c echo.Context) error {
@@ -391,34 +390,8 @@ func (a *PromoHandler) GetPromoByCode(c echo.Context) error {
 	code := c.Param("code")
 
 	promoProductType := c.QueryParam("promo_type")
-	merchantExperienceId := c.QueryParam("merchant_exp_id")
-	merchantTransportId := c.QueryParam("merchant_transport_id")
-
-	promoType , _ := strconv.Atoi(promoProductType)
-
-	ctx := c.Request().Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	results, err := a.PromoUsecase.GetByFilter(ctx, code,promoType,merchantExperienceId, merchantTransportId, token)
-	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
-	}
-
-	return c.JSON(http.StatusOK, results)
-}
-
-func (a *PromoHandler) GetPromoByFilter(c echo.Context) error {
-	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	token := c.Request().Header.Get("Authorization")
-
-	code := c.Param("code")
-
-	promoProductType := c.QueryParam("promo_type")
 	merchantId := c.QueryParam("merchant_id")
-
+	bookingId := c.QueryParam("booking_id")
 	promoType , _ := strconv.Atoi(promoProductType)
 
 	ctx := c.Request().Context()
@@ -426,13 +399,14 @@ func (a *PromoHandler) GetPromoByFilter(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	results, err := a.PromoUsecase.GetByCode(ctx, code,promoType,merchantId,token)
+	results, err := a.PromoUsecase.GetByCode(ctx, code,promoType,merchantId,token,bookingId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, results)
 }
+
 
 func getStatusCode(err error) int {
 	if err == nil {

@@ -26,6 +26,7 @@ type Repository interface {
 	CountThisMonth(ctx context.Context) (int, error)
 	UpdatePaymentUrl(ctx context.Context, bookingId, paymentUrl string) error
 	GetByID(ctx context.Context, bookingId string) (*models.BookingTransactionExp, error)
+	GetByBookingID(ctx context.Context, bookingId string) (*models.BookingExp, error)
 	CheckBookingCode(ctx context.Context, bookingCode string) bool
 	GetDetailTransportBookingID(ctx context.Context, bookingId, bookingCode string,transId *string) ([]*models.BookingExpJoin, error)
 	GetDetailBookingID(ctx context.Context, bookingId, bookingCode string) (*models.BookingExpJoin, error)
