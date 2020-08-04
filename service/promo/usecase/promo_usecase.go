@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/auth/user"
 	guuid "github.com/google/uuid"
+	"github.com/service/promo_experience_transport"
 	"github.com/service/promo_user"
 	"github.com/transactions/transaction"
 	"math"
@@ -19,6 +20,7 @@ type promoUsecase struct {
 	userUsecase 	user.Usecase
 	promoMerchant  promo_merchant.Repository
 	promoUser		promo_user.Repository
+	promoExperienceTransport promo_experience_transport.Repository
 	adminUsecase   admin.Usecase
 	promoRepo      promo.Repository
 	contextTimeout time.Duration
@@ -26,7 +28,7 @@ type promoUsecase struct {
 }
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPromoUsecase(userUsecase user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
+func NewPromoUsecase(userUsecase user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration, pu promo_user.Repository, pet promo_experience_transport.Repository) promo.Usecase {
 	return &promoUsecase{
 		userUsecase:userUsecase,
 		transactionRepo:transactionRepo,
@@ -34,6 +36,8 @@ func NewPromoUsecase(userUsecase user.Usecase,transactionRepo transaction.Reposi
 		promoRepo:      p,
 		adminUsecase:   au,
 		contextTimeout: timeout,
+		promoUser: 		pu,
+		promoExperienceTransport: pet,
 	}
 }
 
@@ -249,6 +253,32 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 			UserId: element,
 		}
 		err := p.promoUser.Insert(ctx, promoUser)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, element := range command.ExperienceId {
+		promoExperienceTransport := models.PromoExperienceTransport{
+			Id:		0,
+			PromoId: id,
+			ExperienceId: element,
+			TransportationId: "",
+		}
+		//err := p.promoExperience.Insert(ctx, promoExperience)
+		err := p.promoExperienceTransport.Insert(ctx, promoExperienceTransport)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, element := range command.TransportationId {
+		promoExperienceTransport := models.PromoExperienceTransport{
+			Id:		0,
+			PromoId: id,
+			ExperienceId: "",
+			TransportationId: element,
+		}
+		//err := p.promoExperience.Insert(ctx, promoExperience)
+		err := p.promoExperienceTransport.Insert(ctx, promoExperienceTransport)
 		if err != nil {
 			return nil, err
 		}

@@ -62,7 +62,9 @@ import (
 	_promoHttpDeliver "github.com/service/promo/delivery/http"
 	_promoRepo "github.com/service/promo/repository"
 	_promoUcase "github.com/service/promo/usecase"
+	_promoExperienceTransport "github.com/service/promo_experience_transport/repository"
 	_promoMerchantRepo "github.com/service/promo_merchant/repository"
+	_promoUserRepo "github.com/service/promo_user/repository"
 
 	_experienceAddOnHttpDeliver "github.com/product/experience_add_ons/delivery/http"
 	_experienceAddOnRepo "github.com/product/experience_add_ons/repository"
@@ -313,6 +315,8 @@ func main() {
 	expFacilitesRepo := _expFacilitiesRepo.NewExpFacilitiesRepository(dbConn)
 	expIncludeRepo := _expIncludeRepo.NewExpIncludeRepository(dbConn)
 	expExcludeRepo := _expExcludeRepo.NewExpExcludeRepository(dbConn)
+	promoUserRepo := _promoUserRepo.NewpromoUserRepository(dbConn)
+	promoExperienceTransportRepo := _promoExperienceTransport.NewpromoMerchantRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -335,7 +339,7 @@ func main() {
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(currencyUcase,experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase, harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
-	promoUsecase := _promoUcase.NewPromoUsecase(userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext, promoUserRepo, promoExperienceTransportRepo)
 
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		currencyUcase,

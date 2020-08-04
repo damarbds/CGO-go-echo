@@ -238,10 +238,10 @@ func (m *promoRepository) GetByFilter(ctx context.Context, code string,promoType
 					p.is_active = 1 AND
 					pm.merchant_id = '` + merchantExpId  + `'`
 	}else {
-		query = `SELECT * FROM promos WHERE BINARY promo_code = ? AND promo_product_type in (0,?) AND is_deleted = 0 AND is_active = 1`
+		query = `SELECT * FROM promos WHERE BINARY promo_code = '`+ code +`' AND is_deleted = 0 AND is_active = 1`
 	}
 
-	res, err := m.fetch(ctx, query, code,promoType)
+	res, err := m.fetch(ctx, query)
 	if err != nil {
 		return nil, err
 	}else if len(res) == 0 {
