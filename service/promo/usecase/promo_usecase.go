@@ -466,16 +466,25 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 	return promoDto, nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType int, merchantId string, token string, bookingId string) (*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType string, merchantId string, token string, bookingId string, isAdmin bool) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 	var userId string
 	if token != "" {
-		currentUser, err := p.userUsecase.ValidateTokenUser(ctx, token)
-		if err != nil {
-			return nil, models.ErrUnAuthorize
+		if isAdmin == true {
+			_, err := p.adminUsecase.ValidateTokenAdmin(ctx, token)
+			if err != nil {
+				return nil, models.ErrUnAuthorize
+			}
+			//userId = currentUser.Id
+		} else {
+			currentUser, err := p.userUsecase.ValidateTokenUser(ctx, token)
+			if err != nil {
+				return nil, models.ErrUnAuthorize
+			}
+			userId = currentUser.Id
+
 		}
-		userId = currentUser.Id
 	}
 	var expId string
 	var transId string
@@ -492,13 +501,101 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType int,
 		bookingDate = booking.BookingDate.Format("2006-01-02")
 		usePromoDate = time.Now().Format("2006-01-02")
 	}
-	promos, err := p.promoRepo.GetByCode(ctx, code, &promoType, merchantId, userId, expId,
+	promos, err := p.promoRepo.GetByCode(ctx, code, promoType, merchantId, userId, expId,
 		transId, bookingDate, usePromoDate)
 
 	if err != nil {
 		return nil, err
 	}
 	if userId != "" {
+
+		//validation for transportation
+		if transId != ""{
+			checkCountTrans ,err := p.promoExperienceTransport.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountTrans > 0 {
+				promoTrans,err := p.promoExperienceTransport.GetByExperienceTransportId(ctx,"",transId,promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoTrans) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+		}
+
+		//validation for experience
+		if expId != ""{
+			checkCountExp ,err := p.promoExperienceTransport.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountExp > 0 {
+				promoExp,err := p.promoExperienceTransport.GetByExperienceTransportId(ctx,expId,"",promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoExp) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+		}
+
+		//validation for user
+		if userId != ""{
+			checkCountUser ,err := p.promoUser.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountUser > 0 {
+				promoUser,err := p.promoUser.GetByUserId(ctx,userId,promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoUser) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+
+		}
+
+		//validation for merchants
+		if merchantId != ""{
+			checkCountMerchant ,err := p.promoMerchant.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountMerchant > 0 {
+				promoMerchant,err := p.promoMerchant.GetByMerchantId(ctx,merchantId,promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoMerchant) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+		}
+
+
+		//validation periodDate
+		if promos[0].StartTripPeriod != nil && promos[0].EndTripPeriod != nil {
+			if *promos[0].StartTripPeriod != "0000-00-00" && *promos[0].EndTripPeriod != "0000-00-00" {
+				if bookingDate >= *promos[0].StartTripPeriod && bookingDate <= *promos[0].EndTripPeriod {
+
+				} else {
+					return nil, models.ErrNotFound
+				}
+			}
+
+		}
+
+		//validation for capacity
 		countAlreadyUse, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, "")
 		if err != nil {
 			return nil, err
@@ -512,6 +609,7 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType int,
 			return nil, models.ErrNotFound
 		}
 
+		//validation for max usage
 		countAlreadyUseWithCurrentUser, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, userId)
 		if err != nil {
 			return nil, err

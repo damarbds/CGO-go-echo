@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-
 	"github.com/service/promo_merchant"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/models"
@@ -16,6 +16,39 @@ const (
 
 type promoMerchantRepository struct {
 	Conn *sql.DB
+}
+
+
+
+// NewpromoRepository will create an object that represent the article.repository interface
+func NewpromoMerchantRepository(Conn *sql.DB) promo_merchant.Repository {
+	return &promoMerchantRepository{Conn}
+}
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+func (m *promoMerchantRepository) CountByPromoId(ctx context.Context, promoId string) (int, error) {
+	query := `SELECT COUNT(*) as count FROM promo_merchants WHERE promo_id= ?`
+
+	rows, err := m.Conn.QueryContext(ctx, query, promoId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (m *promoMerchantRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.PromoMerchant, error) {
@@ -67,10 +100,6 @@ func (m promoMerchantRepository) GetByMerchantId(ctx context.Context, merchantId
 	return
 }
 
-// NewpromoRepository will create an object that represent the article.repository interface
-func NewpromoMerchantRepository(Conn *sql.DB) promo_merchant.Repository {
-	return &promoMerchantRepository{Conn}
-}
 func (m promoMerchantRepository) Insert(ctx context.Context, a models.PromoMerchant) error {
 	query := `INSERT promo_merchants SET promo_id=?,merchant_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)

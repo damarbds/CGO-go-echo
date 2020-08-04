@@ -16,6 +16,35 @@ type promoExperienceTransportRepository struct {
 	Conn *sql.DB
 }
 
+func NewpromoMerchantRepository(Conn *sql.DB) promo_experience_transport.Repository{
+	return &promoExperienceTransportRepository{Conn}
+}
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+func (m *promoExperienceTransportRepository) CountByPromoId(ctx context.Context, promoId string) (int, error) {
+	query := `SELECT COUNT(*) as count FROM promo_experience_transports WHERE promo_id= ?`
+
+	rows, err := m.Conn.QueryContext(ctx, query, promoId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
 
 func (m *promoExperienceTransportRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.PromoExperienceTransport, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
@@ -74,9 +103,6 @@ func (m promoExperienceTransportRepository) GetByExperienceTransportId(ctx conte
 //	return &promoMerchantRepository{Conn}
 //}
 
-func NewpromoMerchantRepository(Conn *sql.DB) promo_experience_transport.Repository{
-	return &promoExperienceTransportRepository{Conn}
-}
 func (m promoExperienceTransportRepository) Insert(ctx context.Context, a models.PromoExperienceTransport) error {
 	query := `INSERT promo_experience_transports SET promo_id=?,experience_id=?,transportation_id=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)

@@ -198,49 +198,51 @@ func (m *promoRepository) GetById(ctx context.Context, id string) (res *models.P
 	return
 }
 
-func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType *int, merchantId string, userId string, expId string, transId string, checkInDate string, promoUseDate string) ([]*models.Promo, error) {
+func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType string, merchantId string, userId string, expId string, transId string, checkInDate string, promoUseDate string) ([]*models.Promo, error) {
 	query := `SELECT p.* 
 				FROM 
 					promos p `
-	if merchantId != "" {
-		query = query + ` JOIN promo_merchants pm on pm.promo_id = p.id `
-	}
-	if userId != "" {
-		query = query + ` JOIN promo_users pu on pu.promo_id = p.id`
-	}
-	if expId != "" || transId != "" {
-		query = query + ` JOIN promo_experience_transports pet on pet.promo_id = p.id`
-	}
+	//if merchantId != "" {
+	//	query = query + ` JOIN promo_merchants pm on pm.promo_id = p.id `
+	//}
+	//if userId != "" {
+	//	query = query + ` JOIN promo_users pu on pu.promo_id = p.id`
+	//}
+	//if expId != "" || transId != "" {
+	//	query = query + ` JOIN promo_experience_transports pet on pet.promo_id = p.id`
+	//}
 
 	query = query + ` WHERE 
-						BINARY p.promo_code = ? AND 
-						p.promo_product_type in (0,?) AND 
+						BINARY p.promo_code = ?  AND 
 						p.is_deleted = 0 AND 
 						p.is_active = 1 `
-
-	if checkInDate != "" {
-		query = query + ` AND (DATE('` + checkInDate + `') >= p.start_trip_period AND 
-								DATE('` + checkInDate + `') <= p.end_trip_period) `
+	if promoType != "" {
+		query = query + ` AND 
+						p.promo_product_type in (0,` + promoType + `) `
 	}
+	// if checkInDate != "" {
+	// 	query = query + ` AND (DATE('` + checkInDate + `') >= p.start_trip_period AND
+	// 							DATE('` + checkInDate + `') <= p.end_trip_period) `
+	// }
 	if promoUseDate != "" {
 		query = query + ` AND (DATE('` + promoUseDate + `') >= p.start_date AND 
 								DATE('` + promoUseDate + `') <= p.end_date)  `
 	}
 
-	if merchantId != "" {
-		query = query + ` AND pm.merchant_id = '` + merchantId + `' `
-	}
-	if userId != "" {
-		query = query + ` AND pu.user_id = '` + userId + `' `
-	}
-	if expId != "" {
-		query = query + ` AND pet.experience_id = '` + expId + `' `
-	}
-	if transId != "" {
-		query = query + ` AND pet.transportation_id = '` + expId + `' `
-	}
+	//if merchantId != "" {
+	//	query = query + ` AND pm.merchant_id = '` + merchantId + `' `
+	//}
+	//if userId != "" {
+	//	query = query + ` AND pu.user_id = '` + userId + `' `
+	//}
+	//if expId != "" {
+	//	query = query + ` AND pet.experience_id = '` + expId + `' `
+	//}
+	//if transId != "" {
+	//	query = query + ` AND pet.transportation_id = '` + expId + `' `
+	//}
 
-	res, err := m.fetch(ctx, query, code, promoType)
+	res, err := m.fetch(ctx, query, code)
 	if err != nil {
 		return nil, err
 	} else if len(res) == 0 {
