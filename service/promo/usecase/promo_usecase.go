@@ -466,18 +466,18 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 	return promoDto, nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType string, merchantId string, token string, bookingId string,isAdmin bool) (*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType string, merchantId string, token string, bookingId string, isAdmin bool) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 	var userId string
 	if token != "" {
-		if isAdmin == true{
-			_, err := p.adminUsecase.ValidateTokenAdmin(ctx,token)
+		if isAdmin == true {
+			_, err := p.adminUsecase.ValidateTokenAdmin(ctx, token)
 			if err != nil {
 				return nil, models.ErrUnAuthorize
 			}
 			//userId = currentUser.Id
-		}else {
+		} else {
 			currentUser, err := p.userUsecase.ValidateTokenUser(ctx, token)
 			if err != nil {
 				return nil, models.ErrUnAuthorize
@@ -508,6 +508,16 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType stri
 		return nil, err
 	}
 	if userId != "" {
+		if promos[0].StartTripPeriod != nil && promos[0].EndTripPeriod != nil {
+			if *promos[0].StartTripPeriod != "0000-00-00" && *promos[0].EndTripPeriod != "0000-00-00" {
+				if bookingDate >= *promos[0].StartTripPeriod && bookingDate <= *promos[0].EndTripPeriod {
+
+				} else {
+					return nil, models.ErrNotFound
+				}
+			}
+
+		}
 		countAlreadyUse, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, "")
 		if err != nil {
 			return nil, err

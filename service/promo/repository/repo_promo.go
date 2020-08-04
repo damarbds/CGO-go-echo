@@ -216,14 +216,14 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType 
 						BINARY p.promo_code = ?  AND 
 						p.is_deleted = 0 AND 
 						p.is_active = 1 `
-	if promoType != ""{
+	if promoType != "" {
 		query = query + ` AND 
-						p.promo_product_type in (0,`+promoType+`) `
+						p.promo_product_type in (0,` + promoType + `) `
 	}
-	if checkInDate != "" {
-		query = query + ` AND (DATE('` + checkInDate + `') >= p.start_trip_period AND 
-								DATE('` + checkInDate + `') <= p.end_trip_period) `
-	}
+	// if checkInDate != "" {
+	// 	query = query + ` AND (DATE('` + checkInDate + `') >= p.start_trip_period AND
+	// 							DATE('` + checkInDate + `') <= p.end_trip_period) `
+	// }
 	if promoUseDate != "" {
 		query = query + ` AND (DATE('` + promoUseDate + `') >= p.start_date AND 
 								DATE('` + promoUseDate + `') <= p.end_date)  `
