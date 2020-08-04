@@ -19,4 +19,6 @@ type Usecase interface {
 	Delete(ctx context.Context, id string, token string) (*models.ResponseDelete, error)
 	ServiceCount(ctx context.Context, token string) (*models.ServiceCount, error)
 	GetDetailMerchantById(ctx context.Context, id string,token string)(*models.MerchantDto,error)
+	GetMerchantTransport(ctx context.Context) ([]*models.MerchantTransport, error)
+	GetMerchantExperience(ctx context.Context) ([]*models.MerchantExperience, error)
 }

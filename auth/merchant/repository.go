@@ -15,4 +15,6 @@ type Repository interface {
 	Delete(ctx context.Context, id string, deleted_by string) error
 	Count(ctx context.Context) (int, error)
 	List(ctx context.Context, limit, offset int,search string) ([]*models.Merchant, error)
+	GetMerchantTransport(ctx context.Context) ([]*models.MerchantTransport, error)
+	GetMerchantExperience(ctx context.Context) ([]*models.MerchantExperience, error)
 }

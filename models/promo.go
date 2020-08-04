@@ -60,6 +60,8 @@ type PromoDto struct {
 	ProductionCapacity	*int `json:"production_capacity"`
 	MerchantId	[]string	`json:"merchant_id"`
 	UserId		[]string	`json:"user_id"`
+	ExperienceId	[]string	`json:"experience_id"`
+	TransportationId []string	`json:"transportation_id"`
 	PromoProductType *int `json:"promo_product_type"`
 }
 type NewCommandPromo struct {
@@ -85,6 +87,8 @@ type NewCommandPromo struct {
 	ProductionCapacity int 	`json:"production_capacity"`
 	MerchantId 	[]string	`json:"merchant_id"`
 	UserId		[]string	`json:"user_id"`
+	ExperienceId	[]string	`json:"experience_id"`
+	TransportationId []string	`json:"transportation_id"`
 	PromoProductType *int `json:"promo_product_type"`
 }
 type PromoWithPagination struct {

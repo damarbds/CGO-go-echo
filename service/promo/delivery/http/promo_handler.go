@@ -201,6 +201,27 @@ func (a *PromoHandler) CreatePromo(c echo.Context) error {
 			return models.ErrInternalServerError
 		}
 	}
+	users := c.FormValue("user_id")
+	userId := make([]string,0)
+	if users != "" {
+		if errUnmarshal := json.Unmarshal([]byte(users), &userId); errUnmarshal != nil {
+			return  models.ErrInternalServerError
+		}
+	}
+	experiences := c.FormValue("experience_id")
+	experienceId := make([]string, 0)
+	if experiences != "" {
+		if errUnmarshal := json.Unmarshal([]byte(experiences), &experienceId); errUnmarshal != nil {
+			return  models.ErrInternalServerError
+		}
+	}
+	transportation := c.FormValue("transportation_id")
+	transportationId := make([]string, 0)
+	if transportation != "" {
+		if errUnmarshal := json.Unmarshal([]byte(transportation), &transportationId); errUnmarshal != nil {
+			return models.ErrInternalServerError
+		}
+	}
 	promoCommand := models.NewCommandPromo{
 		Id:                     "",
 		PromoCode:              c.FormValue("promo_code"),
@@ -224,7 +245,9 @@ func (a *PromoHandler) CreatePromo(c echo.Context) error {
 		TermCondition: c.FormValue("term_condition"),
 		HowToGet: c.FormValue("how_to_get"),
 		HowToUse: c.FormValue("how_to_use"),
-
+		UserId: userId,
+		ExperienceId: experienceId,
+		TransportationId: transportationId,
 	}
 	if ok, err := isRequestValid(&promoCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -294,6 +317,13 @@ func (a *PromoHandler) UpdatePromo(c echo.Context) error {
 			return models.ErrInternalServerError
 		}
 	}
+	users := c.FormValue("user_id")
+	userId := make([]string,0)
+	if merchants != ""{
+		if errUnmarshal := json.Unmarshal([]byte(users), &userId); errUnmarshal != nil {
+			return models.ErrInternalServerError
+		}
+	}
 	promoCommand := models.NewCommandPromo{
 		Id:                     c.FormValue("id"),
 		PromoCode:              c.FormValue("promo_code"),
@@ -306,8 +336,9 @@ func (a *PromoHandler) UpdatePromo(c echo.Context) error {
 		EndDate:                c.FormValue("end_date"),
 		Currency:               currency,
 		MaxUsage:               maxUsage,
-		ProductionCapacity: productionCapacity,
-		MerchantId:merchantId,
+		ProductionCapacity: 	productionCapacity,
+		MerchantId:				merchantId,
+		UserId:					userId,
 		PromoProductType:&promoProductType,
 		StartTripPeriod: c.FormValue("start_trip_period"),
 		EndTripPeriod: c.FormValue("end_trip_period"),

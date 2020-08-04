@@ -198,17 +198,17 @@ func (m *promoRepository) GetById(ctx context.Context, id string) (res *models.P
 	return
 }
 
-func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType *int, merchantId string,userId string,expId string,transId string,checkInDate string,promoUseDate string) ([]*models.Promo, error) {
+func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType *int, merchantId string, userId string, expId string, transId string, checkInDate string, promoUseDate string) ([]*models.Promo, error) {
 	query := `SELECT p.* 
 				FROM 
 					promos p `
-	if merchantId != ""{
+	if merchantId != "" {
 		query = query + ` JOIN promo_merchants pm on pm.promo_id = p.id `
 	}
-	if userId != ""{
+	if userId != "" {
 		query = query + ` JOIN promo_users pu on pu.promo_id = p.id`
 	}
-	if expId != "" || transId != ""{
+	if expId != "" || transId != "" {
 		query = query + ` JOIN promo_experience_transports pet on pet.promo_id = p.id`
 	}
 
@@ -218,25 +218,25 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType 
 						p.is_deleted = 0 AND 
 						p.is_active = 1 `
 
-	if checkInDate != ""{
-		query = query + ` AND (DATE('`+ checkInDate +`') >= p.start_trip_period AND 
-								DATE('`+ checkInDate +`') <= p.end_trip_period) `
+	if checkInDate != "" {
+		query = query + ` AND (DATE('` + checkInDate + `') >= p.start_trip_period AND 
+								DATE('` + checkInDate + `') <= p.end_trip_period) `
 	}
-	if promoUseDate != ""{
-		query = query + ` AND (DATE('`+ promoUseDate +`') >= p.start_date AND 
-								DATE('`+ promoUseDate +`') <= p.end_date)  `
+	if promoUseDate != "" {
+		query = query + ` AND (DATE('` + promoUseDate + `') >= p.start_date AND 
+								DATE('` + promoUseDate + `') <= p.end_date)  `
 	}
 
-	if merchantId != ""{
+	if merchantId != "" {
 		query = query + ` AND pm.merchant_id = '` + merchantId + `' `
 	}
-	if userId != ""{
+	if userId != "" {
 		query = query + ` AND pu.user_id = '` + userId + `' `
 	}
-	if expId != ""{
+	if expId != "" {
 		query = query + ` AND pet.experience_id = '` + expId + `' `
 	}
-	if transId != ""{
+	if transId != "" {
 		query = query + ` AND pet.transportation_id = '` + expId + `' `
 	}
 
@@ -277,17 +277,17 @@ func (m *promoRepository) GetByFilter(ctx context.Context, code string, promoTyp
 	return res, nil
 }
 
-func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, search string, trans bool, exp bool, merchantIds []string,sortBy string,promoId string) ([]*models.Promo, error) {
+func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, search string, trans bool, exp bool, merchantIds []string, sortBy string, promoId string) ([]*models.Promo, error) {
 
 	query := `SELECT p.* FROM promos p `
 	if len(merchantIds) != 0 {
 		query = query + ` JOIN promo_merchants pm ON p.id = pm.promo_id `
 	}
-	if trans == true || exp == true	 {
+	if trans == true || exp == true {
 		query = query + ` JOIN promo_experience_transports pet ON p.id = pet.promo_id `
 	}
 	query = query + ` WHERE p.is_deleted = 0 AND p.is_active = 1 `
-	if trans == true{
+	if trans == true {
 		query = query + ` AND pet.transportation_id != '' `
 	}
 	if exp == true {
@@ -305,7 +305,7 @@ func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, searc
 			query = query + ` OR pm.merchant_id ='` + id + `' `
 		}
 	}
-	if promoId != ""{
+	if promoId != "" {
 		query = query + ` AND p.id ='` + promoId + `' `
 	}
 	if search != "" {
@@ -316,16 +316,16 @@ func (m *promoRepository) Fetch(ctx context.Context, page *int, size *int, searc
 			`OR promo_code LIKE '%` + search + `%' ` +
 			`OR max_usage LIKE '%` + search + `%' ` + `) `
 	}
-	if sortBy == "newest"{
+	if sortBy == "newest" {
 		query = query + ` ORDER BY created_date desc `
-	}else if sortBy == "latest"{
+	} else if sortBy == "latest" {
 		query = query + ` ORDER BY created_date asc `
-	}else {
+	} else {
 		query = query + ` ORDER BY created_date desc `
 	}
 
 	if page != nil && size != nil {
-		query = query + ` LIMIT ` + strconv.Itoa(*size)+` OFFSET `+ strconv.Itoa(*page)+ ` `
+		query = query + ` LIMIT ` + strconv.Itoa(*size) + ` OFFSET ` + strconv.Itoa(*page) + ` `
 	}
 	res, err := m.fetch(ctx, query)
 	if err != nil {

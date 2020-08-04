@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	GetById(ctx context.Context,promoId string)([]*models.PromoExperienceTransport,error)
-	Insert(ctx context.Context,expId string, transId models.PromoExperienceTransport)error
+	GetByExperienceTransportId(ctx context.Context,expId string,transportId string,promoId string)([]*models.PromoExperienceTransport,error)
+	Insert(ctx context.Context,pet models.PromoExperienceTransport)error
 	DeleteById(ctx context.Context,serviceId string,promoId string)error
 }

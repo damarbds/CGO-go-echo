@@ -1,13 +1,15 @@
 package usecase
 
 import (
+	"math"
+	"time"
+
 	"github.com/auth/user"
 	"github.com/booking/booking_exp"
 	guuid "github.com/google/uuid"
+	"github.com/service/promo_experience_transport"
 	"github.com/service/promo_user"
 	"github.com/transactions/transaction"
-	"math"
-	"time"
 
 	"github.com/auth/admin"
 	"github.com/models"
@@ -17,38 +19,41 @@ import (
 )
 
 type promoUsecase struct {
-	bookingRepo 	booking_exp.Repository
-	userUsecase 	user.Usecase
-	promoMerchant  promo_merchant.Repository
-	promoUser		promo_user.Repository
-	adminUsecase   admin.Usecase
-	promoRepo      promo.Repository
-	contextTimeout time.Duration
-	transactionRepo transaction.Repository
+	bookingRepo              booking_exp.Repository
+	userUsecase              user.Usecase
+	promoMerchant            promo_merchant.Repository
+	promoUser                promo_user.Repository
+	promoExperienceTransport promo_experience_transport.Repository
+	adminUsecase             admin.Usecase
+	promoRepo                promo.Repository
+	contextTimeout           time.Duration
+	transactionRepo          transaction.Repository
 }
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPromoUsecase(bookingRepo 	booking_exp.Repository,userUsecase user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
+func NewPromoUsecase(bookingRepo booking_exp.Repository, userUsecase user.Usecase, transactionRepo transaction.Repository, pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration, pu promo_user.Repository, pet promo_experience_transport.Repository) promo.Usecase {
 	return &promoUsecase{
-		bookingRepo:bookingRepo,
-		userUsecase:userUsecase,
-		transactionRepo:transactionRepo,
-		promoMerchant:  pm,
-		promoRepo:      p,
-		adminUsecase:   au,
-		contextTimeout: timeout,
+		bookingRepo:              bookingRepo,
+		userUsecase:              userUsecase,
+		transactionRepo:          transactionRepo,
+		promoMerchant:            pm,
+		promoRepo:                p,
+		adminUsecase:             au,
+		contextTimeout:           timeout,
+		promoUser:                pu,
+		promoExperienceTransport: pet,
 	}
 }
 
-func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search string, token string,trans bool,exp bool,merchantIds []string) (*models.PromoWithPagination, error) {
+func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search string, token string, trans bool, exp bool, merchantIds []string) (*models.PromoWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 	_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
-	if err != nil{
+	if err != nil {
 		return nil, models.ErrUnAuthorize
 	}
 
-	list, err := m.promoRepo.Fetch(ctx, &offset, &limit, search,trans,exp,merchantIds,"","")
+	list, err := m.promoRepo.Fetch(ctx, &offset, &limit, search, trans, exp, merchantIds, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -68,15 +73,15 @@ func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search 
 			Currency:           item.CurrencyId,
 			MaxUsage:           item.MaxUsage,
 			ProductionCapacity: item.ProductionCapacity,
-			PromoProductType:item.PromoProductType,
-			StartTripPeriod: item.StartTripPeriod,
-			EndTripPeriod: item.EndTripPeriod,
-			IsAnyTripPeriod: item.IsAnyTripPeriod,
-			MaxDiscount: item.MaxDiscount,
-			HowToUse: item.HowToUse,
-			HowToGet: item.HowToGet,
-			Disclaimer: item.Disclaimer,
-			TermCondition: item.TermCondition,
+			PromoProductType:   item.PromoProductType,
+			StartTripPeriod:    item.StartTripPeriod,
+			EndTripPeriod:      item.EndTripPeriod,
+			IsAnyTripPeriod:    item.IsAnyTripPeriod,
+			MaxDiscount:        item.MaxDiscount,
+			HowToUse:           item.HowToUse,
+			HowToGet:           item.HowToGet,
+			Disclaimer:         item.Disclaimer,
+			TermCondition:      item.TermCondition,
 			//VoucherValueOptionType: item.VoucherValueOptionType,
 		}
 		merchantIds := make([]string, 0)
@@ -124,8 +129,8 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 	if err != nil {
 		return nil, models.ErrUnAuthorize
 	}
-	if command.PromoImage == ""{
-		getById,_:= p.promoRepo.GetById(ctx,command.Id)
+	if command.PromoImage == "" {
+		getById, _ := p.promoRepo.GetById(ctx, command.Id)
 		command.PromoImage = getById.PromoImage
 	}
 	now := time.Now()
@@ -150,15 +155,15 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 		CurrencyId:         &command.Currency,
 		MaxUsage:           &command.MaxUsage,
 		ProductionCapacity: &command.ProductionCapacity,
-		PromoProductType:command.PromoProductType,
-		StartTripPeriod: &command.StartTripPeriod,
-		EndTripPeriod: &command.EndTripPeriod,
-		IsAnyTripPeriod: &command.IsAnyTripPeriod,
-		MaxDiscount: &command.MaxDiscount,
-		HowToUse: &command.HowToUse,
-		HowToGet: &command.HowToGet,
-		TermCondition: &command.TermCondition,
-		Disclaimer: &command.Disclaimer,
+		PromoProductType:   command.PromoProductType,
+		StartTripPeriod:    &command.StartTripPeriod,
+		EndTripPeriod:      &command.EndTripPeriod,
+		IsAnyTripPeriod:    &command.IsAnyTripPeriod,
+		MaxDiscount:        &command.MaxDiscount,
+		HowToUse:           &command.HowToUse,
+		HowToGet:           &command.HowToGet,
+		TermCondition:      &command.TermCondition,
+		Disclaimer:         &command.Disclaimer,
 		//VoucherValueOptionType: &command.VoucherValueOptionType,
 	}
 	err = p.promoRepo.Update(ctx, &promo)
@@ -178,9 +183,9 @@ func (p promoUsecase) Update(ctx context.Context, command models.NewCommandPromo
 	for _, element := range command.UserId {
 		err = p.promoUser.DeleteByUserId(ctx, element, command.Id)
 		promoUser := models.PromoUser{
-			Id:			0,
-			PromoId: 	command.Id,
-			UserId: 	element,
+			Id:      0,
+			PromoId: command.Id,
+			UserId:  element,
 		}
 		err := p.promoUser.Insert(ctx, promoUser)
 		if err != nil {
@@ -222,15 +227,15 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 		CurrencyId:         &command.Currency,
 		MaxUsage:           &command.MaxUsage,
 		ProductionCapacity: &command.ProductionCapacity,
-		PromoProductType:command.PromoProductType,
-		StartTripPeriod: &command.StartTripPeriod,
-		EndTripPeriod: &command.EndTripPeriod,
-		IsAnyTripPeriod: &command.IsAnyTripPeriod,
-		MaxDiscount: &command.MaxDiscount,
-		HowToUse: &command.HowToUse,
-		HowToGet: &command.HowToGet,
-		TermCondition: &command.TermCondition,
-		Disclaimer: &command.Disclaimer,
+		PromoProductType:   command.PromoProductType,
+		StartTripPeriod:    &command.StartTripPeriod,
+		EndTripPeriod:      &command.EndTripPeriod,
+		IsAnyTripPeriod:    &command.IsAnyTripPeriod,
+		MaxDiscount:        &command.MaxDiscount,
+		HowToUse:           &command.HowToUse,
+		HowToGet:           &command.HowToGet,
+		TermCondition:      &command.TermCondition,
+		Disclaimer:         &command.Disclaimer,
 	}
 	id, err := p.promoRepo.Insert(ctx, &promo)
 
@@ -247,11 +252,37 @@ func (p promoUsecase) Create(ctx context.Context, command models.NewCommandPromo
 	}
 	for _, element := range command.UserId {
 		promoUser := models.PromoUser{
-			Id:		0,
+			Id:      0,
 			PromoId: id,
-			UserId: element,
+			UserId:  element,
 		}
 		err := p.promoUser.Insert(ctx, promoUser)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, element := range command.ExperienceId {
+		promoExperienceTransport := models.PromoExperienceTransport{
+			Id:               0,
+			PromoId:          id,
+			ExperienceId:     element,
+			TransportationId: "",
+		}
+		//err := p.promoExperience.Insert(ctx, promoExperience)
+		err := p.promoExperienceTransport.Insert(ctx, promoExperienceTransport)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, element := range command.TransportationId {
+		promoExperienceTransport := models.PromoExperienceTransport{
+			Id:               0,
+			PromoId:          id,
+			ExperienceId:     "",
+			TransportationId: element,
+		}
+		//err := p.promoExperience.Insert(ctx, promoExperience)
+		err := p.promoExperienceTransport.Insert(ctx, promoExperienceTransport)
 		if err != nil {
 			return nil, err
 		}
@@ -308,15 +339,15 @@ func (p promoUsecase) GetDetail(ctx context.Context, id string, token string) (*
 		Currency:           getPromoDetail.CurrencyId,
 		MaxUsage:           getPromoDetail.MaxUsage,
 		ProductionCapacity: getPromoDetail.ProductionCapacity,
-		PromoProductType:getPromoDetail.PromoProductType,
-		StartTripPeriod: getPromoDetail.StartTripPeriod,
-		EndTripPeriod: getPromoDetail.EndTripPeriod,
-		IsAnyTripPeriod: getPromoDetail.IsAnyTripPeriod,
-		MaxDiscount: getPromoDetail.MaxDiscount,
-		HowToUse: getPromoDetail.HowToUse,
-		HowToGet: getPromoDetail.HowToGet,
-		TermCondition: getPromoDetail.TermCondition,
-		Disclaimer: getPromoDetail.Disclaimer,
+		PromoProductType:   getPromoDetail.PromoProductType,
+		StartTripPeriod:    getPromoDetail.StartTripPeriod,
+		EndTripPeriod:      getPromoDetail.EndTripPeriod,
+		IsAnyTripPeriod:    getPromoDetail.IsAnyTripPeriod,
+		MaxDiscount:        getPromoDetail.MaxDiscount,
+		HowToUse:           getPromoDetail.HowToUse,
+		HowToGet:           getPromoDetail.HowToGet,
+		TermCondition:      getPromoDetail.TermCondition,
+		Disclaimer:         getPromoDetail.Disclaimer,
 		//VoucherValueOptionType: getPromoDetail.VoucherValueOptionType,
 	}
 	merchantIds := make([]string, 0)
@@ -328,7 +359,7 @@ func (p promoUsecase) GetDetail(ctx context.Context, id string, token string) (*
 
 	return &result, nil
 }
-func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int,search string,trans bool,exp bool,merchantIds []string,sortBy string,promoId string) ([]*models.PromoDto, error) {
+func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int, search string, trans bool, exp bool, merchantIds []string, sortBy string, promoId string) ([]*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
@@ -337,7 +368,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int,search str
 	//	return nil, models.ErrUnAuthorize
 	//}
 
-	promoList, err := p.promoRepo.Fetch(ctx, page, size, search,trans,exp,merchantIds,sortBy,promoId)
+	promoList, err := p.promoRepo.Fetch(ctx, page, size, search, trans, exp, merchantIds, sortBy, promoId)
 	if err != nil {
 		return nil, err
 	}
@@ -356,15 +387,15 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int,search str
 			Currency:           element.CurrencyId,
 			MaxUsage:           element.MaxUsage,
 			ProductionCapacity: element.ProductionCapacity,
-			PromoProductType:element.PromoProductType,
-			StartTripPeriod: element.StartTripPeriod,
-			EndTripPeriod: element.EndTripPeriod,
-			IsAnyTripPeriod: element.IsAnyTripPeriod,
-			MaxDiscount: element.MaxDiscount,
-			HowToUse: element.HowToUse,
-			HowToGet: element.HowToGet,
-			TermCondition: element.TermCondition,
-			Disclaimer: element.Disclaimer,
+			PromoProductType:   element.PromoProductType,
+			StartTripPeriod:    element.StartTripPeriod,
+			EndTripPeriod:      element.EndTripPeriod,
+			IsAnyTripPeriod:    element.IsAnyTripPeriod,
+			MaxDiscount:        element.MaxDiscount,
+			HowToUse:           element.HowToUse,
+			HowToGet:           element.HowToGet,
+			TermCondition:      element.TermCondition,
+			Disclaimer:         element.Disclaimer,
 		}
 		merchantIds := make([]string, 0)
 		getPromoMerchant, err := p.promoMerchant.GetByMerchantId(ctx, "", element.Id)
@@ -381,7 +412,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int,search str
 	return promoDto, nil
 }
 
-func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token string,search string,trans bool,exp bool,merchantIds []string,sortBy string,promoId string) ([]*models.PromoDto, error) {
+func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token string, search string, trans bool, exp bool, merchantIds []string, sortBy string, promoId string) ([]*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
@@ -390,7 +421,7 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 		return nil, models.ErrUnAuthorize
 	}
 
-	promoList, err := p.promoRepo.Fetch(ctx, page, size, search,trans,exp,merchantIds,sortBy,promoId)
+	promoList, err := p.promoRepo.Fetch(ctx, page, size, search, trans, exp, merchantIds, sortBy, promoId)
 	if err != nil {
 		return nil, err
 	}
@@ -409,15 +440,15 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 			Currency:           element.CurrencyId,
 			MaxUsage:           element.MaxUsage,
 			ProductionCapacity: element.ProductionCapacity,
-			PromoProductType:element.PromoProductType,
-			StartTripPeriod: element.StartTripPeriod,
-			EndTripPeriod: element.EndTripPeriod,
-			IsAnyTripPeriod: element.IsAnyTripPeriod,
-			MaxDiscount: element.MaxDiscount,
-			HowToUse: element.HowToUse,
-			HowToGet: element.HowToGet,
-			TermCondition: element.TermCondition,
-			Disclaimer: element.Disclaimer,
+			PromoProductType:   element.PromoProductType,
+			StartTripPeriod:    element.StartTripPeriod,
+			EndTripPeriod:      element.EndTripPeriod,
+			IsAnyTripPeriod:    element.IsAnyTripPeriod,
+			MaxDiscount:        element.MaxDiscount,
+			HowToUse:           element.HowToUse,
+			HowToGet:           element.HowToGet,
+			TermCondition:      element.TermCondition,
+			Disclaimer:         element.Disclaimer,
 		}
 		userIds := make([]string, 0)
 		getPromoUser, err := p.promoUser.GetByUserId(ctx, "", element.Id)
@@ -435,14 +466,14 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 	return promoDto, nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,merchantId string,token string,bookingId string) (*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType int, merchantId string, token string, bookingId string) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 	var userId string
-	if token != ""{
-		currentUser,err := p.userUsecase.ValidateTokenUser(ctx,token)
-		if err != nil{
-			return nil,models.ErrUnAuthorize
+	if token != "" {
+		currentUser, err := p.userUsecase.ValidateTokenUser(ctx, token)
+		if err != nil {
+			return nil, models.ErrUnAuthorize
 		}
 		userId = currentUser.Id
 	}
@@ -450,25 +481,25 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 	var transId string
 	var bookingDate string
 	var usePromoDate string
-	booking,_:= p.bookingRepo.GetByBookingID(ctx,bookingId)
-	if booking != nil{
-		if booking.ExpId != nil{
+	booking, _ := p.bookingRepo.GetByBookingID(ctx, bookingId)
+	if booking != nil {
+		if booking.ExpId != nil {
 			expId = *booking.ExpId
 		}
-		if booking.TransId != nil{
+		if booking.TransId != nil {
 			transId = *booking.TransId
 		}
 		bookingDate = booking.BookingDate.Format("2006-01-02")
 		usePromoDate = time.Now().Format("2006-01-02")
 	}
-	promos, err := p.promoRepo.GetByCode(ctx, code,&promoType,merchantId,userId,expId,
-										transId,bookingDate,usePromoDate)
+	promos, err := p.promoRepo.GetByCode(ctx, code, &promoType, merchantId, userId, expId,
+		transId, bookingDate, usePromoDate)
 
 	if err != nil {
 		return nil, err
 	}
-	if userId != ""{
-		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+	if userId != "" {
+		countAlreadyUse, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, "")
 		if err != nil {
 			return nil, err
 		}
@@ -477,11 +508,11 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 			productCapacity = *promos[0].ProductionCapacity
 		}
 		count := productCapacity - countAlreadyUse
-		if count < 1  {
-			return nil,models.ErrNotFound
+		if count < 1 {
+			return nil, models.ErrNotFound
 		}
 
-		countAlreadyUseWithCurrentUser ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,userId)
+		countAlreadyUseWithCurrentUser, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, userId)
 		if err != nil {
 			return nil, err
 		}
@@ -490,8 +521,8 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 			maxUsage = *promos[0].MaxUsage
 		}
 		countUsage := maxUsage - countAlreadyUseWithCurrentUser
-		if countUsage < 1  {
-			return nil,models.ErrNotFound
+		if countUsage < 1 {
+			return nil, models.ErrNotFound
 		}
 
 	}
@@ -510,49 +541,48 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 	//	}
 	//}
 	promoDto := &models.PromoDto{
-			Id:         promos[0].Id,
-			PromoCode:  promos[0].PromoCode,
-			PromoName:  promos[0].PromoName,
-			PromoDesc:  promos[0].PromoDesc,
-			PromoValue: promos[0].PromoValue,
-			PromoType:  promos[0].PromoType,
-			PromoImage: promos[0].PromoImage,
-			StartDate:  promos[0].StartDate,
-			EndDate:    promos[0].EndDate,
-			Currency:   promos[0].CurrencyId,
-			MaxUsage:   promos[0].MaxUsage,
-			ProductionCapacity: promos[0].ProductionCapacity,
-			PromoProductType:promos[0].PromoProductType,
-			StartTripPeriod: promos[0].StartTripPeriod,
-			EndTripPeriod: promos[0].EndTripPeriod,
-			IsAnyTripPeriod: promos[0].IsAnyTripPeriod,
-			MaxDiscount: promos[0].MaxDiscount,
-			HowToUse: promos[0].HowToUse,
-			HowToGet: promos[0].HowToGet,
-			TermCondition: promos[0].TermCondition,
-			Disclaimer: promos[0].Disclaimer,
-		}
-
+		Id:                 promos[0].Id,
+		PromoCode:          promos[0].PromoCode,
+		PromoName:          promos[0].PromoName,
+		PromoDesc:          promos[0].PromoDesc,
+		PromoValue:         promos[0].PromoValue,
+		PromoType:          promos[0].PromoType,
+		PromoImage:         promos[0].PromoImage,
+		StartDate:          promos[0].StartDate,
+		EndDate:            promos[0].EndDate,
+		Currency:           promos[0].CurrencyId,
+		MaxUsage:           promos[0].MaxUsage,
+		ProductionCapacity: promos[0].ProductionCapacity,
+		PromoProductType:   promos[0].PromoProductType,
+		StartTripPeriod:    promos[0].StartTripPeriod,
+		EndTripPeriod:      promos[0].EndTripPeriod,
+		IsAnyTripPeriod:    promos[0].IsAnyTripPeriod,
+		MaxDiscount:        promos[0].MaxDiscount,
+		HowToUse:           promos[0].HowToUse,
+		HowToGet:           promos[0].HowToGet,
+		TermCondition:      promos[0].TermCondition,
+		Disclaimer:         promos[0].Disclaimer,
+	}
 
 	return promoDto, nil
 }
-func (p promoUsecase) GetByFilter(ctx context.Context, code string,promoType int,merchantExpId string,merchantTransportId string,token string) (*models.PromoDto, error) {
+func (p promoUsecase) GetByFilter(ctx context.Context, code string, promoType int, merchantExpId string, merchantTransportId string, token string) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 	var userId string
-	if token != ""{
-		currentUser,err := p.userUsecase.ValidateTokenUser(ctx,token)
-		if err != nil{
-			return nil,models.ErrUnAuthorize
+	if token != "" {
+		currentUser, err := p.userUsecase.ValidateTokenUser(ctx, token)
+		if err != nil {
+			return nil, models.ErrUnAuthorize
 		}
 		userId = currentUser.Id
 	}
-	promos, err := p.promoRepo.GetByFilter(ctx, code,&promoType,merchantExpId, merchantTransportId)
+	promos, err := p.promoRepo.GetByFilter(ctx, code, &promoType, merchantExpId, merchantTransportId)
 	if err != nil {
 		return nil, err
 	}
-	if userId != ""{
-		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+	if userId != "" {
+		countAlreadyUse, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, "")
 		if err != nil {
 			return nil, err
 		}
@@ -561,11 +591,11 @@ func (p promoUsecase) GetByFilter(ctx context.Context, code string,promoType int
 			productCapacity = *promos[0].ProductionCapacity
 		}
 		count := productCapacity - countAlreadyUse
-		if count < 1  {
-			return nil,models.ErrNotFound
+		if count < 1 {
+			return nil, models.ErrNotFound
 		}
 
-		countAlreadyUseWithCurrentUser ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,userId)
+		countAlreadyUseWithCurrentUser, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, userId)
 		if err != nil {
 			return nil, err
 		}
@@ -574,12 +604,12 @@ func (p promoUsecase) GetByFilter(ctx context.Context, code string,promoType int
 			maxUsage = *promos[0].MaxUsage
 		}
 		countUsage := maxUsage - countAlreadyUseWithCurrentUser
-		if countUsage < 1  {
-			return nil,models.ErrNotFound
+		if countUsage < 1 {
+			return nil, models.ErrNotFound
 		}
 
-	}else {
-		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+	} else {
+		countAlreadyUse, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, "")
 		if err != nil {
 			return nil, err
 		}
@@ -588,34 +618,33 @@ func (p promoUsecase) GetByFilter(ctx context.Context, code string,promoType int
 			productCapacity = *promos[0].ProductionCapacity
 		}
 		count := productCapacity - countAlreadyUse
-		if count < 1  {
-			return nil,models.ErrNotFound
+		if count < 1 {
+			return nil, models.ErrNotFound
 		}
 	}
 	promoDto := &models.PromoDto{
-		Id:         promos[0].Id,
-		PromoCode:  promos[0].PromoCode,
-		PromoName:  promos[0].PromoName,
-		PromoDesc:  promos[0].PromoDesc,
-		PromoValue: promos[0].PromoValue,
-		PromoType:  promos[0].PromoType,
-		PromoImage: promos[0].PromoImage,
-		StartDate:  promos[0].StartDate,
-		EndDate:    promos[0].EndDate,
-		Currency:   promos[0].CurrencyId,
-		MaxUsage:   promos[0].MaxUsage,
+		Id:                 promos[0].Id,
+		PromoCode:          promos[0].PromoCode,
+		PromoName:          promos[0].PromoName,
+		PromoDesc:          promos[0].PromoDesc,
+		PromoValue:         promos[0].PromoValue,
+		PromoType:          promos[0].PromoType,
+		PromoImage:         promos[0].PromoImage,
+		StartDate:          promos[0].StartDate,
+		EndDate:            promos[0].EndDate,
+		Currency:           promos[0].CurrencyId,
+		MaxUsage:           promos[0].MaxUsage,
 		ProductionCapacity: promos[0].ProductionCapacity,
-		PromoProductType:promos[0].PromoProductType,
-		StartTripPeriod: promos[0].StartTripPeriod,
-		EndTripPeriod: promos[0].EndTripPeriod,
-		IsAnyTripPeriod: promos[0].IsAnyTripPeriod,
-		MaxDiscount: promos[0].MaxDiscount,
-		HowToUse: promos[0].HowToUse,
-		HowToGet: promos[0].HowToGet,
-		TermCondition: promos[0].TermCondition,
-		Disclaimer: promos[0].Disclaimer,
+		PromoProductType:   promos[0].PromoProductType,
+		StartTripPeriod:    promos[0].StartTripPeriod,
+		EndTripPeriod:      promos[0].EndTripPeriod,
+		IsAnyTripPeriod:    promos[0].IsAnyTripPeriod,
+		MaxDiscount:        promos[0].MaxDiscount,
+		HowToUse:           promos[0].HowToUse,
+		HowToGet:           promos[0].HowToGet,
+		TermCondition:      promos[0].TermCondition,
+		Disclaimer:         promos[0].Disclaimer,
 	}
-
 
 	return promoDto, nil
 }

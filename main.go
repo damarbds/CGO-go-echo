@@ -60,7 +60,9 @@ import (
 	_promoHttpDeliver "github.com/service/promo/delivery/http"
 	_promoRepo "github.com/service/promo/repository"
 	_promoUcase "github.com/service/promo/usecase"
+	_promoExperienceTransport "github.com/service/promo_experience_transport/repository"
 	_promoMerchantRepo "github.com/service/promo_merchant/repository"
+	_promoUserRepo "github.com/service/promo_user/repository"
 
 	_experienceAddOnHttpDeliver "github.com/product/experience_add_ons/delivery/http"
 	_experienceAddOnRepo "github.com/product/experience_add_ons/repository"
@@ -312,6 +314,8 @@ func main() {
 	expFacilitesRepo := _expFacilitiesRepo.NewExpFacilitiesRepository(dbConn)
 	expIncludeRepo := _expIncludeRepo.NewExpIncludeRepository(dbConn)
 	expExcludeRepo := _expExcludeRepo.NewExpExcludeRepository(dbConn)
+	promoUserRepo := _promoUserRepo.NewpromoUserRepository(dbConn)
+	promoExperienceTransportRepo := _promoExperienceTransport.NewpromoMerchantRepository(dbConn)
 
 	timeoutContext := time.Duration(30) * time.Second
 
@@ -321,9 +325,9 @@ func main() {
 		Schedule: models.NewCommandSchedule{},
 	}
 	createNotifierPayment := _paymentEvent.PaymentNotifier{
-		BaseUrl:  baseUrlLocal,
-		ConfirmPayment:nil,
-		ConfirmPaymentByDate:nil,
+		BaseUrl:              baseUrlLocal,
+		ConfirmPayment:       nil,
+		ConfirmPaymentByDate: nil,
 	}
 
 	//register Event
@@ -338,11 +342,11 @@ func main() {
 	expPaymentTypeUsecase := _expPaymentTypeUcase.NewexperiencePaymentTypeUsecase(expPaymentTypeRepo, timeoutContext)
 	fAQUsecase := _fAQUcase.NewfaqUsecase(fAQRepo, timeoutContext)
 	reivewsUsecase := _reviewsUcase.NewreviewsUsecase(experienceRepo, userUsecase, reviewsRepo, userRepo, timeoutContext)
-	currencyUcase := _currencyUsecase.NewCurrencyUsecase(currencyRepo,timeoutContext)
-	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(currencyUcase,experienceAddOnRepo, timeoutContext)
+	currencyUcase := _currencyUsecase.NewCurrencyUsecase(currencyRepo, timeoutContext)
+	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(currencyUcase, experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase, harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
-	promoUsecase := _promoUcase.NewPromoUsecase(bookingExpRepo,userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(bookingExpRepo ,userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext, promoUserRepo, promoExperienceTransportRepo)
 
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		currencyUcase,
@@ -370,13 +374,13 @@ func main() {
 	)
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
-	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(merchantRepo,currencyUcase,usernamePDF, accessKeyPDF, reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
-	paymentUsecase := _paymentUcase.NewPaymentUsecase(merchantUsecase,transportationRepo, experienceRepo, bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
+	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(merchantRepo, currencyUcase, usernamePDF, accessKeyPDF, reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
+	paymentUsecase := _paymentUcase.NewPaymentUsecase(merchantUsecase, transportationRepo, experienceRepo, bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
 	notifUcase := _notifUcase.NewNotifUsecase(notifRepo, merchantUsecase, timeoutContext)
 	facilityUcase := _facilityUcase.NewFacilityUsecase(adminUsecase, facilityRepo, timeoutContext)
-	transportationUcase := _transportationUcase.NewTransportationUsecase(currencyUcase,expFacilitesRepo, facilityRepo, transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
-	transactionUcase := _transactionUcase.NewTransactionUsecase(promoRepo,adminUsecase, merchantUsecase, paymentRepo, transactionRepo, timeoutContext)
+	transportationUcase := _transportationUcase.NewTransportationUsecase(currencyUcase, expFacilitesRepo, facilityRepo, transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
+	transactionUcase := _transactionUcase.NewTransactionUsecase(promoRepo, adminUsecase, merchantUsecase, paymentRepo, transactionRepo, timeoutContext)
 	scheduleUcase := _scheduleUsecase.NewScheduleUsecase(transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, experienceRepo, expAvailabilityRepo, timeoutContext)
 	balanceHistoryUcase := _balanceHistoryUcase.NewBalanceHistoryUsecase(merchantRepo, adminUsecase, balanceHistoryRepo, merchantUsecase, timeoutContext)
 	userMerchantUcase := _userMerchantUcase.NewuserMerchantUsecase(userMerchantRepo, merchantUsecase, isUsecase, adminUsecase, timeoutContext)
@@ -416,9 +420,9 @@ func main() {
 	_transportationHttpHandler.NewtransportationHandler(e, transportationUcase)
 	_transactionHttpHandler.NewTransactionHandler(e, transactionUcase)
 	_balanceHistoryHttpHandler.NewBalanceHistoryHandler(e, balanceHistoryUcase)
-	_midtransHttpHandler.NewMidtransHandler(e, merchantRepo,bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
+	_midtransHttpHandler.NewMidtransHandler(e, merchantRepo, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 	_currencyHttpHandler.NewCurrencyHandler(e, currencyUcase)
-	_xenditHttpHandler.NewXenditHandler(e,merchantRepo, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
+	_xenditHttpHandler.NewXenditHandler(e, merchantRepo, bookingExpRepo, experienceRepo, transactionRepo, bookingExpUcase, isUsecase)
 	_exclusionServicesHttpHandler.NewExclusionServicesHandler(e, exclusionServiceUsecase)
 	_includeHttpHandler.NewIncludeHandler(e, includeUsecase, isUsecase)
 	_excludeHttpHandler.NewExcludeHandler(e, excludeUsecase, isUsecase)
