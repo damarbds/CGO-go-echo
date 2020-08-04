@@ -16,6 +16,37 @@ type promoUserRepository struct {
 	Conn *sql.DB
 }
 
+// NewpromoRepository will create an object that represent the article.repository interface
+func NewpromoUserRepository(Conn *sql.DB) promo_user.Repository {
+	return &promoUserRepository{Conn}
+}
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+func (m *promoUserRepository) CountByPromoId(ctx context.Context, promoId string) (int, error) {
+	query := `SELECT COUNT(*) as count FROM promo_users WHERE promo_id= ?`
+
+	rows, err := m.Conn.QueryContext(ctx, query, promoId)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (m *promoUserRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.PromoUser, error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -65,10 +96,6 @@ func (m promoUserRepository) GetByUserId(ctx context.Context, userId string, pro
 	return
 }
 
-// NewpromoRepository will create an object that represent the article.repository interface
-func NewpromoUserRepository(Conn *sql.DB) promo_user.Repository {
-	return &promoUserRepository{Conn}
-	}
 
 func (m promoUserRepository) Insert(ctx context.Context, a models.PromoUser) error {
 	query := `INSERT promo_users SET promo_id=?,user_id=?`

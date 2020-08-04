@@ -202,15 +202,15 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType 
 	query := `SELECT p.* 
 				FROM 
 					promos p `
-	if merchantId != "" {
-		query = query + ` JOIN promo_merchants pm on pm.promo_id = p.id `
-	}
-	if userId != "" {
-		query = query + ` JOIN promo_users pu on pu.promo_id = p.id`
-	}
-	if expId != "" || transId != "" {
-		query = query + ` JOIN promo_experience_transports pet on pet.promo_id = p.id`
-	}
+	//if merchantId != "" {
+	//	query = query + ` JOIN promo_merchants pm on pm.promo_id = p.id `
+	//}
+	//if userId != "" {
+	//	query = query + ` JOIN promo_users pu on pu.promo_id = p.id`
+	//}
+	//if expId != "" || transId != "" {
+	//	query = query + ` JOIN promo_experience_transports pet on pet.promo_id = p.id`
+	//}
 
 	query = query + ` WHERE 
 						BINARY p.promo_code = ?  AND 
@@ -229,18 +229,18 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType 
 								DATE('` + promoUseDate + `') <= p.end_date)  `
 	}
 
-	if merchantId != "" {
-		query = query + ` AND pm.merchant_id = '` + merchantId + `' `
-	}
-	if userId != "" {
-		query = query + ` AND pu.user_id = '` + userId + `' `
-	}
-	if expId != "" {
-		query = query + ` AND pet.experience_id = '` + expId + `' `
-	}
-	if transId != "" {
-		query = query + ` AND pet.transportation_id = '` + expId + `' `
-	}
+	//if merchantId != "" {
+	//	query = query + ` AND pm.merchant_id = '` + merchantId + `' `
+	//}
+	//if userId != "" {
+	//	query = query + ` AND pu.user_id = '` + userId + `' `
+	//}
+	//if expId != "" {
+	//	query = query + ` AND pet.experience_id = '` + expId + `' `
+	//}
+	//if transId != "" {
+	//	query = query + ` AND pet.transportation_id = '` + expId + `' `
+	//}
 
 	res, err := m.fetch(ctx, query, code)
 	if err != nil {

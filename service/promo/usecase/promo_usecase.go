@@ -508,6 +508,82 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType stri
 		return nil, err
 	}
 	if userId != "" {
+
+		//validation for transportation
+		if transId != ""{
+			checkCountTrans ,err := p.promoExperienceTransport.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountTrans > 0 {
+				promoTrans,err := p.promoExperienceTransport.GetByExperienceTransportId(ctx,"",transId,promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoTrans) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+		}
+
+		//validation for experience
+		if expId != ""{
+			checkCountExp ,err := p.promoExperienceTransport.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountExp > 0 {
+				promoExp,err := p.promoExperienceTransport.GetByExperienceTransportId(ctx,expId,"",promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoExp) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+		}
+
+		//validation for user
+		if userId != ""{
+			checkCountUser ,err := p.promoUser.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountUser > 0 {
+				promoUser,err := p.promoUser.GetByUserId(ctx,userId,promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoUser) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+
+		}
+
+		//validation for merchants
+		if merchantId != ""{
+			checkCountMerchant ,err := p.promoMerchant.CountByPromoId(ctx,promos[0].Id)
+			if err != nil {
+				return nil, err
+			}
+			if checkCountMerchant > 0 {
+				promoMerchant,err := p.promoMerchant.GetByMerchantId(ctx,merchantId,promos[0].Id)
+				if err != nil {
+					return nil, err
+				}
+				if len(promoMerchant) == 0 {
+					return nil,models.ErrNotFound
+				}
+
+			}
+		}
+
+
+		//validation periodDate
 		if promos[0].StartTripPeriod != nil && promos[0].EndTripPeriod != nil {
 			if *promos[0].StartTripPeriod != "0000-00-00" && *promos[0].EndTripPeriod != "0000-00-00" {
 				if bookingDate >= *promos[0].StartTripPeriod && bookingDate <= *promos[0].EndTripPeriod {
@@ -518,6 +594,8 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType stri
 			}
 
 		}
+
+		//validation for capacity
 		countAlreadyUse, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, "")
 		if err != nil {
 			return nil, err
@@ -531,6 +609,7 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType stri
 			return nil, models.ErrNotFound
 		}
 
+		//validation for max usage
 		countAlreadyUseWithCurrentUser, err := p.transactionRepo.GetCountTransactionByPromoId(ctx, promos[0].Id, userId)
 		if err != nil {
 			return nil, err
