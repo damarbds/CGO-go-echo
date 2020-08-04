@@ -2,12 +2,13 @@ package http
 
 import (
 	"context"
-	"github.com/auth/identityserver"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/auth/identityserver"
 
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
@@ -29,11 +30,13 @@ type merchantHandler struct {
 }
 
 // NewmerchantHandler will initialize the merchants/ resources endpoint
-func NewmerchantHandler(e *echo.Echo, us merchant.Usecase,is identityserver.Usecase) {
+func NewmerchantHandler(e *echo.Echo, us merchant.Usecase, is identityserver.Usecase) {
 	handler := &merchantHandler{
 		MerchantUsecase: us,
-		IdentityUsecase:is,
+		IdentityUsecase: is,
 	}
+	e.POST("/misc/merchant", handler.SendingEmailMerchant)
+	e.POST("/misc/contact-us", handler.SendingEmailContactUs)
 	e.POST("/merchants", handler.CreateMerchant)
 	e.PUT("/merchants/:id", handler.UpdateMerchant)
 	e.GET("/merchants/count", handler.Count)
@@ -49,31 +52,66 @@ func NewmerchantHandler(e *echo.Echo, us merchant.Usecase,is identityserver.Usec
 }
 
 func (a *merchantHandler) GetMerchantTransport(c echo.Context) error {
-
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
 	result, err := a.MerchantUsecase.GetMerchantTransport(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, result)
 }
-
-func (a *merchantHandler) GetMerchantExperience(c echo.Context) error {
+func (a *merchantHandler) SendingEmailContactUs(c echo.Context) error {
+	var contactUs models.NewCommandContactUs
+	err := c.Bind(&contactUs)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
+	res, err := a.MerchantUsecase.SendingEmailContactUs(ctx, &contactUs)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
+}
+
+func (a *merchantHandler) GetMerchantExperience(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	result, err := a.MerchantUsecase.GetMerchantExperience(ctx)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, result)
+}
+
+func (a *merchantHandler) SendingEmailMerchant(c echo.Context) error {
+	var merchantRegis models.NewCommandMerchantRegistrationEmail
+	err := c.Bind(&merchantRegis)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	res, err := a.MerchantUsecase.SendingEmailMerchant(ctx, &merchantRegis)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
 }
 
 func (a *merchantHandler) GetDetailID(c echo.Context) error {
@@ -88,7 +126,7 @@ func (a *merchantHandler) GetDetailID(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.MerchantUsecase.GetDetailMerchantById(ctx, id,token)
+	result, err := a.MerchantUsecase.GetDetailMerchantById(ctx, id, token)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -163,7 +201,7 @@ func (a *merchantHandler) List(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	result, err := a.MerchantUsecase.List(ctx, page, limit, offset, token,search)
+	result, err := a.MerchantUsecase.List(ctx, page, limit, offset, token, search)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -250,8 +288,8 @@ func (a *merchantHandler) CreateMerchant(c echo.Context) error {
 		MerchantEmail:    c.FormValue("merchant_email"),
 		MerchantPassword: c.FormValue("password"),
 		Balance:          balance,
-		MerchantPicture:	&imagePath,
-		PhoneNumber : c.FormValue("phone_number"),
+		MerchantPicture:  &imagePath,
+		PhoneNumber:      c.FormValue("phone_number"),
 	}
 	if ok, err := isRequestValid(&merchantCommand); !ok {
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -278,9 +316,9 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 	}
 	var isAdmin bool
 	currentUser := c.FormValue("isAdmin")
-	if currentUser != ""{
+	if currentUser != "" {
 		isAdmin = true
-	}else {
+	} else {
 		isAdmin = false
 	}
 	filupload, image, _ := c.Request().FormFile("profile_pict_url")
@@ -319,9 +357,9 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 		MerchantEmail:    c.FormValue("merchant_email"),
 		MerchantPassword: c.FormValue("password"),
 		Balance:          balance,
-		PhoneNumber : c.FormValue("phone_number"),
+		PhoneNumber:      c.FormValue("phone_number"),
 	}
-	if imagePath != ""{
+	if imagePath != "" {
 		merchantCommand.MerchantPicture = &imagePath
 	}
 	if ok, err := isRequestValid(&merchantCommand); !ok {
@@ -332,7 +370,7 @@ func (a *merchantHandler) UpdateMerchant(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	err = a.MerchantUsecase.Update(ctx, &merchantCommand, isAdmin,token)
+	err = a.MerchantUsecase.Update(ctx, &merchantCommand, isAdmin, token)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

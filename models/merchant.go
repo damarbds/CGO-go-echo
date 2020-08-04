@@ -3,7 +3,22 @@ package models
 import (
 	"time"
 )
-
+type NewCommandMerchantRegistrationEmail struct {
+	Type string `json:"type"`
+	RegistrantName string	`json:"registrant_name"`
+	Email 		string	`json:"email"`
+	PhoneNumber string	`json:"phone_number"`
+	ServiceType string `json:"service_type"`
+	TypeOfShip string	`json:"type_of_ship"`
+	CompanyName string	`json:"company_name"`
+	CompanyAddress string	`json:"company_address"`
+	CompanyPhoneNumber string	`json:"company_phone_number"`
+}
+type  NewCommandContactUs struct {
+	FullName 	string	`json:"full_name"`
+	Email string	`json:"email"`
+	Message string	`json:"message"`
+}
 type Merchant struct {
 	Id            string     `json:"id" validate:"required"`
 	CreatedBy     string     `json:"created_by":"required"`

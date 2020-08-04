@@ -216,8 +216,34 @@ func (t *transportationRepository) fetchSearchTrans(ctx context.Context, query s
 	for rows.Next() {
 		t := new(models.TransSearch)
 		err = rows.Scan(
-			&t.TransId,
-			&t.TransName,
+			&t.ScheduleId  ,
+			&t.DepartureDate   ,
+			&t.DepartureTime ,
+			&t.ArrivalTime    ,
+			&t.Price          ,
+			&t.TransId       ,
+			&t.TransName      ,
+			&t.TransImages     ,
+			&t.TransStatus  ,
+			&t.HarborSourceId  ,
+			&t.HarborSourceName ,
+			&t.	HarborDestId     ,
+			&t.HarborDestName  ,
+			&t.MerchantName 		,
+			&t.MerchantPicture 	,
+			&t.Class				,
+			&t.TransFacilities		,
+			&t.TransCapacity 		,
+			&t.CitySourceId 		,
+			&t.CitySourceName		,
+			&t.CityDestId			,
+			&t.CityDestName		,
+			&t.ProvinceSourceId	,
+			&t.ProvinceSourceName ,
+			&t.ProvinceDestId		,
+			&t.ProvinceDestName  	,
+			&t.BoatDetails 	,
+			&t.ReturnTransId 	,
 		)
 
 		if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -323,6 +324,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		if status == "Upcoming" && statusParam == "confirm"{
 			status = "Confirm"
 		}
+
 		transactions[i] = &models.TransactionDto{
 			TransactionId:         item.TransactionId,
 			ExpId:                 item.ExpId,
@@ -345,12 +347,31 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			Points:                item.Points,
 			ArrivalTime:           item.ArrivalTime,
 			DepartureTime:         item.DepartureTime,
+			MerchantPicture:*item.MerchantPicture,
 		}
 		if expType[0] != "Transportation" {
+			tripDateDuration := transactions[i].CheckInDate.Format("2006-01-02")
+			duration := 0
+			if *item.ExpDuration != 0 && *item.ExpDuration != 1 {
+				duration = *item.ExpDuration - 1
+				tripDateDuration = tripDateDuration + ` - ` + transactions[i].CheckInDate.AddDate(0, 0, duration).Format("2006-01-02")
+			}
+			transactions[i].Duration = tripDateDuration
 			transactions[i].ExpDuration = *item.ExpDuration
 			transactions[i].ProvinceName = *item.ProvinceName
 			transactions[i].CountryName = *item.CountryName
 		} else {
+			var tripDuration string
+			if transactions[i].DepartureTime != nil && transactions[i].ArrivalTime != nil {
+				departureTime, _ := time.Parse("15:04:00", *transactions[i].DepartureTime)
+				arrivalTime, _ := time.Parse("15:04:00", *transactions[i].ArrivalTime)
+
+				tripHour := arrivalTime.Hour() - departureTime.Hour()
+				tripMinute := arrivalTime.Minute() - departureTime.Minute()
+				tripDuration = strconv.Itoa(tripHour) + `h ` + strconv.Itoa(tripMinute) + `m`
+			}
+			transactions[i].Class = *item.Class
+			transactions[i].Duration = tripDuration
 			transactions[i].TransTo = *item.CountryName
 			transactions[i].TransFrom = *item.ProvinceName
 		}

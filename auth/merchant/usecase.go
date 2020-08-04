@@ -6,6 +6,8 @@ import (
 )
 
 type Usecase interface {
+	SendingEmailMerchant(ctx context.Context,ar *models.NewCommandMerchantRegistrationEmail)(*models.ResponseDelete,error)
+	SendingEmailContactUs(ctx context.Context,ar *models.NewCommandContactUs)(*models.ResponseDelete,error)
 	AutoLoginByCMSAdmin(ctx context.Context,merchantId string,token string)(*models.GetToken,error)
 	Update(ctx context.Context, ar *models.NewCommandMerchant, isAdmin bool,token string) error
 	Create(ctx context.Context, ar *models.NewCommandMerchant, token string) error
