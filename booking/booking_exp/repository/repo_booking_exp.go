@@ -112,6 +112,18 @@ func (b bookingExpRepository) GetByID(ctx context.Context, bookingId string) (*m
 
 	return list[0], nil
 }
+func (b bookingExpRepository) GetByBookingID(ctx context.Context, bookingId string) (*models.BookingExp, error) {
+	query := `SELECT a.* FROM booking_exps a where (a.id = ? OR a.order_id = ?) and is_active = 1 and is_deleted = 0 `
+
+	list, err := b.fetchWithoutJoin(ctx, query, bookingId, bookingId)
+	if err != nil {
+		return nil, err
+	}
+	if len(list) > 0 {
+		return list[0],nil
+	}
+	return nil, nil
+}
 
 func (b bookingExpRepository) fetchBooking(ctx context.Context, query string, args ...interface{}) ([]*models.BookingTransactionExp, error) {
 	rows, err := b.Conn.QueryContext(ctx, query, args...)
@@ -804,6 +816,59 @@ func (b bookingExpRepository) fetch(ctx context.Context, query string, args ...i
 			&t.ExpPaymentDeadlineAmount,
 			&t.ExpPaymentDeadlineType,
 			&t.OriginalPrice,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+func (b bookingExpRepository) fetchWithoutJoin(ctx context.Context, query string, args ...interface{}) ([]*models.BookingExp, error) {
+	rows, err := b.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.BookingExp, 0)
+	for rows.Next() {
+		t := new(models.BookingExp)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.ExpId,
+			&t.OrderId,
+			&t.GuestDesc,
+			&t.BookedBy,
+			&t.BookedByEmail,
+			&t.BookingDate,
+			&t.ExpiredDatePayment,
+			&t.UserId,
+			&t.Status,
+			&t.TicketCode,
+			&t.TicketQRCode,
+			&t.ExperienceAddOnId,
+			&t.TransId,
+			&t.PaymentUrl,
+			&t.ScheduleId,
 		)
 
 		if err != nil {

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/auth/user"
+	"github.com/booking/booking_exp"
 	guuid "github.com/google/uuid"
 	"github.com/service/promo_user"
 	"github.com/transactions/transaction"
@@ -16,6 +17,7 @@ import (
 )
 
 type promoUsecase struct {
+	bookingRepo 	booking_exp.Repository
 	userUsecase 	user.Usecase
 	promoMerchant  promo_merchant.Repository
 	promoUser		promo_user.Repository
@@ -26,8 +28,9 @@ type promoUsecase struct {
 }
 
 // NewPromoUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewPromoUsecase(userUsecase user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
+func NewPromoUsecase(bookingRepo 	booking_exp.Repository,userUsecase user.Usecase,transactionRepo transaction.Repository,pm promo_merchant.Repository, p promo.Repository, au admin.Usecase, timeout time.Duration) promo.Usecase {
 	return &promoUsecase{
+		bookingRepo:bookingRepo,
 		userUsecase:userUsecase,
 		transactionRepo:transactionRepo,
 		promoMerchant:  pm,
@@ -37,7 +40,7 @@ func NewPromoUsecase(userUsecase user.Usecase,transactionRepo transaction.Reposi
 	}
 }
 
-func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search string, token string) (*models.PromoWithPagination, error) {
+func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search string, token string,trans bool,exp bool,merchantIds []string) (*models.PromoWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
 	defer cancel()
 	_, err := m.adminUsecase.ValidateTokenAdmin(ctx, token)
@@ -45,7 +48,7 @@ func (m promoUsecase) List(ctx context.Context, page, limit, offset int, search 
 		return nil, models.ErrUnAuthorize
 	}
 
-	list, err := m.promoRepo.Fetch(ctx, &offset, &limit, search)
+	list, err := m.promoRepo.Fetch(ctx, &offset, &limit, search,trans,exp,merchantIds,"","")
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +328,7 @@ func (p promoUsecase) GetDetail(ctx context.Context, id string, token string) (*
 
 	return &result, nil
 }
-func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*models.PromoDto, error) {
+func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int,search string,trans bool,exp bool,merchantIds []string,sortBy string,promoId string) ([]*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
@@ -334,7 +337,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	//	return nil, models.ErrUnAuthorize
 	//}
 
-	promoList, err := p.promoRepo.Fetch(ctx, page, size, "")
+	promoList, err := p.promoRepo.Fetch(ctx, page, size, search,trans,exp,merchantIds,sortBy,promoId)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +381,7 @@ func (p promoUsecase) Fetch(ctx context.Context, page *int, size *int) ([]*model
 	return promoDto, nil
 }
 
-func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token string) ([]*models.PromoDto, error) {
+func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token string,search string,trans bool,exp bool,merchantIds []string,sortBy string,promoId string) ([]*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 
@@ -387,7 +390,7 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 		return nil, models.ErrUnAuthorize
 	}
 
-	promoList, err := p.promoRepo.Fetch(ctx, page, size, "")
+	promoList, err := p.promoRepo.Fetch(ctx, page, size, search,trans,exp,merchantIds,sortBy,promoId)
 	if err != nil {
 		return nil, err
 	}
@@ -432,7 +435,7 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 	return promoDto, nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,merchantId string,token string) (*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,merchantId string,token string,bookingId string) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 	var userId string
@@ -443,7 +446,24 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 		}
 		userId = currentUser.Id
 	}
-	promos, err := p.promoRepo.GetByCode(ctx, code,&promoType,merchantId)
+	var expId string
+	var transId string
+	var bookingDate string
+	var usePromoDate string
+	booking,_:= p.bookingRepo.GetByBookingID(ctx,bookingId)
+	if booking != nil{
+		if booking.ExpId != nil{
+			expId = *booking.ExpId
+		}
+		if booking.TransId != nil{
+			transId = *booking.TransId
+		}
+		bookingDate = booking.BookingDate.Format("2006-01-02")
+		usePromoDate = time.Now().Format("2006-01-02")
+	}
+	promos, err := p.promoRepo.GetByCode(ctx, code,&promoType,merchantId,userId,expId,
+										transId,bookingDate,usePromoDate)
+
 	if err != nil {
 		return nil, err
 	}
@@ -474,20 +494,21 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string,promoType int,m
 			return nil,models.ErrNotFound
 		}
 
-	}else {
-		countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
-		if err != nil {
-			return nil, err
-		}
-		var productCapacity int
-		if promos[0].ProductionCapacity != nil {
-			productCapacity = *promos[0].ProductionCapacity
-		}
-		count := productCapacity - countAlreadyUse
-		if count < 1  {
-			return nil,models.ErrNotFound
-		}
 	}
+	//else {
+	//	countAlreadyUse ,err := p.transactionRepo.GetCountTransactionByPromoId(ctx , promos[0].Id,"")
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	var productCapacity int
+	//	if promos[0].ProductionCapacity != nil {
+	//		productCapacity = *promos[0].ProductionCapacity
+	//	}
+	//	count := productCapacity - countAlreadyUse
+	//	if count < 1  {
+	//		return nil,models.ErrNotFound
+	//	}
+	//}
 	promoDto := &models.PromoDto{
 			Id:         promos[0].Id,
 			PromoCode:  promos[0].PromoCode,

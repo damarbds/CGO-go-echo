@@ -1,11 +1,9 @@
 package main
 
 import (
-	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -92,6 +90,7 @@ import (
 	_paymentMethodRepo "github.com/transactions/payment_methods/repository"
 	_paymentMethodUcase "github.com/transactions/payment_methods/usecase"
 
+	_paymentEvent "github.com/transactions/payment/delivery/events"
 	_paymentHttpDeliver "github.com/transactions/payment/delivery/http"
 	_paymentTrRepo "github.com/transactions/payment/repository"
 	_paymentUcase "github.com/transactions/payment/usecase"
@@ -192,18 +191,18 @@ func main() {
 
 	//local
 	//baseUrlLocal := "http://localhost:9090"
-
-	//dev env
-	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
-	//dev pdfCrowdAccount
-	usernamePDF := "demo"
-	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
 	//local db
 	//dbHost := "localhost"
 	//dbPort := "3306"
 	//dbUser := "root"
 	//dbPass := ""
 	//dbName := "cgo_indonesia"
+
+	//dev env
+	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
+	//dev pdfCrowdAccount
+	usernamePDF := "demo"
+	accessKeyPDF := "ce544b6ea52a5621fb9d55f8b542d14d"
 	//dev db
 	dbHost := "api-blog-cgo-mysqldbserver.mysql.database.azure.com"
 	dbPort := "3306"
@@ -316,11 +315,19 @@ func main() {
 
 	timeoutContext := time.Duration(30) * time.Second
 
+	//initial Event
 	createNotifier := events.UserCreatedNotifier{
 		BaseUrl:  baseUrlLocal,
 		Schedule: models.NewCommandSchedule{},
 	}
+	createNotifierPayment := _paymentEvent.PaymentNotifier{
+		BaseUrl:  baseUrlLocal,
+		ConfirmPayment:nil,
+		ConfirmPaymentByDate:nil,
+	}
 
+	//register Event
+	_paymentEvent.Payment.Register(createNotifierPayment)
 	events.UserCreated.Register(createNotifier)
 
 	versionAPPUsecase := _versionAPPUsecase.NewVersionAPPUsecase(versionAPPRepo, timeoutContext)
@@ -335,7 +342,7 @@ func main() {
 	experienceAddOnUsecase := _experienceAddOnUcase.NewharborsUsecase(currencyUcase,experienceAddOnRepo, timeoutContext)
 	harborsUsecase := _harborsUcase.NewharborsUsecase(adminUsecase, harborsRepo, timeoutContext)
 	exp_photosUsecase := _expPhotosUcase.Newexp_photosUsecase(exp_photos, timeoutContext)
-	promoUsecase := _promoUcase.NewPromoUsecase(userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
+	promoUsecase := _promoUcase.NewPromoUsecase(bookingExpRepo,userUsecase, transactionRepo, promoMerchantRepo, promoRepo, adminUsecase, timeoutContext)
 
 	experienceUsecase := _experienceUcase.NewexperienceUsecase(
 		currencyUcase,
@@ -416,47 +423,6 @@ func main() {
 	_includeHttpHandler.NewIncludeHandler(e, includeUsecase, isUsecase)
 	_excludeHttpHandler.NewExcludeHandler(e, excludeUsecase, isUsecase)
 	_ruleHttpHandler.NewRuleHandler(e, ruleUsecase, isUsecase)
-	// go Scheduler(baseUrlLocal)
 
 	log.Fatal(e.Start(":9090"))
-}
-func Scheduler(baseUrl string) {
-	done := make(chan bool)
-	ticker := time.NewTicker(time.Second)
-	go func() {
-		for {
-			select {
-			case <-done:
-				ticker.Stop()
-				return
-			case <-ticker.C:
-				time.Sleep(time.Hour * 24)
-				req, err := http.NewRequest("POST", baseUrl+"/booking/remaining-payment-booking", nil)
-
-				if err != nil {
-					fmt.Println("Error : ", err.Error())
-					os.Exit(1)
-				}
-
-				tr := &http.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-				}
-
-				client := &http.Client{Transport: tr}
-
-				resp, err := client.Do(req)
-				if err != nil {
-					fmt.Println("Error : ", err.Error())
-					os.Exit(1)
-				}
-				fmt.Println(resp.Body)
-				fmt.Println("Current time: ", time.Now().String())
-			}
-		}
-	}()
-
-	// wait for 10 seconds
-	time.Sleep(1 * time.Minute)
-	done <- true
-
 }

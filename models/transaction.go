@@ -197,6 +197,8 @@ type TransactionOut struct {
 	OriginalPrice 		*float64	`json:"original_price"`
 	DepartureTime 		*string 	`json:"departure_time"`
 	ArrivalTime 		*string 	`json:"arrival_time"`
+	Class 				*string `json:"class"`
+	MerchantPicture 	*string	`json:"merchant_picture"`
 }
 
 type TransactionDto struct {
@@ -226,6 +228,9 @@ type TransactionDto struct {
 	TransTo            string                   `json:"trans_to"`
 	DepartureTime 		*string 	`json:"departure_time"`
 	ArrivalTime 		*string 	`json:"arrival_time"`
+	Duration 		string `json:"duration"`
+	Class string	`json:"class"`
+	MerchantPicture  string	`json:"merchant_picture"`
 }
 type PromoTransaction struct {
 	PromoValue 			float64	`json:"promo_value"`
