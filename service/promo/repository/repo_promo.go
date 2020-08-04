@@ -198,7 +198,7 @@ func (m *promoRepository) GetById(ctx context.Context, id string) (res *models.P
 	return
 }
 
-func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType *int, merchantId string, userId string, expId string, transId string, checkInDate string, promoUseDate string) ([]*models.Promo, error) {
+func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType string, merchantId string, userId string, expId string, transId string, checkInDate string, promoUseDate string) ([]*models.Promo, error) {
 	query := `SELECT p.* 
 				FROM 
 					promos p `
@@ -213,11 +213,13 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType 
 	}
 
 	query = query + ` WHERE 
-						BINARY p.promo_code = ? AND 
-						p.promo_product_type in (0,?) AND 
+						BINARY p.promo_code = ?  AND 
 						p.is_deleted = 0 AND 
 						p.is_active = 1 `
-
+	if promoType != ""{
+		query = query + ` AND 
+						p.promo_product_type in (0,`+promoType+`) `
+	}
 	if checkInDate != "" {
 		query = query + ` AND (DATE('` + checkInDate + `') >= p.start_trip_period AND 
 								DATE('` + checkInDate + `') <= p.end_trip_period) `
@@ -240,7 +242,7 @@ func (m *promoRepository) GetByCode(ctx context.Context, code string, promoType 
 		query = query + ` AND pet.transportation_id = '` + expId + `' `
 	}
 
-	res, err := m.fetch(ctx, query, code, promoType)
+	res, err := m.fetch(ctx, query, code)
 	if err != nil {
 		return nil, err
 	} else if len(res) == 0 {

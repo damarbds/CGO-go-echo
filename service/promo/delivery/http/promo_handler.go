@@ -423,14 +423,13 @@ func (a *PromoHandler) GetPromoByCode(c echo.Context) error {
 	promoProductType := c.QueryParam("promo_type")
 	merchantId := c.QueryParam("merchant_id")
 	bookingId := c.QueryParam("booking_id")
-	promoType , _ := strconv.Atoi(promoProductType)
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	results, err := a.PromoUsecase.GetByCode(ctx, code,promoType,merchantId,token,bookingId)
+	results, err := a.PromoUsecase.GetByCode(ctx, code,promoProductType,merchantId,token,bookingId)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

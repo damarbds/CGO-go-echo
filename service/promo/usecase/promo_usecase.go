@@ -466,7 +466,7 @@ func (p promoUsecase) FetchUser(ctx context.Context, page *int, size *int, token
 	return promoDto, nil
 }
 
-func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType int, merchantId string, token string, bookingId string) (*models.PromoDto, error) {
+func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType string, merchantId string, token string, bookingId string) (*models.PromoDto, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.contextTimeout)
 	defer cancel()
 	var userId string
@@ -492,7 +492,7 @@ func (p promoUsecase) GetByCode(ctx context.Context, code string, promoType int,
 		bookingDate = booking.BookingDate.Format("2006-01-02")
 		usePromoDate = time.Now().Format("2006-01-02")
 	}
-	promos, err := p.promoRepo.GetByCode(ctx, code, &promoType, merchantId, userId, expId,
+	promos, err := p.promoRepo.GetByCode(ctx, code, promoType, merchantId, userId, expId,
 		transId, bookingDate, usePromoDate)
 
 	if err != nil {
