@@ -420,16 +420,21 @@ func (a *PromoHandler) GetPromoByCode(c echo.Context) error {
 
 	code := c.Param("code")
 
+	isAdmin := c.QueryParam("isAdmin")
 	promoProductType := c.QueryParam("promo_type")
 	merchantId := c.QueryParam("merchant_id")
 	bookingId := c.QueryParam("booking_id")
 
+	var admin bool = false
+	if isAdmin == "true"{
+		admin = true
+	}
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	results, err := a.PromoUsecase.GetByCode(ctx, code,promoProductType,merchantId,token,bookingId)
+	results, err := a.PromoUsecase.GetByCode(ctx, code,promoProductType,merchantId,token,bookingId,admin)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
