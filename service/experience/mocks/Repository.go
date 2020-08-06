@@ -90,7 +90,27 @@ func (_m *Repository) GetByID(ctx context.Context, id string) (*models.Experienc
 
 	return r0, r1
 }
+func (_m *Repository) GetAllExperience(ctx context.Context) ([]*models.Experience, error) {
+	ret := _m.Called(ctx)
 
+	var r0 []*models.Experience
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.Experience); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Experience)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
 // Fetch provides a mock function with given fields: ctx, cursor, num
 func (_m *Repository) SelectIdGetByMerchantId(ctx context.Context, merchantId string,month string,year int,date string) ([]*string, error) {
 	ret := _m.Called(ctx, merchantId,month,year,date)

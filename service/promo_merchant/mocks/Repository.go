@@ -12,6 +12,27 @@ import (
 type Repository struct {
 	mock.Mock
 }
+func (_m *Repository) CountByPromoId(ctx context.Context,promoId string)(int,error) {
+	ret := _m.Called(ctx,promoId)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, string) int); ok {
+		r0 = rf(ctx, promoId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, promoId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
 
 // GetByTitle provides a mock function with given fields: ctx, title
 func (_m *Repository) GetByMerchantId(ctx context.Context,merchantId string,promoId string)([]*models.PromoMerchant,error) {

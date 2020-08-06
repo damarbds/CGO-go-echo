@@ -2,6 +2,7 @@ package repository_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -80,6 +81,8 @@ var(
 			PromoProductType:   &isAnyTripPeriod,
 		},
 	}
+
+	merchantIds = []string{"adad","qeqe","adasd","jkjffsf","qpeiuqioeu","kjsdfdsj;f"}
 )
 func TestCount(t *testing.T) {
 	db, mock, err := sqlmock.New()
@@ -160,14 +163,67 @@ func TestFetchWithPagination(t *testing.T) {
 		mockPromo[1].EndTripPeriod, mockPromo[1].HowToGet, mockPromo[1].HowToUse, mockPromo[1].TermCondition, mockPromo[1].Disclaimer,
 		mockPromo[1].MaxDiscount, mockPromo[1].IsAnyTripPeriod)
 
-	query := `SELECT \*\ FROM promos where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc LIMIT \? OFFSET \?`
+	limit := 10
+	offset := 0
+	page := &offset
+	size := &limit
+	trans := true
+	exp := true
+	promoId := mockPromo[0].Id
+	search := "test"
+	sortBy := "newest"
+	query := `SELECT p.\*\ FROM promos p `
+	if len(merchantIds) != 0 {
+		query = query + ` JOIN promo_merchants pm ON p.id = pm.promo_id `
+	}
+	if trans == true || exp == true {
+		query = query + ` JOIN promo_experience_transports pet ON p.id = pet.promo_id `
+	}
+	query = query + ` WHERE p.is_deleted = 0 AND p.is_active = 1 `
+	if trans == true {
+		query = query + ` AND pet.transportation_id != '' `
+	}
+	if exp == true {
+		query = query + ` AND pet.experience_id != '' `
+	}
 
+	for index, id := range merchantIds {
+		if index == 0 && index != (len(merchantIds)-1) {
+			query = query + ` AND \(pm.merchant_id ='` + id + `' `
+		} else if index == 0 && index == (len(merchantIds)-1) {
+			query = query + ` AND \(pm.merchant_id ='` + id + `' \) `
+		} else if index == (len(merchantIds) - 1) {
+			query = query + ` OR pm.merchant_id ='` + id + `' \) `
+		} else {
+			query = query + ` OR pm.merchant_id ='` + id + `' `
+		}
+	}
+	if promoId != "" {
+		query = query + ` AND p.id ='` + promoId + `' `
+	}
+	if search != "" {
+		query = query + ` AND \(promo_name LIKE '%` + search + `%'` +
+			`OR promo_desc LIKE '%` + search + `%' ` +
+			`OR start_date LIKE '%` + search + `%' ` +
+			`OR end_date LIKE '%` + search + `%' ` +
+			`OR promo_code LIKE '%` + search + `%' ` +
+			`OR max_usage LIKE '%` + search + `%' ` + `\) `
+	}
+	if sortBy == "newest" {
+		query = query + ` ORDER BY created_date desc `
+	} else if sortBy == "latest" {
+		query = query + ` ORDER BY created_date asc `
+	} else {
+		query = query + ` ORDER BY created_date desc `
+	}
+
+	if page != nil && size != nil {
+		query = query + ` LIMIT ` + strconv.Itoa(*size) + ` OFFSET ` + strconv.Itoa(*page) + ` `
+	}
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := PromoRepo.NewpromoRepository(db)
 
-	limit := 10
-	offset := 0
-	anArticle, err := a.Fetch(context.TODO(), &limit, &offset,"")
+	anArticle, err := a.Fetch(context.TODO(), page, size,search,trans,exp,merchantIds,sortBy,promoId)
 	//assert.NotEmpty(t, nextCursor)
 	assert.NoError(t, err)
 	assert.Len(t, anArticle, 2)
@@ -203,15 +259,23 @@ func TestFetchWithoutPagination(t *testing.T) {
 			mockPromo[1].ProductionCapacity, mockPromo[1].CurrencyId, mockPromo[1].PromoProductType, mockPromo[1].StartTripPeriod,
 			mockPromo[1].EndTripPeriod, mockPromo[1].HowToGet, mockPromo[1].HowToUse, mockPromo[1].TermCondition, mockPromo[1].Disclaimer,
 			mockPromo[1].MaxDiscount, mockPromo[1].IsAnyTripPeriod)
-
-	query := `SELECT \*\ FROM promos where is_deleted = 0 AND is_active = 1 ORDER BY created_date desc`
+	sortBy:= ""
+	query := `SELECT p.\*\ FROM promos p `
+	query = query + ` WHERE p.is_deleted = 0 AND p.is_active = 1 `
+	if sortBy == "newest" {
+		query = query + ` ORDER BY created_date desc `
+	} else if sortBy == "latest" {
+		query = query + ` ORDER BY created_date asc `
+	} else {
+		query = query + ` ORDER BY created_date desc `
+	}
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := PromoRepo.NewpromoRepository(db)
 
 	//limit := 10
 	//offset := 0
-	anArticle, err := a.Fetch(context.TODO(), nil, nil,"")
+	anArticle, err := a.Fetch(context.TODO(), nil, nil,"",false,false,make([]string,0),"","")
 	//assert.NotEmpty(t, nextCursor)
 	assert.NoError(t, err)
 	assert.Len(t, anArticle, 2)
@@ -350,7 +414,7 @@ func TestFetchWithPaginationErrorFetch(t *testing.T) {
 
 	limit := 10
 	offset := 0
-	anArticle, err := a.Fetch(context.TODO(), &limit, &offset,"")
+	anArticle, err := a.Fetch(context.TODO(), &limit, &offset,"",false,false,make([]string,0),"","")
 	//assert.NotEmpty(t, nextCursor)
 	assert.Error(t, err)
 	assert.Nil(t, anArticle)
@@ -395,7 +459,7 @@ func TestFetchWithoutPaginationErrorFetch(t *testing.T) {
 
 	//limit := 10
 	//offset := 0
-	anArticle, err := a.Fetch(context.TODO(), nil, nil,"")
+	anArticle, err := a.Fetch(context.TODO(), nil, nil,"",false,false,make([]string,0),"","")
 	assert.Error(t, err)
 	assert.Nil(t, anArticle)
 }
@@ -521,24 +585,33 @@ func TestGetByCodeWithMerchantId(t *testing.T) {
 			mockPromo[0].ProductionCapacity, mockPromo[0].CurrencyId, mockPromo[0].PromoProductType, mockPromo[0].StartTripPeriod,
 			mockPromo[0].EndTripPeriod, mockPromo[0].HowToGet, mockPromo[0].HowToUse, mockPromo[0].TermCondition, mockPromo[0].Disclaimer,
 			mockPromo[0].MaxDiscount, mockPromo[0].IsAnyTripPeriod)
-	merchantId := "adqerqewqsDSADAD"
+
+	promoType := strconv.Itoa(*mockPromo[0].PromoProductType)
+	promoUseDate := time.Now().Format("2006-01-02")
 	query := `SELECT p.\*\ 
 				FROM 
-					promos p
-				JOIN promo_merchants pm on pm.promo_id = p.id
-				WHERE 
-					BINARY p.promo_code = \? AND 
-					p.promo_product_type = \? AND 
- 					p.is_deleted = 0 AND 
-					p.is_active = 1 AND
-					pm.merchant_id = '` + merchantId  + `'`
+					promos p `
+
+	query = query + ` WHERE 
+						BINARY p.promo_code = \?  AND 
+						p.is_deleted = 0 AND 
+						p.is_active = 1 `
+	if promoType != "" {
+		query = query + ` AND 
+						p.promo_product_type in \(0,` + promoType + `\) `
+	}
+
+	if promoUseDate != "" {
+		query = query + ` AND \(DATE\('` + promoUseDate + `'\) >= p.start_date AND 
+								DATE\('` + promoUseDate + `'\) <= p.end_date\)  `
+	}
+
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	a := PromoRepo.NewpromoRepository(db)
 
 	code := mockPromo[0].PromoCode
-	promoType := mockPromo[0].PromoProductType
-	anArticle, err := a.GetByCode(context.TODO(), code,promoType,merchantId)
+	anArticle, err := a.GetByCode(context.TODO(), code,promoType,"","","","","",promoUseDate)
 	assert.NoError(t, err)
 	assert.NotNil(t, anArticle)
 }
@@ -576,7 +649,7 @@ func TestGetByCodeWithMerchantIdNotFound(t *testing.T) {
 
 	code := mockPromo[0].PromoCode
 	promoType := mockPromo[0].PromoProductType
-	anArticle, err := a.GetByCode(context.TODO(), code,promoType,merchantId)
+	anArticle, err := a.GetByCode(context.TODO(), code,strconv.Itoa(*promoType),merchantId,"","","","","")
 	assert.Error(t, err)
 	assert.Nil(t, anArticle)
 }
@@ -620,7 +693,7 @@ func TestGetByCodeWithMerchantIdErrorFetch(t *testing.T) {
 
 	code := mockPromo[0].PromoCode
 	promoType := mockPromo[0].PromoProductType
-	anArticle, err := a.GetByCode(context.TODO(), code,promoType,merchantId)
+	anArticle, err := a.GetByCode(context.TODO(), code,strconv.Itoa(*promoType),merchantId,"","","","","")
 	assert.Error(t, err)
 	assert.Nil(t, anArticle)
 }

@@ -117,7 +117,7 @@ func TestList(t *testing.T) {
 		mockPromoMerchantRepo.On("GetByMerchantId",mock.Anything,mock.AnythingOfType("string"),mock.AnythingOfType("string")).Return(mockPromoMerchantList,nil)
 		u := usecase.NewPromoUsecase(mockUserUsecase,mockTransactionRepo,mockPromoMerchantRepo, mockPromoRepo,mockAdminUsecase, timeoutContext)
 
-		_, err := u.List(context.TODO(), page, limit, offset,"",token)
+		_, err := u.List(context.TODO(), page, limit, offset,"",token,true,true,make([]string,0))
 
 		assert.NoError(t, err)
 		//assert.Len(t, list, len(mockListPromo))

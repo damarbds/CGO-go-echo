@@ -13,7 +13,6 @@ import (
 type Repository struct {
 	mock.Mock
 }
-
 func (_m *Repository) GetIdTransactionByStatus(ctx context.Context, transactionStatus int) ([]*string, error) {
 	ret := _m.Called(ctx,transactionStatus)
 

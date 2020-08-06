@@ -15,12 +15,12 @@ type Usecase struct {
 }
 
 // Delete provides a mock function with given fields: ctx, id
-func (_m *Usecase) Fetch(ctx context.Context, page *int, size *int) ([]*models.PromoDto, error) {
-	ret := _m.Called(ctx,page,size)
+func (_m *Usecase) Fetch(ctx context.Context, page *int, size *int,search string,trans bool,exp bool,merchantIds []string,sortBy string,promoId string) ([]*models.PromoDto, error) {
+	ret := _m.Called(ctx,page,size,search,trans,exp,merchantIds,sortBy,promoId)
 
 	var r0 []*models.PromoDto
-	if rf, ok := ret.Get(0).(func(context.Context,*int,*int) []*models.PromoDto); ok {
-		r0 = rf(ctx,page,size)
+	if rf, ok := ret.Get(0).(func(context.Context,*int,*int,string,bool,bool,[]string,string,string) []*models.PromoDto); ok {
+		r0 = rf(ctx,page,size,search,trans,exp,merchantIds,sortBy,promoId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.PromoDto)
@@ -28,8 +28,30 @@ func (_m *Usecase) Fetch(ctx context.Context, page *int, size *int) ([]*models.P
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context,*int,*int) error); ok {
-		r1 = rf(ctx,page,size)
+	if rf, ok := ret.Get(1).(func(context.Context,*int,*int,string,bool,bool,[]string,string,string) error); ok {
+		r1 = rf(ctx,page,size,search,trans,exp,merchantIds,sortBy,promoId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+func (_m *Usecase) FetchUser(ctx context.Context, page *int, size *int, token string,search string,trans bool,exp bool,merchantIds []string,sortBy string,promoId string) ([]*models.PromoDto, error) {
+	ret := _m.Called(ctx,page,size,token,search,trans,exp,merchantIds,sortBy,promoId)
+
+	var r0 []*models.PromoDto
+	if rf, ok := ret.Get(0).(func(context.Context,*int,*int,string,string,bool,bool,[]string,string,string) []*models.PromoDto); ok {
+		r0 = rf(ctx,page,size,token,search,trans,exp,merchantIds,sortBy,promoId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.PromoDto)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context,*int,*int,string,string,bool,bool,[]string,string,string) error); ok {
+		r1 = rf(ctx,page,size,token,search,trans,exp,merchantIds,sortBy,promoId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -38,12 +60,12 @@ func (_m *Usecase) Fetch(ctx context.Context, page *int, size *int) ([]*models.P
 }
 
 // Fetch provides a mock function with given fields: ctx, cursor, num
-func (_m *Usecase) List(ctx context.Context,page, limit, offset int, search string,token string)(*models.PromoWithPagination,error) {
-	ret := _m.Called(ctx, page, limit, offset,search,token)
+func (_m *Usecase) List(ctx context.Context,page, limit, offset int, search string,token string,trans bool,exp bool,merchantIds []string)(*models.PromoWithPagination,error) {
+	ret := _m.Called(ctx, page, limit, offset,search,token,trans,exp,merchantIds)
 
 	var r0 *models.PromoWithPagination
-	if rf, ok := ret.Get(0).(func(context.Context, int, int, int,string,string) *models.PromoWithPagination); ok {
-		r0 = rf(ctx, page, limit, offset,search,token)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int, int,string,string,bool,bool,[]string) *models.PromoWithPagination); ok {
+		r0 = rf(ctx, page, limit, offset,search,token,trans,exp,merchantIds)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.PromoWithPagination)
@@ -51,8 +73,8 @@ func (_m *Usecase) List(ctx context.Context,page, limit, offset int, search stri
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, int, int,string,string) error); ok {
-		r1 = rf(ctx, page, limit, offset,search,token)
+	if rf, ok := ret.Get(1).(func(context.Context, int, int, int,string,string,bool,bool,[]string) error); ok {
+		r1 = rf(ctx, page, limit, offset,search,token,trans,exp,merchantIds)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -84,12 +106,12 @@ func (_m *Usecase) GetDetail(ctx context.Context, id string,token string)(*model
 }
 
 // GetByID provides a mock function with given fields: ctx, id
-func (_m *Usecase) GetByCode(ctx context.Context, code string,promoType int,merchantId string,token string) (*models.PromoDto, error) {
-	ret := _m.Called(ctx, code,promoType,merchantId,token)
+func (_m *Usecase) GetByCode(ctx context.Context, code string,promoType string,merchantId string,token string,bookingId string,isAdmin bool) (*models.PromoDto, error) {
+	ret := _m.Called(ctx, code,promoType,merchantId,token,bookingId,isAdmin)
 
 	var r0 *models.PromoDto
-	if rf, ok := ret.Get(0).(func(context.Context, string,int,string,string) *models.PromoDto); ok {
-		r0 = rf(ctx, code,promoType,merchantId,token)
+	if rf, ok := ret.Get(0).(func(context.Context, string,string,string,string,string,bool) *models.PromoDto); ok {
+		r0 = rf(ctx, code,promoType,merchantId,token,bookingId,isAdmin)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.PromoDto)
@@ -97,8 +119,8 @@ func (_m *Usecase) GetByCode(ctx context.Context, code string,promoType int,merc
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string,int,string,string) error); ok {
-		r1 = rf(ctx, code,promoType,merchantId,token)
+	if rf, ok := ret.Get(1).(func(context.Context, string,string,string,string,string,bool) error); ok {
+		r1 = rf(ctx, code,promoType,merchantId,token,bookingId,isAdmin)
 	} else {
 		r1 = ret.Error(1)
 	}

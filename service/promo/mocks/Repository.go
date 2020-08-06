@@ -51,12 +51,12 @@ func (_m *Repository) Delete(ctx context.Context, id string, deletedBy string) e
 }
 
 // Fetch provides a mock function with given fields: ctx, cursor, num
-func (_m *Repository) Fetch(ctx context.Context, page *int, size *int,search string) ([]*models.Promo, error) {
-	ret := _m.Called(ctx, page, size,search)
+func (_m *Repository) Fetch(ctx context.Context, page *int, size *int,search string,trans bool,exp bool,merchantIds []string,sortBy string,promoId string) ([]*models.Promo, error) {
+	ret := _m.Called(ctx, page, size,search,trans,exp,merchantIds,sortBy,promoId)
 
 	var r0 []*models.Promo
-	if rf, ok := ret.Get(0).(func(context.Context, *int, *int,string) []*models.Promo); ok {
-		r0 = rf(ctx, page, size,search)
+	if rf, ok := ret.Get(0).(func(context.Context, *int, *int,string,bool,bool,[]string,string,string) []*models.Promo); ok {
+		r0 = rf(ctx, page, size,search,trans,exp,merchantIds,sortBy,promoId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Promo)
@@ -64,8 +64,8 @@ func (_m *Repository) Fetch(ctx context.Context, page *int, size *int,search str
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *int, *int,string) error); ok {
-		r1 = rf(ctx, page, size,search)
+	if rf, ok := ret.Get(1).(func(context.Context, *int, *int,string,bool,bool,[]string,string,string) error); ok {
+		r1 = rf(ctx, page, size,search,trans,exp,merchantIds,sortBy,promoId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -97,12 +97,12 @@ func (_m *Repository) GetById(ctx context.Context, id string) (*models.Promo, er
 }
 
 // GetByTitle provides a mock function with given fields: ctx, title
-func (_m *Repository) GetByCode(ctx context.Context, code string,promoType *int,merchantId string) ([]*models.Promo, error) {
-	ret := _m.Called(ctx, code,promoType,merchantId)
+func (_m *Repository) GetByCode(ctx context.Context, code string,promoType string,merchantId string,userId string,expId string,transId string,checkInDate string,promoUseDate string) ([]*models.Promo, error) {
+	ret := _m.Called(ctx, code,promoType,merchantId,userId,expId,transId,checkInDate,promoUseDate)
 
 	var r0 []*models.Promo
-	if rf, ok := ret.Get(0).(func(context.Context, string,*int,string) []*models.Promo); ok {
-		r0 = rf(ctx, code,promoType,merchantId)
+	if rf, ok := ret.Get(0).(func(context.Context, string,string,string,string,string,string,string,string) []*models.Promo); ok {
+		r0 = rf(ctx, code,promoType,merchantId,userId,expId,transId,checkInDate,promoUseDate)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Promo)
@@ -110,8 +110,8 @@ func (_m *Repository) GetByCode(ctx context.Context, code string,promoType *int,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context,  string,*int,string) error); ok {
-		r1 = rf(ctx, code,promoType,merchantId)
+	if rf, ok := ret.Get(1).(func(context.Context,  string,string,string,string,string,string,string,string) error); ok {
+		r1 = rf(ctx, code,promoType,merchantId,userId,expId,transId,checkInDate,promoUseDate)
 	} else {
 		r1 = ret.Error(1)
 	}
