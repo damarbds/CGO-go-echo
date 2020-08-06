@@ -35,21 +35,21 @@ func (_m *Repository) CountByPromoId(ctx context.Context,promoId string)(int,err
 }
 
 // GetByTitle provides a mock function with given fields: ctx, title
-func (_m *Repository) GetByUserId(ctx context.Context,userId string,promoId string)([]*models.PromoUser,error) {
-	ret := _m.Called(ctx, userId,promoId)
+func (_m *Repository) GetByExperienceTransportId(ctx context.Context,expId string,transportId string,promoId string)([]*models.PromoExperienceTransport,error) {
+	ret := _m.Called(ctx, expId,transportId,promoId)
 
-	var r0 []*models.PromoUser
-	if rf, ok := ret.Get(0).(func(context.Context, string,string) []*models.PromoUser); ok {
-		r0 = rf(ctx, userId,promoId)
+	var r0 []*models.PromoExperienceTransport
+	if rf, ok := ret.Get(0).(func(context.Context, string,string,string) []*models.PromoExperienceTransport); ok {
+		r0 = rf(ctx, expId,transportId,promoId)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.PromoUser)
+			r0 = ret.Get(0).([]*models.PromoExperienceTransport)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string,string) error); ok {
-		r1 = rf(ctx, userId,promoId)
+	if rf, ok := ret.Get(1).(func(context.Context, string,string,string) error); ok {
+		r1 = rf(ctx, expId,transportId,promoId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -58,11 +58,11 @@ func (_m *Repository) GetByUserId(ctx context.Context,userId string,promoId stri
 }
 
 // Update provides a mock function with given fields: ctx, ar
-func (_m *Repository) Insert(ctx context.Context,pm models.PromoUser)error {
+func (_m *Repository) Insert(ctx context.Context,pet models.PromoExperienceTransport)error {
 	ret := _m.Called(ctx, pm)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, models.PromoUser) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, models.PromoMerchant) error); ok {
 		r0 = rf(ctx, pm)
 	} else {
 		r0 = ret.Error(0)
@@ -72,12 +72,12 @@ func (_m *Repository) Insert(ctx context.Context,pm models.PromoUser)error {
 }
 
 // Update provides a mock function with given fields: ctx, ar
-func (_m *Repository) DeleteByUserId(ctx context.Context,userId string,promoId string)error {
-	ret := _m.Called(ctx, userId,promoId)
+func (_m *Repository) DeleteById(ctx context.Context,serviceId string,promoId string)error {
+	ret := _m.Called(ctx, merchantId,promoId)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string,string) error); ok {
-		r0 = rf(ctx, userId,promoId)
+		r0 = rf(ctx, merchantId,promoId)
 	} else {
 		r0 = ret.Error(0)
 	}
