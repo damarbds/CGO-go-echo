@@ -72,31 +72,65 @@ func (s scheduleUsecase) InsertSchedule(c context.Context, command *models.NewCo
 					if arrivalTimeOption != nil {
 						arrivalTImeId = &arrivalTimeOption.Id
 					}
+
 					price, _ := json.Marshal(priceObj)
-					schedule := models.Schedule{
-						Id:                    guuid.New().String(),
-						CreatedBy:             command.CreatedBy,
-						CreatedDate:           time.Now(),
-						ModifiedBy:            nil,
-						ModifiedDate:          nil,
-						DeletedBy:             nil,
-						DeletedDate:           nil,
-						IsDeleted:             0,
-						IsActive:              0,
-						TransId:               command.TransId,
-						DepartureTime:         times.DepartureTime,
-						ArrivalTime:           times.ArrivalTime,
-						Day:                   day.Day,
-						Month:                 month.Month,
-						Year:                  year.Year,
-						DepartureDate:         day.DepartureDate,
-						Price:                 string(price),
-						DepartureTimeoptionId: departureTimeId,
-						ArrivalTimeoptionId:   arrivalTImeId,
-					}
-					_, err = s.scheduleRepo.Insert(ctx, schedule)
-					if err != nil {
-						//return nil, err
+					checkSchedule,_ := s.scheduleRepo.GetBookingBySchedule(ctx,command.TransId,day.DepartureDate,times.ArrivalTime,times.DepartureTime)
+					if len(checkSchedule) != 0 {
+						modifyBy := command.CreatedBy
+						modifyDate := time.Now()
+						schedule := models.Schedule{
+							Id:                    checkSchedule[0].Id,
+							CreatedBy:             command.CreatedBy,
+							CreatedDate:           time.Now(),
+							ModifiedBy:            &modifyBy,
+							ModifiedDate:          &modifyDate,
+							DeletedBy:             nil,
+							DeletedDate:           nil,
+							IsDeleted:             0,
+							IsActive:              0,
+							TransId:               command.TransId,
+							DepartureTime:         times.DepartureTime,
+							ArrivalTime:           times.ArrivalTime,
+							Day:                   day.Day,
+							Month:                 month.Month,
+							Year:                  year.Year,
+							DepartureDate:         day.DepartureDate,
+							Price:                 string(price),
+							DepartureTimeoptionId: departureTimeId,
+							ArrivalTimeoptionId:   arrivalTImeId,
+						}
+						err = s.scheduleRepo.Update(ctx, schedule)
+						if err != nil {
+							//return nil, err
+						}
+
+					}else {
+						schedule := models.Schedule{
+							Id:                    guuid.New().String(),
+							CreatedBy:             command.CreatedBy,
+							CreatedDate:           time.Now(),
+							ModifiedBy:            nil,
+							ModifiedDate:          nil,
+							DeletedBy:             nil,
+							DeletedDate:           nil,
+							IsDeleted:             0,
+							IsActive:              0,
+							TransId:               command.TransId,
+							DepartureTime:         times.DepartureTime,
+							ArrivalTime:           times.ArrivalTime,
+							Day:                   day.Day,
+							Month:                 month.Month,
+							Year:                  year.Year,
+							DepartureDate:         day.DepartureDate,
+							Price:                 string(price),
+							DepartureTimeoptionId: departureTimeId,
+							ArrivalTimeoptionId:   arrivalTImeId,
+						}
+						_, err = s.scheduleRepo.Insert(ctx, schedule)
+						if err != nil {
+							//return nil, err
+						}
+
 					}
 				}
 			}
