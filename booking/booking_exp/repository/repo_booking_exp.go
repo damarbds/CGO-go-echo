@@ -228,13 +228,14 @@ func (b bookingExpRepository) GetCountByBookingDateExp(ctx context.Context, book
 	SELECT
 		count(*) as count
 	FROM
-		booking_exps
+		booking_exps b
+	JOIN transactions t ON b.id = t.booking_exp_id
 	WHERE
-		is_deleted = 0
-		AND is_active = 1
-		AND (status = 1 OR status = 3)
-		AND date(booking_date) = ?
-		AND exp_id =?`
+		b.is_deleted = 0
+		AND b.is_active = 1
+		AND t.status not in (3,4,8)
+		AND date(b.booking_date) = ?
+		AND b.exp_id =?`
 
 	rows, err := b.Conn.QueryContext(ctx, query, bookingDate, expId)
 	if err != nil {

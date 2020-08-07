@@ -1822,7 +1822,7 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 							}else if *res.ExpMaximumBookingType == "Month"{
 								convertDate ,_ := time.Parse("2006-01-02",date)
 								now := time.Now().AddDate(0,*res.ExpMaximumBookingAmount,0 )
-								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0{
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount == 0 {
 									expA.Date = append(expA.Date, date)
 								}
 							}
@@ -1833,31 +1833,37 @@ func (m experienceUsecase) GetByID(c context.Context, id string, currencyPrice s
 						}
 					}
 				} else {
-					if res.ExpMaximumBookingType != nil && res.ExpMaximumBookingAmount != nil{
-						for _,date := range dates{
+					for _, date := range dates {
+						checkBookingCount, err := m.bookingRepo.GetCountByBookingDateExp(ctx, date, element.ExpId)
+						if err != nil {
+							return nil, err
+						}
+						if res.ExpMaximumBookingType != nil && res.ExpMaximumBookingAmount != nil{
 							if *res.ExpMaximumBookingType == "Days"{
 								convertDate ,_ := time.Parse("2006-01-02",date)
 								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount)
-								if convertDate.After(now) || convertDate.Equal(now){
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount < res.ExpMaxGuest{
 									expA.Date = append(expA.Date, date)
 								}
 
 							}else if *res.ExpMaximumBookingType == "Week"{
 								convertDate ,_ := time.Parse("2006-01-02",date)
 								now := time.Now().AddDate(0,0,*res.ExpMaximumBookingAmount * 7)
-								if convertDate.After(now) || convertDate.Equal(now){
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount < res.ExpMaxGuest{
 									expA.Date = append(expA.Date, date)
 								}
 							}else if *res.ExpMaximumBookingType == "Month"{
 								convertDate ,_ := time.Parse("2006-01-02",date)
 								now := time.Now().AddDate(0,*res.ExpMaximumBookingAmount,0 )
-								if convertDate.After(now) || convertDate.Equal(now){
+								if (convertDate.After(now) || convertDate.Equal(now)) && checkBookingCount < res.ExpMaxGuest{
 									expA.Date = append(expA.Date, date)
 								}
 							}
+						}else {
+							if checkBookingCount < res.ExpMaxGuest {
+								expA.Date = append(expA.Date, date)
+							}
 						}
-					}else {
-						expA.Date = dates
 					}
 				}
 			}
