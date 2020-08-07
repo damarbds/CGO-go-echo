@@ -166,15 +166,15 @@ func (t scheduleRepository) Update(ctx context.Context, a models.Schedule) error
 	return nil
 }
 func (s scheduleRepository) DeleteByTransId(ctx context.Context, transId *string) error {
-	query := "DELETE FROM schedules WHERE trans_id = ? AND " +
-		"id not in (SELECT schedule_id FROM booking_exps)"
+	query := "DELETE FROM schedules  WHERE trans_id = ? AND " +
+		"id not in (SELECT b.schedule_id FROM booking_exps b where b.trans_id = ? )"
 
 	stmt, err := s.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.ExecContext(ctx, transId)
+	_, err = stmt.ExecContext(ctx, transId,transId)
 	if err != nil {
 
 		return err
