@@ -70,7 +70,7 @@ func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, b
 	if transId != nil {
 		q = q + ` AND a.trans_id = '` + *transId + `'`
 	}
-	q = q + ` ORDER BY created_date asc `
+	q = q + ` ORDER BY s.departure_time,s.departure_date asc `
 
 	list, err := b.fetchDetailTransport(ctx, q, bookingId, bookingCode)
 	if err != nil {
