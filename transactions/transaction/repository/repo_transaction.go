@@ -77,7 +77,9 @@ func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Contex
 		t.points,
 		t.original_price,
 		null as arrival_time,
-		null as departure_time
+		null as departure_time,
+		null as class,
+		m.merchant_picture
 	FROM
 		transactions t
 		JOIN experience_payments ep ON t.experience_payment_id = ep.id
@@ -118,7 +120,9 @@ func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Contex
 		t.points,
 		t.original_price,
 		s.arrival_time,
-		s.departure_time
+		s.departure_time,
+		tr.class,
+		m.merchant_picture
 	FROM
 		transactions t
 		JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
