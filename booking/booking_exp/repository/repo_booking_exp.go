@@ -50,7 +50,8 @@ func (b bookingExpRepository) GetDetailTransportBookingID(ctx context.Context, b
 		t.ex_change_rates,
 		t.ex_change_currency,
 		b.return_trans_id,
-		s.price as price_transportation
+		s.price as price_transportation,
+		s.id as schedule_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
@@ -737,6 +738,7 @@ func (b bookingExpRepository) fetchDetailTransport(ctx context.Context, query st
 			&t.ExChangeCurrency,
 			&t.ReturnTransId,
 			&t.PriceTransportation,
+			&t.ScheduleId,
 		)
 
 		if err != nil {
@@ -1134,7 +1136,8 @@ func (b bookingExpRepository) QueryHistoryPer30DaysTransByUserId(ctx context.Con
 		t.ex_change_rates,
 		t.ex_change_currency,
 		b.return_trans_id,
-		s.price as price_transportation
+		s.price as price_transportation,
+		s.id as schedule_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id

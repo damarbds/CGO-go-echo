@@ -5916,25 +5916,6 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 	if err != nil {
 		return err
 	}
-	notif := models.Notification{
-		Id:           guuid.New().String(),
-		CreatedBy:    getTransaction.CreatedBy,
-		CreatedDate:  time.Now(),
-		ModifiedBy:   nil,
-		ModifiedDate: nil,
-		DeletedBy:    nil,
-		DeletedDate:  nil,
-		IsDeleted:    0,
-		IsActive:     0,
-		MerchantId:   getTransaction.MerchantId,
-		Type:         0,
-		Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
-		Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
-	}
-	pushNotifErr := p.notificationRepo.Insert(ctx, notif)
-	if pushNotifErr != nil {
-		return nil
-	}
 	if getTransaction.ExpId != nil{
 		if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 			//confirm
@@ -6282,6 +6263,30 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
 			}
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:    getTransaction.CreatedBy,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   getTransaction.MerchantId,
+				Type:         0,
+				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+				ExpId 	: &bookingDetail.Experience[0].ExpId,
+				ScheduleId  : nil,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
 		}else if confirmIn.TransactionStatus == 5{
 			bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
@@ -6584,7 +6589,30 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
 			}
-
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:    getTransaction.CreatedBy,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   getTransaction.MerchantId,
+				Type:         0,
+				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+				ExpId 	: nil,
+				ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
 		} else {
 			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			data := map[string]interface{}{
@@ -6665,7 +6693,30 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 			if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 				return err
 			}
-
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:    getTransaction.CreatedBy,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   getTransaction.MerchantId,
+				Type:         0,
+				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+				ExpId 	: nil,
+				ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
 		}
 	}
 	return nil
@@ -6681,25 +6732,7 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 			return err
 		}
 		for _,getTransaction := range listTransaction{
-			notif := models.Notification{
-				Id:           guuid.New().String(),
-				CreatedBy:    getTransaction.CreatedBy,
-				CreatedDate:  time.Now(),
-				ModifiedBy:   nil,
-				ModifiedDate: nil,
-				DeletedBy:    nil,
-				DeletedDate:  nil,
-				IsDeleted:    0,
-				IsActive:     0,
-				MerchantId:   getTransaction.MerchantId,
-				Type:         0,
-				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
-				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
-			}
-			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
-			if pushNotifErr != nil {
-				return nil
-			}
+
 			if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 				//confirm
 				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
@@ -7048,6 +7081,31 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 				}
 				//}
 
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:    getTransaction.CreatedBy,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   getTransaction.MerchantId,
+					Type:         0,
+					Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+					Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+
 			} else if confirmIn.TransactionStatus == 5{
 				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
@@ -7245,25 +7303,7 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 	}else if confirmIn.TransId != ""{
 		listTransaction , _ := p.transactionRepo.GetByBookingDate(ctx,confirmIn.BookingDate,confirmIn.TransId,"")
 		for _,getTransaction := range listTransaction{
-			notif := models.Notification{
-				Id:           guuid.New().String(),
-				CreatedBy:    getTransaction.CreatedBy,
-				CreatedDate:  time.Now(),
-				ModifiedBy:   nil,
-				ModifiedDate: nil,
-				DeletedBy:    nil,
-				DeletedDate:  nil,
-				IsDeleted:    0,
-				IsActive:     0,
-				MerchantId:   getTransaction.MerchantId,
-				Type:         0,
-				Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
-				Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
-			}
-			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
-			if pushNotifErr != nil {
-				return nil
-			}
+
 			bookingDetail, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, *getTransaction.OrderId, *getTransaction.OrderId, nil,"")
 			if err != nil {
 				return err
@@ -7410,6 +7450,31 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 					return nil
 				}
 
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:    getTransaction.CreatedBy,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   getTransaction.MerchantId,
+					Type:         0,
+					Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+					Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+
 			} else {
 				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 				data := map[string]interface{}{
@@ -7490,7 +7555,30 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 				if _, err := p.isUsecase.SendingEmail(pushEmail); err != nil {
 					return err
 				}
-
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:    getTransaction.CreatedBy,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   getTransaction.MerchantId,
+					Type:         0,
+					Title:        " New Order Receive: Order ID " + getTransaction.OrderIdBook,
+					Desc:         "You got a booking for " + getTransaction.ExpTitle + " , booked by " + getTransaction.CreatedBy,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
 			}
 
 		}

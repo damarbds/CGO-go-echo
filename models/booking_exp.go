@@ -194,6 +194,7 @@ type BookingTransportationDetail struct {
 	TotalGuest       int       `json:"total_guest"`
 	ReturnTransId 	*string		`json:"return_trans_id"`
 	Price 			DayPriceTransportation	`json:"price"`
+	ScheduleId 		*string	`json:"schedule_id"`
 }
 type DayPriceTransportation struct {
 	AdultPrice    float64 `json:"adult_price"`

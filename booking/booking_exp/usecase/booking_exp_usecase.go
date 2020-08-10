@@ -8951,6 +8951,7 @@ func (b bookingExpUsecase) GetDetailTransportBookingID(ctx context.Context, book
 			MerchantPicture:  detail.MerchantPicture.String,
 			ReturnTransId:    detail.ReturnTransId,
 			Price:dayMap,
+			ScheduleId:detail.ScheduleId,
 		}
 	}
 
