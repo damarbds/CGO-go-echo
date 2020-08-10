@@ -324,7 +324,10 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 		if status == "Upcoming" && statusParam == "confirm"{
 			status = "Confirm"
 		}
-
+		var merchantPicture string
+		if item.MerchantPicture != nil{
+			merchantPicture = *item.MerchantPicture
+		}
 		transactions[i] = &models.TransactionDto{
 			TransactionId:         item.TransactionId,
 			ExpId:                 item.ExpId,
@@ -347,7 +350,7 @@ func (t transactionUsecase) List(ctx context.Context, startDate, endDate, search
 			Points:                item.Points,
 			ArrivalTime:           item.ArrivalTime,
 			DepartureTime:         item.DepartureTime,
-			MerchantPicture:*item.MerchantPicture,
+			MerchantPicture:merchantPicture,
 		}
 		if expType[0] != "Transportation" {
 			tripDateDuration := transactions[i].CheckInDate.Format("2006-01-02")
