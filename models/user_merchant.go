@@ -32,6 +32,7 @@ type UserMerchantWithMerchant struct {
 	Email 				string 		`json:"email"`
 	PhoneNumber 		string		`json:"phone_number"`
 	MerchantId 			string		`json:"merchant_id"`
+	FCMToken 			*string `json:"fcm_token"`
 	MerchantName 		string 		`json:"merchant_name"`
 }
 type UserMerchantWithRole struct {
@@ -55,6 +56,9 @@ type PermissionUserMerchant struct {
 	Id 		int 		`json:"id"`
 	ActivityName string	`json:"activity_name"`
 	Description string	`json:"description"`
+}
+type TokenFCM struct {
+	NewToken                   string `json:"new_token"`
 }
 type NewCommandUserMerchant struct {
 	Id                   string     `json:"id"`

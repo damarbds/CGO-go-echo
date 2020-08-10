@@ -20,6 +20,8 @@ type userMerchantRepository struct {
 	Conn *sql.DB
 }
 
+
+
 // NewuserRepository will create an object that represent the article.repository interface
 func NewuserMerchantRepository(Conn *sql.DB) user_merchant.Repository {
 	return &userMerchantRepository{Conn}
@@ -55,6 +57,7 @@ func (m *userMerchantRepository) fetchWithMerchant(ctx context.Context, query st
 			&t.Email,
 			&t.PhoneNumber,
 			&t.MerchantId,
+			&t.FCMToken,
 			&t.MerchantName,
 		)
 
@@ -98,6 +101,7 @@ func (m *userMerchantRepository) fetch(ctx context.Context, query string, args .
 			&t.Email,
 			&t.PhoneNumber,
 			&t.MerchantId,
+			&t.FCMToken,
 		)
 
 		if err != nil {
@@ -177,7 +181,32 @@ func (m *userMerchantRepository) GetByUserEmail(ctx context.Context, userEmail s
 	}
 	return
 }
+func (m *userMerchantRepository) UpdateFCMToken(ctx context.Context, tokenFCM string, usermerchantId string) error {
+	query := `UPDATE user_merchants set fcm_token=?
+				WHERE id = ?`
 
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil
+	}
+
+	res, err := stmt.ExecContext(ctx, tokenFCM,usermerchantId)
+	if err != nil {
+		return err
+	}
+	affect, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affect != 1 {
+		err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", affect)
+
+		return err
+	}
+
+	return nil
+
+}
 func (m *userMerchantRepository) Update(ctx context.Context, a *models.UserMerchant) error {
 	query := `UPDATE user_merchants set modified_by=?, modified_date=? , full_name=?,email=? , phone_number=? ,merchant_id=?
 				WHERE id = ?`

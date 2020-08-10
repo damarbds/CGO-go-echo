@@ -201,6 +201,7 @@ func main() {
 	//dbName := "cgo_indonesia"
 
 	//dev env
+	fcmKey := "AAAA4BzU_s8:APA91bGII7M20lhnj5TjidfEn6ssUVqMfseFveCML_PdRQNnAtmlCQfBmgdT7YNAVky6dPnRKVsta4aJ4di6beDYHBf62JV8CmjVrVaYsuikWO3K6SbxQA8UbosC9JNBis3S-Z7ZiTYh"
 	baseUrlLocal := "http://cgo-web-api.azurewebsites.net"
 	//dev pdfCrowdAccount
 	usernamePDF := "demo"
@@ -217,6 +218,7 @@ func main() {
 	urlForgotPassword := "http://cgo-web-api.azurewebsites.net/account/change-password"
 
 	// //prd env
+	//fcmKey := "AAAA4BzU_s8:APA91bGII7M20lhnj5TjidfEn6ssUVqMfseFveCML_PdRQNnAtmlCQfBmgdT7YNAVky6dPnRKVsta4aJ4di6beDYHBf62JV8CmjVrVaYsuikWO3K6SbxQA8UbosC9JNBis3S-Z7ZiTYh"
 	// baseUrlLocal := "https://api-cgo-prod.azurewebsites.net"
 	// //prd pdfCrowdAccount
 	// usernamePDF := "cgoindonesia"
@@ -375,9 +377,10 @@ func main() {
 	au := _articleUcase.NewArticleUsecase(ar, authorRepo, timeoutContext)
 	pmUsecase := _paymentMethodUcase.NewPaymentMethodUsecase(paymentMethodRepo, timeoutContext)
 	bookingExpUcase := _bookingExpUcase.NewbookingExpUsecase(merchantRepo, currencyUcase, usernamePDF, accessKeyPDF, reviewsRepo, experienceAddOnRepo, paymentRepo, bookingExpRepo, userUsecase, merchantUsecase, isUsecase, experienceRepo, transactionRepo, timeoutContext)
-	paymentUsecase := _paymentUcase.NewPaymentUsecase(merchantUsecase, transportationRepo, experienceRepo, bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
+	notifUcase := _notifUcase.NewNotifUsecase(fcmKey,bookingExpRepo,notifRepo, merchantUsecase, timeoutContext)
+	paymentUsecase := _paymentUcase.NewPaymentUsecase(userMerchantRepo,notifUcase,merchantUsecase, transportationRepo, experienceRepo, bookingExpUcase, isUsecase, transactionRepo, notifRepo, paymentTrRepo, userUsecase, bookingExpRepo, userRepo, timeoutContext)
 	wlUcase := _wishlistUcase.NewWishlistUsecase(exp_photos, wlRepo, userUsecase, experienceRepo, paymentRepo, reviewsRepo, timeoutContext)
-	notifUcase := _notifUcase.NewNotifUsecase(bookingExpRepo,notifRepo, merchantUsecase, timeoutContext)
+
 	facilityUcase := _facilityUcase.NewFacilityUsecase(adminUsecase, facilityRepo, timeoutContext)
 	transportationUcase := _transportationUcase.NewTransportationUsecase(currencyUcase, expFacilitesRepo, facilityRepo, transactionRepo, transportationRepo, merchantUsecase, schedulerRepo, timeOptionsRepo, timeoutContext)
 	transactionUcase := _transactionUcase.NewTransactionUsecase(promoRepo, adminUsecase, merchantUsecase, paymentRepo, transactionRepo, timeoutContext)

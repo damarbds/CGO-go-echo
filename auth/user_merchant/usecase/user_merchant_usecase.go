@@ -21,6 +21,7 @@ type userMerchantUsecase struct {
 }
 
 
+
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
 func NewuserMerchantUsecase(a user_merchant.Repository,  m merchant.Usecase,is identityserver.Usecase, adm admin.Usecase,timeout time.Duration) user_merchant.Usecase {
 	return &userMerchantUsecase{
@@ -31,7 +32,24 @@ func NewuserMerchantUsecase(a user_merchant.Repository,  m merchant.Usecase,is i
 		contextTimeout:   timeout,
 	}
 }
+func (m userMerchantUsecase) UpdateFCMToken(ctx context.Context, a models.TokenFCM, token string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
 
+	user, err := m.merchantUsecase.ValidateTokenMerchant(ctx, token)
+	if err != nil {
+		return nil,models.ErrUnAuthorize
+	}
+	err = m.userMerchantRepo.UpdateFCMToken(ctx,a.NewToken,user.UserMerchantId)
+	if err != nil {
+		return nil,err
+	}
+	result := models.ResponseDelete{
+		Id:      user.UserMerchantId,
+		Message: "Succcess update TOken FCM",
+	}
+	return &result,nil
+}
 func (m userMerchantUsecase) GetUserByMerchantId(c context.Context, merchantId string,token string) ([]*models.UserMerchantWithRole, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
