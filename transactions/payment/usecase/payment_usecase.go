@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/auth/merchant"
+	"github.com/auth/user_merchant"
 	guuid "github.com/google/uuid"
 	"github.com/service/experience"
 	"github.com/service/transportation"
@@ -28,6 +29,7 @@ import (
 )
 
 type paymentUsecase struct {
+	userMerchantRepo user_merchant.Repository
 	merchantUsecase  merchant.Usecase
 	isUsecase        identityserver.Usecase
 	transactionRepo  transaction.Repository
@@ -40,12 +42,15 @@ type paymentUsecase struct {
 	bookingUsecase   booking_exp.Usecase
 	expRepo 		experience.Repository
 	transportationRepo transportation.Repository
+	notificationUsecase notif.Usecase
 }
 
 
 // NewPaymentUsecase will create new an paymentUsecase object representation of payment.Usecase interface
-func NewPaymentUsecase(	merchantUsecase  merchant.Usecase	,transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
+func NewPaymentUsecase(		userMerchantRepo user_merchant.Repository,notificationUsecase notif.Usecase,merchantUsecase  merchant.Usecase	,transportationRepo transportation.Repository,expRepo experience.Repository,bookingUsecase booking_exp.Usecase, isUsecase identityserver.Usecase, t transaction.Repository, n notif.Repository, p payment.Repository, u user.Usecase, b booking_exp.Repository, ur user.Repository, timeout time.Duration) payment.Usecase {
 	return &paymentUsecase{
+		userMerchantRepo:userMerchantRepo,
+		notificationUsecase:notificationUsecase,
 		merchantUsecase:merchantUsecase,
 		transportationRepo:transportationRepo,
 		expRepo:expRepo,
@@ -5916,6 +5921,10 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 	if err != nil {
 		return err
 	}
+	getUserMerchant,err := p.userMerchantRepo.GetUserByMerchantId(ctx ,getTransaction.MerchantId)
+	if err != nil {
+		return err
+	}
 	if getTransaction.ExpId != nil{
 		if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 			//confirm
@@ -6287,6 +6296,21 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 			if pushNotifErr != nil {
 				return nil
 			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						p.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+
+			}
 		}else if confirmIn.TransactionStatus == 5{
 			bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
@@ -6613,6 +6637,21 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 			if pushNotifErr != nil {
 				return nil
 			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						p.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+
+			}
 		} else {
 			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			data := map[string]interface{}{
@@ -6717,6 +6756,21 @@ func (p paymentUsecase) SendingEmailConfirmPayment(ctx context.Context, confirmI
 			if pushNotifErr != nil {
 				return nil
 			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						p.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+
+			}
 		}
 	}
 	return nil
@@ -6731,8 +6785,11 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 		if err != nil {
 			return err
 		}
+		getUserMerchant := make([]*models.UserMerchant,0)
+		if len(listTransaction) != 0{
+			getUserMerchant,_ = p.userMerchantRepo.GetUserByMerchantId(ctx ,listTransaction[0].MerchantId)
+		}
 		for _,getTransaction := range listTransaction{
-
 			if confirmIn.TransactionStatus == 2 && confirmIn.BookingStatus == 1 {
 				//confirm
 				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
@@ -7105,7 +7162,21 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 				if pushNotifErr != nil {
 					return nil
 				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							p.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
 
+				}
 			} else if confirmIn.TransactionStatus == 5{
 				bookingDetail, err := p.bookingUsecase.GetDetailBookingID(ctx, *getTransaction.BookingExpId, "","")
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
@@ -7302,6 +7373,10 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 		}
 	}else if confirmIn.TransId != ""{
 		listTransaction , _ := p.transactionRepo.GetByBookingDate(ctx,confirmIn.BookingDate,confirmIn.TransId,"")
+		getUserMerchant := make([]*models.UserMerchant,0)
+		if len(listTransaction) != 0{
+			getUserMerchant,_ = p.userMerchantRepo.GetUserByMerchantId(ctx ,listTransaction[0].MerchantId)
+		}
 		for _,getTransaction := range listTransaction{
 
 			bookingDetail, err := p.bookingUsecase.GetDetailTransportBookingID(ctx, *getTransaction.OrderId, *getTransaction.OrderId, nil,"")
@@ -7474,7 +7549,21 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 				if pushNotifErr != nil {
 					return nil
 				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							p.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
 
+				}
 			} else {
 				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 				data := map[string]interface{}{
@@ -7578,6 +7667,21 @@ func (p paymentUsecase) SendingEmailConfirmPaymentByDate(ctx context.Context, co
 				pushNotifErr := p.notificationRepo.Insert(ctx, notif)
 				if pushNotifErr != nil {
 					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							p.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+
 				}
 			}
 
