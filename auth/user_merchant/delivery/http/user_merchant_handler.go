@@ -35,8 +35,33 @@ func NewuserMerchantHandler(e *echo.Echo, us user_merchant.Usecase) {
 	e.GET("/user-merchants/:id", handler.GetDetailID)
 	e.GET("/roles-merchants", handler.GetRoles)
 	e.POST("/assign-roles-merchants", handler.AssignRoles)
+	e.PUT("/user-merchants/update-fcm-token",handler.UpdateTokenFCM)
 	//e.GET("/merchants/:id", handler.GetByID)
 	//e.DELETE("/merchants/:id", handler.Delete)
+}
+func (a *userMerchantHandler) UpdateTokenFCM(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	var pushNotif models.TokenFCM
+	err := c.Bind(&pushNotif)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	response, error := a.userMerchantUsecase.UpdateFCMToken(ctx, pushNotif,token)
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, response)
 }
 func (a *userMerchantHandler) AssignRoles(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
