@@ -24,8 +24,28 @@ func NewNotifHandler(e *echo.Echo, us notif.Usecase) {
 		NotifUsecase: us,
 	}
 	e.GET("misc/notif", handler.Get)
+	e.POST("misc/push-notif", handler.PushNotifFCM)
 }
+func (a *NotifHandler) PushNotifFCM(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
+	var pushNotif models.FCMPushNotif
+	err := c.Bind(&pushNotif)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	response, error := a.NotifUsecase.FCMPushNotification(ctx, pushNotif)
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, response)
+}
 func (a *NotifHandler) Get(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

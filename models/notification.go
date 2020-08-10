@@ -43,3 +43,12 @@ type NotifWithPagination struct {
 	Data []*NotifDto `json:"data"`
 	Meta *MetaPagination   `json:"meta"`
 }
+
+type FCMPushNotif struct {
+	To 	 string `json:"to"`
+	Data DataFCMPushNotif `json:"data"`
+}
+type DataFCMPushNotif struct {
+	Title string `json:"title"`
+	Message string `json:"message"`
+}

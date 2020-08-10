@@ -1,9 +1,16 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/booking/booking_exp"
 	"math"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/auth/merchant"
@@ -12,21 +19,58 @@ import (
 )
 
 type notifUsecase struct {
+	keyFCM 			string
 	notifRepo       notif.Repository
 	merchantUsecase merchant.Usecase
 	contextTimeout  time.Duration
 	bookingRepo booking_exp.Repository
 }
 
-func NewNotifUsecase(bookingRepo booking_exp.Repository,n notif.Repository, u merchant.Usecase, timeout time.Duration) notif.Usecase {
+
+
+func NewNotifUsecase(	keyFCM 			string,bookingRepo booking_exp.Repository,n notif.Repository, u merchant.Usecase, timeout time.Duration) notif.Usecase {
 	return &notifUsecase{
+		keyFCM:keyFCM,
 		bookingRepo:bookingRepo,
 		notifRepo:       n,
 		merchantUsecase: u,
 		contextTimeout:  timeout,
 	}
 }
+func (t notifUsecase) FCMPushNotification(ctx context.Context, ar models.FCMPushNotif) (*models.ResponseDelete, error) {
+	data, _ := json.Marshal(ar)
 
+	req, err := http.NewRequest("POST", "https://fcm.googleapis.com/fcm/send", bytes.NewReader(data))
+	//os.Exit(1)
+	req.Header.Set("Authorization", "Bearer " + t.keyFCM)
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error : ", err.Error())
+		os.Exit(1)
+	}
+	if resp.StatusCode != 200 {
+		return nil,errors.New("Error Push Notif FCM")
+	}
+	//user := models.NewCommandSchedule{}
+	//json.NewDecoder(resp.Body).Decode(&user)
+	result := models.ResponseDelete{
+		Id:      ar.To,
+		Message: "Success Push Notif",
+	}
+	return &result,nil
+}
 func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, limit, offset int) (*models.NotifWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, x.contextTimeout)
 	defer cancel()
