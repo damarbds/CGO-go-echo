@@ -12,6 +12,27 @@ import (
 type Repository struct {
 	mock.Mock
 }
+func (_m *Repository) GetBookingBySchedule(ctx context.Context,transId string,departureDate string,arrivalTime string ,departureTime string)([]*models.Schedule,error) {
+	ret := _m.Called(ctx,transId,departureDate,arrivalTime,departureTime)
+
+	var r0 []*models.Schedule
+	if rf, ok := ret.Get(0).(func(context.Context,string,string,string,string) []*models.Schedule); ok {
+		r0 = rf(ctx,transId,departureDate,arrivalTime,departureTime)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Schedule)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context,string,string,string,string) error); ok {
+		r1 = rf(ctx,transId,departureDate,arrivalTime,departureTime)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
 func (_m *Repository) GetTimeByTransId(ctx context.Context,transId string)([]*models.ScheduleTime,error) {
 	ret := _m.Called(ctx,transId)
 
@@ -168,7 +189,18 @@ func (_m *Repository) Insert(ctx context.Context, a models.Schedule) (*string, e
 
 	return r0, r1
 }
+func (_m *Repository) Update(ctx context.Context, a models.Schedule) error {
+	ret := _m.Called(ctx, a)
 
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.Schedule) error); ok {
+		r0 = rf(ctx, a)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
 // Update provides a mock function with given fields: ctx, ar
 func (_m *Repository) DeleteByTransId(ctx context.Context, transId *string) error {
 	ret := _m.Called(ctx, transId)

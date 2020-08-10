@@ -59,11 +59,11 @@ func (_m *Repository) GetByExperienceTransportId(ctx context.Context,expId strin
 
 // Update provides a mock function with given fields: ctx, ar
 func (_m *Repository) Insert(ctx context.Context,pet models.PromoExperienceTransport)error {
-	ret := _m.Called(ctx, pm)
+	ret := _m.Called(ctx, pet)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, models.PromoMerchant) error); ok {
-		r0 = rf(ctx, pm)
+	if rf, ok := ret.Get(0).(func(context.Context, models.PromoExperienceTransport) error); ok {
+		r0 = rf(ctx, pet)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -73,11 +73,11 @@ func (_m *Repository) Insert(ctx context.Context,pet models.PromoExperienceTrans
 
 // Update provides a mock function with given fields: ctx, ar
 func (_m *Repository) DeleteById(ctx context.Context,serviceId string,promoId string)error {
-	ret := _m.Called(ctx, merchantId,promoId)
+	ret := _m.Called(ctx, serviceId,promoId)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string,string) error); ok {
-		r0 = rf(ctx, merchantId,promoId)
+		r0 = rf(ctx, serviceId,promoId)
 	} else {
 		r0 = ret.Error(0)
 	}
