@@ -16,6 +16,10 @@ type Notification struct {
 	Type         int        `json:"type"`
 	Title        string     `json:"title"`
 	Desc         string     `json:"desc"`
+	ExpId 		*string	`json:"exp_id"`
+	ScheduleId  *string `json:"schedule_id"`
+	BookingExpId *string	`json:"booking_exp_id"`
+	IsRead 		*int `json:"is_read"`
 }
 
 type NotifDto struct {

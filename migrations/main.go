@@ -23,17 +23,17 @@ func main() {
 	}
 	//minimumBooking := model.MinimumBooking{}
 	//merchant := model.Merchant{}
-	user := model.Include{}
-	error := db.AutoMigrate(&user)
-	if error != nil {
-		migration := model.MigrationHistory{
-			DescMigration: "Add Table include",
-			Date:          time.Now(),
-		}
-
-		db.Create(&migration)
-	}
-	//transportationdestid := model.Transaction{}
+	//user := model.Include{}
+	//error := db.AutoMigrate(&user)
+	//if error != nil {
+	//	migration := model.MigrationHistory{
+	//		DescMigration: "Add Table include",
+	//		Date:          time.Now(),
+	//	}
+	//
+	//	db.Create(&migration)
+	//}
+	////transportationdestid := model.Transaction{}
 	//errortransportationdestid := db.AutoMigrate(&transportationdestid)
 	//if errortransportationdestid != nil {
 	//	migration := model.MigrationHistory{
@@ -43,46 +43,47 @@ func main() {
 	//
 	//	db.Create(&migration)
 	//}
-	//pointRules := model.Country{}
-	//errorpointRules := db.AutoMigrate(&pointRules)
-	//if errorpointRules != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Alter table country add columns",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
-	//pointRuless := model.Wishlist{}
-	//errorpointRuless := db.Model(&pointRuless).AddForeignKey("exp_id","experiences(id)","RESTRICT", "RESTRICT")
-	//if errorpointRuless != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_foregn_key_exp_id_wishlist",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
-	//pointRulesss := model.Wishlist{}
-	//errorpointRulesss := db.Model(&pointRulesss).AddForeignKey("user_id","users(id)","RESTRICT", "RESTRICT")
-	//if errorpointRulesss != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_foregn_key_user_id_wishlist",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
-	//facilities := model.Transaction{}
-	//errorfacilities := db.AutoMigrate(&facilities).AddForeignKey("booking_exp_id","booking_exps(id)","RESTRICT", "RESTRICT")
-	//if errorfacilities != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_table_Transaction",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
+	pointRules := model.Notification{}
+	errorpointRules := db.AutoMigrate(&pointRules)
+	if errorpointRules != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Alter table country add columns some notification",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+	pointRuless := model.Notification{}
+	errorpointRuless := db.Model(&pointRuless).AddForeignKey("exp_id","experiences(id)","RESTRICT", "RESTRICT")
+	if errorpointRuless != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add_foregn_key_exp_id_notification",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+	pointRulesss := model.Notification{}
+	errorpointRulesss := db.Model(&pointRulesss).AddForeignKey("schedule_id","schedules(id)","RESTRICT", "RESTRICT")
+	if errorpointRulesss != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add_foregn_key_schedule_id_notification",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	facilities := model.Notification{}
+	errorfacilities := db.Model(&facilities).AddForeignKey("booking_exp_id","booking_exps(id)","RESTRICT", "RESTRICT")
+	if errorfacilities != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add_foregn_key_booking_exp_id_notification",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
 	//exlusionService := model.Transaction{}
 	//errorexlusionService := db.Model(&exlusionService).AddForeignKey("promo_id","promos(id)","RESTRICT", "RESTRICT")
 	//if errorexlusionService != nil{
