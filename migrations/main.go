@@ -84,16 +84,16 @@ func main() {
 
 		db.Create(&migration)
 	}
-	//exlusionService := model.Transaction{}
-	//errorexlusionService := db.Model(&exlusionService).AddForeignKey("promo_id","promos(id)","RESTRICT", "RESTRICT")
-	//if errorexlusionService != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_forefn_key_promo_id_Transaction",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
+	exlusionService := model.UserMerchant{}
+	errorexlusionService := db.AutoMigrate(&exlusionService)
+	if errorexlusionService != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Alter table add column fcm token in table user merchant",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
 	//exlusionServices := model.Transaction{}
 	//errorexlusionServices := db.Model(&exlusionServices).AddForeignKey("payment_method_id","payment_methods(id)","RESTRICT", "RESTRICT")
 	//if errorexlusionServices != nil{

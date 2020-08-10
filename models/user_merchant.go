@@ -16,6 +16,7 @@ type UserMerchant struct {
 	Email 				string 		`json:"email"`
 	PhoneNumber 		string		`json:"phone_number"`
 	MerchantId 			string		`json:"merchant_id"`
+	FCMToken 			*string `json:"fcm_token"`
 }
 type UserMerchantWithMerchant struct {
 	Id                   string     `json:"id" validate:"required"`
