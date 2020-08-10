@@ -6,11 +6,13 @@ import (
 	"github.com/misc/notif"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 type notifRepository struct {
 	Conn *sql.DB
 }
+
 
 
 func NewNotifRepository(Conn *sql.DB) notif.Repository {
@@ -64,7 +66,7 @@ func (n notifRepository) fetch(ctx context.Context, query string, args ...interf
 	return result, nil
 }
 
-func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string) ([]*models.Notification, error) {
+func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string,limit,offset int) ([]*models.Notification, error) {
 	query := `
 	SELECT
 		*
@@ -73,7 +75,12 @@ func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string)
 	WHERE
 		merchant_id = ?
 		AND is_deleted = 0
-		AND is_active = 1`
+		AND is_active = 1 `
+
+	if limit != 0 {
+		query = query + ` ORDER BY created_date DESC LIMIT ` + strconv.Itoa(limit) +
+			` OFFSET ` + strconv.Itoa(offset) + ` `
+	}
 
 	res, err := n.fetch(ctx, query, merchantId)
 	if err != nil {
@@ -83,6 +90,34 @@ func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string)
 	return res, nil
 }
 
+func (t notifRepository) GetCountByMerchantID(ctx context.Context, merchantId string) (int, error) {
+	query := `SELECT count(*) as count FROM notifications WHERE is_deleted = 0 AND is_active = 1 `
+	if merchantId != ""{
+		query = query + ` AND merchant_id = '` + merchantId + `' `
+	}
+	rows, err := t.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	count, err := checkCount(rows)
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return count, nil
+}
+func checkCount(rows *sql.Rows) (count int, err error) {
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
 func (m notifRepository) Insert(ctx context.Context, a models.Notification) error {
 	//a.Id = guuid.New().String()
 	query := `INSERT notifications SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? ,

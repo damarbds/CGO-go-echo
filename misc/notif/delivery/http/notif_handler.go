@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo"
 	"github.com/misc/notif"
@@ -33,13 +34,23 @@ func (a *NotifHandler) Get(c echo.Context) error {
 	if token == "" {
 		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
 	}
+	qpage := c.QueryParam("page")
+	qperPage := c.QueryParam("size")
+
+	var limit = 20
+	var page = 1
+	var offset = 0
+
+	page, _ = strconv.Atoi(qpage)
+	limit, _ = strconv.Atoi(qperPage)
+	offset = (page - 1) * limit
 
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	res, err := a.NotifUsecase.GetByMerchantID(ctx, token)
+	res, err := a.NotifUsecase.GetByMerchantID(ctx, token,page,limit,offset)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

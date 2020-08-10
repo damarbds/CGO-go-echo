@@ -28,4 +28,18 @@ type NotifDto struct {
 	Title string    `json:"title"`
 	Desc  string    `json:"desc"`
 	Date  time.Time `json:"date"`
+	ExpId *string	`json:"exp_id"`
+	ExpTitle *string `json:"exp_title"`
+	TransId *string `json:"trans_id"`
+	TransName *string `json:"trans_name"`
+	DepartureTime    *string    `json:"departure_time"`
+	ArrivalTime      *string    `json:"arrival_time"`
+	TripDuration     *string    `json:"trip_duration"`
+	HarborSourceName *string    `json:"harbor_source_name"`
+	HarborDestName   *string    `json:"harbor_dest_name"`
+}
+
+type NotifWithPagination struct {
+	Data []*NotifDto `json:"data"`
+	Meta *MetaPagination   `json:"meta"`
 }

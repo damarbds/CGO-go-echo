@@ -7,5 +7,5 @@ import (
 )
 
 type Usecase interface {
-	GetByMerchantID(ctx context.Context, token string) ([]*models.NotifDto, error)
+	GetByMerchantID(ctx context.Context, token string,page, limit, offset int) (*models.NotifWithPagination, error)
 }
