@@ -287,32 +287,71 @@ func (t transactionRepository) GetCountTransactionByPromoId(ctx context.Context,
 	return count, nil
 }
 
-func (t transactionRepository) GetIdTransactionExpired(ctx context.Context) ([]*string, error) {
-	query := `SELECT t.id
+func (t transactionRepository) GetTransactionExpired(ctx context.Context) ([]*models.TransactionWithBookingExpired, error) {
+	queryExp := `SELECT 
+						t.id as transaction_id,
+						t.booking_exp_id,
+						b.order_id,
+						b.booked_by_email,
+						m.id as merchant_id,
+						t.exp_id,
+						e.exp_title,
+						null as schedule_id,
+						null as trans_title
 					FROM transactions t 
-					JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
+					JOIN booking_exps b ON t.booking_exp_id = b.id
+					JOIN experiences e ON b.exp_id = e.id
+					JOIN merchants m ON e.merchant_id = m.id
 					WHERE t.status = 0 
-					AND b.expired_date_payment <= ?
-					ORDER BY b.expired_date_payment DESC`
+					AND b.expired_date_payment <= ? `
 
-	rows, err := t.Conn.QueryContext(ctx, query, time.Now())
+	queryTrans := `SELECT 
+						t.id as transaction_id,
+						t.booking_exp_id,
+						b.order_id,
+						b.booked_by_email,
+						m.id as merchant_id,
+						null as exp_id,
+						null as exp_title,
+						b.schedule_id as schedule_id,
+						trans.trans_title as trans_title
+					FROM transactions t 
+					JOIN booking_exps b ON t.booking_exp_id = b.id or t.order_id = b.order_id
+					JOIN transportations trans ON b.trans_id = trans.id
+					JOIN schedules s ON b.schedule_id = s.id
+					JOIN merchants m ON trans.merchant_id = m.id
+					WHERE t.status = 0 
+					AND b.expired_date_payment <= ? `
+
+	query := queryExp + ` UNION ` + queryTrans
+	rows, err := t.Conn.QueryContext(ctx, query, time.Now(),time.Now())
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
 	}
 
-	var transactionIds []*string
+	result := make([]*models.TransactionWithBookingExpired, 0)
 	for rows.Next() {
-		var transactionId string
-		err = rows.Scan(&transactionId)
+		t := new(models.TransactionWithBookingExpired)
+		err = rows.Scan(
+			&t.TransactionId ,
+			&t.BookingExpId ,
+			&t.OrderId,
+			&t.BookedByEmail ,
+			&t.MerchantId 	,
+			&t.ExpId 		,
+			&t.ExpTitle 		,
+			&t.ScheduleId ,
+			&t.TransTitle,
+		)
 		if err != nil {
+			logrus.Error(err)
 			return nil, err
 		}
-
-		transactionIds = append(transactionIds, &transactionId)
+		result = append(result, t)
 	}
 
-	return transactionIds, nil
+	return result, nil
 }
 
 func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Context) ([]*models.TransactionWithBooking, error) {

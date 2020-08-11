@@ -9126,7 +9126,7 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 			MerchantId:   element.MerchantId,
 			Type:         0,
 			Title:        "Reminder for remaining payment transaction : Order ID " + *element.OrderId,
-			Desc:         "Order ID {order_id} hasn't paid the remaining transactions for "+element.ExpTitle+", deadline " + paymentDeadline.Format("02 January 2006"),
+			Desc:         "Order ID "+*element.OrderId+" hasn't paid the remaining transactions for "+element.ExpTitle+", deadline " + paymentDeadline.Format("02 January 2006"),
 			ExpId 	: &element.ExpId,
 			ScheduleId  : nil,
 			BookingExpId :&element.BookingExpId,
@@ -9157,13 +9157,100 @@ func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) err
 func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
-	list, err := b.transactionRepo.GetIdTransactionExpired(ctx)
+	list, err := b.transactionRepo.GetTransactionExpired(ctx)
 	if err != nil {
 		return err
 	}
-	for _, id := range list {
-		if err := b.transactionRepo.UpdateAfterPayment(ctx, 3, "", *id, ""); err != nil {
+	for _, element := range list {
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, 3, "", element.TransactionId, ""); err != nil {
 			return err
+		}
+		getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,element.MerchantId)
+		if err != nil {
+			return err
+		}
+
+		if element.ExpId != nil{
+
+			//pushNotif to merchant Expired Payment
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:     element.BookedByEmail,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     1,
+				MerchantId:   element.MerchantId,
+				Type:         0,
+				Title:        "Expired Payment for transaction : Order ID " + *element.OrderId,
+				Desc:         "Order ID "+ *element.OrderId+" hasn't paid the transactions for "+*element.ExpTitle,
+				ExpId 	: element.ExpId,
+				ScheduleId  : nil,
+				BookingExpId :&element.BookingExpId,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						b.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+			}
+		}else if element.ScheduleId != nil{
+			//pushNotif to merchant Expired Payment
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:     element.BookedByEmail,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     1,
+				MerchantId:   element.MerchantId,
+				Type:         0,
+				Title:        "Expired Payment for transaction : Order ID " + *element.OrderId,
+				Desc:         "Order ID "+ *element.OrderId+" hasn't paid the transactions for "+*element.ExpTitle,
+				ExpId 	: nil,
+				ScheduleId  : element.ScheduleId,
+				BookingExpId :&element.BookingExpId,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						b.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+			}
 		}
 	}
 	return nil

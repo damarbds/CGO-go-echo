@@ -67,6 +67,17 @@ type TransactionByDateDto struct {
 	MaxCapacity int `json:"max_capacity"`
 	SeatTaken 	int `json:"seat_taken"`
 }
+type TransactionWithBookingExpired struct {
+	TransactionId 	string `json:"transaction_id"`
+	BookingExpId 	string `json:"booking_exp_id"`
+	OrderId 		*string `json:"order_id"`
+	BookedByEmail  string `json:"booked_by_email"`
+	MerchantId 		string `json:"merchant_id"`
+	ExpId 		*string `json:"exp_id"`
+	ExpTitle 		*string `json:"exp_title"`
+	ScheduleId  *string `json:"schedule_id"`
+	TransTitle *string `json:"trans_title"`
+}
 type TransactionWithBooking struct {
 	BookingExpId  	string `json:"booking_exp_id"`
 	ExpId 			string `json:"exp_id"`
