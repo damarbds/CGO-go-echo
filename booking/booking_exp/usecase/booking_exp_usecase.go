@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/auth/user_merchant"
+	guuid "github.com/google/uuid"
+	"github.com/misc/notif"
 	"html/template"
 	"io/ioutil"
 	"math"
@@ -63,12 +66,18 @@ type bookingExpUsecase struct {
 	usernamePDFrowd           string
 	accessKeyPDFcrowd         string
 	currencyUsecase           currency.Usecase
+	userMerchantRepo user_merchant.Repository
+	notificationUsecase notif.Usecase
+	notificationRepo notif.Repository
 }
 
 
 // NewArticleUsecase will create new an articleUsecase object representation of article.Usecase interface
-func NewbookingExpUsecase(	merchantRepo 			merchant.Repository,currencyUsecase currency.Usecase, usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
+func NewbookingExpUsecase(userMerchantRepo user_merchant.Repository, notificationUsecase notif.Usecase, notificationRepo notif.Repository,merchantRepo 			merchant.Repository,currencyUsecase currency.Usecase, usernamePDFrowd string, accessKeyPDFcrowd string, reviewRepo reviews.Repository, adOnsRepo experience_add_ons.Repository, ept exp_payment.Repository, a booking_exp.Repository, u user.Usecase, m merchant.Usecase, is identityserver.Usecase, er experience.Repository, tr transaction.Repository, timeout time.Duration) booking_exp.Usecase {
 	return &bookingExpUsecase{
+		notificationRepo:notificationRepo,
+		userMerchantRepo:userMerchantRepo,
+		notificationUsecase:notificationUsecase,
 		merchantRepo:merchantRepo,
 		currencyUsecase:           currencyUsecase,
 		usernamePDFrowd:           usernamePDFrowd,
@@ -6073,6 +6082,12 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 		if err != nil {
 			return nil, err
 		}
+
+		getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Transportation[0].MerchantId)
+		if err != nil {
+			return nil,err
+		}
+
 		user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 		guestCount := len(bookingDetail.GuestDesc)
@@ -6215,6 +6230,46 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 				return nil, nil
 			}
 
+			//pushNotif to merchant Transportation any return
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:      bookingDetail.BookedBy[0].Email,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   bookingDetail.Experience[0].MerchantId,
+				Type:         0,
+				Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+				Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " +  bookingDetail.BookedBy[0].Email,
+				ExpId 	: nil,
+				ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil,nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						b.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+			}
+
 		} else {
 			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			data := map[string]interface{}{
@@ -6296,6 +6351,46 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 				return nil, nil
 			}
 
+			//pushNotif to merchant Transportation any return
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:      bookingDetail.BookedBy[0].Email,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   bookingDetail.Experience[0].MerchantId,
+				Type:         0,
+				Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+				Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " +  bookingDetail.BookedBy[0].Email,
+				ExpId 	: nil,
+				ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil,nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						b.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+			}
+
 		}
 
 		//transactionStatus = 2
@@ -6325,6 +6420,10 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 			Message: "Success Payment With Paypal",
 		}
 		return &result, nil
+	}
+	getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,getDetailBookingID.Experience[0].MerchantId)
+	if err != nil {
+		return nil,err
 	}
 	exp, err := b.expRepo.GetByID(ctx, getDetailBookingID.Experience[0].ExpId)
 	if exp.ExpBookingType == "No Instant Booking" {
@@ -6412,6 +6511,45 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 			}
 		}
 
+		//pushNotif to merchant No Instant Booking
+		isRead := 0
+		notif := models.Notification{
+			Id:           guuid.New().String(),
+			CreatedBy:    getDetailBookingID.BookedBy[0].Email,
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     0,
+			MerchantId:   getDetailBookingID.Experience[0].MerchantId,
+			Type:         0,
+			Title:        "New Waiting to be Confirmed : Order ID " + getDetailBookingID.OrderId,
+			Desc:         "You've got new booking that's waiting to be confirmed for "+ getDetailBookingID.Experience[0].ExpTitle+", booked by " + getDetailBookingID.BookedBy[0].Email,
+			ExpId 	: &getDetailBookingID.Experience[0].ExpId,
+			ScheduleId  : nil,
+			BookingExpId :&getDetailBookingID.Id,
+			IsRead 		: &isRead,
+		}
+		pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+		if pushNotifErr != nil {
+			return nil,nil
+		}
+		for _,um := range getUserMerchant{
+			if um.FCMToken != nil{
+				if *um.FCMToken != ""{
+					fcm := models.FCMPushNotif{
+						To:   *um.FCMToken,
+						Data: models.DataFCMPushNotif{
+							Title:   "cGO",
+							Message: notif.Desc,
+						},
+					}
+					b.notificationUsecase.FCMPushNotification(ctx,fcm)
+				}
+			}
+		}
 	} else if exp.ExpBookingType == "Instant Booking" && getDetailBookingID.ExperiencePaymentType.Name == "Down Payment" {
 		//transactionStatus = 5
 		user := getDetailBookingID.BookedBy[0].Title + `.` + getDetailBookingID.BookedBy[0].FullName
@@ -6504,6 +6642,46 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 		}
 		if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
 			return nil, nil
+		}
+
+		//pushNotif to merchant Instant Booking DP
+		isRead := 0
+		notif := models.Notification{
+			Id:           guuid.New().String(),
+			CreatedBy:    getDetailBookingID. BookedBy[0].Email,
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     0,
+			MerchantId:   getDetailBookingID.Experience[0].MerchantId,
+			Type:         0,
+			Title:        "New Confirmed Booking: Order ID " + getDetailBookingID.OrderId,
+			Desc:         "You've got a new confirmed booking for "+ getDetailBookingID.Experience[0].ExpTitle+", booked by " + getDetailBookingID.BookedBy[0].Email,
+			ExpId 	: &getDetailBookingID.Experience[0].ExpId,
+			ScheduleId  : nil,
+			BookingExpId :&getDetailBookingID.Id,
+			IsRead 		: &isRead,
+		}
+		pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+		if pushNotifErr != nil {
+			return nil,nil
+		}
+		for _,um := range getUserMerchant{
+			if um.FCMToken != nil{
+				if *um.FCMToken != ""{
+					fcm := models.FCMPushNotif{
+						To:   *um.FCMToken,
+						Data: models.DataFCMPushNotif{
+							Title:   "cGO",
+							Message: notif.Desc,
+						},
+					}
+					b.notificationUsecase.FCMPushNotification(ctx,fcm)
+				}
+			}
 		}
 
 	} else if exp.ExpBookingType == "Instant Booking" && getDetailBookingID.ExperiencePaymentType.Name == "Full Payment" {
@@ -6754,6 +6932,47 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 			return nil, nil
 		}
 
+		//pushNotif to merchant Instant Booking FP
+		isRead := 0
+		notif := models.Notification{
+			Id:           guuid.New().String(),
+			CreatedBy:    getDetailBookingID. BookedBy[0].Email,
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     0,
+			MerchantId:   getDetailBookingID.Experience[0].MerchantId,
+			Type:         0,
+			Title:        "New Confirmed Booking: Order ID " + getDetailBookingID.OrderId,
+			Desc:         "You've got a new confirmed booking for "+ getDetailBookingID.Experience[0].ExpTitle+", booked by " +getDetailBookingID. BookedBy[0].Email,
+			ExpId 	: &getDetailBookingID.Experience[0].ExpId,
+			ScheduleId  : nil,
+			BookingExpId :&getDetailBookingID.Id,
+			IsRead 		: &isRead,
+		}
+		pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+		if pushNotifErr != nil {
+			return nil,nil
+		}
+		for _,um := range getUserMerchant{
+			if um.FCMToken != nil{
+				if *um.FCMToken != ""{
+					fcm := models.FCMPushNotif{
+						To:   *um.FCMToken,
+						Data: models.DataFCMPushNotif{
+							Title:   "cGO",
+							Message: notif.Desc,
+						},
+					}
+					b.notificationUsecase.FCMPushNotification(ctx,fcm)
+				}
+			}
+		}
+
+
 	}
 	getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,getDetailBookingID.Experience[0].MerchantName)
 	if err != nil {
@@ -6809,6 +7028,2016 @@ func (b bookingExpUsecase) PaypalAutoComplete(ctx context.Context, bookingId str
 		Message: "Success Payment With Paypal",
 	}
 	return &result, nil
+}
+
+func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, accountNumber, status string) error {
+	booking, err := b.bookingExpRepo.GetByID(ctx, externalId)
+	if err != nil {
+		return err
+	}
+
+	var bookedBy []models.BookedByObj
+	if booking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return errUnmarshal
+		}
+	}
+
+	var transactionStatus int
+	if status == "CAPTURED" {
+		if booking.ExpId != nil {
+			exp, err := b.expRepo.GetByID(ctx, *booking.ExpId)
+			if err != nil {
+				return err
+			}
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "", "")
+			if err != nil {
+				return err
+			}
+			getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Experience[0].MerchantId)
+			if err != nil {
+				return nil
+			}
+
+			if exp.ExpBookingType == "No Instant Booking" {
+				transactionStatus = 1
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+					}
+					paymentDeadline := bookingDetail.BookingDate
+					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+							paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+						}
+					}
+					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
+
+					var data = map[string]interface{}{
+						"title":            exp.ExpTitle,
+						"user":             user,
+						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+						"orderId":          bookingDetail.OrderId,
+						"tripDate":         tripDate,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg := tpl.String()
+					pushEmail := &models.SendingEmail{
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
+						Attachment: nil,
+					}
+					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil
+					}
+				} else {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+					}
+					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
+					var data = map[string]interface{}{
+						"title":    exp.ExpTitle,
+						"user":     user,
+						"tripDate": tripDate,
+						"orderId":  bookingDetail.OrderId,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg := tpl.String()
+					pushEmail := &models.SendingEmail{
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
+						Attachment: nil,
+					}
+
+					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil
+					}
+				}
+
+				//pushNotif to merchant No Instant Booking
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Waiting to be Confirmed : Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got new booking that's waiting to be confirmed for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				transactionStatus = 5
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				paymentDeadline := bookingDetail.BookingDate
+				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+					}
+				}
+				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+
+				var data = map[string]interface{}{
+					"title":            bookingDetail.Experience[0].ExpTitle,
+					"user":             user,
+					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+					"orderId":          bookingDetail.OrderId,
+					"tripDate":         tripDate,
+					"userGuide":        bookingDetail.Experience[0].MerchantName,
+					"guideContact":     bookingDetail.Experience[0].MerchantPhone,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"expType":         bookingDetail.Experience[0].ExpType,
+					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+					"title":           bookingDetail.Experience[0].ExpTitle,
+					"city":            bookingDetail.Experience[0].HarborsName,
+					"country":         bookingDetail.Experience[0].CountryName,
+					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+					"time":            bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName":    bookingDetail.Experience[0].MerchantName,
+					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+					"orderId":         bookingDetail.OrderId,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err := t.Parse(templateTicketExperiencePDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				// pdf := htmlPDFTicket.String()
+				pushEmail := &models.SendingEmail{
+					Subject: "Experience E-Ticket",
+					Message: msg,
+					From:    "CGO Indonesia",
+					To:      bookedBy[0].Email,
+					// FileName:          "E-Ticket.pdf",
+					// AttachmentFileUrl: pdf,
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
+				//pushNotif to merchant Instant Booking DP
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
+				transactionStatus = 2
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				guestCount := len(bookingDetail.GuestDesc)
+
+				var tmpl *template.Template
+				var data map[string]interface{}
+				var t *template.Template
+				var dataMapping map[string]interface{}
+				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"time":         bookingDetail.Experience[0].ExpPickupTime,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+						"time":         bookingDetail.Experience[0].ExpPickupTime,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDF)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+						"time":            bookingDetail.Experience[0].ExpPickupTime,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Experience E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
+				}
+
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
+				//pushNotif to merchant Instant Booking FP
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			}
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
+			if err != nil {
+				return errors.New("Merchant Not Found")
+			}
+			var finalPrice float64
+			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else{
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}
+			}else {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp
+				}
+			}
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
+
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.Id); err != nil {
+				return err
+			}
+		} else {
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil, "")
+			if err != nil {
+				return err
+			}
+
+			getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Transportation[0].MerchantId)
+			if err != nil {
+				return err
+			}
+
+			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			guestCount := len(bookingDetail.GuestDesc)
+
+			layoutFormat := "15:04:05"
+			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
+
+			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
+
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId, "")
+				if err != nil {
+					return err
+				}
+				tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
+
+				departureTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].DepartureTime)
+				arrivalTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].ArrivalTime)
+
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
+				data := map[string]interface{}{
+					"title":               bookingDetail.Transportation[0].TransTitle,
+					"user":                user,
+					"tripDateDeparture":   tripDate,
+					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeDeparture": departureTime.Format("15:04"),
+					"desTimeDeparture":    arrivalTime.Format("15:04"),
+					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+					"classDeparture":      bookingDetail.Transportation[0].TransClass,
+					"orderId":             bookingDetail.OrderId,
+					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+					"tripDateReturn":      tripDateReturn,
+					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
+				}
+
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				//ticketPDF Bind HTML is Return
+				var htmlPDFTicketReturn bytes.Buffer
+
+				dataMappingReturn := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDateReturn,
+					"sourceTime":      departureTimeReturn.Format("15:04"),
+					"desTime":         arrivalTimeReturn.Format("15:04"),
+					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
+					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
+					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
+					"class":           bookingDetailReturn.Transportation[0].TransClass,
+					"qrCode":          bookingDetailReturn.TicketQRCode,
+					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetailReturn.OrderId,
+				}
+				// We create the template and register out template function
+				tReturn := template.New("t").Funcs(templateFuncs)
+				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				pdfReturn := htmlPDFTicketReturn.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				eTicketReturn := models.Attachment{
+					AttachmentFileUrl: pdfReturn,
+					FileName:          "E-Ticket-Return.pdf",
+				}
+				attachment = append(attachment, &eTicketReturn)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
+				//pushNotif to merchant Transportation any return
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			} else {
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
+				data := map[string]interface{}{
+					"title":           bookingDetail.Transportation[0].TransTitle,
+					"user":            user,
+					"tripDate":        tripDate,
+					"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"orderId":         bookingDetail.OrderId,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil
+				}
+
+
+				//pushNotif to merchant Transportation
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			}
+
+			transactionStatus = 2
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
+			if err != nil {
+				return errors.New("Merchant Not Found")
+			}
+			var finalPriceAdult float64
+			var finalPriceChildren float64
+			for _,price := range bookingDetail.GuestDesc{
+				if price.Type == "Adult"{
+					finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
+				}else {
+					finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
+				}
+			}
+			finalPrice := finalPriceAdult + finalPriceChildren
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.OrderId); err != nil {
+				return err
+			}
+		}
+
+	} else if status == "FAILED" {
+		var bookingCode string
+		if booking.ExpId != nil {
+			bookingCode = booking.Id
+		} else {
+			bookingCode = booking.OrderId
+		}
+		transactionStatus = 3
+
+		//bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "")
+		//if err != nil {
+		//	return err
+		//}
+		//tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+		//tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
+		//var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
+		//var data = map[string]interface{}{
+		//	"title": bookingDetail.Experience[0].ExpTitle,
+		//	"orderId" : bookingDetail.OrderId,
+		//	"tripDate" : tripDate,
+		//}
+		//var tpl bytes.Buffer
+		//err = tmpl.Execute(&tpl, data)
+		//if err != nil {
+		//	//http.Error(w, err.Error(), http.StatusInternalServerError)
+		//}
+		//
+		////maxTime := time.Now().AddDate(0, 0, 1)
+		//msg := tpl.String()
+		//pushEmail := &models.SendingEmail{
+		//	Subject:  "Booking Cancelled",
+		//	Message:  msg,
+		//	From:     "CGO Indonesia",
+		//	To:       bookedBy[0].Email,
+		//	FileName: "",
+		//}
+		//if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+		//	return nil
+		//}
+
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", bookingCode); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode string) (map[string]interface{}, error) {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+
+	var result map[string]interface{}
+
+	cfg := paypal.PaypalConfig{
+		OAuthUrl: paypal.PaypalOauthUrl,
+		OrderUrl: paypal.PaypalOrderUrl,
+	}
+
+	res, err := paypal.PaypalSetup(cfg, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	if orderId != res.ID {
+		return nil, errors.New("Incorrect Paypal Order ID")
+	}
+
+	booking, err := b.bookingExpRepo.GetByID(ctx, bookingCode)
+	if err != nil {
+		return nil, err
+	}
+
+	var bookedBy []models.BookedByObj
+	if booking.BookedBy != "" {
+		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
+			return nil, errUnmarshal
+		}
+	}
+
+	var transactionStatus int
+	if res.Status == "COMPLETED" {
+		if booking.ExpId != nil {
+			exp, err := b.expRepo.GetByID(ctx, *booking.ExpId)
+			if err != nil {
+				return nil, err
+			}
+			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "", "")
+			if err != nil {
+				return nil, err
+			}
+			getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Experience[0].MerchantId)
+			if err != nil {
+				return nil,err
+			}
+			if exp.ExpBookingType == "No Instant Booking" {
+				transactionStatus = 1
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+					}
+					paymentDeadline := bookingDetail.BookingDate
+					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+							paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+						}
+					}
+					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
+
+					var data = map[string]interface{}{
+						"title":            exp.ExpTitle,
+						"user":             user,
+						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+						"orderId":          bookingDetail.OrderId,
+						"tripDate":         tripDate,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg := tpl.String()
+					pushEmail := &models.SendingEmail{
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
+						Attachment: nil,
+					}
+					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil, nil
+					}
+				} else {
+					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+					duration := 0
+					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+						duration = bookingDetail.Experience[0].ExpDuration - 1
+						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+					}
+					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
+					var data = map[string]interface{}{
+						"title":    exp.ExpTitle,
+						"user":     user,
+						"tripDate": tripDate,
+						"orderId":  bookingDetail.OrderId,
+					}
+					var tpl bytes.Buffer
+					err = tmpl.Execute(&tpl, data)
+					if err != nil {
+						//http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+
+					//maxTime := time.Now().AddDate(0, 0, 1)
+					msg := tpl.String()
+					pushEmail := &models.SendingEmail{
+						Subject:    "Waiting for guide confirmation",
+						Message:    msg,
+						From:       "CGO Indonesia",
+						To:         bookedBy[0].Email,
+						Attachment: nil,
+					}
+
+					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+						return nil, nil
+					}
+				}
+
+				//pushNotif to merchant No Instant Booking
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Waiting to be Confirmed : Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got new booking that's waiting to be confirmed for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil,nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+				transactionStatus = 5
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				paymentDeadline := bookingDetail.BookingDate
+				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
+					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
+						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
+					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
+						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
+					}
+				}
+				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
+				var data = map[string]interface{}{
+					"title":            bookingDetail.Experience[0].ExpTitle,
+					"user":             user,
+					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
+					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
+					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+					"orderId":          bookingDetail.OrderId,
+					"tripDate":         tripDate,
+					"userGuide":        bookingDetail.Experience[0].MerchantName,
+					"guideContact":     bookingDetail.Experience[0].MerchantPhone,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"expType":         bookingDetail.Experience[0].ExpType,
+					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+					"title":           bookingDetail.Experience[0].ExpTitle,
+					"city":            bookingDetail.Experience[0].HarborsName,
+					"country":         bookingDetail.Experience[0].CountryName,
+					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+					"time":            bookingDetail.Experience[0].ExpPickupTime,
+					"merchantName":    bookingDetail.Experience[0].MerchantName,
+					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+					"orderId":         bookingDetail.OrderId,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err := t.Parse(templateTicketExperiencePDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				// pdf := htmlPDFTicket.String()
+				pushEmail := &models.SendingEmail{
+					Subject: "Experience E-Ticket",
+					Message: msg,
+					From:    "CGO Indonesia",
+					To:      bookedBy[0].Email,
+					// FileName:          "E-Ticket.pdf",
+					// AttachmentFileUrl: pdf,
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil, nil
+				}
+
+				//pushNotif to merchant Instant Booking DP
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil,nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
+				transactionStatus = 2
+				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+				duration := 0
+				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
+					duration = bookingDetail.Experience[0].ExpDuration - 1
+					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+				}
+				guestCount := len(bookingDetail.GuestDesc)
+
+				var tmpl *template.Template
+				var data map[string]interface{}
+				var t *template.Template
+				var dataMapping map[string]interface{}
+				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					if err != nil {
+						panic(err)
+					}
+
+					t = temp
+
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
+					if err != nil {
+						panic(err)
+					}
+					t = temp
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"time":         bookingDetail.Experience[0].ExpPickupTime,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
+					if err != nil {
+						panic(err)
+					}
+					t = temp
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+
+				} else {
+					tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
+					data = map[string]interface{}{
+						"title":        exp.ExpTitle,
+						"user":         user,
+						"tripDate":     tripDate,
+						"orderId":      bookingDetail.OrderId,
+						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
+						"time":         bookingDetail.Experience[0].ExpPickupTime,
+						"userGuide":    bookingDetail.Experience[0].MerchantName,
+						"guideContact": bookingDetail.Experience[0].MerchantPhone,
+						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
+					}
+
+					//for html pdf
+					var guestDesc []models.GuestDescObjForHTML
+					for i, element := range bookingDetail.GuestDesc {
+						guest := models.GuestDescObjForHTML{
+							No:       i + 1,
+							FullName: element.FullName,
+							Type:     element.Type,
+							IdType:   element.IdType,
+							IdNumber: element.IdNumber,
+						}
+						guestDesc = append(guestDesc, guest)
+					}
+
+					// We create the template and register out template function
+					temp := template.New("t").Funcs(templateFuncs)
+					temp, err := temp.Parse(templateTicketExperiencePDF)
+					if err != nil {
+						panic(err)
+					}
+					t = temp
+					dataMapping = map[string]interface{}{
+						"guestDesc":       guestDesc,
+						"expType":         bookingDetail.Experience[0].ExpType,
+						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
+						"title":           bookingDetail.Experience[0].ExpTitle,
+						"city":            bookingDetail.Experience[0].HarborsName,
+						"country":         bookingDetail.Experience[0].CountryName,
+						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
+						"time":            bookingDetail.Experience[0].ExpPickupTime,
+						"merchantName":    bookingDetail.Experience[0].MerchantName,
+						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
+						"orderId":         bookingDetail.OrderId,
+						"qrCode":          bookingDetail.TicketQRCode,
+						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
+					}
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Experience E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
+				}
+
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil, nil
+				}
+
+				//pushNotif to merchant Instant Booking FP
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:    bookingDetail.BookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " +bookingDetail. BookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil,nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			}
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
+			if err != nil {
+				return nil,errors.New("Merchant Not Found")
+			}
+			var finalPrice float64
+			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else{
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
+				}
+			}else {
+				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
+					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = calculatePriceDP
+					}
+					finalPrice = priceExp
+				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
+					var priceExp float64
+					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
+						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
+					}else {
+						priceExp = bookingDetail.ExpPayment.Price
+					}
+					finalPrice = priceExp
+				}
+			}
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
+
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.Id); err != nil {
+				return nil, err
+			}
+		} else {
+
+			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil, "")
+			if err != nil {
+				return nil, err
+			}
+			getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Transportation[0].MerchantId)
+			if err != nil {
+				return nil,err
+			}
+
+			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
+			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
+			guestCount := len(bookingDetail.GuestDesc)
+			layoutFormat := "15:04:05"
+			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
+			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
+
+			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
+
+				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId, "")
+				if err != nil {
+					return nil, err
+				}
+				tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
+
+				departureTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].DepartureTime)
+				arrivalTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].ArrivalTime)
+
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
+				data := map[string]interface{}{
+					"title":               bookingDetail.Transportation[0].TransTitle,
+					"user":                user,
+					"tripDateDeparture":   tripDate,
+					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeDeparture": departureTime.Format("15:04"),
+					"desTimeDeparture":    arrivalTime.Format("15:04"),
+					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
+					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
+					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
+					"classDeparture":      bookingDetail.Transportation[0].TransClass,
+					"orderId":             bookingDetail.OrderId,
+					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
+					"tripDateReturn":      tripDateReturn,
+					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
+					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
+					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
+					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
+					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
+					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
+				}
+
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				//ticketPDF Bind HTML is Return
+				var htmlPDFTicketReturn bytes.Buffer
+
+				dataMappingReturn := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDateReturn,
+					"sourceTime":      departureTimeReturn.Format("15:04"),
+					"desTime":         arrivalTimeReturn.Format("15:04"),
+					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
+					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
+					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
+					"class":           bookingDetailReturn.Transportation[0].TransClass,
+					"qrCode":          bookingDetailReturn.TicketQRCode,
+					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetailReturn.OrderId,
+				}
+				// We create the template and register out template function
+				tReturn := template.New("t").Funcs(templateFuncs)
+				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				pdfReturn := htmlPDFTicketReturn.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				eTicketReturn := models.Attachment{
+					AttachmentFileUrl: pdfReturn,
+					FileName:          "E-Ticket-Return.pdf",
+				}
+				attachment = append(attachment, &eTicketReturn)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil, err
+				}
+
+				//pushNotif to merchant Transportation any return
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil,nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			} else {
+				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
+				data := map[string]interface{}{
+					"title":           bookingDetail.Transportation[0].TransTitle,
+					"user":            user,
+					"tripDate":        tripDate,
+					"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"orderId":         bookingDetail.OrderId,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+				}
+				var tpl bytes.Buffer
+				err = tmpl.Execute(&tpl, data)
+				if err != nil {
+					//http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+
+				//ticketPDF Bind HTML
+				var htmlPDFTicket bytes.Buffer
+
+				var guestDesc []models.GuestDescObjForHTML
+				for i, element := range bookingDetail.GuestDesc {
+					guest := models.GuestDescObjForHTML{
+						No:       i + 1,
+						FullName: element.FullName,
+						Type:     element.Type,
+						IdType:   element.IdType,
+						IdNumber: element.IdNumber,
+					}
+					guestDesc = append(guestDesc, guest)
+				}
+
+				dataMapping := map[string]interface{}{
+					"guestDesc":       guestDesc,
+					"tripDate":        tripDate,
+					"sourceTime":      departureTime.Format("15:04"),
+					"desTime":         arrivalTime.Format("15:04"),
+					"duration":        bookingDetail.Transportation[0].TripDuration,
+					"source":          bookingDetail.Transportation[0].HarborSourceName,
+					"dest":            bookingDetail.Transportation[0].HarborDestName,
+					"class":           bookingDetail.Transportation[0].TransClass,
+					"qrCode":          bookingDetail.TicketQRCode,
+					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
+					"orderId":         bookingDetail.OrderId,
+				}
+				// We create the template and register out template function
+				t := template.New("t").Funcs(templateFuncs)
+				t, err = t.Parse(templateTicketTransportationPDF)
+				if err != nil {
+					panic(err)
+				}
+
+				err = t.Execute(&htmlPDFTicket, dataMapping)
+				if err != nil {
+					panic(err)
+				}
+
+				msg := tpl.String()
+				pdf := htmlPDFTicket.String()
+				var attachment []*models.Attachment
+				eTicket := models.Attachment{
+					AttachmentFileUrl: pdf,
+					FileName:          "E-Ticket.pdf",
+				}
+				attachment = append(attachment, &eTicket)
+				pushEmail := &models.SendingEmail{
+					Subject:    "Transportation E-Ticket",
+					Message:    msg,
+					From:       "CGO Indonesia",
+					To:         bookedBy[0].Email,
+					Attachment: attachment,
+				}
+				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
+					return nil, err
+				}
+
+
+				//pushNotif to merchant Transportation
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil,nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							b.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
+			}
+
+			transactionStatus = 2
+			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
+			if err != nil {
+				return nil,errors.New("Merchant Not Found")
+			}
+			var finalPriceAdult float64
+			var finalPriceChildren float64
+			for _,price := range bookingDetail.GuestDesc{
+				if price.Type == "Adult"{
+					finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
+				}else {
+					finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
+				}
+			}
+			finalPrice := finalPriceAdult + finalPriceChildren
+			getMerchantId.Balance = getMerchantId.Balance + finalPrice
+			_= b.merchantRepo.Update(ctx,getMerchantId)
+			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.OrderId); err != nil {
+				return nil, err
+			}
+		}
+
+	}
+
+	var bookCode string
+	if booking.ExpId != nil {
+		bookCode = booking.Id
+	} else {
+		bookCode = booking.OrderId
+	}
+	if res.Status == "VOIDED" {
+		transactionStatus = 3
+		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookCode); err != nil {
+			return nil, err
+		}
+	}
+
+	data, _ := json.Marshal(res)
+	json.Unmarshal(data, &result)
+
+	return result, nil
 }
 
 func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) error {
@@ -7259,808 +9488,6 @@ func (b bookingExpUsecase) XenPayment(ctx context.Context, amount float64, token
 	return result, nil
 }
 
-func (b bookingExpUsecase) SetAfterCCPayment(ctx context.Context, externalId, accountNumber, status string) error {
-	booking, err := b.bookingExpRepo.GetByID(ctx, externalId)
-	if err != nil {
-		return err
-	}
-
-	var bookedBy []models.BookedByObj
-	if booking.BookedBy != "" {
-		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
-			return errUnmarshal
-		}
-	}
-
-	var transactionStatus int
-	if status == "CAPTURED" {
-		if booking.ExpId != nil {
-			exp, err := b.expRepo.GetByID(ctx, *booking.ExpId)
-			if err != nil {
-				return err
-			}
-			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "", "")
-			if err != nil {
-				return err
-			}
-			if exp.ExpBookingType == "No Instant Booking" {
-				transactionStatus = 1
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					duration := 0
-					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-						duration = bookingDetail.Experience[0].ExpDuration - 1
-						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-					}
-					paymentDeadline := bookingDetail.BookingDate
-					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
-							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
-							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
-							paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
-						}
-					}
-					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
-
-					var data = map[string]interface{}{
-						"title":            exp.ExpTitle,
-						"user":             user,
-						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
-						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
-						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-						"orderId":          bookingDetail.OrderId,
-						"tripDate":         tripDate,
-					}
-					var tpl bytes.Buffer
-					err = tmpl.Execute(&tpl, data)
-					if err != nil {
-						//http.Error(w, err.Error(), http.StatusInternalServerError)
-					}
-
-					//maxTime := time.Now().AddDate(0, 0, 1)
-					msg := tpl.String()
-					pushEmail := &models.SendingEmail{
-						Subject:    "Waiting for guide confirmation",
-						Message:    msg,
-						From:       "CGO Indonesia",
-						To:         bookedBy[0].Email,
-						Attachment: nil,
-					}
-					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-						return nil
-					}
-				} else {
-					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					duration := 0
-					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-						duration = bookingDetail.Experience[0].ExpDuration - 1
-						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-					}
-					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
-					var data = map[string]interface{}{
-						"title":    exp.ExpTitle,
-						"user":     user,
-						"tripDate": tripDate,
-						"orderId":  bookingDetail.OrderId,
-					}
-					var tpl bytes.Buffer
-					err = tmpl.Execute(&tpl, data)
-					if err != nil {
-						//http.Error(w, err.Error(), http.StatusInternalServerError)
-					}
-
-					//maxTime := time.Now().AddDate(0, 0, 1)
-					msg := tpl.String()
-					pushEmail := &models.SendingEmail{
-						Subject:    "Waiting for guide confirmation",
-						Message:    msg,
-						From:       "CGO Indonesia",
-						To:         bookedBy[0].Email,
-						Attachment: nil,
-					}
-
-					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-						return nil
-					}
-				}
-
-			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-				transactionStatus = 5
-				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				duration := 0
-				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-					duration = bookingDetail.Experience[0].ExpDuration - 1
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-				}
-				paymentDeadline := bookingDetail.BookingDate
-				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
-						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
-						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
-						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
-					}
-				}
-				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
-
-				var data = map[string]interface{}{
-					"title":            bookingDetail.Experience[0].ExpTitle,
-					"user":             user,
-					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
-					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
-					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-					"orderId":          bookingDetail.OrderId,
-					"tripDate":         tripDate,
-					"userGuide":        bookingDetail.Experience[0].MerchantName,
-					"guideContact":     bookingDetail.Experience[0].MerchantPhone,
-				}
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				dataMapping := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"expType":         bookingDetail.Experience[0].ExpType,
-					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].HarborsName,
-					"country":         bookingDetail.Experience[0].CountryName,
-					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-					"time":            bookingDetail.Experience[0].ExpPickupTime,
-					"merchantName":    bookingDetail.Experience[0].MerchantName,
-					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-					"orderId":         bookingDetail.OrderId,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-				}
-				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err := t.Parse(templateTicketExperiencePDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				// pdf := htmlPDFTicket.String()
-				pushEmail := &models.SendingEmail{
-					Subject: "Experience E-Ticket",
-					Message: msg,
-					From:    "CGO Indonesia",
-					To:      bookedBy[0].Email,
-					// FileName:          "E-Ticket.pdf",
-					// AttachmentFileUrl: pdf,
-				}
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil
-				}
-
-			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
-				transactionStatus = 2
-				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				duration := 0
-				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-					duration = bookingDetail.Experience[0].ExpDuration - 1
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-				}
-				guestCount := len(bookingDetail.GuestDesc)
-
-				var tmpl *template.Template
-				var data map[string]interface{}
-				var t *template.Template
-				var dataMapping map[string]interface{}
-				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
-					if err != nil {
-						panic(err)
-					}
-
-					t = temp
-
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-
-				} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
-					if err != nil {
-						panic(err)
-					}
-
-					t = temp
-
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-
-				} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"time":         bookingDetail.Experience[0].ExpPickupTime,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
-					if err != nil {
-						panic(err)
-					}
-
-					t = temp
-
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-
-				} else {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-						"time":         bookingDetail.Experience[0].ExpPickupTime,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDF)
-					if err != nil {
-						panic(err)
-					}
-
-					t = temp
-
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-						"time":            bookingDetail.Experience[0].ExpPickupTime,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-				}
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
-				var attachment []*models.Attachment
-				eTicket := models.Attachment{
-					AttachmentFileUrl: pdf,
-					FileName:          "E-Ticket.pdf",
-				}
-				attachment = append(attachment, &eTicket)
-				pushEmail := &models.SendingEmail{
-					Subject:    "Experience E-Ticket",
-					Message:    msg,
-					From:       "CGO Indonesia",
-					To:         bookedBy[0].Email,
-					Attachment: attachment,
-				}
-
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil
-				}
-
-			}
-			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
-			if err != nil {
-				return errors.New("Merchant Not Found")
-			}
-			var finalPrice float64
-			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
-					}else{
-						priceExp = calculatePriceDP
-					}
-					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
-				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
-					}else {
-						priceExp = bookingDetail.ExpPayment.Price
-					}
-					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
-				}
-			}else {
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
-					}else {
-						priceExp = calculatePriceDP
-					}
-					finalPrice = priceExp
-				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
-					}else {
-						priceExp = bookingDetail.ExpPayment.Price
-					}
-					finalPrice = priceExp
-				}
-			}
-			getMerchantId.Balance = getMerchantId.Balance + finalPrice
-			_= b.merchantRepo.Update(ctx,getMerchantId)
-
-			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.Id); err != nil {
-				return err
-			}
-		} else {
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil, "")
-			if err != nil {
-				return err
-			}
-			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-			guestCount := len(bookingDetail.GuestDesc)
-
-			layoutFormat := "15:04:05"
-			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
-			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
-
-			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
-
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId, "")
-				if err != nil {
-					return err
-				}
-				tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
-
-				departureTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].DepartureTime)
-				arrivalTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].ArrivalTime)
-
-				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
-				data := map[string]interface{}{
-					"title":               bookingDetail.Transportation[0].TransTitle,
-					"user":                user,
-					"tripDateDeparture":   tripDate,
-					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeDeparture": departureTime.Format("15:04"),
-					"desTimeDeparture":    arrivalTime.Format("15:04"),
-					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
-					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
-					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
-					"classDeparture":      bookingDetail.Transportation[0].TransClass,
-					"orderId":             bookingDetail.OrderId,
-					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
-					"tripDateReturn":      tripDateReturn,
-					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
-					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
-					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
-					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
-					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
-					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
-				}
-
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				dataMapping := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"tripDate":        tripDate,
-					"sourceTime":      departureTime.Format("15:04"),
-					"desTime":         arrivalTime.Format("15:04"),
-					"duration":        bookingDetail.Transportation[0].TripDuration,
-					"source":          bookingDetail.Transportation[0].HarborSourceName,
-					"dest":            bookingDetail.Transportation[0].HarborDestName,
-					"class":           bookingDetail.Transportation[0].TransClass,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-					"orderId":         bookingDetail.OrderId,
-				}
-				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err = t.Parse(templateTicketTransportationPDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				//ticketPDF Bind HTML is Return
-				var htmlPDFTicketReturn bytes.Buffer
-
-				dataMappingReturn := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"tripDate":        tripDateReturn,
-					"sourceTime":      departureTimeReturn.Format("15:04"),
-					"desTime":         arrivalTimeReturn.Format("15:04"),
-					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
-					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
-					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
-					"class":           bookingDetailReturn.Transportation[0].TransClass,
-					"qrCode":          bookingDetailReturn.TicketQRCode,
-					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
-					"orderId":         bookingDetailReturn.OrderId,
-				}
-				// We create the template and register out template function
-				tReturn := template.New("t").Funcs(templateFuncs)
-				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
-				pdfReturn := htmlPDFTicketReturn.String()
-				var attachment []*models.Attachment
-				eTicket := models.Attachment{
-					AttachmentFileUrl: pdf,
-					FileName:          "E-Ticket.pdf",
-				}
-				attachment = append(attachment, &eTicket)
-				eTicketReturn := models.Attachment{
-					AttachmentFileUrl: pdfReturn,
-					FileName:          "E-Ticket-Return.pdf",
-				}
-				attachment = append(attachment, &eTicketReturn)
-				pushEmail := &models.SendingEmail{
-					Subject:    "Transportation E-Ticket",
-					Message:    msg,
-					From:       "CGO Indonesia",
-					To:         bookedBy[0].Email,
-					Attachment: attachment,
-				}
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil
-				}
-
-			} else {
-				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
-				data := map[string]interface{}{
-					"title":           bookingDetail.Transportation[0].TransTitle,
-					"user":            user,
-					"tripDate":        tripDate,
-					"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTime":      departureTime.Format("15:04"),
-					"desTime":         arrivalTime.Format("15:04"),
-					"duration":        bookingDetail.Transportation[0].TripDuration,
-					"source":          bookingDetail.Transportation[0].HarborSourceName,
-					"dest":            bookingDetail.Transportation[0].HarborDestName,
-					"class":           bookingDetail.Transportation[0].TransClass,
-					"orderId":         bookingDetail.OrderId,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-				}
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				dataMapping := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"tripDate":        tripDate,
-					"sourceTime":      departureTime.Format("15:04"),
-					"desTime":         arrivalTime.Format("15:04"),
-					"duration":        bookingDetail.Transportation[0].TripDuration,
-					"source":          bookingDetail.Transportation[0].HarborSourceName,
-					"dest":            bookingDetail.Transportation[0].HarborDestName,
-					"class":           bookingDetail.Transportation[0].TransClass,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-					"orderId":         bookingDetail.OrderId,
-				}
-				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err = t.Parse(templateTicketTransportationPDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
-				var attachment []*models.Attachment
-				eTicket := models.Attachment{
-					AttachmentFileUrl: pdf,
-					FileName:          "E-Ticket.pdf",
-				}
-				attachment = append(attachment, &eTicket)
-				pushEmail := &models.SendingEmail{
-					Subject:    "Transportation E-Ticket",
-					Message:    msg,
-					From:       "CGO Indonesia",
-					To:         bookedBy[0].Email,
-					Attachment: attachment,
-				}
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil
-				}
-
-			}
-
-			transactionStatus = 2
-			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
-			if err != nil {
-				return errors.New("Merchant Not Found")
-			}
-			var finalPriceAdult float64
-			var finalPriceChildren float64
-			for _,price := range bookingDetail.GuestDesc{
-				if price.Type == "Adult"{
-					finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
-				}else {
-					finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
-				}
-			}
-			finalPrice := finalPriceAdult + finalPriceChildren
-			getMerchantId.Balance = getMerchantId.Balance + finalPrice
-			_= b.merchantRepo.Update(ctx,getMerchantId)
-			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", booking.OrderId); err != nil {
-				return err
-			}
-		}
-
-	} else if status == "FAILED" {
-		var bookingCode string
-		if booking.ExpId != nil {
-			bookingCode = booking.Id
-		} else {
-			bookingCode = booking.OrderId
-		}
-		transactionStatus = 3
-
-		//bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "")
-		//if err != nil {
-		//	return err
-		//}
-		//tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-		//tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0,0,bookingDetail.Experience[0].ExpDuration).Format("02 January 2006")
-		//var tmpl = template.Must(template.New("main-template").Parse(templateBookingCancelled))
-		//var data = map[string]interface{}{
-		//	"title": bookingDetail.Experience[0].ExpTitle,
-		//	"orderId" : bookingDetail.OrderId,
-		//	"tripDate" : tripDate,
-		//}
-		//var tpl bytes.Buffer
-		//err = tmpl.Execute(&tpl, data)
-		//if err != nil {
-		//	//http.Error(w, err.Error(), http.StatusInternalServerError)
-		//}
-		//
-		////maxTime := time.Now().AddDate(0, 0, 1)
-		//msg := tpl.String()
-		//pushEmail := &models.SendingEmail{
-		//	Subject:  "Booking Cancelled",
-		//	Message:  msg,
-		//	From:     "CGO Indonesia",
-		//	To:       bookedBy[0].Email,
-		//	FileName: "",
-		//}
-		//if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-		//	return nil
-		//}
-
-		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, accountNumber, "", bookingCode); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, date string, guest int) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
@@ -8090,791 +9517,6 @@ func (b bookingExpUsecase) GetByGuestCount(ctx context.Context, expId string, da
 	if guest > remainingSeat {
 		result = true
 	}
-	return result, nil
-}
-func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode string) (map[string]interface{}, error) {
-	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
-	defer cancel()
-
-	var result map[string]interface{}
-
-	cfg := paypal.PaypalConfig{
-		OAuthUrl: paypal.PaypalOauthUrl,
-		OrderUrl: paypal.PaypalOrderUrl,
-	}
-
-	res, err := paypal.PaypalSetup(cfg, orderId)
-	if err != nil {
-		return nil, err
-	}
-
-	if orderId != res.ID {
-		return nil, errors.New("Incorrect Paypal Order ID")
-	}
-
-	booking, err := b.bookingExpRepo.GetByID(ctx, bookingCode)
-	if err != nil {
-		return nil, err
-	}
-
-	var bookedBy []models.BookedByObj
-	if booking.BookedBy != "" {
-		if errUnmarshal := json.Unmarshal([]byte(booking.BookedBy), &bookedBy); errUnmarshal != nil {
-			return nil, errUnmarshal
-		}
-	}
-
-	var transactionStatus int
-	if res.Status == "COMPLETED" {
-		if booking.ExpId != nil {
-			exp, err := b.expRepo.GetByID(ctx, *booking.ExpId)
-			if err != nil {
-				return nil, err
-			}
-			bookingDetail, err := b.GetDetailBookingID(ctx, booking.Id, "", "")
-			if err != nil {
-				return nil, err
-			}
-			if exp.ExpBookingType == "No Instant Booking" {
-				transactionStatus = 1
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					duration := 0
-					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-						duration = bookingDetail.Experience[0].ExpDuration - 1
-						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-					}
-					paymentDeadline := bookingDetail.BookingDate
-					if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-						if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
-							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
-							paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-						} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
-							paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
-						}
-					}
-					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalDP))
-
-					var data = map[string]interface{}{
-						"title":            exp.ExpTitle,
-						"user":             user,
-						"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
-						"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
-						"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-						"orderId":          bookingDetail.OrderId,
-						"tripDate":         tripDate,
-					}
-					var tpl bytes.Buffer
-					err = tmpl.Execute(&tpl, data)
-					if err != nil {
-						//http.Error(w, err.Error(), http.StatusInternalServerError)
-					}
-
-					//maxTime := time.Now().AddDate(0, 0, 1)
-					msg := tpl.String()
-					pushEmail := &models.SendingEmail{
-						Subject:    "Waiting for guide confirmation",
-						Message:    msg,
-						From:       "CGO Indonesia",
-						To:         bookedBy[0].Email,
-						Attachment: nil,
-					}
-					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-						return nil, nil
-					}
-				} else {
-					user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-					tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-					duration := 0
-					if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-						duration = bookingDetail.Experience[0].ExpDuration - 1
-						tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-					}
-					var tmpl = template.Must(template.New("main-template").Parse(templateWaitingApprovalFP))
-					var data = map[string]interface{}{
-						"title":    exp.ExpTitle,
-						"user":     user,
-						"tripDate": tripDate,
-						"orderId":  bookingDetail.OrderId,
-					}
-					var tpl bytes.Buffer
-					err = tmpl.Execute(&tpl, data)
-					if err != nil {
-						//http.Error(w, err.Error(), http.StatusInternalServerError)
-					}
-
-					//maxTime := time.Now().AddDate(0, 0, 1)
-					msg := tpl.String()
-					pushEmail := &models.SendingEmail{
-						Subject:    "Waiting for guide confirmation",
-						Message:    msg,
-						From:       "CGO Indonesia",
-						To:         bookedBy[0].Email,
-						Attachment: nil,
-					}
-
-					if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-						return nil, nil
-					}
-				}
-
-			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-				transactionStatus = 5
-				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				duration := 0
-				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-					duration = bookingDetail.Experience[0].ExpDuration - 1
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-				}
-				paymentDeadline := bookingDetail.BookingDate
-				if bookingDetail.Experience[0].ExpPaymentDeadlineType != nil && bookingDetail.Experience[0].ExpPaymentDeadlineAmount != nil {
-					if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Days" {
-						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Week" {
-						paymentDeadline = paymentDeadline.AddDate(0, 0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount*7)
-					} else if *bookingDetail.Experience[0].ExpPaymentDeadlineType == "Month" {
-						paymentDeadline = paymentDeadline.AddDate(0, -*bookingDetail.Experience[0].ExpPaymentDeadlineAmount, 0)
-					}
-				}
-				var tmpl = template.Must(template.New("main-template").Parse(templateBookingApprovalDP))
-				var data = map[string]interface{}{
-					"title":            bookingDetail.Experience[0].ExpTitle,
-					"user":             user,
-					"payment":          message.NewPrinter(language.German).Sprint(*bookingDetail.TotalPrice),
-					"remainingPayment": message.NewPrinter(language.German).Sprint(bookingDetail.ExperiencePaymentType.RemainingPayment),
-					"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-					"orderId":          bookingDetail.OrderId,
-					"tripDate":         tripDate,
-					"userGuide":        bookingDetail.Experience[0].MerchantName,
-					"guideContact":     bookingDetail.Experience[0].MerchantPhone,
-				}
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				dataMapping := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"expType":         bookingDetail.Experience[0].ExpType,
-					"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-					"title":           bookingDetail.Experience[0].ExpTitle,
-					"city":            bookingDetail.Experience[0].HarborsName,
-					"country":         bookingDetail.Experience[0].CountryName,
-					"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-					"time":            bookingDetail.Experience[0].ExpPickupTime,
-					"merchantName":    bookingDetail.Experience[0].MerchantName,
-					"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-					"orderId":         bookingDetail.OrderId,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-				}
-				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err := t.Parse(templateTicketExperiencePDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				// pdf := htmlPDFTicket.String()
-				pushEmail := &models.SendingEmail{
-					Subject: "Experience E-Ticket",
-					Message: msg,
-					From:    "CGO Indonesia",
-					To:      bookedBy[0].Email,
-					// FileName:          "E-Ticket.pdf",
-					// AttachmentFileUrl: pdf,
-				}
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil, nil
-				}
-
-			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
-				transactionStatus = 2
-				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-				tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-				duration := 0
-				if bookingDetail.Experience[0].ExpDuration != 0 && bookingDetail.Experience[0].ExpDuration != 1 {
-					duration = bookingDetail.Experience[0].ExpDuration - 1
-					tripDate = tripDate + ` - ` + bookingDetail.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-				}
-				guestCount := len(bookingDetail.GuestDesc)
-
-				var tmpl *template.Template
-				var data map[string]interface{}
-				var t *template.Template
-				var dataMapping map[string]interface{}
-				if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPointAndTime))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
-					if err != nil {
-						panic(err)
-					}
-
-					t = temp
-
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-
-				} else if bookingDetail.Experience[0].ExpPickupPlace != "" && (bookingDetail.Experience[0].ExpPickupTime == "" || bookingDetail.Experience[0].ExpPickupTime == "00:00:00") {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutTime))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDFWithoutTime)
-					if err != nil {
-						panic(err)
-					}
-					t = temp
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-
-				} else if bookingDetail.Experience[0].ExpPickupPlace == "" && (bookingDetail.Experience[0].ExpPickupTime != "" && bookingDetail.Experience[0].ExpPickupTime != "00:00:00") {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFPWithoutMeetingPoint))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"time":         bookingDetail.Experience[0].ExpPickupTime,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDFWithoutMeetingPointAndTime)
-					if err != nil {
-						panic(err)
-					}
-					t = temp
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-
-				} else {
-					tmpl = template.Must(template.New("main-template").Parse(templateTicketFP))
-					data = map[string]interface{}{
-						"title":        exp.ExpTitle,
-						"user":         user,
-						"tripDate":     tripDate,
-						"orderId":      bookingDetail.OrderId,
-						"meetingPoint": bookingDetail.Experience[0].ExpPickupPlace,
-						"time":         bookingDetail.Experience[0].ExpPickupTime,
-						"userGuide":    bookingDetail.Experience[0].MerchantName,
-						"guideContact": bookingDetail.Experience[0].MerchantPhone,
-						"guestCount":   strconv.Itoa(guestCount) + " Guest(s)",
-					}
-
-					//for html pdf
-					var guestDesc []models.GuestDescObjForHTML
-					for i, element := range bookingDetail.GuestDesc {
-						guest := models.GuestDescObjForHTML{
-							No:       i + 1,
-							FullName: element.FullName,
-							Type:     element.Type,
-							IdType:   element.IdType,
-							IdNumber: element.IdNumber,
-						}
-						guestDesc = append(guestDesc, guest)
-					}
-
-					// We create the template and register out template function
-					temp := template.New("t").Funcs(templateFuncs)
-					temp, err := temp.Parse(templateTicketExperiencePDF)
-					if err != nil {
-						panic(err)
-					}
-					t = temp
-					dataMapping = map[string]interface{}{
-						"guestDesc":       guestDesc,
-						"expType":         bookingDetail.Experience[0].ExpType,
-						"tripDate":        bookingDetail.BookingDate.Format("02 January 2006"),
-						"title":           bookingDetail.Experience[0].ExpTitle,
-						"city":            bookingDetail.Experience[0].HarborsName,
-						"country":         bookingDetail.Experience[0].CountryName,
-						"meetingPoint":    bookingDetail.Experience[0].ExpPickupPlace,
-						"time":            bookingDetail.Experience[0].ExpPickupTime,
-						"merchantName":    bookingDetail.Experience[0].MerchantName,
-						"merchantPhone":   bookingDetail.Experience[0].MerchantPhone,
-						"orderId":         bookingDetail.OrderId,
-						"qrCode":          bookingDetail.TicketQRCode,
-						"merchantPicture": bookingDetail.Experience[0].MerchantPicture,
-					}
-				}
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
-				var attachment []*models.Attachment
-				eTicket := models.Attachment{
-					AttachmentFileUrl: pdf,
-					FileName:          "E-Ticket.pdf",
-				}
-				attachment = append(attachment, &eTicket)
-				pushEmail := &models.SendingEmail{
-					Subject:    "Experience E-Ticket",
-					Message:    msg,
-					From:       "CGO Indonesia",
-					To:         bookedBy[0].Email,
-					Attachment: attachment,
-				}
-
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil, nil
-				}
-			}
-			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
-			if err != nil {
-				return nil,errors.New("Merchant Not Found")
-			}
-			var finalPrice float64
-			if len(bookingDetail.Experience[0].ExperienceAddOn) != 0 {
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
-					}else{
-						priceExp = calculatePriceDP
-					}
-					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
-				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
-					}else {
-						priceExp = bookingDetail.ExpPayment.Price
-					}
-					finalPrice = priceExp + bookingDetail.Experience[0].ExperienceAddOn[0].Amount
-				}
-			}else {
-				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
-					calculatePriceDP := (bookingDetail.ExpPayment.Price * 30) / 100
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = calculatePriceDP *  float64(len(bookingDetail.GuestDesc))
-					}else {
-						priceExp = calculatePriceDP
-					}
-					finalPrice = priceExp
-				}else if bookingDetail.ExperiencePaymentType.Name == "Full Payment"{
-					var priceExp float64
-					if bookingDetail.ExpPayment.PriceItemType == "Per Pax"{
-						priceExp = bookingDetail.ExpPayment.Price *  float64(len(bookingDetail.GuestDesc))
-					}else {
-						priceExp = bookingDetail.ExpPayment.Price
-					}
-					finalPrice = priceExp
-				}
-			}
-			getMerchantId.Balance = getMerchantId.Balance + finalPrice
-			_= b.merchantRepo.Update(ctx,getMerchantId)
-
-			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.Id); err != nil {
-				return nil, err
-			}
-		} else {
-
-			bookingDetail, err := b.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil, "")
-			if err != nil {
-				return nil, err
-			}
-			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
-			tripDate := bookingDetail.BookingDate.Format("02 January 2006")
-			guestCount := len(bookingDetail.GuestDesc)
-			layoutFormat := "15:04:05"
-			departureTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].DepartureTime)
-			arrivalTime, _ := time.Parse(layoutFormat, bookingDetail.Transportation[0].ArrivalTime)
-
-			if bookingDetail.Transportation[0].ReturnTransId != nil && len(bookingDetail.Transportation) > 1 {
-
-				bookingDetailReturn, err := b.GetDetailTransportBookingID(ctx, bookingDetail.OrderId, bookingDetail.OrderId, bookingDetail.Transportation[0].ReturnTransId, "")
-				if err != nil {
-					return nil, err
-				}
-				tripDateReturn := bookingDetailReturn.BookingDate.Format("02 January 2006")
-
-				departureTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].DepartureTime)
-				arrivalTimeReturn, _ := time.Parse(layoutFormat, bookingDetailReturn.Transportation[0].ArrivalTime)
-
-				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportationWithReturn))
-				data := map[string]interface{}{
-					"title":               bookingDetail.Transportation[0].TransTitle,
-					"user":                user,
-					"tripDateDeparture":   tripDate,
-					"guestCountDeparture": strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeDeparture": departureTime.Format("15:04"),
-					"desTimeDeparture":    arrivalTime.Format("15:04"),
-					"durationDeparture":   bookingDetail.Transportation[0].TripDuration,
-					"sourceDeparture":     bookingDetail.Transportation[0].HarborSourceName,
-					"destDeparture":       bookingDetail.Transportation[0].HarborDestName,
-					"classDeparture":      bookingDetail.Transportation[0].TransClass,
-					"orderId":             bookingDetail.OrderId,
-					"merchantPicture":     bookingDetail.Transportation[0].MerchantPicture,
-					"tripDateReturn":      tripDateReturn,
-					"guestCountReturn":    strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTimeReturn":    departureTimeReturn.Format("15:04"),
-					"desTimeReturn":       arrivalTimeReturn.Format("15:04"),
-					"durationReturn":      bookingDetailReturn.Transportation[0].TripDuration,
-					"sourceReturn":        bookingDetailReturn.Transportation[0].HarborSourceName,
-					"destReturn":          bookingDetailReturn.Transportation[0].HarborDestName,
-					"classReturn":         bookingDetailReturn.Transportation[0].TransClass,
-				}
-
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				dataMapping := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"tripDate":        tripDate,
-					"sourceTime":      departureTime.Format("15:04"),
-					"desTime":         arrivalTime.Format("15:04"),
-					"duration":        bookingDetail.Transportation[0].TripDuration,
-					"source":          bookingDetail.Transportation[0].HarborSourceName,
-					"dest":            bookingDetail.Transportation[0].HarborDestName,
-					"class":           bookingDetail.Transportation[0].TransClass,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-					"orderId":         bookingDetail.OrderId,
-				}
-				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err = t.Parse(templateTicketTransportationPDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				//ticketPDF Bind HTML is Return
-				var htmlPDFTicketReturn bytes.Buffer
-
-				dataMappingReturn := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"tripDate":        tripDateReturn,
-					"sourceTime":      departureTimeReturn.Format("15:04"),
-					"desTime":         arrivalTimeReturn.Format("15:04"),
-					"duration":        bookingDetailReturn.Transportation[0].TripDuration,
-					"source":          bookingDetailReturn.Transportation[0].HarborSourceName,
-					"dest":            bookingDetailReturn.Transportation[0].HarborDestName,
-					"class":           bookingDetailReturn.Transportation[0].TransClass,
-					"qrCode":          bookingDetailReturn.TicketQRCode,
-					"merchantPicture": bookingDetailReturn.Transportation[0].MerchantPicture,
-					"orderId":         bookingDetailReturn.OrderId,
-				}
-				// We create the template and register out template function
-				tReturn := template.New("t").Funcs(templateFuncs)
-				tReturn, err = tReturn.Parse(templateTicketTransportationPDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = tReturn.Execute(&htmlPDFTicketReturn, dataMappingReturn)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
-				pdfReturn := htmlPDFTicketReturn.String()
-				var attachment []*models.Attachment
-				eTicket := models.Attachment{
-					AttachmentFileUrl: pdf,
-					FileName:          "E-Ticket.pdf",
-				}
-				attachment = append(attachment, &eTicket)
-				eTicketReturn := models.Attachment{
-					AttachmentFileUrl: pdfReturn,
-					FileName:          "E-Ticket-Return.pdf",
-				}
-				attachment = append(attachment, &eTicketReturn)
-				pushEmail := &models.SendingEmail{
-					Subject:    "Transportation E-Ticket",
-					Message:    msg,
-					From:       "CGO Indonesia",
-					To:         bookedBy[0].Email,
-					Attachment: attachment,
-				}
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil, err
-				}
-
-			} else {
-				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
-				data := map[string]interface{}{
-					"title":           bookingDetail.Transportation[0].TransTitle,
-					"user":            user,
-					"tripDate":        tripDate,
-					"guestCount":      strconv.Itoa(guestCount) + " Guest(s)",
-					"sourceTime":      departureTime.Format("15:04"),
-					"desTime":         arrivalTime.Format("15:04"),
-					"duration":        bookingDetail.Transportation[0].TripDuration,
-					"source":          bookingDetail.Transportation[0].HarborSourceName,
-					"dest":            bookingDetail.Transportation[0].HarborDestName,
-					"class":           bookingDetail.Transportation[0].TransClass,
-					"orderId":         bookingDetail.OrderId,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-				}
-				var tpl bytes.Buffer
-				err = tmpl.Execute(&tpl, data)
-				if err != nil {
-					//http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				//ticketPDF Bind HTML
-				var htmlPDFTicket bytes.Buffer
-
-				var guestDesc []models.GuestDescObjForHTML
-				for i, element := range bookingDetail.GuestDesc {
-					guest := models.GuestDescObjForHTML{
-						No:       i + 1,
-						FullName: element.FullName,
-						Type:     element.Type,
-						IdType:   element.IdType,
-						IdNumber: element.IdNumber,
-					}
-					guestDesc = append(guestDesc, guest)
-				}
-
-				dataMapping := map[string]interface{}{
-					"guestDesc":       guestDesc,
-					"tripDate":        tripDate,
-					"sourceTime":      departureTime.Format("15:04"),
-					"desTime":         arrivalTime.Format("15:04"),
-					"duration":        bookingDetail.Transportation[0].TripDuration,
-					"source":          bookingDetail.Transportation[0].HarborSourceName,
-					"dest":            bookingDetail.Transportation[0].HarborDestName,
-					"class":           bookingDetail.Transportation[0].TransClass,
-					"qrCode":          bookingDetail.TicketQRCode,
-					"merchantPicture": bookingDetail.Transportation[0].MerchantPicture,
-					"orderId":         bookingDetail.OrderId,
-				}
-				// We create the template and register out template function
-				t := template.New("t").Funcs(templateFuncs)
-				t, err = t.Parse(templateTicketTransportationPDF)
-				if err != nil {
-					panic(err)
-				}
-
-				err = t.Execute(&htmlPDFTicket, dataMapping)
-				if err != nil {
-					panic(err)
-				}
-
-				msg := tpl.String()
-				pdf := htmlPDFTicket.String()
-				var attachment []*models.Attachment
-				eTicket := models.Attachment{
-					AttachmentFileUrl: pdf,
-					FileName:          "E-Ticket.pdf",
-				}
-				attachment = append(attachment, &eTicket)
-				pushEmail := &models.SendingEmail{
-					Subject:    "Transportation E-Ticket",
-					Message:    msg,
-					From:       "CGO Indonesia",
-					To:         bookedBy[0].Email,
-					Attachment: attachment,
-				}
-				if _, err := b.isUsecase.SendingEmail(pushEmail); err != nil {
-					return nil, err
-				}
-
-			}
-
-			transactionStatus = 2
-			getMerchantId ,err := b.merchantRepo.GetMerchantByName(ctx,bookingDetail.Transportation[0].MerchantName)
-			if err != nil {
-				return nil,errors.New("Merchant Not Found")
-			}
-			var finalPriceAdult float64
-			var finalPriceChildren float64
-			for _,price := range bookingDetail.GuestDesc{
-				if price.Type == "Adult"{
-					finalPriceAdult = finalPriceAdult + bookingDetail.Transportation[0].Price.AdultPrice
-				}else {
-					finalPriceChildren = finalPriceChildren + bookingDetail.Transportation[0].Price.ChildrenPrice
-				}
-			}
-			finalPrice := finalPriceAdult + finalPriceChildren
-			getMerchantId.Balance = getMerchantId.Balance + finalPrice
-			_= b.merchantRepo.Update(ctx,getMerchantId)
-			if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", booking.OrderId); err != nil {
-				return nil, err
-			}
-		}
-
-	}
-
-	var bookCode string
-	if booking.ExpId != nil {
-		bookCode = booking.Id
-	} else {
-		bookCode = booking.OrderId
-	}
-	if res.Status == "VOIDED" {
-		transactionStatus = 3
-		if err := b.transactionRepo.UpdateAfterPayment(ctx, transactionStatus, "", "", bookCode); err != nil {
-			return nil, err
-		}
-	}
-
-	data, _ := json.Marshal(res)
-	json.Unmarshal(data, &result)
-
 	return result, nil
 }
 
