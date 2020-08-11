@@ -363,7 +363,7 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 	query := `
 	SELECT 
 		t.booking_exp_id,
-		e.id as exp_id
+		e.id as exp_id,
 		e.exp_title,
 		be.booked_by,
 		be.booked_by_email,
