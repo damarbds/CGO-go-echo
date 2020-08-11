@@ -8,6 +8,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/auth/merchant"
+	"github.com/auth/user_merchant"
+	guuid "github.com/google/uuid"
+	"github.com/misc/notif"
 	"html/template"
 	"net/http"
 	"reflect"
@@ -37,10 +40,18 @@ type midtransHandler struct {
 	transactionRepo transaction.Repository
 	bookingUseCase  booking_exp.Usecase
 	isUsecase       identityserver.Usecase
+	userMerchantRepo user_merchant.Repository
+	merchantUsecase  merchant.Usecase
+	notificationUsecase notif.Usecase
+	notificationRepo notif.Repository
 }
 
-func NewMidtransHandler(e *echo.Echo,merchantRepo 	merchant.Repository, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
+func NewMidtransHandler(e *echo.Echo,notificationRepo notif.Repository,userMerchantRepo user_merchant.Repository, merchantUsecase  merchant.Usecase, notificationUsecase notif.Usecase,merchantRepo 	merchant.Repository, br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
 	handler := &midtransHandler{
+		notificationRepo:notificationRepo,
+		userMerchantRepo:userMerchantRepo,
+		merchantUsecase:merchantUsecase,
+		notificationUsecase:notificationUsecase,
 		merchantRepo:merchantRepo,
 		bookingRepo:     br,
 		expRepo:         er,
@@ -5734,6 +5745,10 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
+			getUserMerchant,err := m.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Experience[0].MerchantId)
+			if err != nil {
+				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+			}
 			if exp.ExpBookingType == "No Instant Booking" {
 				transactionStatus = 1
 				if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
@@ -5818,6 +5833,45 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					}
 				}
 
+				//pushNotif to merchant No Instant Booking
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Waiting to be Confirmed : Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got new booking that's waiting to be confirmed for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := m.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							m.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
 				transactionStatus = 5
 				user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
@@ -5909,6 +5963,46 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				}
 				if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
+				}
+
+				//pushNotif to merchant Instant Booking DP
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := m.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							m.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
 				}
 
 			} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
@@ -6157,6 +6251,47 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
 				}
+
+				//pushNotif to merchant Instant Booking FP
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+					ExpId 	: &bookingDetail.Experience[0].ExpId,
+					ScheduleId  : nil,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := m.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							m.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
 			}
 			getMerchantId ,err := m.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
 			if err != nil {
@@ -6211,6 +6346,11 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 		} else {
 
 			bookingDetail, err := m.bookingUseCase.GetDetailTransportBookingID(ctx, booking.OrderId, booking.OrderId, nil,"")
+			if err != nil {
+				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+			}
+
+			getUserMerchant,err := m.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Transportation[0].MerchantId)
 			if err != nil {
 				return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 			}
@@ -6356,6 +6496,46 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 					return nil
 				}
 
+				//pushNotif to merchant Transportation any return
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := m.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							m.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
+				}
+
 			} else {
 				tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 				data := map[string]interface{}{
@@ -6435,6 +6615,46 @@ func (m *midtransHandler) MidtransNotif(c echo.Context) error {
 				}
 				if _, err := m.isUsecase.SendingEmail(pushEmail); err != nil {
 					return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+				}
+
+				//pushNotif to merchant Transportation
+				isRead := 0
+				notif := models.Notification{
+					Id:           guuid.New().String(),
+					CreatedBy:     bookedBy[0].Email,
+					CreatedDate:  time.Now(),
+					ModifiedBy:   nil,
+					ModifiedDate: nil,
+					DeletedBy:    nil,
+					DeletedDate:  nil,
+					IsDeleted:    0,
+					IsActive:     0,
+					MerchantId:   bookingDetail.Experience[0].MerchantId,
+					Type:         0,
+					Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+					Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+					ExpId 	: nil,
+					ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+					BookingExpId :&bookingDetail.Id,
+					IsRead 		: &isRead,
+				}
+				pushNotifErr := m.notificationRepo.Insert(ctx, notif)
+				if pushNotifErr != nil {
+					return nil
+				}
+				for _,um := range getUserMerchant{
+					if um.FCMToken != nil{
+						if *um.FCMToken != ""{
+							fcm := models.FCMPushNotif{
+								To:   *um.FCMToken,
+								Data: models.DataFCMPushNotif{
+									Title:   "cGO",
+									Message: notif.Desc,
+								},
+							}
+							m.notificationUsecase.FCMPushNotification(ctx,fcm)
+						}
+					}
 				}
 
 			}

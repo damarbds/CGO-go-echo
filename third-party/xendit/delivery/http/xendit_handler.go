@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/auth/merchant"
+	"github.com/auth/user_merchant"
+	guuid "github.com/google/uuid"
+	"github.com/misc/notif"
 	"html/template"
 	"net/http"
 	"reflect"
@@ -35,10 +38,18 @@ type xenditHandler struct {
 	transactionRepo transaction.Repository
 	bookingUseCase  booking_exp.Usecase
 	isUsecase       identityserver.Usecase
+	userMerchantRepo user_merchant.Repository
+	merchantUsecase  merchant.Usecase
+	notificationUsecase notif.Usecase
+	notificationRepo notif.Repository
 }
 
-func NewXenditHandler(e *echo.Echo, merchantRepo  merchant.Repository,br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
+func NewXenditHandler(e *echo.Echo, notificationRepo notif.Repository,userMerchantRepo user_merchant.Repository, merchantUsecase  merchant.Usecase, notificationUsecase notif.Usecase,merchantRepo  merchant.Repository,br booking_exp.Repository, er experience.Repository, tr transaction.Repository, bu booking_exp.Usecase, is identityserver.Usecase) {
 	handler := &xenditHandler{
+		notificationRepo:notificationRepo,
+		userMerchantRepo:userMerchantRepo,
+		merchantUsecase:merchantUsecase,
+		notificationUsecase:notificationUsecase,
 		merchantRepo:merchantRepo,
 		bookingRepo:     br,
 		expRepo:         er,
@@ -5710,6 +5721,10 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
+		getUserMerchant,err := x.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Experience[0].MerchantId)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
 		if exp.ExpBookingType == "No Instant Booking" {
 			transactionStatus = 1
 			if bookingDetail.ExperiencePaymentType.Name == "Down Payment" {
@@ -5791,6 +5806,45 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 
 				if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 					return nil
+				}
+			}
+			//pushNotif to merchant No Instant Booking
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:     bookedBy[0].Email,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   bookingDetail.Experience[0].MerchantId,
+				Type:         0,
+				Title:        "New Waiting to be Confirmed : Order ID " + bookingDetail.OrderId,
+				Desc:         "You've got new booking that's waiting to be confirmed for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+				ExpId 	: &bookingDetail.Experience[0].ExpId,
+				ScheduleId  : nil,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := x.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						x.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
 				}
 			}
 
@@ -5886,7 +5940,45 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
 			}
-
+			//pushNotif to merchant Instant Booking DP
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:     bookedBy[0].Email,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   bookingDetail.Experience[0].MerchantId,
+				Type:         0,
+				Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+				Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+				ExpId 	: &bookingDetail.Experience[0].ExpId,
+				ScheduleId  : nil,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := x.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						x.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+			}
 		} else if exp.ExpBookingType == "Instant Booking" && bookingDetail.ExperiencePaymentType.Name == "Full Payment" {
 			transactionStatus = 2
 			user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
@@ -6133,6 +6225,46 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
 			}
+
+			//pushNotif to merchant Instant Booking FP
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:     bookedBy[0].Email,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   bookingDetail.Experience[0].MerchantId,
+				Type:         0,
+				Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+				Desc:         "You've got a new confirmed booking for "+ bookingDetail.Experience[0].ExpTitle+", booked by " + bookedBy[0].Email,
+				ExpId 	: &bookingDetail.Experience[0].ExpId,
+				ScheduleId  : nil,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := x.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						x.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+			}
 		}
 		getMerchantId ,err := x.merchantRepo.GetMerchantByName(ctx,bookingDetail.Experience[0].MerchantName)
 		if err != nil {
@@ -6188,6 +6320,12 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 		if err != nil {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
+
+		getUserMerchant,err := x.userMerchantRepo.GetUserByMerchantId(ctx ,bookingDetail.Transportation[0].MerchantId)
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+
 		user := bookingDetail.BookedBy[0].Title + `.` + bookingDetail.BookedBy[0].FullName
 		tripDate := bookingDetail.BookingDate.Format("02 January 2006")
 		guestCount := len(bookingDetail.GuestDesc)
@@ -6330,6 +6468,46 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 				return nil
 			}
 
+			//pushNotif to merchant Transportation any return
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:     bookedBy[0].Email,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   bookingDetail.Experience[0].MerchantId,
+				Type:         0,
+				Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+				Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+				ExpId 	: nil,
+				ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := x.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						x.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+			}
+
 		} else {
 			tmpl := template.Must(template.New("main-template").Parse(templateTicketTransportation))
 			data := map[string]interface{}{
@@ -6409,6 +6587,46 @@ func (x *xenditHandler) XenditVACallback(c echo.Context) error {
 			}
 			if _, err := x.isUsecase.SendingEmail(pushEmail); err != nil {
 				return nil
+			}
+
+			//pushNotif to merchant Transportation
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:     bookedBy[0].Email,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   bookingDetail.Experience[0].MerchantId,
+				Type:         0,
+				Title:        "New Confirmed Booking: Order ID " + bookingDetail.OrderId,
+				Desc:         "You've got a new confirmed booking for "+ bookingDetail.Transportation[0].TransName +", booked by " + bookedBy[0].Email,
+				ExpId 	: nil,
+				ScheduleId  : bookingDetail.Transportation[0].ScheduleId,
+				BookingExpId :&bookingDetail.Id,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := x.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						x.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
 			}
 
 		}
