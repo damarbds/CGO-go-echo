@@ -142,6 +142,7 @@ func (m *userRepository) fetch(ctx context.Context, query string, args ...interf
 			&t.IdNumber,
 			&t.ReferralCode,
 			&t.Points,
+			&t.FCMToken,
 		)
 
 		if err != nil {

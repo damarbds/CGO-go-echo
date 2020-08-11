@@ -27,6 +27,7 @@ type User struct {
 	IdNumber             string     `json:"id_number"`
 	ReferralCode         string     `json:"referral_code"`
 	Points               int        `json:"points"`
+	FCMToken 			*string `json:"fcm_token"`
 }
 type NewCommandUser struct {
 	Id                   string `json:"id"`
