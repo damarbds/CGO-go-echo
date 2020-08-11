@@ -52,6 +52,8 @@ type TransportationJoinBooking struct {
 	TransFacilities *string  `json:"trans_facilities"`
 	IsReturn 		*int 		`json:"is_return"`
 	ScheduleId 		*string	`json:"schedule_id"`
+	BookingExpId 	string `json:"booking_exp_id"`
+	OrderId 		string `json:"order_id"`
 }
 type NewCommandTransportation struct {
 	Id              string           `json:"id"`

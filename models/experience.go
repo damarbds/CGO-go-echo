@@ -52,7 +52,6 @@ type Experience struct {
 	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 }
 type ExperienceWithExperiencePayment struct {
-
 	Id                      string     `json:"id" validate:"required"`
 	CreatedBy               string     `json:"created_by":"required"`
 	CreatedDate             time.Time  `json:"created_date" validate:"required"`
@@ -101,6 +100,8 @@ type ExperienceWithExperiencePayment struct {
 	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
 	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
 	ExpPaymentTypeName	string 	`json:"exp_payment_type_name"`
+	OrderId 			string `json:"order_id"`
+	BookingExpId 		string `json:"booking_exp_id"`
 }
 type ExperienceJoinForegnKey struct {
 	Id                      string     `json:"id" validate:"required"`

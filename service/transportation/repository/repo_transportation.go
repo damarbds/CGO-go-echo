@@ -23,13 +23,13 @@ type transportationRepository struct {
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
 }
-func (m transportationRepository) GetTransportationByBookingId(ctx context.Context, bookingIds string) (res *models.TransportationJoinBooking,err error) {
-	query := `SELECT t.* ,b.schedule_id
+func (m transportationRepository) GetTransportationByBookingId(ctx context.Context, bookingIds *string,orderId *string) (res *models.TransportationJoinBooking,err error) {
+	query := `SELECT t.* ,b.schedule_id,b.id as booking_exp_id,b.order_id
 				FROM booking_exps b 
     			JOIN transportations t ON b.trans_id = t.id
-				WHERE b.id = ?`
+				WHERE (b.id = ? OR b.order_id = ?)`
 
-	list, err := m.fetchJoinBooking(ctx, query, bookingIds)
+	list, err := m.fetchJoinBooking(ctx, query, bookingIds,orderId)
 	if err != nil {
 		return nil, err
 	}
@@ -188,6 +188,8 @@ func (t *transportationRepository) fetchJoinBooking(ctx context.Context, query s
 			&t.TransFacilities,
 			&t.IsReturn,
 			&t.ScheduleId,
+			&t.BookingExpId,
+			&t.OrderId,
 		)
 
 		if err != nil {

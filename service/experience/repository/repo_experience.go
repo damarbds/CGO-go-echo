@@ -29,9 +29,9 @@ func NewexperienceRepository(Conn *sql.DB) experience.Repository {
 	return &experienceRepository{Conn}
 }
 
-func (m *experienceRepository) GetExperienceByBookingId(ctx context.Context, bookingId, experiencePaymentId string) (*models.ExperienceWithExperiencePayment,error){
+func (m *experienceRepository) GetExperienceByBookingId(ctx context.Context, bookingId *string, experiencePaymentId string) (*models.ExperienceWithExperiencePayment,error){
 	var experience *models.ExperienceWithExperiencePayment
-	query := `SELECT e.* ,ept.exp_payment_type_name
+	query := `SELECT e.* ,ept.exp_payment_type_name,b.order_id,b.id as booking_exp_id
 					FROM cgo_indonesia.booking_exps b
 					JOIN cgo_indonesia.experiences e ON b.exp_id = e.id
 					JOIN cgo_indonesia.experience_payments ep ON e.id = ep.exp_id
@@ -683,6 +683,8 @@ func (m *experienceRepository) fetchByBookingId(ctx context.Context, query strin
 			&t.ExpMaximumBookingAmount,
 			&t.ExpMaximumBookingType,
 			&t.ExpPaymentTypeName,
+			&t.OrderId,
+			&t.BookingExpId,
 		)
 
 		if err != nil {

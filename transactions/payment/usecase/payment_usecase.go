@@ -7825,7 +7825,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		OriginalPrice:payment.OriginalPrice,
 	}
 	if autoComplete == true {
-		exp, err := p.expRepo.GetExperienceByBookingId(ctx, *newData.BookingExpId,*newData.ExperiencePaymentId)
+		exp, err := p.expRepo.GetExperienceByBookingId(ctx, newData.BookingExpId,*newData.ExperiencePaymentId)
 		if err != models.ErrNotFound{
 			if exp.ExpBookingType == "No Instant Booking" {
 				newData.Status = 1
@@ -7835,7 +7835,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 				newData.Status = 2
 			}
 		}else {
-			_ ,err := p.transportationRepo.GetTransportationByBookingId(ctx,*newData.BookingExpId)
+			_ ,err := p.transportationRepo.GetTransportationByBookingId(ctx,newData.BookingExpId,newData.OrderId)
 			if err == models.ErrNotFound{
 
 			}else {
@@ -7843,7 +7843,8 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 			}
 		}
 	}else if autoComplete == false && newData.Status == 0 {
-		exp, err := p.expRepo.GetExperienceByBookingId(ctx, *newData.BookingExpId,*newData.ExperiencePaymentId)
+
+		exp, err := p.expRepo.GetExperienceByBookingId(ctx, newData.BookingExpId,*newData.ExperiencePaymentId)
 		if err != models.ErrNotFound{
 
 			//push notif to merchant pending
@@ -7864,11 +7865,11 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 				IsActive:     0,
 				MerchantId:   exp.MerchantId,
 				Type:         0,
-				Title:        "New Booking : Order ID " + *payment.OrderId,
+				Title:        "New Booking : Order ID " + exp.OrderId,
 				Desc:         "You've got a new booking for " + exp.ExpTitle + " , booked by " + createdBy,
 				ExpId 	:&exp.Id,
 				ScheduleId  : nil,
-				BookingExpId :payment.BookingExpId,
+				BookingExpId :&exp.BookingExpId,
 				IsRead 		: &isRead,
 			}
 			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
@@ -7892,7 +7893,7 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 			}
 
 		}else {
-			trans,err := p.transportationRepo.GetTransportationByBookingId(ctx,*newData.BookingExpId)
+			trans,err := p.transportationRepo.GetTransportationByBookingId(ctx,newData.BookingExpId,newData.OrderId)
 			if err == models.ErrNotFound{
 
 			}else {
@@ -7914,11 +7915,11 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 					IsActive:     0,
 					MerchantId:   trans.MerchantId,
 					Type:         0,
-					Title:        "New Booking : Order ID " + *payment.OrderId,
+					Title:        "New Booking : Order ID " + trans.OrderId,
 					Desc:         "You've got a new booking for " + trans.TransTitle + " , booked by " + createdBy,
 					ExpId 	:nil,
 					ScheduleId  : trans.ScheduleId,
-					BookingExpId :payment.BookingExpId,
+					BookingExpId :&trans.BookingExpId,
 					IsRead 		: &isRead,
 				}
 				pushNotifErr := p.notificationRepo.Insert(ctx, notif)

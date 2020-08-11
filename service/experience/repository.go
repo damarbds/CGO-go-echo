@@ -28,5 +28,5 @@ type Repository interface {
 	GetExpFailedTransactionCount(ctx context.Context, merchantId string) (int, error)
 	CountFilterSearch(ctx context.Context, query string) (int, error)
 	GetExpCount(ctx context.Context, merchantId string) (int, error)
-	GetExperienceByBookingId( ctx context.Context,bookingId ,experiencePaymentId string)(*models.ExperienceWithExperiencePayment,error)
+	GetExperienceByBookingId( ctx context.Context,bookingId *string,experiencePaymentId string)(*models.ExperienceWithExperiencePayment,error)
 }

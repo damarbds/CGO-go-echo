@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	GetTransportationByBookingId(ctx context.Context,bookingIds string)(*models.TransportationJoinBooking,error)
+	GetTransportationByBookingId(ctx context.Context,bookingIds *string,orderId *string)(*models.TransportationJoinBooking,error)
 	GetById(ctx context.Context,id string)(*models.Transportation,error)
 	UpdateStatus(ctx context.Context, status int,id string,user string)error
 	Insert(ctx context.Context, transportation models.Transportation) (*string, error)
