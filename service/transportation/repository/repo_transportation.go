@@ -23,13 +23,13 @@ type transportationRepository struct {
 func NewTransportationRepository(Conn *sql.DB) transportation.Repository {
 	return &transportationRepository{Conn}
 }
-func (m transportationRepository) GetTransportationByBookingId(ctx context.Context, bookingIds string) (res *models.Transportation,err error) {
-	query := `SELECT t.* 
+func (m transportationRepository) GetTransportationByBookingId(ctx context.Context, bookingIds string) (res *models.TransportationJoinBooking,err error) {
+	query := `SELECT t.* ,b.schedule_id
 				FROM booking_exps b 
     			JOIN transportations t ON b.trans_id = t.id
 				WHERE b.id = ?`
 
-	list, err := m.fetch(ctx, query, bookingIds)
+	list, err := m.fetchJoinBooking(ctx, query, bookingIds)
 	if err != nil {
 		return nil, err
 	}
@@ -145,6 +145,59 @@ func (t transportationRepository) FilterSearch(ctx context.Context, query string
 	}
 
 	return res, nil
+}
+func (t *transportationRepository) fetchJoinBooking(ctx context.Context, query string, args ...interface{}) ([]*models.TransportationJoinBooking, error) {
+	rows, err := t.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	result := make([]*models.TransportationJoinBooking, 0)
+	for rows.Next() {
+		t := new(models.TransportationJoinBooking)
+		err = rows.Scan(
+			&t.Id,
+			&t.CreatedBy,
+			&t.CreatedDate,
+			&t.ModifiedBy,
+			&t.ModifiedDate,
+			&t.DeletedBy,
+			&t.DeletedDate,
+			&t.IsDeleted,
+			&t.IsActive,
+			&t.TransName,
+			&t.HarborsSourceId,
+			&t.HarborsDestId,
+			&t.MerchantId,
+			&t.TransCapacity,
+			&t.TransTitle,
+			&t.TransStatus,
+			&t.TransImages,
+			&t.ReturnTransId,
+			&t.BoatDetails,
+			&t.Transcoverphoto,
+			&t.Class,
+			&t.TransFacilities,
+			&t.IsReturn,
+			&t.ScheduleId,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
 }
 func (t *transportationRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Transportation, error) {
 	rows, err := t.Conn.QueryContext(ctx, query, args...)
