@@ -294,7 +294,7 @@ func (t transactionRepository) GetTransactionExpired(ctx context.Context) ([]*mo
 						b.order_id,
 						b.booked_by_email,
 						m.id as merchant_id,
-						t.exp_id,
+						b.exp_id,
 						e.exp_title,
 						null as schedule_id,
 						null as trans_title
