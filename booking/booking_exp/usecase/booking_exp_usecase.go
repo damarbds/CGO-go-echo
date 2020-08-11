@@ -9040,6 +9040,120 @@ func (b bookingExpUsecase) Verify(ctx context.Context, orderId, bookingCode stri
 	return result, nil
 }
 
+func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
+	defer cancel()
+	list, err := b.transactionRepo.GetTransactionDownPaymentByDate(ctx)
+	if err != nil {
+		return err
+	}
+	for _, element := range list {
+		getUserMerchant,err := b.userMerchantRepo.GetUserByMerchantId(ctx ,element.MerchantId)
+		if err != nil {
+			return err
+		}
+
+		var bookedBy []models.BookedByObj
+		if element.BookedBy != "" {
+			if errUnmarshal := json.Unmarshal([]byte(element.BookedBy), &bookedBy); errUnmarshal != nil {
+				return err
+			}
+		}
+		user := bookedBy[0].Title + `.` + bookedBy[0].FullName
+		tripDate := element.BookingDate.Format("02 January 2006")
+		duration := 0
+		if element.ExpDuration != 0 && element.ExpDuration != 1 {
+			duration = element.ExpDuration - 1
+			tripDate = tripDate + ` - ` + element.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
+		}
+		paymentDeadline := element.BookingDate
+		if element.ExpPaymentDeadlineType != nil && element.ExpPaymentDeadlineAmount != nil {
+			if *element.ExpPaymentDeadlineType == "Days" {
+				paymentDeadline = paymentDeadline.AddDate(0, 0, -*element.ExpPaymentDeadlineAmount)
+			} else if *element.ExpPaymentDeadlineType == "Week" {
+				paymentDeadline = paymentDeadline.AddDate(0, 0, -*element.ExpPaymentDeadlineAmount*7)
+			} else if *element.ExpPaymentDeadlineType == "Month" {
+				paymentDeadline = paymentDeadline.AddDate(0, -*element.ExpPaymentDeadlineAmount, 0)
+			}
+		}
+		var tmpl = template.Must(template.New("main-template").Parse(templateWaitingRemainingDP))
+		remainingPayment := element.Price - element.TotalPrice
+
+		var data = map[string]interface{}{
+			"title":            element.ExpTitle,
+			"user":             user,
+			"payment":          message.NewPrinter(language.German).Sprint(element.TotalPrice),
+			"remainingPayment": message.NewPrinter(language.German).Sprint(remainingPayment),
+			"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
+			"orderId":          element.OrderId,
+			"tripDate":         tripDate,
+			"userGuide":        element.MerchantName,
+			"guideContact":     element.MerchantPhone,
+		}
+		var tpl bytes.Buffer
+		err = tmpl.Execute(&tpl, data)
+		if err != nil {
+			//http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		//maxTime := time.Now().AddDate(0, 0, 1)
+		msg := tpl.String()
+		pushEmail := &models.SendingEmail{
+			Subject:    "Please pay for your remaining payment",
+			Message:    msg,
+			From:       "CGO Indonesia",
+			To:         bookedBy[0].Email,
+			Attachment: nil,
+		}
+
+		_, err = b.isUsecase.SendingEmail(pushEmail)
+		if err != nil {
+			return err
+		}
+
+		//pushNotif to merchant Remaining Payment
+		isRead := 0
+		notif := models.Notification{
+			Id:           guuid.New().String(),
+			CreatedBy:     bookedBy[0].Email,
+			CreatedDate:  time.Now(),
+			ModifiedBy:   nil,
+			ModifiedDate: nil,
+			DeletedBy:    nil,
+			DeletedDate:  nil,
+			IsDeleted:    0,
+			IsActive:     1,
+			MerchantId:   element.MerchantId,
+			Type:         0,
+			Title:        "Reminder for remaining payment transaction : Order ID " + *element.OrderId,
+			Desc:         "Order ID {order_id} hasn't paid the remaining transactions for "+element.ExpTitle+", deadline " + paymentDeadline.Format("02 January 2006"),
+			ExpId 	: &element.ExpId,
+			ScheduleId  : nil,
+			BookingExpId :&element.BookingExpId,
+			IsRead 		: &isRead,
+		}
+		pushNotifErr := b.notificationRepo.Insert(ctx, notif)
+		if pushNotifErr != nil {
+			return nil
+		}
+		for _,um := range getUserMerchant{
+			if um.FCMToken != nil{
+				if *um.FCMToken != ""{
+					fcm := models.FCMPushNotif{
+						To:   *um.FCMToken,
+						Data: models.DataFCMPushNotif{
+							Title:   "cGO",
+							Message: notif.Desc,
+						},
+					}
+					b.notificationUsecase.FCMPushNotification(ctx,fcm)
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (b bookingExpUsecase) UpdateTransactionStatusExpired(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
 	defer cancel()
@@ -9334,75 +9448,6 @@ func (b bookingExpUsecase) DownloadTicketExperience(ctx context.Context, orderId
 		return nil, models.ErrNotFound
 	}
 
-}
-
-func (b bookingExpUsecase) RemainingPaymentNotification(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, b.contextTimeout)
-	defer cancel()
-	list, err := b.transactionRepo.GetTransactionDownPaymentByDate(ctx)
-	if err != nil {
-		return err
-	}
-	for _, element := range list {
-		var bookedBy []models.BookedByObj
-		if element.BookedBy != "" {
-			if errUnmarshal := json.Unmarshal([]byte(element.BookedBy), &bookedBy); errUnmarshal != nil {
-				return err
-			}
-		}
-		user := bookedBy[0].Title + `.` + bookedBy[0].FullName
-		tripDate := element.BookingDate.Format("02 January 2006")
-		duration := 0
-		if element.ExpDuration != 0 && element.ExpDuration != 1 {
-			duration = element.ExpDuration - 1
-			tripDate = tripDate + ` - ` + element.BookingDate.AddDate(0, 0, duration).Format("02 January 2006")
-		}
-		paymentDeadline := element.BookingDate
-		if element.ExpPaymentDeadlineType != nil && element.ExpPaymentDeadlineAmount != nil {
-			if *element.ExpPaymentDeadlineType == "Days" {
-				paymentDeadline = paymentDeadline.AddDate(0, 0, -*element.ExpPaymentDeadlineAmount)
-			} else if *element.ExpPaymentDeadlineType == "Week" {
-				paymentDeadline = paymentDeadline.AddDate(0, 0, -*element.ExpPaymentDeadlineAmount*7)
-			} else if *element.ExpPaymentDeadlineType == "Month" {
-				paymentDeadline = paymentDeadline.AddDate(0, -*element.ExpPaymentDeadlineAmount, 0)
-			}
-		}
-		var tmpl = template.Must(template.New("main-template").Parse(templateWaitingRemainingDP))
-		remainingPayment := element.Price - element.TotalPrice
-
-		var data = map[string]interface{}{
-			"title":            element.ExpTitle,
-			"user":             user,
-			"payment":          message.NewPrinter(language.German).Sprint(element.TotalPrice),
-			"remainingPayment": message.NewPrinter(language.German).Sprint(remainingPayment),
-			"paymentDeadline":  paymentDeadline.Format("02 January 2006"),
-			"orderId":          element.OrderId,
-			"tripDate":         tripDate,
-			"userGuide":        element.MerchantName,
-			"guideContact":     element.MerchantPhone,
-		}
-		var tpl bytes.Buffer
-		err = tmpl.Execute(&tpl, data)
-		if err != nil {
-			//http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		//maxTime := time.Now().AddDate(0, 0, 1)
-		msg := tpl.String()
-		pushEmail := &models.SendingEmail{
-			Subject:    "Please pay for your remaining payment",
-			Message:    msg,
-			From:       "CGO Indonesia",
-			To:         bookedBy[0].Email,
-			Attachment: nil,
-		}
-
-		_, err = b.isUsecase.SendingEmail(pushEmail)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (b bookingExpUsecase) XenPayment(ctx context.Context, amount float64, tokenId, authId, orderId, paymentType string) (map[string]interface{}, error) {

@@ -323,6 +323,8 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 
 	query := `
 	SELECT 
+		t.booking_exp_id,
+		e.id as exp_id
 		e.exp_title,
 		be.booked_by,
 		be.booked_by_email,
@@ -331,6 +333,7 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 		ep.price ,
 		e.exp_duration,
 		be.order_id,
+		m.id as merchant_id,
 		m.merchant_name,
 		m.phone_number as merchant_phone,
 		e.exp_payment_deadline_amount,
@@ -341,6 +344,7 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 	JOIN experiences e on e.id = be.exp_id
 	JOIN merchants m on m.id = e.merchant_id	
 	WHERE 
+		t.status = 5 AND
 		ep.exp_payment_type_id = '86e71b8d-acc3-4ade-80c0-de67b9100633' AND 
 		t.total_price != ep.price AND 
 		(DATE(be.booking_date) = ? OR DATE(be.booking_date) = ? OR DATE(be.booking_date) = ? OR DATE(be.booking_date) = ?)`
@@ -355,6 +359,8 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 	for rows.Next() {
 		t := new(models.TransactionWithBooking)
 		err = rows.Scan(
+			&t.BookingExpId,
+			&t.ExpId,
 			&t.ExpTitle,
 			&t.BookedBy,
 			&t.BookedByEmail,
@@ -363,6 +369,7 @@ func (t transactionRepository) GetTransactionDownPaymentByDate(ctx context.Conte
 			&t.Price,
 			&t.ExpDuration,
 			&t.OrderId,
+			&t.MerchantId,
 			&t.MerchantName,
 			&t.MerchantPhone,
 			&t.ExpPaymentDeadlineAmount,

@@ -68,6 +68,8 @@ type TransactionByDateDto struct {
 	SeatTaken 	int `json:"seat_taken"`
 }
 type TransactionWithBooking struct {
+	BookingExpId  	string `json:"booking_exp_id"`
+	ExpId 			string `json:"exp_id"`
 	ExpTitle 		string 		`json:"exp_title"`
 	BookedBy 		string 		`json:"booked_by"`
 	BookedByEmail 	string		`json:"booked_by_email"`
@@ -76,6 +78,7 @@ type TransactionWithBooking struct {
 	Price 			float64		`json:"price"`
 	ExpDuration 	int 		`json:"exp_duration"`
 	OrderId			*string		`json:"order_id"`
+	MerchantId 		string `json:"merchant_id"`
 	MerchantName 	string		`json:"merchant_name"`
 	MerchantPhone   string 		`json:"merchant_phone"`
 	ExpPaymentDeadlineAmount *int 		`json:"exp_payment_deadline_amount"`
