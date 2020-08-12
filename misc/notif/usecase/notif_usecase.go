@@ -84,14 +84,14 @@ func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, li
 	if err != nil {
 		return nil, err
 	}
-
-	notifs := make([]*models.NotifDto, len(res))
-	for i, n := range res {
+	countDeleteIndex := 0
+	notifs := make([]*models.NotifDto, 0)
+	for _, n := range res {
 		notifType := "General"
 		if n.Type == 2 {
 			notifType = "Corporation"
 		}
-		notifs[i] = &models.NotifDto{
+		notif := &models.NotifDto{
 			Id:    n.Id,
 			Type:  notifType,
 			Title: n.Title,
@@ -101,28 +101,34 @@ func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, li
 		if n.ScheduleId != nil && n.BookingExpId != nil{
 			getDetailBooking,err := x.bookingRepo.GetDetailTransportBookingID(ctx,*n.BookingExpId,*n.BookingExpId,nil)
 			if err != nil {
-				return nil,err
+				countDeleteIndex = countDeleteIndex + 1
+				//return nil,err
+			}else {
+				notif.TransId = getDetailBooking[0].TransId
+				notif.DepartureTime = getDetailBooking[0].DepartureTime
+				notif.ArrivalTime = getDetailBooking[0].ArrivalTime
+				notif.TransName = getDetailBooking[0].TransId
+				notif.HarborDestName = getDetailBooking[0].HarborDestName
+				notif.HarborSourceName = getDetailBooking[0].HarborSourceName
+				notifs = append(notifs,notif)
 			}
-			notifs[i].TransId = getDetailBooking[0].TransId
-			notifs[i].DepartureTime = getDetailBooking[0].DepartureTime
-			notifs[i].ArrivalTime = getDetailBooking[0].ArrivalTime
-			notifs[i].TransName = getDetailBooking[0].TransId
-			notifs[i].HarborDestName = getDetailBooking[0].HarborDestName
-			notifs[i].HarborSourceName = getDetailBooking[0].HarborSourceName
 		}else if n.ExpId != nil && n.BookingExpId != nil{
 			getDetailBooking,err := x.bookingRepo.GetDetailBookingID(ctx,*n.BookingExpId,*n.BookingExpId)
 			if err != nil {
-				return nil,err
+				countDeleteIndex = countDeleteIndex + 1
+				//return nil,err
+			}else {
+				notif.ExpId = getDetailBooking.ExpId
+				notif.ExpTitle = getDetailBooking.ExpTitle
+				notifs = append(notifs,notif)
 			}
-			notifs[i].ExpId = getDetailBooking.ExpId
-			notifs[i].ExpTitle = getDetailBooking.ExpTitle
 		}
 
 	}
 
 
-		totalRecords, _ := x.notifRepo.GetCountByMerchantID(ctx, currentMerchant.Id)
-
+	totalRecords, _ := x.notifRepo.GetCountByMerchantID(ctx, currentMerchant.Id)
+	totalRecords = totalRecords - countDeleteIndex
 
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))
 	prev := page
@@ -140,7 +146,7 @@ func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, li
 		TotalRecords:  totalRecords,
 		Prev:          prev,
 		Next:          next,
-		RecordPerPage: len(res),
+		RecordPerPage: len(notifs),
 	}
 
 	response := &models.NotifWithPagination{
