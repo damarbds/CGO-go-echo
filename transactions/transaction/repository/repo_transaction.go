@@ -22,6 +22,96 @@ type transactionRepository struct {
 func NewTransactionRepository(Conn *sql.DB) transaction.Repository {
 	return &transactionRepository{Conn: Conn}
 }
+func (t transactionRepository) GetCountTransactionByExpIdORTransId(ctx context.Context, date string, expId string, transId string, merchantId string, status string) (int, []string, error) {
+	var query string
+	queryExp := `
+	SELECT
+		guest_desc
+	FROM
+		transactions t
+		JOIN experience_payments ep ON t.experience_payment_id = ep.id
+		JOIN booking_exps b ON t.booking_exp_id = b.id
+		JOIN experiences e ON b.exp_id = e.id
+		JOIN merchants m ON e.merchant_id = m.id
+		JOIN harbors  h ON e.harbors_id = h.id
+		JOIN cities  c ON h.city_id = c.id
+		JOIN provinces p on c.province_id = p.id
+		JOIN countries co on p.country_id = co.id
+		WHERE 
+		t.is_deleted = 0 AND
+		t.is_active = 1 `
+
+	queryTrans := `
+	SELECT	
+		guest_desc
+	FROM
+		transactions t
+		JOIN booking_exps b ON t.booking_exp_id = b.id OR t.order_id = b.order_id
+		JOIN transportations tr ON b.trans_id = tr.id
+		JOIN merchants m ON tr.merchant_id = m.id
+		JOIN harbors h ON tr.harbors_dest_id = h.id
+		JOIN harbors hs ON tr.harbors_source_id = hs.id
+		JOIN schedules s ON b.schedule_id = s.id
+		WHERE 
+		t.is_deleted = 0 AND
+		t.is_active = 1 `
+
+	if merchantId != "" {
+		queryExp = queryExp + ` AND e.merchant_id = '` + merchantId + `' `
+		queryTrans = queryTrans + ` AND tr.merchant_id = '` + merchantId + `' `
+	}
+	if status != ""{
+		var statusArray []int
+		if errUnmarshal := json.Unmarshal([]byte(status), &statusArray); errUnmarshal != nil {
+			return 0,make([]string,0), errUnmarshal
+		}
+		for index, statusElement := range statusArray {
+			if index == 0 && index != (len(statusArray)-1) {
+				queryExp = queryExp + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' `
+				queryTrans = queryTrans + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' `
+			} else if index == 0 && index == (len(statusArray)-1) {
+				queryExp = queryExp + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' ) `
+				queryTrans = queryTrans + ` AND (t.status = '` + strconv.Itoa(statusElement) + `' ) `
+			} else if index == (len(statusArray) - 1) {
+				queryExp = queryExp + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' ) `
+				queryTrans = queryTrans + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' ) `
+			} else {
+				queryExp = queryExp + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' `
+				queryTrans = queryTrans + ` OR  t.status = '` + strconv.Itoa(statusElement) + `' `
+			}
+		}
+	}else{
+		queryExp = queryExp + ` AND t.status in (0,1,2,5) `
+		queryTrans = queryTrans + ` AND t.status in (0,1,2,5) `
+	}
+	if date != "" {
+		queryExp = queryExp + ` AND DATE(b.booking_date) = '` + date + `' `
+		queryTrans = queryTrans + ` AND DATE(b.booking_date) = '` + date + `' `
+	}
+	if expId != "" {
+		query = queryExp + ` AND b.exp_id = '` + expId + `' `
+	} else if transId != "" {
+		query = queryTrans + ` AND b.trans_id = '` + transId + `' `
+	}
+
+	rows, err := t.Conn.QueryContext(ctx, query)
+	if err != nil {
+		logrus.Error(err)
+		return 0,make([]string,0), err
+	}
+
+	 guestDescs := make([]string,0)
+	for rows.Next() {
+		var transactionId string
+		err = rows.Scan(&transactionId)
+		if err != nil {
+			return 0,make([]string,0), err
+		}
+		guestDescs = append(guestDescs, transactionId)
+	}
+
+	return len(guestDescs),guestDescs, nil
+}
 func (t transactionRepository) GetIdTransactionByStatus(ctx context.Context, transactionStatus int) ([]*string, error) {
 	query := `SELECT t.id
 					FROM transactions t 

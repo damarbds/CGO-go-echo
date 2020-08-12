@@ -44,6 +44,10 @@ type TransactionScheduleDto struct {
 	ArrivalTime 	*string `json:"arrival_time"`
 	TransTo 	*string `json:"trans_to"`
 	TransFrom *string `json:"trans_from"`
+	GuestCount int `json:"guest_count"`
+	CountPending int `json:"count_pending"`
+	CountConfirmed int `json:"count_confirmed"`
+	CountInComplete int `json:"count_in_complete"`
 	Transactions []TransactionBooked	`json:"transactions"`
 }
 type TransactionByDate struct {

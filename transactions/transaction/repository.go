@@ -6,6 +6,7 @@ import (
 )
 
 type Repository interface {
+	GetCountTransactionByExpIdORTransId(ctx context.Context,date string,expId string,transId string,merchantId string,status string)(int,[]string, error)
 	GetTransactionByExpIdORTransId(ctx context.Context,date string,expId string,transId string,merchantId string,status string)([]*models.TransactionOut, error)
 	GetTransactionByDate(ctx context.Context,date string ,isExperience bool,isTransportation bool,merchantId string)([]*models.TransactionByDate,error)
 	GetCountTransactionByPromoId(ctx context.Context,promoId string,userId string)(int,error)

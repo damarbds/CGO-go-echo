@@ -51,6 +51,7 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 	if len(listTransactions) == 0 {
 		return nil, nil
 	}
+
 	var expType []string
 	if listTransactions[0].ExpType != "" {
 		if !strings.Contains(listTransactions[0].ExpType, "]") {
@@ -63,6 +64,34 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 		}
 	}
 	var result models.TransactionScheduleDto
+	countTransactionsPending, _,err := t.transactionRepo.GetCountTransactionByExpIdORTransId(ctx, date, expId, transId, currentMerchant.Id, "[0]")
+	if err != nil {
+		return nil, err
+	}
+	countTransactionsConfirm, _,err := t.transactionRepo.GetCountTransactionByExpIdORTransId(ctx, date, expId, transId, currentMerchant.Id, "[2]")
+	if err != nil {
+		return nil, err
+	}
+	countTransactionsInComplete, _,err := t.transactionRepo.GetCountTransactionByExpIdORTransId(ctx, date, expId, transId, currentMerchant.Id, "[1,5]")
+	if err != nil {
+		return nil, err
+	}
+	_, guestdescs,err := t.transactionRepo.GetCountTransactionByExpIdORTransId(ctx, date, expId, transId, currentMerchant.Id, "")
+	if err != nil {
+		return nil, err
+	}
+	result.CountPending = countTransactionsPending
+	result.CountConfirmed = countTransactionsConfirm
+	result.CountInComplete = countTransactionsInComplete
+	for _,guest := range guestdescs {
+		var guestDesc []models.GuestDescObj
+		if guest != "" {
+			if errUnmarshal := json.Unmarshal([]byte(guest), &guestDesc); errUnmarshal != nil {
+				return nil, errUnmarshal
+			}
+		}
+		result.GuestCount = result.GuestCount + len(guestDesc)
+	}
 	if expType[0] == "Transportation" {
 		result.TransId = &listTransactions[0].ExpId
 		result.TransTo = listTransactions[0].CountryName
@@ -73,6 +102,7 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 		result.ExpId = &listTransactions[0].ExpId
 		result.ExpTitle = &listTransactions[0].ExpTitle
 	}
+
 	result.Transactions = make([]models.TransactionBooked, len(listTransactions))
 	for i, item := range listTransactions {
 		var status string
