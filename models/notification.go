@@ -52,3 +52,8 @@ type DataFCMPushNotif struct {
 	Title string `json:"title"`
 	Message string `json:"message"`
 }
+
+type NotificationRead struct {
+	NotificationId string `json:"notification_id"`
+	IsRead int `json:"is_read"`
+}

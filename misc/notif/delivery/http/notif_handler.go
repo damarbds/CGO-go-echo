@@ -23,8 +23,55 @@ func NewNotifHandler(e *echo.Echo, us notif.Usecase) {
 	handler := &NotifHandler{
 		NotifUsecase: us,
 	}
+	e.PUT("misc/notif-read", handler.UpdateReadNotification)
+	e.DELETE("misc/notif", handler.DeleteNotification)
 	e.GET("misc/notif", handler.Get)
 	e.POST("misc/push-notif", handler.PushNotifFCM)
+}
+func (a *NotifHandler) DeleteNotification(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	notificationIds := c.QueryParam("notification_id")
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	response, error := a.NotifUsecase.DeleteNotificationByIds(ctx, token,notificationIds)
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func (a *NotifHandler) UpdateReadNotification(c echo.Context) error {
+	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	c.Response().Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	token := c.Request().Header.Get("Authorization")
+
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, models.ErrUnAuthorize)
+	}
+	var read models.NotificationRead
+	err := c.Bind(&read)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	response, error := a.NotifUsecase.UpdateStatusNotif(ctx, read,token)
+
+	if error != nil {
+		return c.JSON(getStatusCode(error), ResponseError{Message: error.Error()})
+	}
+	return c.JSON(http.StatusOK, response)
 }
 func (a *NotifHandler) PushNotifFCM(c echo.Context) error {
 	c.Request().Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

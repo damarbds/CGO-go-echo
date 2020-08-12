@@ -3,10 +3,12 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"github.com/misc/notif"
 	"github.com/models"
 	"github.com/sirupsen/logrus"
 	"strconv"
+	"time"
 )
 
 type notifRepository struct {
@@ -18,7 +20,6 @@ type notifRepository struct {
 func NewNotifRepository(Conn *sql.DB) notif.Repository {
 	return &notifRepository{Conn: Conn}
 }
-
 func (n notifRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Notification, error) {
 	rows, err := n.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -64,6 +65,62 @@ func (n notifRepository) fetch(ctx context.Context, query string, args ...interf
 	}
 
 	return result, nil
+}
+
+func (n notifRepository) DeleteNotificationByIds(ctx context.Context, merchantId string, ids string,deletedby string,deletedDate time.Time) error {
+	query := `UPDATE notifications SET is_deleted = 1 ,is_active = 0,deleted_by=?,deleted_date=? WHERE merchant_id =? `
+	if ids != ""{
+		var idsArray []string
+		if errUnmarshal := json.Unmarshal([]byte(ids), &idsArray); errUnmarshal != nil {
+			return errUnmarshal
+		}
+		for index, id := range idsArray {
+			if index == 0 && index != (len(idsArray)-1) {
+				query = query + ` AND (id = '` + id + `' `
+			} else if index == 0 && index == (len(idsArray)-1) {
+				query = query + ` AND (id = '` + id + `' ) `
+			} else if index == (len(idsArray) - 1) {
+				query = query + ` OR  id = '` + id + `' ) `
+			} else {
+				query = query + ` OR  id = '` + id + `' `
+			}
+		}
+	}
+	stmt, err := n.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx,deletedby,deletedDate,merchantId)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
+}
+func (n notifRepository) UpdateStatusNotif(ctx context.Context, a models.NotificationRead,modifiedBy string,modifyDate time.Time) error {
+	query := `UPDATE notifications SET is_read=?,modified_by=?,modified_date=? WHERE id=?`
+	stmt, err := n.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx,a.IsRead,modifiedBy,modifyDate,a.NotificationId)
+	if err != nil {
+		return err
+	}
+
+	//lastID, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	//a.Id = lastID
+	return nil
 }
 
 func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string,limit,offset int) ([]*models.Notification, error) {

@@ -28,7 +28,9 @@ type notifUsecase struct {
 
 
 
-func NewNotifUsecase(	keyFCM 			string,bookingRepo booking_exp.Repository,n notif.Repository, u merchant.Usecase, timeout time.Duration) notif.Usecase {
+
+
+func NewNotifUsecase(keyFCM string,bookingRepo booking_exp.Repository,n notif.Repository, u merchant.Usecase, timeout time.Duration) notif.Usecase {
 	return &notifUsecase{
 		keyFCM:keyFCM,
 		bookingRepo:bookingRepo,
@@ -36,6 +38,42 @@ func NewNotifUsecase(	keyFCM 			string,bookingRepo booking_exp.Repository,n noti
 		merchantUsecase: u,
 		contextTimeout:  timeout,
 	}
+}
+func (x notifUsecase) DeleteNotificationByIds(ctx context.Context, token string, ids string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, x.contextTimeout)
+	defer cancel()
+
+	currentUserMerchant,err := x.merchantUsecase.ValidateTokenMerchant(ctx ,token)
+	if err != nil{
+		return nil,models.ErrUnAuthorize
+	}
+	err = x.notifRepo.DeleteNotificationByIds(ctx,currentUserMerchant.Id,ids,currentUserMerchant.MerchantEmail,time.Now())
+	if err != nil{
+		return nil,errors.New(err.Error())
+	}
+	result := models.ResponseDelete{
+		Id:      currentUserMerchant.Id,
+		Message: "Success Deleted Notification",
+	}
+	return &result,nil
+}
+func (x notifUsecase) UpdateStatusNotif(ctx context.Context, notif models.NotificationRead, token string) (*models.ResponseDelete, error) {
+	ctx, cancel := context.WithTimeout(ctx, x.contextTimeout)
+	defer cancel()
+
+	currentUserMerchant,err := x.merchantUsecase.ValidateTokenMerchant(ctx ,token)
+	if err != nil{
+		return nil,models.ErrUnAuthorize
+	}
+	err = x.notifRepo.UpdateStatusNotif(ctx,notif,currentUserMerchant.MerchantEmail,time.Now())
+	if err != nil{
+		return nil,errors.New(err.Error())
+	}
+	result := models.ResponseDelete{
+		Id:      currentUserMerchant.Id,
+		Message: "Success Update Read Notification",
+	}
+	return &result,nil
 }
 func (t notifUsecase) FCMPushNotification(ctx context.Context, ar models.FCMPushNotif) (*models.ResponseDelete, error) {
 	data, _ := json.Marshal(ar)
