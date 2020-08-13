@@ -28,6 +28,7 @@ type NotifDto struct {
 	Title string    `json:"title"`
 	Desc  string    `json:"desc"`
 	Date  time.Time `json:"date"`
+	OrderId *string `json:"order_id"`
 	ExpId *string	`json:"exp_id"`
 	ExpTitle *string `json:"exp_title"`
 	TransId *string `json:"trans_id"`

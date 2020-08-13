@@ -142,6 +142,7 @@ func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, li
 				countDeleteIndex = countDeleteIndex + 1
 				//return nil,err
 			}else {
+				notif.OrderId = &getDetailBooking[0].OrderId
 				notif.TransId = getDetailBooking[0].TransId
 				notif.DepartureTime = getDetailBooking[0].DepartureTime
 				notif.ArrivalTime = getDetailBooking[0].ArrivalTime
@@ -156,6 +157,7 @@ func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, li
 				countDeleteIndex = countDeleteIndex + 1
 				//return nil,err
 			}else {
+				notif.OrderId = &getDetailBooking.OrderId
 				notif.ExpId = getDetailBooking.ExpId
 				notif.ExpTitle = getDetailBooking.ExpTitle
 				notifs = append(notifs,notif)
