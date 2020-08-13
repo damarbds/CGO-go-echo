@@ -169,6 +169,7 @@ func (a *isHandler) Login(c echo.Context) error {
 	isLogin.Password = c.Request().Form.Get("password")
 	isLogin.Type = c.Request().Form.Get("type")
 	isLogin.Scope = c.Request().Form.Get("scope")
+	isLogin.XMode = c.Request().Form.Get("x_mode")
 	var responseToken *models.GetToken
 	if isLogin.Type == "user" {
 
@@ -178,7 +179,16 @@ func (a *isHandler) Login(c echo.Context) error {
 			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 		}
 		responseToken = token
-	} else if isLogin.Type == "merchant" {
+	} else if isLogin.Type == "merchant" && isLogin.XMode == "mobile"{
+
+		token, err := a.merchantUsecase.LoginMobile(ctx, &isLogin)
+
+		if err != nil {
+			return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusOK, token)
+		//responseToken = token
+	}else if isLogin.Type == "merchant" {
 
 		token, err := a.merchantUsecase.Login(ctx, &isLogin)
 

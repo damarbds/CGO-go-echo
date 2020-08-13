@@ -12,6 +12,13 @@ type GetToken struct {
 	TokenType   string `json:"token_type"`
 	RefreshToken string	`json:"refresh_token"`
 }
+type GetTokenMobileMerchant struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+	RefreshToken string	`json:"refresh_token"`
+	MerchantInfo *MerchantInfoDto `json:"merchant_info"`
+}
 type RefreshToken struct {
 	IdToken 	string	`json:"id_token"`
 	AccessToken string `json:"access_token"`
@@ -112,6 +119,7 @@ type Login struct {
 	Password string `json:"password"`
 	Type     string `json:"type"`
 	Scope    string `json:"scope"`
+	XMode 	string `json:"x_mode"`
 }
 
 type AutoLogin struct {

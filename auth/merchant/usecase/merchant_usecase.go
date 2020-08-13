@@ -28,6 +28,7 @@ type merchantUsecase struct {
 	contextTimeout   time.Duration
 }
 
+
 // NewmerchantUsecase will create new an merchantUsecase object representation of merchant.Usecase interface
 func NewmerchantUsecase(usm user_merchant.Repository, a merchant.Repository, ex experience.Repository, tr transportation.Repository, is identityserver.Usecase, adm admin.Usecase, timeout time.Duration) merchant.Usecase {
 	return &merchantUsecase{
@@ -299,6 +300,30 @@ func (m merchantUsecase) Login(ctx context.Context, ar *models.Login) (*models.G
 		return nil, models.ErrNotFound
 	}
 	return requestToken, err
+}
+
+func (m merchantUsecase) LoginMobile(ctx context.Context, ar *models.Login) (*models.GetTokenMobileMerchant, error) {
+	ctx, cancel := context.WithTimeout(ctx, m.contextTimeout)
+	defer cancel()
+
+	requestToken, err := m.identityServerUc.GetToken(ar.Email, ar.Password, ar.Scope)
+	if err != nil {
+		return nil, err
+	}
+	existedMerchant, _ := m.userMerchantRepo.GetByUserEmail(ctx, ar.Email)
+	if existedMerchant == nil {
+		return nil, models.ErrNotFound
+	}
+	merchantInfo,_ := m.ValidateTokenMerchant(ctx,requestToken.AccessToken)
+
+	result := models.GetTokenMobileMerchant{
+		AccessToken:  requestToken.AccessToken,
+		ExpiresIn:    requestToken.ExpiresIn,
+		TokenType:    requestToken.TokenType,
+		RefreshToken: requestToken.RefreshToken,
+		MerchantInfo: merchantInfo,
+	}
+	return &result,nil
 }
 
 func (m merchantUsecase) ValidateTokenMerchant(ctx context.Context, token string) (*models.MerchantInfoDto, error) {
