@@ -109,7 +109,7 @@ func (t notifUsecase) FCMPushNotification(ctx context.Context, ar models.FCMPush
 	}
 	return &result,nil
 }
-func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, limit, offset int) (*models.NotifWithPagination, error) {
+func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, limit, offset int,notifType string) (*models.NotifWithPagination, error) {
 	ctx, cancel := context.WithTimeout(ctx, x.contextTimeout)
 	defer cancel()
 
@@ -118,7 +118,7 @@ func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, li
 		return nil, err
 	}
 
-	res, err := x.notifRepo.GetByMerchantID(ctx, currentMerchant.Id,limit,offset)
+	res, err := x.notifRepo.GetByMerchantID(ctx, currentMerchant.Id,limit,offset,notifType)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (x notifUsecase) GetByMerchantID(ctx context.Context, token string,page, li
 	}
 
 
-	totalRecords, _ := x.notifRepo.GetCountByMerchantID(ctx, currentMerchant.Id)
+	totalRecords, _ := x.notifRepo.GetCountByMerchantID(ctx, currentMerchant.Id,notifType)
 	totalRecords = totalRecords - countDeleteIndex
 
 	totalPage := int(math.Ceil(float64(totalRecords) / float64(limit)))

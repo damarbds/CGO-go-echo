@@ -103,6 +103,7 @@ func (a *NotifHandler) Get(c echo.Context) error {
 	}
 	qpage := c.QueryParam("page")
 	qperPage := c.QueryParam("size")
+	notifType := c.QueryParam("type")
 
 	var limit = 20
 	var page = 1
@@ -117,7 +118,7 @@ func (a *NotifHandler) Get(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	res, err := a.NotifUsecase.GetByMerchantID(ctx, token,page,limit,offset)
+	res, err := a.NotifUsecase.GetByMerchantID(ctx, token,page,limit,offset,notifType)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

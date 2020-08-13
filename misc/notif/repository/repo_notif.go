@@ -123,7 +123,7 @@ func (n notifRepository) UpdateStatusNotif(ctx context.Context, a models.Notific
 	return nil
 }
 
-func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string,limit,offset int) ([]*models.Notification, error) {
+func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string,limit,offset int,notifType string) ([]*models.Notification, error) {
 	query := `
 	SELECT
 		*
@@ -134,6 +134,12 @@ func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string,
 		AND is_deleted = 0
 		AND is_active = 1 `
 
+	if notifType == "1"{
+		query = query + ` AND (exp_id != '' AND exp_id is not null) `
+	}
+	if notifType == "2"{
+		query = query + ` AND (schedule_id != '' AND schedule_id is not null) `
+	}
 	if limit != 0 {
 		query = query + ` ORDER BY created_date DESC LIMIT ` + strconv.Itoa(limit) +
 			` OFFSET ` + strconv.Itoa(offset) + ` `
@@ -147,8 +153,14 @@ func (n notifRepository) GetByMerchantID(ctx context.Context, merchantId string,
 	return res, nil
 }
 
-func (t notifRepository) GetCountByMerchantID(ctx context.Context, merchantId string) (int, error) {
+func (t notifRepository) GetCountByMerchantID(ctx context.Context, merchantId string,notifType string) (int, error) {
 	query := `SELECT count(*) as count FROM notifications WHERE is_deleted = 0 AND is_active = 1 `
+	if notifType == "1"{
+		query = query + ` AND (exp_id != '' AND exp_id is not null) `
+	}
+	if notifType == "2"{
+		query = query + ` AND (schedule_id != '' AND schedule_id is not null) `
+	}
 	if merchantId != ""{
 		query = query + ` AND merchant_id = '` + merchantId + `' `
 	}
