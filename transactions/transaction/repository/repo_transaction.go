@@ -168,7 +168,7 @@ func (t transactionRepository) GetTransactionByExpIdORTransId(ctx context.Contex
 		t.original_price,
 		null as arrival_time,
 		null as departure_time,
-		null as class,
+		e.exp_max_guest as class,
 		m.merchant_picture
 	FROM
 		transactions t

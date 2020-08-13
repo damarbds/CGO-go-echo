@@ -80,6 +80,8 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 	if err != nil {
 		return nil, err
 	}
+	var totalGuest int
+	var maxBookingGuest int
 	result.CountPending = countTransactionsPending
 	result.CountConfirmed = countTransactionsConfirm
 	result.CountInComplete = countTransactionsInComplete
@@ -90,15 +92,19 @@ func (t transactionUsecase) GetDetailTransactionSchedule(ctx context.Context, da
 				return nil, errUnmarshal
 			}
 		}
-		result.GuestCount = result.GuestCount + len(guestDesc)
+		totalGuest = totalGuest + len(guestDesc)
 	}
 	if expType[0] == "Transportation" {
+		maxBookingGuest = *listTransactions[0].ExpDuration
 		result.TransId = &listTransactions[0].ExpId
 		result.TransTo = listTransactions[0].CountryName
 		result.TransFrom = listTransactions[0].ProvinceName
 		result.ArrivalTime = listTransactions[0].ArrivalTime
 		result.DepartureTime = listTransactions[0].DepartureTime
+		result.Quota = strconv.Itoa(totalGuest)  + "/" + strconv.Itoa(maxBookingGuest)
 	} else {
+		maxGuest,_:= strconv.Atoi(*listTransactions[0].Class)
+		result.Quota = strconv.Itoa(totalGuest)  + "/" + strconv.Itoa(maxGuest)
 		result.ExpId = &listTransactions[0].ExpId
 		result.ExpTitle = &listTransactions[0].ExpTitle
 	}
