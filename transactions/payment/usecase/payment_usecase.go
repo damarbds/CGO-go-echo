@@ -7844,8 +7844,55 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 		}
 	}else if autoComplete == false && newData.Status == 0 {
 
-		exp, err := p.expRepo.GetExperienceByBookingId(ctx, newData.BookingExpId,*newData.ExperiencePaymentId)
-		if err != models.ErrNotFound{
+		if newData.BookingExpId  == nil {
+			trans,err := p.transportationRepo.GetTransportationByBookingId(ctx,newData.BookingExpId,newData.OrderId)
+			//push notif to merchant pending Transportation
+			getUserMerchant,err := p.userMerchantRepo.GetUserByMerchantId(ctx ,trans.MerchantId)
+			if err != nil {
+				return "",err
+			}
+			isRead := 0
+			notif := models.Notification{
+				Id:           guuid.New().String(),
+				CreatedBy:    createdBy,
+				CreatedDate:  time.Now(),
+				ModifiedBy:   nil,
+				ModifiedDate: nil,
+				DeletedBy:    nil,
+				DeletedDate:  nil,
+				IsDeleted:    0,
+				IsActive:     0,
+				MerchantId:   trans.MerchantId,
+				Type:         0,
+				Title:        "New Booking : Order ID " + trans.OrderId,
+				Desc:         "You've got a new booking for " + trans.TransTitle + " , booked by " + createdBy,
+				ExpId 	:nil,
+				ScheduleId  : trans.ScheduleId,
+				BookingExpId :&trans.BookingExpId,
+				IsRead 		: &isRead,
+			}
+			pushNotifErr := p.notificationRepo.Insert(ctx, notif)
+			if pushNotifErr != nil {
+				return "",nil
+			}
+			for _,um := range getUserMerchant{
+				if um.FCMToken != nil{
+					if *um.FCMToken != ""{
+						fcm := models.FCMPushNotif{
+							To:   *um.FCMToken,
+							Data: models.DataFCMPushNotif{
+								Title:   "cGO",
+								Message: notif.Desc,
+							},
+						}
+						p.notificationUsecase.FCMPushNotification(ctx,fcm)
+					}
+				}
+
+			}
+
+		}else {
+			exp, err := p.expRepo.GetExperienceByBookingId(ctx, newData.BookingExpId,*newData.ExperiencePaymentId)
 
 			//push notif to merchant pending
 			getUserMerchant,err := p.userMerchantRepo.GetUserByMerchantId(ctx ,exp.MerchantId)
@@ -7888,58 +7935,6 @@ func (p paymentUsecase) Insert(ctx context.Context, payment *models.Transaction,
 						}
 						p.notificationUsecase.FCMPushNotification(ctx,fcm)
 					}
-				}
-
-			}
-
-		}else {
-			trans,err := p.transportationRepo.GetTransportationByBookingId(ctx,newData.BookingExpId,newData.OrderId)
-			if err == models.ErrNotFound{
-
-			}else {
-				//push notif to merchant pending Transportation
-				getUserMerchant,err := p.userMerchantRepo.GetUserByMerchantId(ctx ,trans.MerchantId)
-				if err != nil {
-					return "",err
-				}
-				isRead := 0
-				notif := models.Notification{
-					Id:           guuid.New().String(),
-					CreatedBy:    createdBy,
-					CreatedDate:  time.Now(),
-					ModifiedBy:   nil,
-					ModifiedDate: nil,
-					DeletedBy:    nil,
-					DeletedDate:  nil,
-					IsDeleted:    0,
-					IsActive:     0,
-					MerchantId:   trans.MerchantId,
-					Type:         0,
-					Title:        "New Booking : Order ID " + trans.OrderId,
-					Desc:         "You've got a new booking for " + trans.TransTitle + " , booked by " + createdBy,
-					ExpId 	:nil,
-					ScheduleId  : trans.ScheduleId,
-					BookingExpId :&trans.BookingExpId,
-					IsRead 		: &isRead,
-				}
-				pushNotifErr := p.notificationRepo.Insert(ctx, notif)
-				if pushNotifErr != nil {
-					return "",nil
-				}
-				for _,um := range getUserMerchant{
-					if um.FCMToken != nil{
-						if *um.FCMToken != ""{
-							fcm := models.FCMPushNotif{
-								To:   *um.FCMToken,
-								Data: models.DataFCMPushNotif{
-									Title:   "cGO",
-									Message: notif.Desc,
-								},
-							}
-							p.notificationUsecase.FCMPushNotification(ctx,fcm)
-						}
-					}
-
 				}
 
 			}
