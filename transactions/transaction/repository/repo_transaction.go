@@ -780,8 +780,13 @@ func (t transactionRepository) List(ctx context.Context, startDate, endDate, sea
 
 	if search != "" {
 		keyword := `'%` + search + `%'`
-		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
-		queryT = queryT + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
+		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR 
+								LOWER(b.order_id) LIKE LOWER(` + keyword + `) OR 
+								LOWER(e.exp_title) LIKE LOWER(` + keyword + `)) `
+
+		queryT = queryT + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR
+								LOWER(b.order_id) LIKE LOWER(` + keyword + `) OR
+								LOWER(trans_title) LIKE LOWER(` + keyword + `)) `
 	}
 	if startDate != "" && endDate != "" {
 		if isSchedule == true {
@@ -1186,8 +1191,13 @@ func (t transactionRepository) Count(ctx context.Context, startDate, endDate, se
 
 	if search != "" {
 		keyword := `'%` + search + `%'`
-		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
-		queryT = queryT + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR LOWER(b.order_id) LIKE LOWER(` + keyword + `))`
+		query = query + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR 
+								LOWER(b.order_id) LIKE LOWER(` + keyword + `) OR 
+								LOWER(e.exp_title) LIKE LOWER(` + keyword + `)) `
+
+		queryT = queryT + ` AND (LOWER(b.booked_by) LIKE LOWER(` + keyword + `) OR
+								LOWER(b.order_id) LIKE LOWER(` + keyword + `) OR
+								LOWER(trans_title) LIKE LOWER(` + keyword + `)) `
 	}
 	if startDate != "" && endDate != "" {
 		query = query + ` AND DATE(b.created_date) BETWEEN '` + startDate + `' AND '` + endDate + `'`
