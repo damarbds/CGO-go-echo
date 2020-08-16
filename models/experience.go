@@ -50,6 +50,17 @@ type Experience struct {
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
 	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
 	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
+	IsExtended 			*int `json:"is_extended"`
+	ExpValidityAmount *int `json:"exp_validity_amount"`
+	ExpValidityType *string `json:"exp_validity_type"`
+	ExpAddress 		*string `json:"exp_address"`
+	IsTradingHour 	*int `json:"is_trading_hour"`
+	TradingHourStart *string `json:"trading_hour_start"`
+	TradingHourEnd 	*string `json:"trading_hour_end"`
+	HowToGetLocation *string `json:"how_to_get_location"`
+	ExpPickupPlaceDesc *string `json:"exp_pickup_place_desc"`
+	IsRequestPickupPlace *int `json:"is_request_pickup_place"`
+	ExpItineraryStartEndPoint *string `json:"exp_itinerary_start_end_point"`
 }
 type ExperienceWithExperiencePayment struct {
 	Id                      string     `json:"id" validate:"required"`
@@ -99,6 +110,17 @@ type ExperienceWithExperiencePayment struct {
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
 	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
 	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
+	IsExtended 			*int `json:"is_extended"`
+	ExpValidityAmount *int `json:"exp_validity_amount"`
+	ExpValidityType *string `json:"exp_validity_type"`
+	ExpAddress 		*string `json:"exp_address"`
+	IsTradingHour 	*int `json:"is_trading_hour"`
+	TradingHourStart *string `json:"trading_hour_start"`
+	TradingHourEnd 	*string `json:"trading_hour_end"`
+	HowToGetLocation *string `json:"how_to_get_location"`
+	ExpPickupPlaceDesc *string `json:"exp_pickup_place_desc"`
+	IsRequestPickupPlace *int `json:"is_request_pickup_place"`
+	ExpItineraryStartEndPoint *string `json:"exp_itinerary_start_end_point"`
 	ExpPaymentTypeName	string 	`json:"exp_payment_type_name"`
 	OrderId 			string `json:"order_id"`
 	BookingExpId 		string `json:"booking_exp_id"`
@@ -151,6 +173,17 @@ type ExperienceJoinForegnKey struct {
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
 	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
 	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
+	IsExtended 			*int `json:"is_extended"`
+	ExpValidityAmount *int `json:"exp_validity_amount"`
+	ExpValidityType *string `json:"exp_validity_type"`
+	ExpAddress 		*string `json:"exp_address"`
+	IsTradingHour 	*int `json:"is_trading_hour"`
+	TradingHourStart *string `json:"trading_hour_start"`
+	TradingHourEnd 	*string `json:"trading_hour_end"`
+	HowToGetLocation *string `json:"how_to_get_location"`
+	ExpPickupPlaceDesc *string `json:"exp_pickup_place_desc"`
+	IsRequestPickupPlace *int `json:"is_request_pickup_place"`
+	ExpItineraryStartEndPoint *string `json:"exp_itinerary_start_end_point"`
 	MinimumBookingAmount    *int       `json:"minimum_booking_amount"`
 	MinimumBookingDesc      string     `json:"minimum_booking_desc"`
 }
@@ -424,6 +457,17 @@ type ExpUserDiscoverPreference struct {
 	ExpLongitudeMap		*float64	`json:"exp_longitude_map"`
 	ExpMaximumBookingAmount *int `json:"exp_maximum_booking_amount"`
 	ExpMaximumBookingType *string	`json:"exp_maximum_booking_type"`
+	IsExtended 			*int `json:"is_extended"`
+	ExpValidityAmount *int `json:"exp_validity_amount"`
+	ExpValidityType *string `json:"exp_validity_type"`
+	ExpAddress 		*string `json:"exp_address"`
+	IsTradingHour 	*int `json:"is_trading_hour"`
+	TradingHourStart *string `json:"trading_hour_start"`
+	TradingHourEnd 	*string `json:"trading_hour_end"`
+	HowToGetLocation *string `json:"how_to_get_location"`
+	ExpPickupPlaceDesc *string `json:"exp_pickup_place_desc"`
+	IsRequestPickupPlace *int `json:"is_request_pickup_place"`
+	ExpItineraryStartEndPoint *string `json:"exp_itinerary_start_end_point"`
 }
 
 type ExpUserDiscoverPreferenceDto struct {

@@ -258,6 +258,17 @@ func main() {
 		db.Create(&migration)
 	}
 
+	experience := model.Experience{}
+	experienceErr := db.AutoMigrate(&experience)
+	if experienceErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Column in Experience",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
 	db.Close()
 
 }
