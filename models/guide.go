@@ -16,7 +16,7 @@ type Guide struct {
 	GuidePhoto 		string `json:"guide_photo"`
 	GuideGender 	string `json:"guide_gender"`
 	IsCertified 	int `json:"is_certified"`
-	GuestDesc 		string `json:"guest_desc"`
+	GuideDesc 		string `json:"guide_desc"`
 	LicenceNumber string `json:"licence_number"`
 	GuideReview 	float64 `json:"guide_review"`
 }
