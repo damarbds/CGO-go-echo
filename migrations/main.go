@@ -247,6 +247,17 @@ func main() {
 		db.Create(&migration)
 	}
 
+	experiencePayment := model.ExperiencePayment{}
+	experiencePaymentErr := db.AutoMigrate(&experiencePayment)
+	if experiencePaymentErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Column in Experience Payment",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
 	db.Close()
 
 }

@@ -53,6 +53,8 @@ func (m *expPaymentRepository) fetch(ctx context.Context, query string, args ...
 			&t.Currency,
 			&t.Price,
 			&t.CustomPrice,
+			&t.PackageId,
+			&t.PaymentPrecentage,
 			&t.ExpPaymentTypeName,
 			&t.ExpPaymentTypeDesc,
 		)
@@ -110,13 +112,13 @@ func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePa
 	//a.Id = id.String()
 	query := `INSERT experience_payments SET id=? , created_by=? , created_date=? , modified_by=?, modified_date=? , 
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_payment_type_id=?,exp_id=?,
-				price_item_type=?,currency=?,price=?,custom_price=?`
+				price_item_type=?,currency=?,price=?,custom_price=?,package_id =?,payment_percentage =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return "", err
 	}
 	_, err = stmt.ExecContext(ctx, a.Id, a.CreatedBy, a.CreatedBy, nil, nil, nil, nil, 0, 1, a.ExpPaymentTypeId, a.ExpId,
-		a.PriceItemType, a.Currency, a.Price, a.CustomPrice)
+		a.PriceItemType, a.Currency, a.Price, a.CustomPrice,a.PackageId,a.PaymentPrecentage)
 	if err != nil {
 		return "", err
 	}
@@ -132,14 +134,14 @@ func (m *expPaymentRepository) Insert(ctx context.Context, a models.ExperiencePa
 func (m *expPaymentRepository) Update(ctx context.Context, a models.ExperiencePayment) error {
 	query := `UPDATE experience_payments SET modified_by=?, modified_date=? , 
 				deleted_by=? , deleted_date=? , is_deleted=? , is_active=? , exp_payment_type_id=?,exp_id=?,
-				price_item_type=?,currency=?,price=?,custom_price=? 
+				price_item_type=?,currency=?,price=?,custom_price=? ,package_id =?,payment_percentage =?
 				WHERE id =?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 	_, err = stmt.ExecContext(ctx, a.ModifiedBy, a.ModifiedDate, nil, nil, 0, 1, a.ExpPaymentTypeId, a.ExpId,
-		a.PriceItemType, a.Currency, a.Price, a.CustomPrice, a.Id)
+		a.PriceItemType, a.Currency, a.Price, a.CustomPrice,a.PackageId,a.PaymentPrecentage, a.Id)
 	if err != nil {
 		return err
 	}

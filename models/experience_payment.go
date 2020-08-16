@@ -18,6 +18,8 @@ type ExperiencePayment struct {
 	Currency         int        `json:"currency"`
 	Price            float64    `json:"price"`
 	CustomPrice      *string   `json:"custom_price"`
+	PackageId 		*int `json:"package_id"`
+	PaymentPrecentage *float64 `json:"payment_precentage"`
 }
 
 type ExperiencePaymentJoinType struct {
@@ -36,6 +38,8 @@ type ExperiencePaymentJoinType struct {
 	Currency           int        `json:"currency"`
 	Price              float64    `json:"price"`
 	CustomPrice        *string   `json:"custom_price"`
+	PackageId 		*int `json:"package_id"`
+	PaymentPrecentage *float64 `json:"payment_precentage"`
 	ExpPaymentTypeName string     `json:"exp_payment_type_name"`
 	ExpPaymentTypeDesc string     `json:"exp_payment_type_desc"`
 }
