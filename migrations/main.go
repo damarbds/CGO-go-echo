@@ -104,27 +104,149 @@ func main() {
 
 		db.Create(&migration)
 	}
-	//exlusionServicess := model.Transaction{}
-	//errorexlusionServicess := db.Model(&exlusionServicess).AddForeignKey("experience_payment_id","experience_payments(id)","RESTRICT", "RESTRICT")
-	//if errorexlusionServicess != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_Foregn_key_experience_payment_id_Transaction",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
-	//
-	//exlusionServicesss := model.Payment{}
-	//errorexlusionServicesss := db.Model(&exlusionServicesss).AddForeignKey("experience_payment_id","experience_payments(id)","RESTRICT", "RESTRICT")
-	//if errorexlusionServicesss != nil{
-	//	migration := model.MigrationHistory{
-	//		DescMigration:"Add_Foregn_key_experience_payment_id_Payment",
-	//		Date:  time.Now(),
-	//	}
-	//
-	//	db.Create(&migration)
-	//}
-	//db.Close()
+	exlusionServicesss := model.Guide{}
+	errorexlusionServicesss := db.AutoMigrate(&exlusionServicesss)
+	if errorexlusionServicesss != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add table guide",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	exlusionServicessss := model.GuideLanguage{}
+	errorexlusionServicessss := db.AutoMigrate(&exlusionServicessss).AddForeignKey("guide_id","guides(id)","RESTRICT", "RESTRICT")
+	if errorexlusionServicessss != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add table guide language",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	guideLanguage := model.GuideLanguage{}
+	guideLanguageErr := db.Model(&guideLanguage).AddForeignKey("experience_id","experiences(id)","RESTRICT", "RESTRICT")
+	if guideLanguageErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Foregn Key Experience Id guide language",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	guideReview := model.GuideReviews{}
+	guideReviewErr := db.AutoMigrate(&guideReview).AddForeignKey("guide_id","guides(id)","RESTRICT", "RESTRICT")
+	if guideReviewErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Table Guide Review",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	guideExperience := model.GuideExperience{}
+	guideExperienceErr := db.AutoMigrate(&guideExperience).AddForeignKey("guide_id","guides(id)","RESTRICT", "RESTRICT")
+	if guideExperienceErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Table Guide Experience",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	language := model.Language{}
+	languageErr := db.AutoMigrate(&language)
+	if languageErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Table Language",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	guideExperiencee := model.GuideExperience{}
+	guideExperienceeErr := db.Model(&guideExperiencee).AddForeignKey("language_id","languages(id)","RESTRICT", "RESTRICT")
+	if guideExperienceeErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Foregn Key language Id Guide Experience",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	expLanguage := model.ExpLanguage{}
+	expLanguageErr := db.AutoMigrate(&expLanguage).AddForeignKey("language_id","languages(id)","RESTRICT", "RESTRICT")
+	if expLanguageErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Table Exp language",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	expLanguages := model.ExpLanguage{}
+	expLanguagesErr := db.Model(&expLanguages).AddForeignKey("experience_id","experiences(id)","RESTRICT", "RESTRICT")
+	if expLanguagesErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Foregn Key Experience ID Table Exp language",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	accomodation := model.Accomodation{}
+	accomodationErr := db.AutoMigrate(&accomodation)
+	if accomodationErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Table Exp Accomodation",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	accomodationExperience := model.AccomodationExperience{}
+	accomodationExperienceErr := db.AutoMigrate(&accomodationExperience).AddForeignKey("experience_id","experiences(id)","RESTRICT", "RESTRICT")
+	if accomodationExperienceErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Table Exp AccomodationExperience",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	accomodationExperiences := model.AccomodationExperience{}
+	accomodationExperiencesErr := db.Model(&accomodationExperiences).AddForeignKey("accomodation_id","accomodations(id)","RESTRICT", "RESTRICT")
+	if accomodationExperiencesErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add Foregn Key Accomodation Experience Table Exp AccomodationExperience",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	packages := model.Package{}
+	packagesErr := db.AutoMigrate(&packages)
+	if packagesErr != nil{
+		migration := model.MigrationHistory{
+			DescMigration:"Add  Table Exp packages",
+			Date:  time.Now(),
+		}
+
+		db.Create(&migration)
+	}
+
+	db.Close()
 
 }
