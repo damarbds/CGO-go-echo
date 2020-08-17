@@ -349,7 +349,8 @@ func (b bookingExpRepository) GetBookingTransByUserID(ctx context.Context, booki
 		t.ex_change_rates,
 		t.ex_change_currency,
 		b.return_trans_id,
-		s.price as price_transportation
+		s.price as price_transportation,
+		s.id as schedule_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id OR t.order_id = a.order_id
@@ -409,7 +410,7 @@ func (b bookingExpRepository) GetBookingExpByUserID(ctx context.Context, booking
 		pm.icon,
 		t.status AS transaction_status,
 		t.va_number,
-		t.created_date AS created_date_transaction,	s
+		t.created_date AS created_date_transaction,
 		m.id as merchant_id,
 		m.merchant_name,
 		m.phone_number as merchant_phone,
@@ -1209,7 +1210,8 @@ func (b bookingExpRepository) QueryHistoryPerMonthTransByUserId(ctx context.Cont
 		t.ex_change_rates,
 		t.ex_change_currency,
 		b.return_trans_id,
-		s.price as price_transportation
+		s.price as price_transportation,
+		s.id as schedule_id
 	FROM
 		booking_exps a
 		LEFT JOIN transactions t ON t.booking_exp_id = a.id
